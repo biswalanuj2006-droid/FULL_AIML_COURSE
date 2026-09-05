@@ -1,0 +1,88 @@
+================================================================================
+PROJECT 1: STUDENT PASS/FAIL PREDICTOR (LEVEL 1)
+================================================================================
+
+PROBLEM STATEMENT
+-----------------
+Predict whether a student will pass or fail based on study habits,
+attendance, and demographic data.
+
+GOAL: Learn the complete ML workflow from data to prediction.
+
+DATASET
+-------
+- Source: UCI Student Performance Dataset
+- Features: study time, absences, parent education, internet access
+- Target: pass/fail (final grade >= 10)
+- Size: ~650 students
+
+ARCHITECTURE
+------------
+Data → EDA → Preprocessing → Model Training → Evaluation → Simple Web Interface
+
+IMPLEMENTATION STEPS
+--------------------
+
+1. LOAD DATA
+   import pandas as pd
+   df = pd.read_csv('student-mat.csv', sep=';')
+
+2. EDA
+   - Distribution of final grades
+   - Study time vs pass rate
+   - Absences vs performance
+   - Correlation analysis
+
+3. PREPROCESSING
+   - Encode categorical variables (One-Hot)
+   - Scale numerical features
+   - Create binary target (pass/fail)
+   - Train/test split (80/20, stratified)
+
+4. MODEL TRAINING
+   from sklearn.linear_model import LogisticRegression
+   from sklearn.ensemble import RandomForestClassifier
+   from sklearn.pipeline import Pipeline
+   from sklearn.preprocessing import StandardScaler
+
+   models = {
+       'Logistic Regression': Pipeline([
+           ('scaler', StandardScaler()),
+           ('model', LogisticRegression())
+       ]),
+       'Random Forest': RandomForestClassifier(n_estimators=100)
+   }
+
+5. EVALUATION
+   - Accuracy, precision, recall, F1
+   - Confusion matrix
+   - Feature importance
+
+6. INTERFACE (Streamlit)
+   import streamlit as st
+
+   st.title("Student Pass/Fail Predictor")
+   study_time = st.slider("Study time (hours/week)", 0, 20)
+   absences = st.number_input("Absences", 0, 50)
+   # ... more inputs
+   if st.button("Predict"):
+       prediction = model.predict([[study_time, absences, ...]])
+       st.write("Result:", "PASS" if prediction[0] == 1 else "FAIL")
+
+FILES
+-----
+student_predictor/
+├── data/
+│   └── student-mat.csv
+├── notebooks/
+│   └── eda.ipynb
+├── src/
+│   ├── preprocess.py
+│   ├── train.py
+│   └── app.py
+├── models/
+│   └── model.pkl
+├── requirements.txt
+└── README.md
+
+================================================================================

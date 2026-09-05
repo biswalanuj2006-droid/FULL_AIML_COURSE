@@ -1,0 +1,145 @@
+================================================================================
+DSA MODULE 5: STACKS — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Implement and use stacks effectively
+- Apply monotonic stack for next greater/smaller element problems
+- Solve parenthesis and expression problems
+- Solve 10+ stack LeetCode problems
+
+================================================================================
+1. STACK FUNDAMENTALS
+================================================================================
+
+LIFO (Last In, First Out)
+
+Stack Operations:
+  push(x)  → O(1)
+  pop()    → O(1)
+  top()    → O(1)
+  isEmpty() → O(1)
+
+Python implementation using list:
+stack = []
+stack.append(1)     # push
+stack.pop()          # pop
+stack[-1]            # top
+len(stack) == 0      # isEmpty
+
+================================================================================
+2. MONOTONIC STACK
+================================================================================
+
+INTUITION
+---------
+A stack where elements are always in increasing (or decreasing) order.
+Used to find "next greater element" or "next smaller element" in O(n).
+
+NEXT GREATER ELEMENT
+---------------------
+def next_greater_element(arr):
+    n = len(arr)
+    result = [-1] * n
+    stack = []  # stores indices
+
+    for i in range(n):
+        while stack and arr[i] > arr[stack[-1]]:
+            idx = stack.pop()
+            result[idx] = arr[i]
+        stack.append(i)
+    return result
+
+DRY RUN: arr = [2, 1, 2, 4, 3]
+  i=0: stack=[0]
+  i=1: 1<2, stack=[0,1]
+  i=2: 2>1 → result[1]=2, stack=[0]; 2>=2, stack=[0,2]
+  i=3: 4>2 → result[2]=4, stack=[0]; 4>2 → result[0]=4, stack=[3]
+  i=4: 3<4, stack=[3,4]
+  Result: [4, 2, 4, -1, -1] ✓
+
+================================================================================
+3. CLASSIC PROBLEMS
+================================================================================
+
+VALID PARENTHESES
+------------------
+def is_valid(s):
+    stack = []
+    mapping = {')': '(', '}': '{', ']': '['}
+    for char in s:
+        if char in mapping:
+            if not stack or stack[-1] != mapping[char]:
+                return False
+            stack.pop()
+        else:
+            stack.append(char)
+    return len(stack) == 0
+
+MIN STACK (O(1) getMin)
+------------------------
+class MinStack:
+    def __init__(self):
+        self.stack = []
+        self.min_stack = []
+
+    def push(self, val):
+        self.stack.append(val)
+        min_val = min(val, self.min_stack[-1] if self.min_stack else val)
+        self.min_stack.append(min_val)
+
+    def pop(self):
+        self.stack.pop()
+        self.min_stack.pop()
+
+    def top(self):
+        return self.stack[-1]
+
+    def getMin(self):
+        return self.min_stack[-1]
+
+LARGEST RECTANGLE IN HISTOGRAM
+-------------------------------
+def largest_rectangle_area(heights):
+    stack = [-1]
+    max_area = 0
+    for i in range(len(heights)):
+        while stack[-1] != -1 and heights[i] < heights[stack[-1]]:
+            height = heights[stack.pop()]
+            width = i - stack[-1] - 1
+            max_area = max(max_area, height * width)
+        stack.append(i)
+    while stack[-1] != -1:
+        height = heights[stack.pop()]
+        width = len(heights) - stack[-1] - 1
+        max_area = max(max_area, height * width)
+    return max_area
+
+================================================================================
+4. LEETCODE PROBLEMS
+================================================================================
+
+EASY
+----
+1. Valid Parentheses (LC #20)
+2. Min Stack (LC #155)
+3. Implement Stack using Queues (LC #225)
+
+MEDIUM
+------
+4. Daily Temperatures (LC #739)
+5. Generate Parentheses (LC #22)
+6. Evaluate Reverse Polish Notation (LC #150)
+7. Decode String (LC #394)
+
+HARD
+----
+8. Largest Rectangle in Histogram (LC #84)
+9. Trapping Rain Water (LC #42)
+10. Basic Calculator (LC #224)
+
+================================================================================
+END OF MODULE 5
+================================================================================

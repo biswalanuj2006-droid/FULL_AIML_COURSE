@@ -1,0 +1,254 @@
+# GRAPHS — PRACTICE SET
+# 40 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is a graph?
+   Answer: A collection of vertices (nodes) connected by edges
+
+2. What is the difference between directed and undirected graph?
+   Answer: Directed: edges have direction (A→B). Undirected: edges go both ways (A↔B)
+
+3. What is BFS?
+   Answer: Breadth-First Search — explores all neighbors at current depth before moving deeper
+
+4. What is DFS?
+   Answer: Depth-First Search — explores as far as possible along each branch before backtracking
+
+5. What is a cycle?
+   Answer: A path that starts and ends at the same vertex
+
+6. What is a connected component?
+   Answer: A maximal set of vertices where there is a path between every pair
+
+7. What is the time complexity of BFS/DFS?
+   Answer: O(V + E) where V is vertices and E is edges
+
+8. What data structure does BFS use?
+   Answer: Queue
+
+9. What data structure does DFS use?
+   Answer: Stack (or recursion/call stack)
+
+10. What is topological sorting?
+    Answer: A linear ordering of vertices such that for every edge u→v, u comes before v
+
+---
+
+## MEDIUM (15 Questions)
+
+11. BFS traversal.
+    ```python
+    from collections import deque
+    def bfs(graph, start):
+        visited = set([start])
+        queue = deque([start])
+        result = []
+        while queue:
+            node = queue.popleft()
+            result.append(node)
+            for neighbor in graph[node]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+        return result
+    ```
+
+12. DFS traversal (iterative).
+    ```python
+    def dfs(graph, start):
+        visited = set()
+        stack = [start]
+        result = []
+        while stack:
+            node = stack.pop()
+            if node not in visited:
+                visited.add(node)
+                result.append(node)
+                for neighbor in graph[node]:
+                    if neighbor not in visited:
+                        stack.append(neighbor)
+        return result
+    ```
+
+11. Number of islands (grid BFS/DFS).
+    ```python
+    def num_islands(grid):
+        if not grid: return 0
+        count = 0
+        for i in range(len(grid)):
+            for j in range(len(grid[0])):
+                if grid[i][j] == '1':
+                    dfs(grid, i, j)
+                    count += 1
+        return count
+    def dfs(grid, i, j):
+        if i < 0 or i >= len(grid) or j < 0 or j >= len(grid[0]) or grid[i][j] != '1':
+            return
+        grid[i][j] = '0'
+        for di, dj in [(0,1),(0,-1),(1,0),(-1,0)]:
+            dfs(grid, i+di, j+dj)
+    ```
+
+13. Detect cycle in undirected graph.
+    ```python
+    def has_cycle(graph, n):
+        visited = [False] * n
+        def dfs(node, parent):
+            visited[node] = True
+            for neighbor in graph[node]:
+                if not visited[neighbor]:
+                    if dfs(neighbor, node): return True
+                elif neighbor != parent:
+                    return True
+            return False
+        for i in range(n):
+            if not visited[i]:
+                if dfs(i, -1): return True
+        return False
+    ```
+
+14. Detect cycle in directed graph.
+    ```python
+    def has_cycle_directed(graph, n):
+        WHITE, GRAY, BLACK = 0, 1, 2
+        color = [WHITE] * n
+        def dfs(node):
+            color[node] = GRAY
+            for neighbor in graph[node]:
+                if color[neighbor] == GRAY: return True
+                if color[neighbor] == WHITE and dfs(neighbor): return True
+            color[node] = BLACK
+            return False
+        return any(dfs(i) for i in range(n) if color[i] == WHITE)
+    ```
+
+15. Topological sort (Kahn's algorithm).
+    ```python
+    from collections import deque
+    def topo_sort(graph, n):
+        indegree = [0] * n
+        for node in graph:
+            for neighbor in graph[node]:
+                indegree[neighbor] += 1
+        queue = deque([i for i in range(n) if indegree[i] == 0])
+        order = []
+        while queue:
+            node = queue.popleft()
+            order.append(node)
+            for neighbor in graph[node]:
+                indegree[neighbor] -= 1
+                if indegree[neighbor] == 0:
+                    queue.append(neighbor)
+        return order if len(order) == n else []
+    ```
+
+16. Dijkstra's shortest path.
+
+17. Bellman-Ford shortest path.
+
+18. Clone graph.
+
+19. Pacific Atlantic water flow.
+
+20. Course schedule (topological sort application).
+
+21. Graph valid tree.
+
+22. Alien dictionary (topological sort).
+
+23. Word ladder (BFS shortest path).
+
+24. Network delay time (Dijkstra).
+
+25. Critical connections (Tarjan's bridge finding).
+
+---
+
+## HARD (10 Questions)
+
+26. Dijkstra's algorithm with min-heap.
+27. Bellman-Ford algorithm for negative weights.
+28. Floyd-Warshall all-pairs shortest path.
+29. Minimum spanning tree (Kruskal's algorithm with Union-Find).
+30. Minimum spanning tree (Prim's algorithm).
+31. Detect cycle in directed graph (Tarjan's SCC).
+32. Strongly connected components (Kosaraju's algorithm).
+33. Bipartite graph check.
+34. Word search II (Trie + DFS backtracking).
+35. Alien dictionary with validation.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: BFS doesn't handle disconnected components
+def bfs_all(graph, n):
+    visited = set()
+    result = []
+    for i in range(n):
+        if i not in visited:
+            queue = [i]
+            visited.add(i)
+            while queue:
+                node = queue.pop(0)
+                result.append(node)
+                for neighbor in graph[node]:
+                    if neighbor not in visited:
+                        visited.add(neighbor)
+                        queue.append(neighbor)
+    return result
+
+# Debug 2: DFS cycle detection — wrong parent tracking
+def has_cycle(graph, node, visited, parent):
+    visited.add(node)
+    for neighbor in graph[node]:
+        if neighbor not in visited:
+            if has_cycle(graph, neighbor, visited, node):
+                return True
+        elif neighbor != parent:  # Bug: for undirected, this is correct
+            return True  # For directed graph, ANY visited neighbor = cycle
+    return False
+
+# Debug 3: Dijkstra — using regular queue instead of heap
+def dijkstra(graph, start):
+    dist = {node: float('inf') for node in graph}
+    dist[start] = 0
+    queue = [start]  # Bug: should use priority queue
+    while queue:
+        node = queue.pop(0)  # O(n) — should use heapq
+        for neighbor, weight in graph[node]:
+            if dist[node] + weight < dist[neighbor]:
+                dist[neighbor] = dist[node] + weight
+                queue.append(neighbor)
+    return dist
+# Fix: Use heapq for O((V+E) log V)
+
+# Debug 4: Topological sort — doesn't detect cycle
+def topo_sort(graph, n):
+    indegree = [0] * n
+    for node in graph:
+        for neighbor in graph[node]:
+            indegree[neighbor] += 1
+    queue = deque([i for i in range(n) if indegree[i] == 0])
+    order = []
+    while queue:
+        node = queue.popleft()
+        order.append(node)
+        for neighbor in graph[node]:
+            indegree[neighbor] -= 1
+            if indegree[neighbor] == 0:
+                queue.append(neighbor)
+    return order  # Bug: doesn't check if len(order) == n
+# Fix: if len(order) != n: cycle exists
+
+# Debug 5: Union-Find — path compression not implemented
+def find(parent, x):
+    while parent[x] != x:
+        x = parent[x]  # Bug: no path compression
+    return x
+# Fix: parent[x] = find(parent, parent[x])  # Path compression
+```

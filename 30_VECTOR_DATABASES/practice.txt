@@ -1,0 +1,34 @@
+================================================================================
+VECTOR DATABASES — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is a vector database?
+Q2: What is cosine similarity vs L2 distance?
+Q3: What is an embedding index?
+Q4: What is HNSW?
+Q5: What is the difference between FAISS and Chroma?
+Q6: What is metadata filtering?
+Q7: What is approximate nearest neighbor search?
+Q8: What is vector quantization?
+
+MEDIUM (8)
+===========
+Q9: Build vector search with FAISS.
+Q10: Build vector search with Chroma.
+Q11: Compare FAISS vs Chroma vs Qdrant.
+Q12: Implement metadata filtering.
+Q13: Build hybrid search (vector + keyword).
+Q14: Implement batch vector insertion.
+Q15: Build vector database benchmark.
+Q16: Implement vector database with pgvector.
+
+HARD (4)
+=========
+Q17: Build production vector search system.
+Q18: Implement vector database scaling.
+Q19: Build vector database with incremental updates.
+Q20: Implement vector database evaluation framework.
+
+================================================================================

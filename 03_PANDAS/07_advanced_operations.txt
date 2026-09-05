@@ -1,0 +1,127 @@
+================================================================================
+MODULE 03 — PANDAS
+LESSON 07: ADVANCED OPERATIONS
+================================================================================
+
+## What You Will Learn
+- apply() and map()
+- Method chaining with pipe()
+-.cut() and qcut() for binning
+- Datetime operations
+- Memory optimization
+
+================================================================================
+1. APPLY AND MAP
+================================================================================
+
+    # apply — apply function to each row or column
+    df["age_group"] = df["age"].apply(lambda x: "young" if x < 30 else "senior")
+
+    # apply to entire DataFrame (axis=1 for rows)
+    df["summary"] = df.apply(lambda row: f"{row['name']} earns {row['income']}", axis=1)
+
+    # map — map values using dictionary
+    df["churn_encoded"] = df["churn"].map({"Yes": 1, "No": 0})
+
+    # replace
+    df["status"] = df["status"].replace({"Active": 1, "Inactive": 0})
+
+    WHEN TO USE:
+    - apply(): Complex logic that can't be vectorized
+    - map(): Simple value mapping with dictionary
+    - Vectorized operations: Always preferred over apply when possible
+
+    # Vectorized (FAST)
+    df["income_k"] = df["income"] / 1000
+
+    # apply (SLOW for large data)
+    df["income_k"] = df["income"].apply(lambda x: x / 1000)
+
+================================================================================
+2. BINNING WITH CUT AND QCUT
+================================================================================
+
+    # cut — equal-width bins
+    df["age_group"] = pd.cut(df["age"],
+                              bins=[0, 18, 35, 60, 100],
+                              labels=["child", "young", "middle", "senior"])
+
+    # qcut — equal-frequency bins (quantiles)
+    df["income_quartile"] = pd.qcut(df["income"],
+                                     q=4,
+                                     labels=["Q1", "Q2", "Q3", "Q4"])
+
+    ML USE: Feature engineering — convert continuous to categorical
+    df["tenure_group"] = pd.cut(df["tenure"],
+                                 bins=[0, 12, 24, 48, 72],
+                                 labels=["0-1yr", "1-2yr", "2-4yr", "4-6yr"])
+
+================================================================================
+3. DATETIME OPERATIONS
+================================================================================
+
+    df["date"] = pd.to_datetime(df["date"])
+
+    df["year"] = df["date"].dt.year
+    df["month"] = df["date"].dt.month
+    df["day"] = df["date"].dt.day
+    df["dayofweek"] = df["date"].dt.dayofweek    # 0=Monday
+    df["is_weekend"] = df["date"].dt.dayofweek >= 5
+
+    # Time differences
+    df["days_since_signup"] = (pd.Timestamp.now() - df["signup_date"]).dt.days
+
+    ML USE: Feature engineering from dates
+    df["purchase_hour"] = df["purchase_time"].dt.hour
+    df["is_night"] = df["purchase_hour"].between(22, 6)
+
+================================================================================
+4. METHOD CHAINING WITH PIPE
+================================================================================
+
+    def clean_columns(df):
+        df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
+        return df
+
+    def add_features(df):
+        df["income_k"] = df["income"] / 1000
+        return df
+
+    result = (pd.read_csv("data.csv")
+        .pipe(clean_columns)
+        .dropna()
+        .pipe(add_features)
+        .query("income > 50000")
+    )
+
+================================================================================
+5. MEMORY OPTIMIZATION
+================================================================================
+
+    # Check memory usage
+    df.info(memory_usage="deep")
+
+    # Optimize dtypes
+    for col in df.select_dtypes(include=["int64"]).columns:
+        if df[col].min() >= 0:
+            df[col] = df[col].astype("uint8")    # If values fit in uint8
+        else:
+            df[col] = df[col].astype("int8")
+
+    # Categorical for low-cardinality strings
+    df["churn"] = df["churn"].astype("category")
+    # Memory: object → ~50 bytes/row, category → ~1 byte/row
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. When should you use apply() vs vectorized operations?
+2. What is the difference between cut() and qcut()?
+3. How do you extract month from a datetime column?
+
+================================================================================
+END OF MODULE 03: PANDAS
+================================================================================
+NEXT MODULE: 04_VISUALIZATION — Matplotlib, Seaborn, Plotly
+================================================================================

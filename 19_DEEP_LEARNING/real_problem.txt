@@ -1,0 +1,65 @@
+================================================================================
+REAL PROBLEM - 19 DEEP LEARNING
+================================================================================
+
+PROBLEM A: "I trained my network properly (loss went down!) but it
+gives wrong answers on real data."
+WHY IT HAPPENS (diagnose in order)
+  1. Look at TRAIN accuracy too: if train is also bad, the model never
+     learned (underfit, wrong loss/labels, data mismatch).
+  2. If train is great and val bad -> overfit (too little data,
+     too much capacity, no regularization).
+  3. If BOTH look fine but real data fails -> train/serve mismatch:
+     different preprocessing, normalization, input order, or model
+     checkpoint (eval mode!).
+  4. Check that you call model.eval() (dropout/BN behave differently)
+     and that serving applies the exact same transforms as training.
+HOW TO SOLVE
+  1. Plot train AND val curves; they tell you which of the 4 cases you
+     are in.
+  2. Freeze preprocessing into the saved artifact (or a shared
+     function) so serving cannot drift.
+  3. Add a smoke test: run inference on 3 training samples and 3 "real"
+     samples through the SERVING path; assert shapes and sanity.
+CHECK (the 5-line diagnosis)
+  train_loss, val_loss = history[-1]          # case 1 or 2?
+  model.eval(); with torch.no_grad(): ...     # eval-mode bug?
+  assert X_real.shape == X_train.shape[1:]    # shape mismatch?
+
+PROBLEM B: "Loss goes to NaN after a few epochs, every time."
+WHY: high learning rate + exploding gradients, or numerical blowup in
+the loss (log of 0, unscaled inputs, fp16 underflow).
+HOW TO SOLVE
+  1. Print the gradient norm right before NaN - if huge, clip or lower
+     lr.
+  2. Check inputs: are features scaled? is the label range sane?
+  3. Use a numerically stable loss (BCEWithLogits, log-softmax+NLL)
+     instead of softmax-then-log.
+  4. If using AMP, enable dynamic loss scaling.
+
+PROBLEM C: "My model is 99% accurate in the lab and 60% on the customer's
+data (different camera/domain)."
+WHY: shortcut learning + domain gap. The model used background/color
+cues that change across domains.
+HOW TO SOLVE
+  1. Quantify the gap: evaluate on a held-out domain sample you did NOT
+     train on (this is the metric that matters).
+  2. Reduce shortcuts: augmentation (crops, color jitter), domain
+     randomization.
+  3. Consider pretraining on a domain-general dataset and fine-tuning
+     on less data.
+  4. Report per-domain accuracy, never one number.
+
+PROBLEM D: "Training is 10x slower than it should be and my GPU is at
+10%."
+WHY: tiny batches, CPU-bound data loading (no prefetch), or
+synchronization (model.to(device) missing so tensors move per batch).
+HOW TO SOLVE
+  1. Profile: is the bottleneck dataloader (workers=0?) or GPU waits?
+  2. Increase batch size, use num_workers > 0, pin_memory=True.
+  3. Move data to device INSIDE the batch loop once; avoid per-step
+     copies.
+  4. Time one epoch before/after; target >= 3x speedup.
+================================================================================
+END
+================================================================================

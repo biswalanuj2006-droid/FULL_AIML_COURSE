@@ -1,0 +1,131 @@
+================================================================================
+MODULE 48: CAPSTONE PROJECTS — COMPLETE GUIDE
+================================================================================
+
+Three major capstone projects combining all course topics.
+
+================================================================================
+CAPSTONE 1: PRODUCTION ML PREDICTION PLATFORM
+================================================================================
+
+DOMAIN: End-to-end ML system for business predictions
+
+TECHNOLOGIES:
+- Python, NumPy, Pandas, Scikit-learn, XGBoost
+- FastAPI + JWT auth
+- PostgreSQL + Redis
+- Docker + Docker Compose
+- GitHub Actions CI/CD
+- MLflow experiment tracking
+- Streamlit dashboard
+
+ARCHITECTURE:
+User → Frontend → API Gateway → FastAPI → ML Model
+                                        ↕
+                                   PostgreSQL (predictions, users)
+                                        ↕
+                                    Redis (cache)
+                                        ↕
+                                   MLflow (experiments)
+
+COMPONENTS:
+1. Data pipeline (ETL)
+2. Feature engineering
+3. Model training with hyperparameter tuning
+4. Model registry
+5. REST API for predictions
+6. Batch prediction pipeline
+7. User authentication
+8. Prediction logging
+9. Monitoring dashboard
+10. A/B testing framework
+
+================================================================================
+CAPSTONE 2: AI DOCUMENT INTELLIGENCE SYSTEM
+================================================================================
+
+DOMAIN: Enterprise document processing and Q&A
+
+TECHNOLOGIES:
+- Python, Transformers, Sentence-Transformers
+- LangChain / LlamaIndex
+- Qdrant (vector DB)
+- PostgreSQL (metadata)
+- FastAPI + JWT auth
+- Redis (caching)
+- Docker Compose
+- OpenAI / Claude API
+- Streamlit frontend
+
+ARCHITECTURE:
+Document Upload → Parser → Chunker → Embedder → Qdrant
+                                                    ↓
+User Query → Embedder → Qdrant Search → LLM → Response
+                                                    ↓
+                                            PostgreSQL (history)
+
+COMPONENTS:
+1. Multi-format document ingestion
+2. Intelligent chunking
+3. Embedding generation
+4. Hybrid search (semantic + keyword)
+5. Multi-turn conversation
+6. Source citation
+7. Document summarization
+8. Multi-user support
+9. Cost tracking
+10. Response quality evaluation
+
+================================================================================
+CAPSTONE 3: REAL-TIME AI STREAMING PLATFORM
+================================================================================
+
+DOMAIN: Real-time content analytics and prediction
+
+TECHNOLOGIES:
+- Python, PyTorch
+- Kafka (streaming)
+- FastAPI + WebSocket
+- PostgreSQL + Redis
+- Docker + Kubernetes concepts
+- Prometheus + Grafana
+- GitHub Actions
+
+ARCHITECTURE:
+Data Source → Kafka → Stream Processor → ML Model → Decision
+                                        ↕
+                                   Feature Store
+                                        ↕
+                                   Monitoring (Prometheus)
+                                        ↕
+                                   Dashboard (Grafana)
+
+COMPONENTS:
+1. Real-time data ingestion via Kafka
+2. Multi-model pipeline
+3. Feature computation
+4. Real-time prediction
+5. Human review queue
+6. Analytics dashboard
+7. Model hot-swapping
+8. A/B testing
+9. Audit logging
+10. Auto-scaling
+
+================================================================================
+EVALUATION CRITERIA
+================================================================================
+
+| CATEGORY        | WEIGHT |
+|-----------------|--------|
+| Code quality    | 20%    |
+| Architecture    | 20%    |
+| ML/DL impl.     | 20%    |
+| Testing         | 10%    |
+| Documentation   | 10%    |
+| Deployment      | 10%    |
+| Innovation      | 10%    |
+
+================================================================================
+END OF CAPSTONE MODULE
+================================================================================

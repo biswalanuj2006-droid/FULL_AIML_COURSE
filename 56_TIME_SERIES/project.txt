@@ -1,0 +1,17 @@
+================================================================================
+TIME SERIES — PROJECTS
+================================================================================
+
+PROJECT 1: STOCK PRICE FORECASTER (Beginner)
+==============================================
+Predict stock prices using ARIMA, compare with baseline.
+
+PROJECT 2: DEMAND FORECASTING SYSTEM (Intermediate)
+=====================================================
+Build demand forecasting with feature engineering and multiple models.
+
+PROJECT 3: PRODUCTION FORECASTING API (Advanced)
+==================================================
+End-to-end forecasting system with API, monitoring, retraining.
+
+================================================================================

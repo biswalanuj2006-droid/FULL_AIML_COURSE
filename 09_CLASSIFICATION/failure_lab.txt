@@ -1,0 +1,68 @@
+================================================================================
+FAILURE LAB - 09 CLASSIFICATION
+You are given deliberately broken/difficult setups. For each: reproduce,
+DIAGNOSE (find the cause with evidence), fix, and report. Do not guess -
+run the experiment.
+================================================================================
+
+LAB 1 - THE PHANTOM 99% MODEL
+  A binary classifier reports 99% accuracy on validation. Data: 100k
+  rows, 200 features, 1% positives.
+  Tasks:
+   1. Reproduce the "99%" (it will be trivial - explain why).
+   2. Diagnose what metric hides the failure and what the model actually
+      predicts.
+   3. Fix: re-evaluate honestly, then improve with class weighting,
+      resampling, or threshold optimization - show before/after PR-AUC.
+   4. Write the rule you will follow forever after this lab.
+
+LAB 2 - LEAKED FEATURE HUNT
+  A dataset has one feature that makes AUC jump to 1.0. One of these is
+  planted: (a) customer_id, (b) a timestamp of the outcome, (c) a
+  "risk_flag" written after the outcome, (d) row number.
+  Tasks:
+   1. Find the leaking feature(s) using EDA and ablation (train without
+      each feature; watch the score collapse).
+   2. Explain the mechanism of each leak.
+   3. Fix the pipeline so the leak cannot recur (drop column, and prove
+      the fixed pipeline is leak-free).
+
+LAB 3 - THE OVERCONFIDENT CLASSIFIER
+  A softmax classifier is 99% accurate but assigns 0.98 confidence to
+  inputs from a NEW class it never saw.
+  Tasks:
+   1. Show the miscalibration (reliability diagram before).
+   2. Explain WHY softmax is overconfident out of distribution.
+   3. Fix with temperature scaling + an OOD/uncertainty signal; show the
+      reliability diagram after.
+
+LAB 4 - TREE VS LOGISTIC SABOTAGE
+  Two pipelines claim the same 0.85 F1 but one cheats: it one-hot
+  encodes 800 categories WITHOUT handle_unknown and silently drops
+  unknown rows at validation.
+  Tasks:
+   1. Detect the silent row drop (compare row counts through the
+      pipeline).
+   2. Fix the encoder and measure the honest F1.
+   3. Explain how such silent drops hide in production too.
+
+LAB 5 - THE IMBALANCE TRAP
+  99:1 imbalance. Model A: accuracy 0.99, recall of positives 0.0.
+  Model B: recall 0.8, precision 0.4.
+  Tasks:
+   1. Decide which model a bank should deploy if FP costs 10x FN -
+      compute expected cost per decision for each.
+   2. Find the threshold that optimizes expected cost on Model B's
+      probabilities.
+   3. Explain to a non-technical stakeholder why accuracy is irrelevant.
+
+LAB 6 - LABEL NOISE EXPOSURE
+  Inject 15% random label flips into training.
+  Tasks:
+   1. Measure F1 of logistic regression, RF, and KNN before/after noise.
+   2. Which degrades least? Explain with each model's inductive bias.
+   3. Propose and test one noise-robust fix (loss correction, cleanlab
+      style, robust loss).
+================================================================================
+END
+================================================================================

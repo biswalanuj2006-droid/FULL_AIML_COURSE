@@ -1,0 +1,62 @@
+================================================================================
+MATHEMATICS MODULE — PRACTICE SET (50+ Questions)
+================================================================================
+
+EASY (15)
+=========
+Q1: What is the dot product of [1,2,3] and [4,5,6]?
+Q2: Compute the determinant of [[1,2],[3,4]].
+Q3: What is the derivative of x³?
+Q4: What is the partial derivative of f(x,y)=x²y with respect to x?
+Q5: What is the sigmoid of 0?
+Q6: Compute P(A|B) given P(A)=0.3, P(B)=0.5, P(A∩B)=0.15.
+Q7: What is the mean of [2,4,6,8]?
+Q8: What is the variance of [1,1,1,1]?
+Q9: What is the gradient of f(x)=x² at x=3?
+Q10: Solve: 2x + 3 = 7.
+Q11: What is log₂(8)?
+Q12: What is the eigenvalue of identity matrix?
+Q13: What is the rank of [[1,0],[0,1]]?
+Q14: What is softmax([1,2,3])?
+Q15: What is the chain rule for d/dx[f(g(x))]?
+
+MEDIUM (15)
+============
+Q16: Compute eigenvalues and eigenvectors of [[2,1],[1,2]].
+Q17: Derive the gradient of MSE loss.
+Q18: Implement gradient descent for f(x)=x²+5sin(x).
+Q19: Compute the Hessian of f(x,y)=x²+y².
+Q20: Prove that sigmoid'(x) = sigmoid(x)(1-sigmoid(x)).
+Q21: Compute PCA on 2D data manually.
+Q22: Derive the normal equation for linear regression.
+Q23: Implement Bayes theorem for a spam classifier.
+Q24: Compute KL divergence between two distributions.
+Q25: Derive the cross-entropy loss gradient.
+Q26: Compute the Jacobian of a simple function.
+Q27: Implement gradient descent with momentum.
+Q28: Derive the update rule for Adam optimizer.
+Q29: Compute SVD of a 2x2 matrix.
+Q30: Implement Newton's method for optimization.
+
+HARD (10)
+==========
+Q31: Implement logistic regression gradient descent from scratch.
+Q32: Derive backpropagation for a 2-layer network.
+Q33: Prove that PCA maximizes variance.
+Q34: Implement PCA using eigendecomposition.
+Q35: Derive the softmax cross-entropy gradient.
+Q36: Implement gradient descent with line search.
+Q37: Prove that ReLU helps with vanishing gradient.
+Q38: Derive the attention mechanism gradient.
+Q39: Implement conjugate gradient optimization.
+Q40: Prove the convergence of gradient descent for convex functions.
+
+DEBUGGING (5)
+==============
+D1: Why is my gradient exploding? Fix learning rate.
+D2: Why is sigmoid saturating? Use ReLU instead.
+D3: Why is PCA giving wrong number of components?
+D4: Why is Bayes theorem giving P > 1?
+D5: Why is gradient descent oscillating?
+
+================================================================================

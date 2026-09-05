@@ -1,0 +1,570 @@
+================================================================================
+MODULE 01 — PYTHON FOR AI/ML
+LESSON 04: CLASSES AND OBJECT-ORIENTED PROGRAMMING
+================================================================================
+
+## What You Will Learn
+- Defining classes and creating objects
+- Instance attributes and methods
+- Class attributes and methods
+- Inheritance and composition
+- Magic methods (dunder methods)
+- Properties
+- Dataclasses
+- When to use OOP in ML projects
+
+## Why You Need It
+OOP is used in ML when building custom model wrappers, API endpoints,
+pipeline components, and data processing classes. Understanding OOP
+helps you read and extend frameworks like scikit-learn and FastAPI.
+
+================================================================================
+1. CLASSES AND OBJECTS
+================================================================================
+
+WHAT IS A CLASS?
+    A class is a BLUEPRINT for creating objects.
+    An object is an INSTANCE of a class.
+
+    Think of it as:
+    - Class = Cookie cutter (template)
+    - Object = Cookie (actual thing made from template)
+
+    ┌─────────────────────┐
+    │     CLASS            │
+    │  ┌───────────────┐  │
+    │  │  Attributes    │  │  ← What it HAS
+    │  │  Methods       │  │  ← What it DOES
+    │  └───────────────┘  │
+    └─────────────────────┘
+              │
+              ↓ (instantiate)
+    ┌─────────────────────┐
+    │     OBJECT           │
+    │  name = "Alice"      │
+    │  age = 25            │
+    │  greet() → "Hi!"    │
+    └─────────────────────┘
+
+BASIC CLASS:
+
+    class Dog:
+        """A simple Dog class."""
+
+        def __init__(self, name, breed):
+            """Initialize the dog."""
+            self.name = name        # instance attribute
+            self.breed = breed
+
+        def bark(self):
+            """Make the dog bark."""
+            return f"{self.name} says Woof!"
+
+        def describe(self):
+            """Return a description."""
+            return f"{self.name} is a {self.breed}"
+
+    # Creating objects (instances)
+    dog1 = Dog("Rex", "German Shepherd")
+    dog2 = Dog("Bella", "Labrador")
+
+    print(dog1.bark())       # "Rex says Woof!"
+    print(dog2.describe())   # "Bella is a Labrador"
+
+THE __init__ METHOD:
+    - Called when you create a new object
+    - Initializes the object's attributes
+    - 'self' refers to the specific instance being created
+    - Every method in a class receives 'self' as the first parameter
+
+THE self KEYWORD:
+    - 'self' represents the current instance
+    - It allows you to access attributes and methods of the current object
+    - You can name it anything, but 'self' is the convention
+
+================================================================================
+2. INSTANCE VS CLASS ATTRIBUTES
+================================================================================
+
+INSTANCE ATTRIBUTES:
+    - Unique to each object
+    - Defined in __init__ using self.name = value
+    - Different for every instance
+
+CLASS ATTRIBUTES:
+    - Shared by ALL objects of the class
+    - Defined inside the class but outside __init__
+    - Same for every instance
+
+    class Dog:
+        species = "Canis familiaris"  # Class attribute (shared)
+
+        def __init__(self, name):
+            self.name = name          # Instance attribute (unique)
+
+    dog1 = Dog("Rex")
+    dog2 = Dog("Bella")
+
+    print(dog1.species)    # "Canis familiaris"
+    print(dog2.species)    # "Canis familiaris"
+    print(dog1.name)       # "Rex"
+    print(dog2.name)       # "Bella"
+
+    ML USE: Class attributes for default hyperparameters
+    class MyModel:
+        default_params = {"n_estimators": 100, "max_depth": 5}
+
+        def __init__(self, **params):
+            self.params = {**self.default_params, **params}
+
+================================================================================
+3. METHODS
+================================================================================
+
+INSTANCE METHODS:
+    - Operate on a specific instance
+    - First parameter is 'self'
+
+    class BankAccount:
+        def __init__(self, balance=0):
+            self.balance = balance
+
+        def deposit(self, amount):
+            self.balance += amount
+            return self.balance
+
+        def withdraw(self, amount):
+            if amount > self.balance:
+                return "Insufficient funds"
+            self.balance -= amount
+            return self.balance
+
+    CLASS METHODS:
+    - Operate on the class itself, not a specific instance
+    - First parameter is 'cls' (the class)
+    - Decorated with @classmethod
+
+    class Dog:
+        count = 0
+
+        def __init__(self, name):
+            self.name = name
+            Dog.count += 1
+
+        @classmethod
+        def get_count(cls):
+            return cls.count
+
+    print(Dog.get_count())    # 0
+    dog1 = Dog("Rex")
+    print(Dog.get_count())    # 1
+
+    ML USE: Factory methods for creating model variants
+    class Model:
+        @classmethod
+        def from_config(cls, config):
+            return cls(**config)
+
+    @classmethod
+    def from_pretrained(cls, path):
+        model = cls()
+        model.load(path)
+        return model
+
+    STATIC METHODS:
+    - Don't operate on instance or class
+    - Utility functions that belong to the class
+    - Decorated with @staticmethod
+
+    class MathUtils:
+        @staticmethod
+        def sigmoid(x):
+            return 1 / (1 + 2.71828 ** (-x))
+
+        @staticmethod
+        def relu(x):
+            return max(0, x)
+
+    print(MathUtils.sigmoid(0))    # 0.5
+    print(MathUtils.relu(-5))      # 0
+
+================================================================================
+4. INHERITANCE
+================================================================================
+
+WHAT IS INHERITANCE?
+    A child class inherits attributes and methods from a parent class.
+    This enables code reuse and establishes "is-a" relationships.
+
+    class Animal:
+        def __init__(self, name):
+            self.name = name
+
+        def speak(self):
+            return "..."
+
+    class Dog(Animal):        # Dog INHERITS from Animal
+        def speak(self):      # Override parent method
+            return "Woof!"
+
+    class Cat(Animal):        # Cat INHERITS from Animal
+        def speak(self):
+            return "Meow!"
+
+    dog = Dog("Rex")
+    cat = Cat("Whiskers")
+
+    print(dog.name)       # "Rex" (inherited from Animal)
+    print(dog.speak())    # "Woof!" (overridden)
+    print(cat.speak())    # "Meow!" (overridden)
+
+MULTILEVEL INHERITANCE:
+
+    class Animal:
+        def __init__(self, name):
+            self.name = name
+
+    class Dog(Animal):
+        def __init__(self, name, breed):
+            super().__init__(name)    # Call parent __init__
+            self.breed = breed
+
+    class ServiceDog(Dog):
+        def __init__(self, name, breed, task):
+            super().__init__(name, breed)
+            self.task = task
+
+        def perform_task(self):
+            return f"{self.name} is performing: {self.task}"
+
+    THE super() FUNCTION:
+        Calls the parent class's method.
+        super().__init__(name) calls Animal.__init__(name)
+
+    ML USE — Model Hierarchy:
+    class BaseClassifier:
+        def __init__(self, **kwargs):
+            self.params = kwargs
+
+        def fit(self, X, y):
+            raise NotImplementedError
+
+        def predict(self, X):
+            raise NotImplementedError
+
+    class MyRandomForest(BaseClassifier):
+        def __init__(self, n_trees=100, **kwargs):
+            super().__init__(**kwargs)
+            self.n_trees = n_trees
+
+        def fit(self, X, y):
+            # Implement fitting
+            pass
+
+        def predict(self, X):
+            # Implement prediction
+            pass
+
+MULTIPLE INHERITANCE:
+
+    class A:
+        def method(self):
+            return "A"
+
+    class B(A):
+        def method(self):
+            return "B"
+
+    class C(A):
+        def method(self):
+            return "C"
+
+    class D(B, C):    # Multiple inheritance
+        pass
+
+    d = D()
+    print(d.method())    # "B" (follows MRO: D → B → C → A)
+
+    MRO (Method Resolution Order):
+    print(D.__mro__)
+    # (<class 'D'>, <class 'B'>, <class 'C'>, <class 'A'>, <class 'object'>)
+
+================================================================================
+5. MAGIC METHODS (DUNDER METHODS)
+================================================================================
+
+Magic methods let you define how objects behave with built-in operations.
+
+COMMON MAGIC METHODS:
+
+    __init__(self)           Constructor — called when creating object
+    __str__(self)            str() — human-readable string
+    __repr__(self)           repr() — developer-readable string
+    __len__(self)            len() — length
+    __getitem__(self, key)   obj[key] — indexing
+    __setitem__(self, key, val)  obj[key] = val — assignment
+    __contains__(self, item) "in" operator
+    __eq__(self, other)      == comparison
+    __lt__(self, other)      < comparison
+    __add__(self, other)     + operator
+    __mul__(self, other)     * operator
+    __call__(self, ...)      obj() — callable object
+
+EXAMPLE — Custom Dataset Class:
+
+    class Dataset:
+        def __init__(self, data, labels):
+            self.data = data
+            self.labels = labels
+
+        def __len__(self):
+            return len(self.data)
+
+        def __getitem__(self, index):
+            return self.data[index], self.labels[index]
+
+        def __repr__(self):
+            return f"Dataset(samples={len(self)}, features={len(self.data[0])})"
+
+        def __str__(self):
+            return f"Dataset with {len(self)} samples"
+
+        def __contains__(self, item):
+            return item in self.data
+
+    dataset = Dataset([[1, 2], [3, 4], [5, 6]], [0, 1, 0])
+
+    print(len(dataset))        # 3
+    print(dataset[0])          # ([1, 2], 0)
+    print(dataset)             # "Dataset with 3 samples"
+    print(repr(dataset))       # "Dataset(samples=3, features=2)"
+    print(3 in dataset)        # True
+
+EXAMPLE — Custom Model Class:
+
+    class Model:
+        def __init__(self, name, accuracy=0.0):
+            self.name = name
+            self.accuracy = accuracy
+
+        def __str__(self):
+            return f"{self.name} (accuracy: {self.accuracy:.2%})"
+
+        def __repr__(self):
+            return f"Model(name='{self.name}', accuracy={self.accuracy})"
+
+        def __eq__(self, other):
+            return self.accuracy == other.accuracy
+
+        def __lt__(self, other):
+            return self.accuracy < other.accuracy
+
+        def __call__(self, X):
+            """Make model callable."""
+            return self.predict(X)
+
+        def predict(self, X):
+            return [0] * len(X)  # Dummy prediction
+
+    lr = Model("Logistic Regression", 0.82)
+    rf = Model("Random Forest", 0.87)
+
+    print(lr)                  # "Logistic Regression (accuracy: 82.00%)"
+    print(lr < rf)             # True
+    print(lr == rf)            # False
+
+================================================================================
+6. PROPERTIES
+================================================================================
+
+Properties let you access methods like attributes.
+
+    class Temperature:
+        def __init__(self, celsius):
+            self._celsius = celsius    # Private attribute
+
+        @property
+        def celsius(self):
+            """Get temperature in Celsius."""
+            return self._celsius
+
+        @celsius.setter
+        def celsius(self, value):
+            """Set temperature in Celsius."""
+            if value < -273.15:
+                raise ValueError("Temperature below absolute zero!")
+            self._celsius = value
+
+        @property
+        def fahrenheit(self):
+            """Get temperature in Fahrenheit."""
+            return self._celsius * 9/5 + 32
+
+    t = Temperature(100)
+    print(t.celsius)       # 100 (accessed like attribute)
+    print(t.fahrenheit)    # 212.0 (computed property)
+    t.celsius = 0          # Calls the setter
+    print(t.fahrenheit)    # 32.0
+
+    ML USE: Computed properties for metrics
+    class Results:
+        def __init__(self, tp, fp, tn, fn):
+            self.tp, self.fp, self.tn, self.fn = tp, fp, tn, fn
+
+        @property
+        def accuracy(self):
+            return (self.tp + self.tn) / (self.tp + self.fp + self.tn + self.fn)
+
+        @property
+        def precision(self):
+            return self.tp / (self.tp + self.fp) if (self.tp + self.fp) > 0 else 0
+
+        @property
+        def recall(self):
+            return self.tp / (self.tp + self.fn) if (self.tp + self.fn) > 0 else 0
+
+        @property
+        def f1(self):
+            p, r = self.precision, self.recall
+            return 2 * p * r / (p + r) if (p + r) > 0 else 0
+
+    results = Results(tp=80, fp=10, tn=90, fn=20)
+    print(f"Accuracy: {results.accuracy:.2%}")   # 90.00%
+    print(f"F1: {results.f1:.2%}")               # 80.00%
+
+================================================================================
+7. DATACLASSES (Python 3.7+)
+================================================================================
+
+Dataclasses reduce boilerplate for classes that mainly store data.
+
+    from dataclasses import dataclass
+
+    @dataclass
+    class ModelConfig:
+        name: str
+        learning_rate: float = 0.001
+        epochs: int = 100
+        batch_size: int = 32
+
+    # Automatically generates __init__, __repr__, __eq__, etc.
+    config = ModelConfig(name="ResNet", epochs=50)
+    print(config)          # ModelConfig(name='ResNet', learning_rate=0.001, epochs=50, batch_size=32)
+    print(config.epochs)   # 50
+
+    from dataclasses import dataclass, field
+
+    @dataclass
+    class ExperimentConfig:
+        name: str
+        params: dict = field(default_factory=dict)
+        tags: list = field(default_factory=list)
+
+    ML USE: Clean configuration management
+    @dataclass
+    class TrainingConfig:
+        model_name: str
+        dataset: str
+        learning_rate: float = 0.001
+        epochs: int = 100
+        batch_size: int = 32
+        early_stopping: bool = True
+        patience: int = 10
+        random_state: int = 42
+
+    config = TrainingConfig(model_name="XGBoost", dataset="churn.csv")
+    train(config)
+
+================================================================================
+8. PRACTICAL ML EXAMPLES
+================================================================================
+
+EXAMPLE 1: Custom Model Wrapper
+
+    class SklearnWrapper:
+        """Wrapper for sklearn models with built-in evaluation."""
+
+        def __init__(self, model, name=None):
+            self.model = model
+            self.name = name or type(model).__name__
+            self.is_fitted = False
+
+        def fit(self, X_train, y_train, X_val=None, y_val=None):
+            self.model.fit(X_train, y_train)
+            self.is_fitted = True
+
+            results = {"train_score": self.model.score(X_train, y_train)}
+            if X_val is not None:
+                results["val_score"] = self.model.score(X_val, y_val)
+            return results
+
+        def predict(self, X):
+            if not self.is_fitted:
+                raise RuntimeError("Model not fitted yet!")
+            return self.model.predict(X)
+
+        def __repr__(self):
+            status = "fitted" if self.is_fitted else "not fitted"
+            return f"SklearnWrapper({self.name}, {status})"
+
+EXAMPLE 2: Experiment Tracker
+
+    class ExperimentTracker:
+        def __init__(self):
+            self.experiments = []
+
+        def log(self, name, model, params, metrics):
+            self.experiments.append({
+                "name": name,
+                "model": model,
+                "params": params,
+                "metrics": metrics
+            })
+
+        def best(self, metric="accuracy"):
+            if not self.experiments:
+                return None
+            return max(self.experiments, key=lambda e: e["metrics"].get(metric, 0))
+
+        def summary(self):
+            print(f"{'Name':<20} {'Model':<20} {'Accuracy':<10} {'F1':<10}")
+            print("-" * 60)
+            for exp in self.experiments:
+                m = exp["metrics"]
+                print(f"{exp['name']:<20} {exp['model']:<20} "
+                      f"{m.get('accuracy', 0):<10.4f} {m.get('f1', 0):<10.4f}")
+
+================================================================================
+9. WHEN TO USE OOP IN ML
+================================================================================
+
+USE CLASSES WHEN:
+
+    ✓ Building custom preprocessing pipelines
+    ✓ Creating model wrappers with shared behavior
+    ✓ Designing API endpoint handlers
+    ✓ Managing experiment configurations
+    ✓ Building data loaders
+    ✓ Creating reusable evaluation frameworks
+
+AVOID CLASSES WHEN:
+
+    ✗ A simple function would suffice
+    ✗ You're just grouping related functions (use a module instead)
+    ✗ The class has only one method
+    ✗ You're using it just for namespace (use a module)
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between __init__ and __str__?
+2. What is the difference between class attributes and instance attributes?
+3. When would you use @classmethod vs @staticmethod?
+4. What does super() do?
+5. What is the purpose of __eq__?
+6. When should you use a dataclass?
+
+================================================================================
+NEXT LESSON: 05_file_handling.txt — File I/O, CSV, JSON
+================================================================================

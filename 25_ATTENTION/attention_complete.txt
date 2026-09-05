@@ -1,0 +1,280 @@
+================================================================================
+MODULE 25: ATTENTION MECHANISM — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand why attention was invented
+- Explain self-attention mathematically
+- Implement scaled dot-product attention
+- Understand multi-head attention
+- Connect attention to transformers
+
+================================================================================
+1. WHY ATTENTION?
+================================================================================
+
+PROBLEM: SEQUENCE-TO-SEQUENCE BOTTLENECK
+-----------------------------------------
+In encoder-decoder models (like machine translation):
+- Encoder compresses entire input into ONE fixed vector
+- Decoder generates output from this single vector
+- Information bottleneck for long sequences!
+
+"The quick brown fox jumps over the lazy dog"
+→ All 9 words compressed into one vector
+→ Decoder must generate translation from this one vector
+
+SOLUTION: ATTENTION
+-------------------
+Let the decoder look at ALL encoder states (not just the last one)
+and focus on the most relevant parts when generating each output word.
+
+When translating "fox":
+→ Attention focuses on "fox" in the input
+→ When translating "dog":
+→ Attention focuses on "dog" in the input
+
+================================================================================
+2. ATTENTION INTUITION
+================================================================================
+
+THREE KEY COMPONENTS: Query, Key, Value
+
+Imagine a library search:
+- QUERY: What you're looking for ("books about Python")
+- KEY: Labels/titles on each book
+- VALUE: The actual content of each book
+
+Attention finds which books (Values) to read based on how well
+your Query matches each book's Key.
+
+MATHEMATICS
+-----------
+Attention(Q, K, V) = softmax(QKᵀ / √dₖ) × V
+
+where:
+  Q = Query matrix (what am I looking for?)
+  K = Key matrix (what do I have?)
+  V = Value matrix (what do I return?)
+  dₖ = dimension of keys (scaling factor)
+
+STEP BY STEP:
+1. Compute similarity: QKᵀ (dot product of queries and keys)
+2. Scale: divide by √dₖ (prevent large values → softmax saturation)
+3. Normalize: apply softmax (turn scores into probabilities)
+4. Weighted sum: multiply attention weights × values
+
+================================================================================
+3. SCALED DOT-PRODUCT ATTENTION
+================================================================================
+
+IMPLEMENTATION
+--------------
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
+
+def scaled_dot_product_attention(Q, K, V, mask=None):
+    """
+    Q: (batch, seq_len_q, d_k)
+    K: (batch, seq_len_k, d_k)
+    V: (batch, seq_len_k, d_v)
+    """
+    d_k = Q.size(-1)
+
+    # Step 1: Compute attention scores
+    scores = torch.matmul(Q, K.transpose(-2, -1))  # (batch, seq_q, seq_k)
+
+    # Step 2: Scale
+    scores = scores / np.sqrt(d_k)
+
+    # Step 3: Apply mask (optional, for decoder)
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, float('-inf'))
+
+    # Step 4: Softmax
+    attention_weights = F.softmax(scores, dim=-1)
+
+    # Step 5: Weighted sum
+    output = torch.matmul(attention_weights, V)
+
+    return output, attention_weights
+
+# Example
+batch_size = 2
+seq_len = 5
+d_k = 64
+
+Q = torch.randn(batch_size, seq_len, d_k)
+K = torch.randn(batch_size, seq_len, d_k)
+V = torch.randn(batch_size, seq_len, d_k)
+
+output, weights = scaled_dot_product_attention(Q, K, V)
+print(f"Output shape: {output.shape}")       # (2, 5, 64)
+print(f"Weights shape: {weights.shape}")      # (2, 5, 5)
+
+================================================================================
+4. NUMERICAL EXAMPLE
+================================================================================
+
+Suppose translating "I love cats" to French:
+
+Step 1: Encoder produces hidden states
+  "I"    → h1 = [0.2, 0.8, 0.1]
+  "love" → h2 = [0.9, 0.3, 0.7]
+  "cats" → h3 = [0.5, 0.6, 0.9]
+
+Step 2: Decoder at time step generating "J'adore" (I love)
+  Query: q = [0.8, 0.4, 0.6] (what French word do I need?)
+
+Step 3: Compute attention scores (dot product)
+  score("I")    = q · h1 = 0.8×0.2 + 0.4×0.8 + 0.6×0.1 = 0.54
+  score("love") = q · h2 = 0.8×0.9 + 0.4×0.3 + 0.6×0.7 = 1.26
+  score("cats") = q · h3 = 0.8×0.5 + 0.4×0.6 + 0.6×0.9 = 1.24
+
+Step 4: Scale (÷ √3 ≈ 1.73)
+  scores = [0.31, 0.73, 0.72]
+
+Step 5: Softmax
+  weights = [0.25, 0.38, 0.37]
+
+Step 6: Weighted sum of values
+  context = 0.25×h1 + 0.38×h2 + 0.37×h3
+  → Most attention on "love" → generates "J'adore" ✓
+
+================================================================================
+5. MULTI-HEAD ATTENTION
+================================================================================
+
+INTUITION
+---------
+Instead of one attention function, use MULTIPLE parallel attention heads.
+Each head can focus on different aspects of the relationship.
+
+Head 1 might focus on subject-verb agreement
+Head 2 might focus on pronoun references
+Head 3 might focus on sentiment words
+
+MATHEMATICS
+-----------
+MultiHead(Q, K, V) = Concat(head₁, ..., headₕ) × Wᴼ
+
+where headᵢ = Attention(QWᵢᴷ, KWᵢᴷ, VWᵢⱽ)
+
+Each head has its own Q, K, V projections.
+
+IMPLEMENTATION
+--------------
+class MultiHeadAttention(nn.Module):
+    def __init__(self, d_model, num_heads):
+        super().__init__()
+        self.num_heads = num_heads
+        self.d_k = d_model // num_heads
+
+        self.W_q = nn.Linear(d_model, d_model)
+        self.W_k = nn.Linear(d_model, d_model)
+        self.W_v = nn.Linear(d_model, d_model)
+        self.W_o = nn.Linear(d_model, d_model)
+
+    def forward(self, Q, K, V, mask=None):
+        batch_size = Q.size(0)
+
+        # Linear projections
+        Q = self.W_q(Q).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        K = self.W_k(K).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        V = self.W_v(V).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+
+        # Attention
+        output, weights = scaled_dot_product_attention(Q, K, V, mask)
+
+        # Concatenate heads
+        output = output.transpose(1, 2).contiguous().view(batch_size, -1, self.num_heads * self.d_k)
+
+        # Final linear
+        output = self.W_o(output)
+
+        return output, weights
+
+================================================================================
+6. TYPES OF ATTENTION
+================================================================================
+
+SELF-ATTENTION
+--------------
+Q, K, V all come from the SAME sequence.
+"The cat sat on the mat"
+Each word attends to all other words in the same sentence.
+
+CROSS-ATTENTION
+---------------
+Q comes from one sequence, K and V from another.
+Used in encoder-decoder attention:
+Q = decoder states, K and V = encoder states
+
+CAUSAL/MASKED ATTENTION
+------------------------
+Prevents attending to future tokens.
+Used in autoregressive models (GPT):
+Token at position t can only attend to positions ≤ t.
+
+================================================================================
+7. ATTENTION IN PRACTICE
+================================================================================
+
+VISUALIZATION
+-------------
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def plot_attention(attention, tokens_q, tokens_k):
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(attention, xticklabels=tokens_k, yticklabels=tokens_q,
+                cmap='Blues', annot=True, fmt='.2f')
+    plt.xlabel('Key (Input)')
+    plt.ylabel('Query (Output)')
+    plt.title('Attention Weights')
+    plt.show()
+
+tokens_q = ["J'", "adore", "les", "chats"]
+tokens_k = ["I", "love", "cats"]
+attention = np.array([[0.8, 0.1, 0.1],
+                       [0.1, 0.8, 0.1],
+                       [0.05, 0.05, 0.9]])
+plot_attention(attention, tokens_q, tokens_k)
+
+================================================================================
+8. WHY ATTENTION WON
+================================================================================
+
+ADVANTAGES OVER BASIC RNN
+--------------------------
+1. Parallelizable (no sequential dependency)
+2. Captures long-range dependencies directly
+3. Interpretable (attention weights show what the model focuses on)
+4. No vanishing gradient problem
+
+BECAME THE FOUNDATION FOR
+--------------------------
+- Transformers (2017)
+- BERT (2018)
+- GPT series (2018-2024)
+- Vision Transformers (ViT)
+- Modern AI
+
+================================================================================
+9. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What problem does attention solve in sequence-to-sequence models?
+Q2: Explain the Query, Key, Value intuition.
+Q3: Why do we scale by √dₖ?
+Q4: What is the difference between self-attention and cross-attention?
+Q5: How does multi-head attention improve upon single-head attention?
+Q6: What is causal masking and when is it used?
+
+================================================================================
+END OF MODULE 25: ATTENTION
+================================================================================

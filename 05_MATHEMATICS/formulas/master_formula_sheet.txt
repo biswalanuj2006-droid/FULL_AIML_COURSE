@@ -1,0 +1,172 @@
+=====================================================================
+MASTER FORMULA SHEET — MATHEMATICS FOR AI/ML
+Module 05_MATHEMATICS | companion to the module notes
+=====================================================================
+Notation used throughout:
+  x, w, b : scalars/vectors        X  : data matrix (n samples x d features)
+  y       : target/label           y_hat : prediction
+  n / m   : number of samples      d : number of features
+  ||v||_2 : Euclidean norm         E[.] : expectation   P(.) : probability
+  ln = log base e
+
+---------------------------------------------------------------------
+1. ALGEBRA & FUNCTIONS
+---------------------------------------------------------------------
+Sigmoid:        sigma(z) = 1 / (1 + e^-z),  range (0,1), sigma'(z)=sigma(z)(1-sigma(z))
+Log-loss link:  logit(p) = ln( p / (1 - p) )   [inverse of sigmoid]
+Log laws:       ln(ab)=ln a+ln b ; ln(a/b)=ln a-ln b ; ln(a^k)=k ln a
+Quadratic:      ax^2+bx+c=0  ->  x = (-b +- sqrt(b^2-4ac)) / 2a
+Sum of squares identity used everywhere in linear algebra:
+                (1/n) sum_i (x_i - mean)^2 = E[x^2] - E[x]^2
+
+---------------------------------------------------------------------
+2. COORDINATE GEOMETRY
+---------------------------------------------------------------------
+Line:           y = mx + b ;  slope m = (y2-y1)/(x2-x1)
+Hyperplane (d-dim):  w^T x + b = 0   (a line in 2D, plane in 3D)
+Distance point to hyperplane:  |w^T x + b| / ||w||_2     [SVM margin]
+Euclidean distance:  d(p,q) = sqrt( sum_k (p_k - q_k)^2 )    [KNN]
+
+---------------------------------------------------------------------
+3. LINEAR ALGEBRA
+---------------------------------------------------------------------
+Dot product:    a . b = sum_k a_k b_k = ||a|| ||b|| cos(theta)
+Matrix product: (AB)_ij = sum_k A_ik B_kj   (A: p x q, B: q x r -> p x r)
+Transpose:      (A^T)_ij = A_ji ;  (AB)^T = B^T A^T
+Norms:          ||v||_1 = sum|v_k| ;  ||v||_2 = sqrt(sum v_k^2)
+                ||v||_inf = max_k |v_k|
+Matrix inverse: A A^-1 = A^-1 A = I ; exists iff det(A) != 0
+                (A^T A) invertible iff columns of A independent
+Linear system:  solve w in  X w = y  ->  normal equations  w = (X^T X)^-1 X^T y
+Eigen-decomp:   A v = lambda v ; v = eigenvector, lambda = eigenvalue
+                useful facts: trace(A)=sum eigenvalues, det(A)=prod eigenvalues
+SVD:            X = U S V^T  (U,V orthonormal, S diagonal singular values)
+                PCA = project X onto top-k right singular vectors V_k
+Covariance:     Cov = (1/n) X_c^T X_c   where X_c = centered X (each col - mean)
+                PCA objective = eigenvectors of Cov (or SVD of X_c)
+
+---------------------------------------------------------------------
+4. CALCULUS
+---------------------------------------------------------------------
+Derivative:     f'(x) = lim_{h->0} (f(x+h) - f(x))/h
+Power rule:     d/dx x^k = k x^(k-1)
+Chain rule:     d/dx f(g(x)) = f'(g(x)) g'(x)     [backprop's core]
+Partial:        dL/dw_i treats every other variable as constant
+Gradient:       grad_w L = (dL/dw_1, ..., dL/dw_d)  -> points uphill
+Hessian:        H_ij = d^2L/(dw_i dw_j) ; convex iff H positive semi-definite
+Key ML derivatives:
+    d/dw ||Xw - y||^2 = 2 X^T (Xw - y)          [linear regression]
+    d/dw sigma(w x + b) = x * sigma(...)(1 - sigma(...))
+    dL/dz (softmax + cross-entropy) = p - y     [classification layer]
+
+---------------------------------------------------------------------
+5. PROBABILITY
+---------------------------------------------------------------------
+Bayes:          P(A|B) = P(B|A) P(A) / P(B)      [naive Bayes classifier]
+Law of total prob: P(B) = sum_i P(B|A_i) P(A_i)
+Expectation:    E[X] = sum_x x P(X=x)   [discrete] ; integral x f(x) dx [continuous]
+Variance:       Var(X) = E[(X-E[X])^2] = E[X^2] - E[X]^2
+Covariance:     Cov(X,Y) = E[(X-E[X])(Y-E[Y])]
+Conditional:    E[X|Y=y] used in imputation; law of iterated expectation
+Distributions:
+    Bernoulli(p):    P(X=1)=p, mean p, var p(1-p)         [binary label]
+    Binomial(n,p):   mean np, var np(1-p)                 [n coin flips]
+    Gaussian N(mu,s^2): f(x) = 1/(s sqrt(2pi)) e^(-(x-mu)^2/(2s^2))
+    Poisson(lambda):  mean = var = lambda                 [count events]
+    Exponential(lambda): mean 1/lambda, memoryless        [waiting times]
+CLT: sample mean of iid draws ~ N(mean, var/n) as n grows   [CIs, tests]
+
+---------------------------------------------------------------------
+6. STATISTICS
+---------------------------------------------------------------------
+Sample mean:    x_bar = (1/n) sum x_i
+Sample variance:s^2 = (1/(n-1)) sum (x_i - x_bar)^2   [n-1 = Bessel's correction]
+Std error of mean: SE = s / sqrt(n)
+z-score:        z = (x - mean)/sd
+95% CI (mean):  x_bar +- 1.96 * SE      [use t quantile for small n]
+Correlation:    r = Cov(X,Y) / (sd_X sd_Y)   in [-1,1]
+p-value:        P(observing a statistic as extreme as ours | H0 true)
+                p < alpha (usually 0.05) -> reject H0
+F1:             harmonic mean 2PR/(P+R)  ;  P = TP/(TP+FP), R = TP/(TP+FN)
+
+---------------------------------------------------------------------
+7. INFORMATION THEORY
+---------------------------------------------------------------------
+Entropy:        H(p) = - sum_i p_i ln p_i       [uncertainty of a distribution]
+Cross-entropy:  H(p,q) = - sum_i p_i ln q_i     [classification loss]
+                with one-hot p: -ln q_true_class
+KL divergence:  KL(p||q) = sum_i p_i ln(p_i/q_i) = H(p,q) - H(p)
+                >= 0, = 0 iff p == q   [how much q loses vs p]
+Mutual info:    I(X;Y) = H(X) - H(X|Y)  [feature selection]
+Gini impurity (trees): 1 - sum_k p_k^2
+Information gain = H(parent) - weighted H(children)
+
+---------------------------------------------------------------------
+8. OPTIMIZATION
+---------------------------------------------------------------------
+Objective:      minimize_w  L(w) = (1/n) sum_i loss(y_i, f_w(x_i)) + lambda * R(w)
+Regularizers:   L2/Ridge R = ||w||_2^2   ;  L1/Lasso R = ||w||_1
+Gradient descent update:  w <- w - lr * grad_w L
+SGD:            w <- w - lr * grad_w L_i   (one sample / mini-batch)
+Momentum:       v <- mu v - lr g ; w <- w + v          (mu ~ 0.9)
+RMSProp:        s <- beta s + (1-beta) g^2 ; w <- w - lr*g/sqrt(s+eps)
+Adam:           combines momentum + RMSProp with bias correction
+                m <- b1 m + (1-b1) g ;  s <- b2 s + (1-b2) g^2
+                w <- w - lr * m_hat / (sqrt(s_hat) + eps)
+                typical: b1=0.9, b2=0.999, eps=1e-8
+Learning-rate schedules: step decay, exponential decay, cosine, warmup
+
+---------------------------------------------------------------------
+9. DEEP LEARNING
+---------------------------------------------------------------------
+Neuron:         a = f(W x + b)
+MLP forward:    z^(l) = W^(l) a^(l-1) + b^(l) ; a^(l) = f(z^(l))
+Loss examples:  MSE = (1/n) sum (y - y_hat)^2
+                BCE = -(1/n) sum [y ln p + (1-y) ln(1-p)]
+                CE multi = -(1/n) sum_i ln p_i[true class]
+Conv output size: out = floor( (in + 2*pad - kernel)/stride ) + 1
+CNN params/layer (k x k filter, c_in -> c_out): (k*k*c_in + 1) * c_out
+RNN hidden:     h_t = tanh(W_h h_{t-1} + W_x x_t + b)
+LSTM gates (sigma = sigmoid, * = elementwise):
+    f_t = sigma(W_f [h_{t-1},x_t] + b_f)      forget
+    i_t = sigma(W_i [h_{t-1},x_t] + b_i)      input
+    o_t = sigma(W_o [h_{t-1},x_t] + b_o)      output
+    c_t = f_t * c_{t-1} + i_t * tanh(W_c [h_{t-1},x_t] + b_c)
+    h_t = o_t * tanh(c_t)
+GRU:            z_t = sigmoid(W_z[h_{t-1},x_t])   update
+                r_t = sigmoid(W_r[h_{t-1},x_t])   reset
+Attention:      Attention(Q,K,V) = softmax( Q K^T / sqrt(d_k) ) V
+Multi-head:     concat heads (each d_k = d_model / n_heads), then W_O
+Positional encoding (sin/cos) or learned; RoPE rotates Q,K by position
+
+---------------------------------------------------------------------
+10. CLASSICAL MODELS
+---------------------------------------------------------------------
+Linear reg:     y = w^T x + b, closed form w = (X^T X)^-1 X^T y (or + lambda I)
+Ridge:          w = (X^T X + lambda I)^-1 X^T y
+Logistic reg:   P(y=1|x) = sigmoid(w^T x + b)
+SVM:            margin 2/||w|| ; hinge loss max(0, 1 - y(w^T x + b))
+KNN:            predict = majority vote / mean of k nearest (no training)
+K-Means:        assign to nearest centroid; centroid = mean of cluster;
+                objective = sum of squared distances to own centroid
+Naive Bayes:    P(class|x) prop P(class) prod_k P(x_k | class)
+Decision tree:  split on feature/threshold maximizing gain (info/Gini)
+Ensembles:      bagging = average over bootstrap models (RF = trees + random features)
+                boosting = fit residuals step by step (GBM/XGB/LGBM/CatBoost)
+
+---------------------------------------------------------------------
+11. METRICS (always pick with the business problem in mind)
+---------------------------------------------------------------------
+Regression:  MAE = mean|y-y_hat| ; MSE = mean(y-y_hat)^2 ; RMSE = sqrt(MSE)
+             R^2 = 1 - SS_res/SS_tot ; MAPE = mean(|y-y_hat|/|y|)
+Classification: accuracy, precision, recall, F1, specificity = TN/(TN+FP),
+             ROC-AUC = P(random pos scores above random neg), log loss,
+             PR-AUC (better than ROC-AUC under class imbalance)
+Clustering:  silhouette in [-1,1] (higher better); Davies-Bouldin (lower better)
+Forecast:    sMAPE, MASE, pinball loss (quantile)
+
+=====================================================================
+Revision trick: for any formula, write it three ways — in words,
+in symbols with every symbol defined, and in 3 lines of NumPy.
+If you cannot do all three, you do not own the formula yet.
+=====================================================================

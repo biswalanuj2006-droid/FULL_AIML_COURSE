@@ -1,0 +1,34 @@
+================================================================================
+GENAI FOUNDATIONS — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is generative AI?
+Q2: What is the difference between generative and discriminative models?
+Q3: What is tokenization?
+Q4: What is temperature in generation?
+Q5: What is top-k sampling?
+Q6: What is hallucination?
+Q7: What is grounding?
+Q8: What is a context window?
+
+MEDIUM (8)
+===========
+Q9: Compare autoregressive vs diffusion models.
+Q10: Build text generation pipeline.
+Q11: Implement temperature and sampling control.
+Q12: Build content generation system.
+Q13: Compare different GenAI approaches.
+Q14: Implement structured output generation.
+Q15: Build GenAI evaluation framework.
+Q16: Implement safety guardrails.
+
+HARD (4)
+=========
+Q17: Build production GenAI application.
+Q18: Implement GenAI with multiple modalities.
+Q19: Build GenAI cost optimization system.
+Q20: Implement GenAI monitoring and evaluation.
+
+================================================================================

@@ -1,0 +1,279 @@
+================================================================================
+MODULE 28: LLM FUNDAMENTALS — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand how LLMs work internally
+- Use LLM APIs (OpenAI, Hugging Face)
+- Implement text generation, classification, and embedding
+- Handle streaming, function calling, and structured outputs
+- Understand scaling laws and model selection
+
+================================================================================
+1. WHAT ARE LLMs?
+================================================================================
+
+INTUITION
+---------
+Large Language Models are transformer-based neural networks trained
+on massive text datasets to understand and generate human language.
+
+Key characteristics:
+- Billions of parameters
+- Trained on trillions of tokens
+- Emergent abilities at scale (reasoning, coding, math)
+- Can be prompted for various tasks without task-specific training
+
+================================================================================
+2. USING LLM APIs
+================================================================================
+
+2.1 OPENAI API
+---------------
+from openai import OpenAI
+
+client = OpenAI(api_key="your-api-key")
+
+# Basic completion
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Explain machine learning in one paragraph."}
+    ],
+    temperature=0.7,
+    max_tokens=500
+)
+
+print(response.choices[0].message.content)
+
+2.2 HUGGING FACE PIPELINE
+---------------------------
+from transformers import pipeline
+
+# Text generation
+generator = pipeline('text-generation', model='gpt2')
+output = generator("The future of AI is", max_length=100)
+
+# Text classification
+classifier = pipeline('text-classification', model='distilbert-base-uncased-finetuned-sst-2-english')
+result = classifier("I love this product!")
+
+# Summarization
+summarizer = pipeline('summarization', model='t5-small')
+summary = summarizer("Long text here...", max_length=100)
+
+2.3 HUGGING FACE LIBRARY
+--------------------------
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
+
+tokenizer = AutoTokenizer.from_pretrained('gpt2')
+model = AutoModelForCausalLM.from_pretrained('gpt2')
+
+input_text = "The future of AI"
+inputs = tokenizer(input_text, return_tensors='pt')
+
+with torch.no_grad():
+    outputs = model.generate(
+        **inputs,
+        max_length=100,
+        temperature=0.7,
+        do_sample=True,
+        top_p=0.9
+    )
+
+print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+
+================================================================================
+3. STREAMING
+================================================================================
+
+INTUITION
+---------
+Instead of waiting for the complete response, receive tokens as they're
+generated. Better user experience for long responses.
+
+OPENAI STREAMING
+-----------------
+stream = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Write a story"}],
+    stream=True
+)
+
+for chunk in stream:
+    if chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+
+HUGGING FACE STREAMING
+-----------------------
+from transformers import TextIteratorStreamer
+from threading import Thread
+
+streamer = TextIteratorStreamer(tokenizer, skip_prompt=True)
+
+thread = Thread(target=model.generate, kwargs={
+    **inputs, "max_length": 200, "streamer": streamer
+})
+thread.start()
+
+for text in streamer:
+    print(text, end="", flush=True)
+
+================================================================================
+4. STRUCTURED OUTPUTS
+================================================================================
+
+JSON MODE
+---------
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{
+        "role": "user",
+        "content": "Extract name and age: 'John is 25 years old'"
+    }],
+    response_format={"type": "json_object"}
+)
+
+USING PYDANTIC WITH OPENAI
+----------------------------
+from pydantic import BaseModel
+
+class PersonInfo(BaseModel):
+    name: str
+    age: int
+
+response = client.beta.chat.completions.parse(
+    model="gpt-4",
+    messages=[{
+        "role": "user",
+        "content": "Extract: 'John is 25 years old'"
+    }],
+    response_format=PersonInfo
+)
+
+person = response.choices[0].message.parsed
+print(person.name, person.age)
+
+================================================================================
+5. FUNCTION / TOOL CALLING
+================================================================================
+
+INTUITION
+---------
+Let the LLM call external functions when it needs to.
+
+DEFINE FUNCTIONS
+----------------
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_weather",
+        "description": "Get current weather for a city",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city": {"type": "string", "description": "City name"},
+                "units": {"type": "string", "enum": ["celsius", "fahrenheit"]}
+            },
+            "required": ["city"]
+        }
+    }
+}]
+
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "What's the weather in Paris?"}],
+    tools=tools,
+    tool_choice="auto"
+)
+
+# Check if model wants to call a function
+message = response.choices[0].message
+if message.tool_calls:
+    for tool_call in message.tool_calls:
+        func_name = tool_call.function.name
+        func_args = json.loads(tool_call.function.arguments)
+        # Execute the function
+        result = get_weather(**func_args)
+        # Return result to model
+
+================================================================================
+6. EMBEDDINGS WITH LLM PROVIDERS
+================================================================================
+
+OPENAI EMBEDDINGS
+-----------------
+response = client.embeddings.create(
+    input=["Hello world", "Machine learning"],
+    model="text-embedding-ada-002"
+)
+
+embeddings = [item.embedding for item in response.data]
+
+HUGGING FACE EMBEDDINGS
+-------------------------
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+embeddings = model.encode(["Hello world", "Machine learning"])
+
+================================================================================
+7. MODEL SELECTION GUIDE
+================================================================================
+
+| MODEL        | CAPABILITY        | COST    | SPEED  | BEST FOR           |
+|--------------|-------------------|---------|--------|--------------------|
+| GPT-4        | Excellent         | High    | Medium | Complex reasoning  |
+| GPT-4o       | Excellent         | Medium  | Fast   | General purpose    |
+| GPT-3.5      | Good              | Low     | Fast   | Simple tasks       |
+| Claude 3     | Excellent         | Medium  | Medium | Long context       |
+| LLaMA 3      | Very Good         | Free*   | Varies | Open-source        |
+| Gemini Pro   | Very Good         | Medium  | Fast   | Multimodal         |
+
+*Self-hosted or via API
+
+CHOOSING:
+- Need best quality → GPT-4 or Claude 3
+- Need speed + cost → GPT-3.5 or GPT-4o-mini
+- Need privacy → self-host LLaMA
+- Need long context → Claude 3 (200K tokens)
+- Need multimodal → GPT-4o or Gemini
+
+================================================================================
+8. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Not using system prompt
+  WRONG: Only using user messages
+  RIGHT: Set clear role and behavior with system prompt
+
+MISTAKE 2: Sending entire documents
+  RIGHT: Use RAG or chunk long documents
+
+MISTAKE 3: Not handling rate limits
+  RIGHT: Implement retries with exponential backoff
+
+MISTAKE 4: Hardcoding API keys
+  RIGHT: Use environment variables
+
+MISTAKE 5: Not evaluating outputs
+  RIGHT: Log, test, and monitor LLM outputs in production
+
+================================================================================
+9. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between chat completions and embeddings?
+Q2: When would you use streaming?
+Q3: How do function calls work with LLMs?
+Q4: How do you choose between GPT-4 and GPT-3.5?
+Q5: What is structured output and why is it useful?
+Q6: What are the security considerations when using LLM APIs?
+
+================================================================================
+END OF MODULE 28: LLM FUNDAMENTALS
+================================================================================

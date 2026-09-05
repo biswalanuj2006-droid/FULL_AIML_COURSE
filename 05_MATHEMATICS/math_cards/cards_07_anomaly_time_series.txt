@@ -1,0 +1,69 @@
+================================================================================
+CARD: ISOLATION FOREST (anomaly detection)
+================================================================================
+PROBLEM   flag points that are few and different, in high-d, with no
+          labels. Works because anomalies are EASIER to isolate than
+          normal points: a random tree separates an anomaly in few
+          splits.
+SCORE     s(x) = 2^( -E[h(x)] / c(n) )
+          h(x) = path length to isolate x in one random tree
+          (number of splits); E[h] = average over the forest;
+          c(n) = 2 H(n-1) - 2(n-1)/n  (avg path of a random BST on n
+          points - the normalizing constant; H = harmonic number).
+          s -> 1: anomaly (short path); s -> 0.5: normal;
+          s -> 0: in a dense cluster.
+KEY       linear in n (subsample trees, default 256 rows/tree) - the
+          reason it scales to millions where Mahalanobis/LOF struggle.
+          Random splits on the FEATURE axes only -> ignores
+          correlations (vs Mahalanobis) - feature selection matters.
+COMPLEXITY O(t * n_subsample * d) train; O(t * depth) predict.
+FAILURES  anomalies hiding in correlated subspaces; low
+          contamination; threshold choice without labels (use
+          quantiles of s or score distribution).
+CONNECTS  full module 55_ANOMALY_DETECTION; compare LOF (local density)
+          and Elliptic Envelope (Mahalanobis) from cards_04.
+
+================================================================================
+CARD: ARIMA (time-series forecasting)
+================================================================================
+PROBLEM   forecast a univariate series using its own past.
+MODEL     ARIMA(p,d,q): AR(p) + differencing d + MA(q).
+          AR(p):     y_t = c + sum_{i=1..p} phi_i y_{t-i} + eps_t
+          MA(q):     y_t = c + eps_t + sum_{j=1..q} theta_j eps_{t-j}
+          ARIMA applies the ARMA model to the d-times-differenced
+          series (d = order of differencing to reach stationarity).
+          SARIMA adds seasonal AR/MA terms with period m.
+WHY DIFFERENCING  AR/MA require STATIONARITY (mean/variance constant).
+          Difference until the series is stationary (ADF test), d = 1-2
+          for most real series. Over-differencing adds noise.
+KEY       Box-Jenkins workflow: identify (ACF/PACF cutoffs suggest
+          p,q) -> estimate -> DIAGNOSE residuals (must be white noise:
+          Ljung-Box test) -> forecast. ACF of residuals with a
+          significant spike = wrong p/q.
+COMPLEXITY cheap O(n) fits; the models are linear.
+FAILURES  cannot capture level shifts/regimes well; no exogenous
+          features (use ARIMAX/regression); struggles with long
+          horizons (uncertainty widens).
+CONNECTS  exponential smoothing (Holt-Winters) is the rival baseline;
+          ML forecasting (boosting/LSTM, 56_TIME_SERIES) must BEAT
+          ARIMA to justify itself.
+
+================================================================================
+CARD: EXPONENTIAL SMOOTHING (Holt-Winters / ETS)
+================================================================================
+PROBLEM   forecast with trend + seasonality via recursive smoothing.
+MODEL     Level l_t, trend b_t, seasonal s_t updated by weighted
+          averages with smoothing params alpha, beta, gamma:
+            l_t = alpha (y_t - s_{t-m}) + (1-alpha)(l_{t-1} + b_{t-1})
+            b_t = beta  (l_t - l_{t-1}) + (1-beta) b_{t-1}
+            s_t = gamma (y_t - l_t) + (1-gamma) s_{t-m}
+          Forecast h ahead:  y_hat_{t+h} = l_t + h b_t + s_{t-m+h}
+          (additive; multiplicative variants exist).
+KEY       every forecast is a weighted average with exponentially
+          decaying weights - the simplest thing that captures trend +
+          season; params fitted by likelihood; often the hardest
+          baseline to beat on smooth retail/econ series.
+FAILURES  breaks on non-smooth events (promotions, crises); seasonal
+          period must be known; no covariates.
+CONNECTS  naive/persistence baselines from the RNN lesson; compare
+          against LSTM forecasts (must beat this to matter).

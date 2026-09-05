@@ -1,0 +1,100 @@
+================================================================================
+SCIKIT-LEARN CHEAT SHEET
+================================================================================
+
+PIPELINE
+--------
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+
+pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('classifier', model)
+])
+
+PREPROCESSING
+-------------
+from sklearn.preprocessing import (
+    StandardScaler, MinMaxScaler, RobustScaler,
+    OneHotEncoder, OrdinalEncoder, LabelEncoder,
+    PolynomialFeatures
+)
+
+Numerical: StandardScaler (default), MinMaxScaler, RobustScaler
+Categorical: OneHotEncoder (nominal), OrdinalEncoder (ordinal)
+
+IMPUTING
+--------
+from sklearn.impute import SimpleImputer, KNNImputer
+SimpleImputer(strategy='mean'|'median'|'most_frequent')
+KNNImputer(n_neighbors=5)
+
+MODEL SELECTION
+---------------
+from sklearn.model_selection import (
+    train_test_split, cross_val_score,
+    GridSearchCV, RandomizedSearchCV,
+    StratifiedKFold, TimeSeriesSplit
+)
+
+train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+cross_val_score(model, X, y, cv=5, scoring='accuracy')
+GridSearchCV(model, param_grid, cv=5, scoring='accuracy')
+
+CLASSIFICATION MODELS
+---------------------
+LogisticRegression, KNeighborsClassifier, SVC,
+DecisionTreeClassifier, RandomForestClassifier,
+GradientBoostingClassifier, AdaBoostClassifier,
+XGBClassifier, LGBMClassifier, GaussianNB
+
+REGRESSION MODELS
+-----------------
+LinearRegression, Ridge, Lasso, ElasticNet,
+DecisionTreeRegressor, RandomForestRegressor,
+GradientBoostingRegressor, SVR
+
+CLUSTERING
+----------
+KMeans, DBSCAN, AgglomerativeClustering, GaussianMixture
+
+DIMENSIONALITY REDUCTION
+-------------------------
+PCA, TruncatedSVD, t-SNE (from sklearn.manifold)
+
+FEATURE SELECTION
+-----------------
+SelectKBest, RFE, RFECV, VarianceThreshold,
+SelectFromModel
+
+METRICS - CLASSIFICATION
+-------------------------
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score,
+    f1_score, roc_auc_score, confusion_matrix,
+    classification_report
+)
+
+METRICS - REGRESSION
+---------------------
+from sklearn.metrics import (
+    mean_absolute_error, mean_squared_error,
+    r2_score
+)
+
+METRICS - CLUSTERING
+---------------------
+from sklearn.metrics import silhouette_score
+
+TYPICAL WORKFLOW
+----------------
+1. Load data
+2. EDA
+3. Train/test split
+4. Build pipeline (preprocessing + model)
+5. Cross-validate
+6. Hyperparameter tuning
+7. Final evaluation on test set
+8. Save model
+
+================================================================================

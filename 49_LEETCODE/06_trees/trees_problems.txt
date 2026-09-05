@@ -1,0 +1,86 @@
+================================================================================
+LEETCODE PATTERN: TREES — 25 PROBLEMS
+================================================================================
+
+================================================================================
+EASY (10 Problems)
+================================================================================
+
+1. MAXIMUM DEPTH OF BINARY TREE (LC #104)
+   def maxDepth(root):
+       if not root: return 0
+       return 1 + max(maxDepth(root.left), maxDepth(root.right))
+
+2. SAME TREE (LC #100)
+   def isSameTree(p, q):
+       if not p and not q: return True
+       if not p or not q: return False
+       return p.val == q.val and isSameTree(p.left, q.left) and isSameTree(p.right, q.right)
+
+3. INVERT BINARY TREE (LC #226)
+   def invertTree(root):
+       if not root: return None
+       root.left, root.right = invertTree(root.right), invertTree(root.left)
+       return root
+
+4. SUBTREE OF ANOTHER TREE (LC #572)
+5. DIAMETER OF BINARY TREE (LC #543)
+6. BALANCED BINARY TREE (LC #110)
+7. MERGE TWO BINARY TREES (LC #617)
+8. MAXIMUM DEPTH OF N-ARY TREE (LC #559)
+9. UNIVALUED BINARY TREE (LC #965)
+10. RANGE SUM OF BST (LC #938)
+
+================================================================================
+MEDIUM (10 Problems)
+================================================================================
+
+11. BINARY TREE LEVEL ORDER TRAVERSAL (LC #102)
+    def levelOrder(root):
+        if not root: return []
+        from collections import deque
+        result, queue = [], deque([root])
+        while queue:
+            level = []
+            for _ in range(len(queue)):
+                node = queue.popleft()
+                level.append(node.val)
+                if node.left: queue.append(node.left)
+                if node.right: queue.append(node.right)
+            result.append(level)
+        return result
+
+12. VALIDATE BST (LC #98)
+13. LOWEST COMMON ANCESTOR (LC #236)
+14. BINARY TREE RIGHT SIDE VIEW (LC #199)
+15. KTH SMALLEST ELEMENT IN BST (LC #230)
+16. CONSTRUCT BINARY TREE FROM PREORDER AND INORDER (LC #105)
+17. PATH SUM III (LC #437)
+18. POPULATING NEXT RIGHT POINTERS (LC #116)
+19. BINARY TREE ZIGZAG LEVEL ORDER (LC #103)
+20. WIDTH OF BINARY TREE (LC #662)
+
+================================================================================
+HARD (5 Problems)
+================================================================================
+
+21. BINARY TREE MAXIMUM PATH SUM (LC #124)
+22. SERIALIZE AND DESERIALIZE BINARY TREE (LC #297)
+23. VERTICAL ORDER TRAVERSAL (LC #987)
+24. BINARY TREE CAMERAS (LC #968)
+25. CLOSEST BINARY SEARCH TREE VALUE II (LC #272)
+
+================================================================================
+TREE TRAVERSAL TEMPLATE
+========================
+def traverse(root):
+    if not root: return
+    # Process root here (preorder)
+    traverse(root.left)
+    # Process root here (inorder)
+    traverse(root.right)
+    # Process root here (postorder)
+
+================================================================================
+END OF TREES PATTERN
+================================================================================

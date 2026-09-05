@@ -1,0 +1,34 @@
+================================================================================
+RNN MODULE — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is the vanishing gradient problem?
+Q2: What is the difference between RNN and feedforward network?
+Q3: What is a hidden state?
+Q4: What is sequence-to-sequence modeling?
+Q5: Why can't RNNs learn long-range dependencies?
+Q6: What is BPTT?
+Q7: What is bidirectional RNN?
+Q8: What is the difference between RNN and LSTM?
+
+MEDIUM (8)
+===========
+Q9: Implement simple RNN from scratch.
+Q10: Build sequence classification model.
+Q11: Implement character-level language model.
+Q12: Compare RNN vs LSTM on same task.
+Q13: Implement bidirectional RNN.
+Q14: Build text generation with RNN.
+Q15: Implement sequence-to-sequence model.
+Q16: Analyze RNN training stability.
+
+HARD (4)
+=========
+Q17: Build production RNN pipeline.
+Q18: Implement attention mechanism for RNN.
+Q19: Build multi-output RNN.
+Q20: Implement custom RNN cell.
+
+================================================================================

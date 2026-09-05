@@ -1,0 +1,132 @@
+================================================================================
+MODULE 44: CLOUD DEPLOYMENT — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand cloud platforms (AWS, GCP, Azure)
+- Deploy ML APIs to the cloud
+- Use container services (ECS, Cloud Run, ACI)
+- Set up storage and databases in the cloud
+- Monitor deployed applications
+
+================================================================================
+1. CLOUD PLATFORMS OVERVIEW
+================================================================================
+
+| SERVICE        | AWS              | GCP              | Azure            |
+|----------------|------------------|------------------|------------------|
+| Compute        | EC2, Lambda      | Compute Engine   | Virtual Machines |
+| Containers     | ECS, EKS         | Cloud Run, GKE   | ACI, AKS         |
+| Storage        | S3               | Cloud Storage    | Blob Storage     |
+| Database       | RDS, DynamoDB    | Cloud SQL        | SQL Database     |
+| ML Platform    | SageMaker        | Vertex AI        | Azure ML         |
+| Serverless     | Lambda           | Cloud Functions  | Functions        |
+| Monitoring     | CloudWatch       | Cloud Monitoring | Monitor          |
+
+================================================================================
+2. DEPLOYING ML API TO CLOUD
+================================================================================
+
+AWS ECS (Elastic Container Service)
+------------------------------------
+1. Push Docker image to ECR (Elastic Container Registry)
+2. Create ECS cluster
+3. Define task with image
+4. Create service
+5. Set up load balancer
+
+GCP CLOUD RUN (Simplest)
+-------------------------
+# Build and push image
+gcloud builds submit --tag gcr.io/my-project/ml-api
+
+# Deploy
+gcloud run deploy ml-api \
+  --image gcr.io/my-project/ml-api \
+  --platform managed \
+  --port 8000 \
+  --min-instances 0 \
+  --max-instances 10
+
+AZURE CONTAINER INSTANCES
+--------------------------
+az container create \
+  --resource-group myRG \
+  --name ml-api \
+  --image myregistry/ml-api:latest \
+  --ports 8000 \
+  --dns-name-label ml-api
+
+================================================================================
+3. SERVERLESS DEPLOYMENT
+================================================================================
+
+AWS LAMBDA + API GATEWAY
+-------------------------
+# Package ML model as Lambda function
+import joblib
+import numpy as np
+
+model = joblib.load('/opt/ml/model.pkl')
+
+def lambda_handler(event, context):
+    features = np.array(event['features']).reshape(1, -1)
+    prediction = model.predict(features)
+    return {
+        'statusCode': 200,
+        'body': {'prediction': prediction.tolist()}
+    }
+
+GCP CLOUD FUNCTIONS
+--------------------
+def predict(request):
+    import json
+    data = request.get_json()
+    features = data['features']
+    prediction = model.predict([features])
+    return json.dumps({'prediction': prediction.tolist()})
+
+================================================================================
+4. STORAGE
+================================================================================
+
+S3 / CLOUD STORAGE
+-------------------
+# Upload model to S3
+import boto3
+s3 = boto3.client('s3')
+s3.upload_file('model.pkl', 'my-bucket', 'models/model.pkl')
+
+# Download
+s3.download_file('my-bucket', 'models/model.pkl', 'local_model.pkl')
+
+================================================================================
+5. BEST PRACTICES
+================================================================================
+
+1. Use environment variables for configuration (never hardcode)
+2. Set up health check endpoints
+3. Implement proper logging
+4. Set up auto-scaling based on traffic
+5. Use managed databases instead of self-hosted
+6. Implement CI/CD for deployments
+7. Monitor costs and set alerts
+8. Use secrets manager for API keys
+9. Enable HTTPS everywhere
+10. Set up backup and disaster recovery
+
+================================================================================
+6. SKILLS CHECKPOINT
+================================================================================
+
+Q1: When would you use serverless vs containers?
+Q2: How do you deploy a Docker container to AWS ECS?
+Q3: What is the benefit of using managed databases?
+Q4: How do you handle secrets in cloud deployments?
+Q5: What is auto-scaling and when is it useful?
+
+================================================================================
+END OF MODULE 44: CLOUD DEPLOYMENT
+================================================================================

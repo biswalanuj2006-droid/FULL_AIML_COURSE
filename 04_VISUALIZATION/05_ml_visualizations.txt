@@ -1,0 +1,174 @@
+================================================================================
+MODULE 04 — DATA VISUALIZATION
+LESSON 05: ML VISUALIZATIONS
+================================================================================
+
+## What You Will Learn
+- Confusion matrix
+- ROC curve
+- Precision-Recall curve
+- Learning curves
+- Feature importance
+- Decision boundaries
+- Loss curves
+
+================================================================================
+1. CONFUSION MATRIX
+================================================================================
+
+    from sklearn.metrics import confusion_matrix
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    cm = confusion_matrix(y_true, y_pred)
+
+    # Simple heatmap
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
+                xticklabels=["Predicted 0", "Predicted 1"],
+                yticklabels=["Actual 0", "Actual 1"])
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    plt.title("Confusion Matrix")
+    plt.show()
+
+    INTERPRETATION:
+    ┌─────────────────────────┐
+    │  TN  │  FP              │  TN: True Negative (correctly predicted 0)
+    │──────┼──────            │  FP: False Positive (predicted 1, actually 0)
+    │  FN  │  TP              │  FN: False Negative (predicted 0, actually 1)
+    └─────────────────────────┘  TP: True Positive (correctly predicted 1)
+
+================================================================================
+2. ROC CURVE
+================================================================================
+
+    from sklearn.metrics import roc_curve, auc
+
+    fpr, tpr, thresholds = roc_curve(y_true, y_prob)
+    roc_auc = auc(fpr, tpr)
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, color="blue", linewidth=2,
+             label=f"ROC curve (AUC = {roc_auc:.3f})")
+    plt.plot([0, 1], [0, 1], color="gray", linestyle="--",
+             label="Random classifier")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curve")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+    INTERPRETATION:
+    - AUC = 1.0: Perfect classifier
+    - AUC = 0.5: Random classifier (no skill)
+    - AUC < 0.5: Worse than random
+    - Closer to top-left corner = better
+
+================================================================================
+3. PRECISION-RECALL CURVE
+================================================================================
+
+    from sklearn.metrics import precision_recall_curve, average_precision_score
+
+    precision, recall, thresholds = precision_recall_curve(y_true, y_prob)
+    ap = average_precision_score(y_true, y_prob)
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(recall, precision, color="blue", linewidth=2,
+             label=f"PR curve (AP = {ap:.3f})")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.title("Precision-Recall Curve")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+    WHEN TO USE:
+    - ROC-AUC: Balanced datasets
+    - PR-AUC: Imbalanced datasets (rare events like fraud)
+
+================================================================================
+4. LEARNING CURVES
+================================================================================
+
+    from sklearn.model_selection import learning_curve
+
+    train_sizes, train_scores, val_scores = learning_curve(
+        model, X, y, cv=5,
+        train_sizes=np.linspace(0.1, 1.0, 10),
+        scoring="accuracy"
+    )
+
+    train_mean = train_scores.mean(axis=1)
+    train_std = train_scores.std(axis=1)
+    val_mean = val_scores.mean(axis=1)
+    val_std = val_scores.std(axis=1)
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(train_sizes, train_mean, label="Training score", color="blue")
+    plt.fill_between(train_sizes, train_mean - train_std,
+                     train_mean + train_std, alpha=0.1, color="blue")
+    plt.plot(train_sizes, val_mean, label="Validation score", color="red")
+    plt.fill_between(train_sizes, val_mean - val_std,
+                     val_mean + val_std, alpha=0.1, color="red")
+    plt.xlabel("Training Set Size")
+    plt.ylabel("Accuracy")
+    plt.title("Learning Curve")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+    INTERPRETATION:
+    - Both curves converge: Good fit
+    - Large gap between curves: Overfitting
+    - Both curves low: Underfitting
+    - Curves not converged: Need more data
+
+================================================================================
+5. FEATURE IMPORTANCE
+================================================================================
+
+    # Tree-based models
+    importances = model.feature_importances_
+    feature_names = X.columns
+
+    sorted_idx = np.argsort(importances)
+    plt.figure(figsize=(8, 6))
+    plt.barh(range(len(sorted_idx)), importances[sorted_idx])
+    plt.yticks(range(len(sorted_idx)), feature_names[sorted_idx])
+    plt.xlabel("Importance")
+    plt.title("Feature Importance")
+    plt.tight_layout()
+    plt.show()
+
+================================================================================
+6. LOSS CURVES
+================================================================================
+
+    # Training history (from deep learning)
+    epochs = range(1, len(train_loss) + 1)
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(epochs, train_loss, label="Training Loss", color="blue")
+    plt.plot(epochs, val_loss, label="Validation Loss", color="red")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training History")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What does AUC = 0.5 mean?
+2. When should you use PR-AUC instead of ROC-AUC?
+3. What does a large gap between train and val learning curves indicate?
+
+================================================================================
+END OF MODULE 04: DATA VISUALIZATION
+================================================================================
+NEXT MODULE: 05_MATHEMATICS — Complete Mathematics for ML
+================================================================================

@@ -1,0 +1,180 @@
+# STACKS — PRACTICE SET
+# 35 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is a stack?
+   Answer: LIFO (Last In, First Out) data structure — push and pop from the top
+
+2. What is the time complexity of push and pop?
+   Answer: O(1) for both
+
+3. What data structure can be used to implement a stack?
+   Answer: Array, linked list, or Python list
+
+4. What is the difference between stack and queue?
+   Answer: Stack: LIFO. Queue: FIFO (First In, First Out)
+
+5. What is a monotonic stack?
+   Answer: A stack where elements are in strictly increasing or decreasing order
+
+6. What is the use of stacks in function calls?
+   Answer: Call stack stores function frames — each call pushes a frame, return pops it
+
+7. What is balanced parentheses?
+   Answer: Every opening bracket has a corresponding closing bracket in correct order
+
+8. What is the time complexity of evaluating a postfix expression?
+   Answer: O(n) — single pass through the expression
+
+9. What is the difference between postfix and prefix notation?
+   Answer: Postfix: operator after operands (2 3 +). Prefix: operator before operands (+ 2 3)
+
+10. What is an undo operation typically implemented with?
+    Answer: A stack — each action is pushed; undo pops the last action
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Valid parentheses checker.
+    ```python
+    def is_valid(s):
+        stack = []
+        mapping = {')': '(', ']': '[', '}': '{'}
+        for c in s:
+            if c in mapping:
+                if not stack or stack[-1] != mapping[c]:
+                    return False
+                stack.pop()
+            else:
+                stack.append(c)
+        return not stack
+    ```
+
+12. Next greater element using monotonic stack.
+    ```python
+    def next_greater(nums):
+        n = len(nums)
+        result = [-1] * n
+        stack = []
+        for i in range(n):
+            while stack and nums[i] > nums[stack[-1]]:
+                result[stack.pop()] = nums[i]
+            stack.append(i)
+        return result
+    ```
+
+13. Min Stack — support push, pop, top, and getMin in O(1).
+    ```python
+    class MinStack:
+        def __init__(self):
+            self.stack = []
+            self.min_stack = []
+        def push(self, val):
+            self.stack.append(val)
+            val = min(val, self.min_stack[-1] if self.min_stack else val)
+            self.min_stack.append(val)
+        def pop(self):
+            self.stack.pop()
+            self.min_stack.pop()
+        def top(self):
+            return self.stack[-1]
+        def getMin(self):
+            return self.min_stack[-1]
+    ```
+
+14. Evaluate postfix expression.
+    ```python
+    def eval_rpn(tokens):
+        stack = []
+        for t in tokens:
+            if t in '+-*/':
+                b, a = stack.pop(), stack.pop()
+                if t == '+': stack.append(a + b)
+                elif t == '-': stack.append(a - b)
+                elif t == '*': stack.append(a * b)
+                else: stack.append(int(a / b))
+            else:
+                stack.append(int(t))
+        return stack[0]
+    ```
+
+15. Implement two stacks using one array.
+
+16. Largest rectangle in histogram.
+
+17. Daily temperatures (next warmer day).
+
+18. Simplify path (Unix-style file path).
+
+19. Decode string using stack (e.g., "3[a2[c]]").
+
+20. Basic calculator (evaluate string with +, -, *, /).
+
+21. Asteroid collision.
+
+22. Car fleet problem.
+
+23. Valid stack sequences (given push and pop sequences).
+
+24. Implement queue using two stacks.
+
+25. Remove K digits to form smallest number.
+
+---
+
+## HARD (5 Questions)
+
+26. Largest rectangle in histogram — O(n) using monotonic stack.
+27. Maximal rectangle in a binary matrix.
+28. Implement a stack that supports getMin in O(1) with O(1) extra space.
+29. Sort a stack using recursion.
+30. Sliding window maximum using deque.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Stack overflow in recursive solution
+def factorial(n):
+    if n == 0: return 1
+    return n * factorial(n - 1)  # Stack overflow for large n
+# Fix: Use iterative approach or increase recursion limit
+
+# Debug 2: Monotonic stack wrong direction
+def next_greater(nums):
+    stack = []
+    result = [-1] * len(nums)
+    for i in range(len(nums)):
+        while stack and nums[i] > nums[stack[-1]]:
+            result[stack.pop()] = nums[i]
+        stack.append(i)
+    # Bug: stack not processed after loop for wrap-around
+    return result
+
+# Debug 3: Valid parentheses — empty stack check
+def is_valid(s):
+    stack = []
+    for c in s:
+        if c == '(':
+            stack.append(c)
+        elif c == ')':
+            stack.pop()  # Bug: doesn't check if stack is empty
+    return len(stack) == 0
+
+# Debug 4: Min stack — push before min check
+class MinStack:
+    def push(self, val):
+        self.stack.append(val)
+        if not self.min_stack or val <= self.min_stack[-1]:  # Bug: should be <= not <
+            self.min_stack.append(val)
+
+# Debug 5: Eval rparen — division truncation
+# In Python, -3 / 2 = -1.5, int(-1.5) = -1
+# LeetCode expects truncation toward zero: -3 / 2 = -1
+# Fix: Use int(a / b) not a // b
+```

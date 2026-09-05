@@ -1,0 +1,68 @@
+================================================================================
+PRACTICE - GRADIENT BOOSTING FROM SCRATCH (code/ml/gradient_boosting_from_scratch.py)
+================================================================================
+
+CONCEPTUAL
+ 1. Write the generic gradient boosting loop (fit weak learner to
+    negative gradient, add scaled prediction).
+ 2. Why does boosting fit RESIDUALS (or negative gradients) instead of
+    the target directly?
+ 3. How does boosting differ from bagging in bias/variance terms?
+ 4. What is the learning rate (shrinkage) and why does lowering it
+    require more trees?
+ 5. What role do shallow trees (max_depth=1..3) play in boosting?
+ 6. Why can boosting overfit if you add too many trees? What are the
+    three main controls (n_estimators, lr, subsample/regularization)?
+ 7. For regression with squared error, what exactly is each tree fit
+    to?
+ 8. How does subsampling (stochastic GB) help and what does it cost?
+
+NUMERICAL (hand-compute a tiny 2-tree GB regressor)
+ 9. Targets y=[2, 4, 6], constant init F0 = mean(y). Compute residuals.
+10. Fit a stump (depth-1 tree) to those residuals; state its prediction
+    for each sample (split midpoints allowed).
+11. Update F1 = F0 + lr * tree(x) with lr=0.5. Compute the new
+    predictions and the new residuals.
+12. Compute MSE after 0, 1, and 2 boosting rounds to see the decline.
+
+CODE (write and run)
+13. Implement a GradientBoostingRegressor using your decision tree as
+    the weak learner: n_estimators, learning_rate, max_depth params.
+14. Plot train/test MSE vs n_estimators for lr in {0.01, 0.1, 1.0} -
+    identify overfitting onset for each lr.
+15. Add subsample (stochastic GB): fit each tree on a random 80% and
+    compare the test curve.
+16. Extend to classification: fit trees to the negative gradient of log
+    loss (residual = y - p); predict via sigmoid(sum of trees).
+17. Compare vs sklearn GradientBoostingRegressor/HistGradientBoosting on
+    the same data: accuracy/MSE + training time.
+
+DEBUGGING
+18. Predictions slowly drift upward as trees are added - what does that
+    indicate about the init or lr sign?
+19. Test MSE curve is U-shaped but your early-stopping check uses the
+    same data you tune on - explain the subtle overfitting of the
+    stopping point and the fix.
+20. With squared error the "gradient" you fit is 2*residual, not
+    residual - does the factor matter? Show why/why not with lr.
+21. One outlier dominates the residuals and every tree chases it - name
+    two robust loss options and one data fix.
+
+CHALLENGES
+22. Implement early stopping: track validation loss, keep the best
+    number of trees, and return a model that predicts with that count.
+23. Implement a simple histogram-based splitter (bin features into 64
+    bins, search splits on bins) and time it vs exact splits on 100k
+    rows.
+24. Train GB, RF, and a linear model on the same tabular dataset; plot
+    their test errors and explain which wins and why (n, noise,
+    feature types).
+
+REAL-WORLD SCENARIO
+25. You are forecasting daily demand with GB. Walk through: features,
+    temporal split, walk-forward evaluation, retraining cadence, and
+    how you would detect when the model starts degrading in production.
+
+================================================================================
+END
+================================================================================

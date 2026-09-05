@@ -1,0 +1,50 @@
+================================================================================
+THINK.TXT - 20 CNN
+================================================================================
+
+1. Convolutions give translation equivariance. Define equivariance
+   formally and contrast with invariance - which one does pooling
+   provide and what does each cost you?
+2. Why do CNNs need far fewer parameters than MLPs on images? Count
+   parameters for a 224x224x3 image into a 1000-class MLP vs a ResNet
+   conv stack and explain where the saving comes from.
+3. Receptive field: a 3x3 conv stacked 10 times sees what fraction of a
+   224x224 input? Derive the RF formula and say why dilation exists.
+4. Output size math: 32x32 input, 5x5 kernel, padding 2, stride 2.
+   Compute the output size and state the general formula. What does
+   padding do to border information and parameter sharing?
+5. Max pooling loses location information - yet classification works.
+   Explain what pooling's invariance buys and where it hurts
+   (segmentation, precise localization).
+6. ResNet's skip connections were introduced to fight degradation, not
+   just vanishing gradients. Construct the argument: why can a deeper
+   plain net have HIGHER training error, and how does the identity
+   path make depth free?
+7. Transfer learning: freeze backbone vs fine-tune all. When is each
+   right, and why does a small learning rate on pretrained weights
+   matter (feature corruption)?
+8. Data augmentation is a prior. Argue that random crops/color jitter
+   encode "these transformations do not change the label" - and say
+   which augmentations would violate that prior for medical images vs
+   satellite images.
+9. A CNN gets 99% on training and 60% on validation with a 100-class
+   dataset of 500 images/class. Diagnose the gap and rank: dropout,
+   augmentation, pretraining, label smoothing, weight decay - with the
+   expected effect of each.
+10. Feature maps: shallow layers detect edges, deep layers detect
+    objects. Why does this hierarchy emerge from gradient descent
+    rather than being designed? What does it predict about
+    transferability at each depth?
+11. Batch size 256 with BatchNorm on CNNs trains faster but worse than
+    batch 32 on the same epochs. Explain the BN-batch-size interaction
+    and the fix (ghost batch norm).
+12. Your CNN is 10x too slow for real-time video. Rank interventions by
+    (speedup, accuracy cost): quantization, depthwise convs,
+    distillation, pruning, smaller input, ONNX. Justify the top two.
+13. OPEN PROBLEM: adversarial examples are imperceptible perturbations
+    that flip CNN decisions. Argue why the linearity-in-high-dim
+    explanation (Goodfellow 2014) is incomplete and what remains
+    unexplained about their transferability.
+================================================================================
+END
+================================================================================

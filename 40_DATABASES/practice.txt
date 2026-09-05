@@ -1,0 +1,34 @@
+================================================================================
+DATABASES — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is SQL?
+Q2: What is the difference between SQL and NoSQL?
+Q3: What is a primary key?
+Q4: What is a foreign key?
+Q5: What is a JOIN?
+Q6: What is normalization?
+Q7: What is an index?
+Q8: What is SQLAlchemy?
+
+MEDIUM (8)
+===========
+Q9: Write complex SQL queries with JOINs.
+Q10: Design a database schema for ML system.
+Q11: Implement SQLAlchemy ORM models.
+Q12: Build database migration pipeline.
+Q13: Implement database connection pooling.
+Q14: Build database backup system.
+Q15: Implement query optimization.
+Q16: Build database monitoring.
+
+HARD (4)
+=========
+Q17: Design production database architecture.
+Q18: Implement database replication.
+Q19: Build database sharding strategy.
+Q20: Implement database performance tuning.
+
+================================================================================

@@ -1,0 +1,44 @@
+================================================================================
+CODE PRACTICE - code/graph (GCN in numpy)
+Companion: 01_gcn_numpy.py (run it first)
+================================================================================
+RUN & OBSERVE
+1. Run the example; record accuracy vs the majority baseline. Which
+   part of the code implements message passing (Ahat multiplies)?
+2. Confirm the two gradient factors the file comments call out: why is
+   there an Ahat.T on the way back through layer 2?
+
+MODIFY
+3. Change features to pure noise with NO degree info and re-run: does
+   the GCN still win? (If yes, structure alone carries the signal.)
+4. Increase p_out (more cross-community edges, noisier structure) and
+   plot accuracy vs p_out - find where structure stops helping.
+5. Reduce labels to 3 per class and 20 per class: report the accuracy
+   curve vs label count (semi-supervised behavior).
+6. Add a 3rd GCN layer (deeper): compare accuracy and watch for
+   over-smoothing symptoms on this small graph.
+
+DEBUG
+7. Remove the self-loop (A + I) and re-run: explain the accuracy drop
+   (nodes lose their own features at layer 1).
+8. Remove the symmetric normalization (use raw A): re-run and explain
+   what degree imbalance does (hub domination).
+9. Break the backward pass by dropping one Ahat.T factor (restore the
+   original bug) and show train loss stops decreasing while forward
+   math looks fine - the "loss flat" diagnostic.
+
+BUILD (mini)
+10. Implement the same 2-layer GCN in PyTorch (sparse or dense matmul)
+    and verify identical predictions on the same weights.
+11. Link-prediction mini: hold out 10% of edges as positives, sample
+    equal negatives, score edges by the cosine of learned node
+    embeddings, and report AUC (a numpy AUC is fine).
+12. GAT-lite: replace the fixed normalized adjacency weights with
+    learned per-edge attention on this graph (scalar attention), train,
+    and compare accuracy vs the GCN.
+
+RELATE
+13. Which claims from 60_GRAPH_MACHINE_LEARNING (normalization,
+    self-loops, over-smoothing, leakage) did you verify empirically?
+14. (Interview) Write the GCN update on a whiteboard and explain the
+    role of D^{-1/2} A D^{-1/2} with your runs as evidence.

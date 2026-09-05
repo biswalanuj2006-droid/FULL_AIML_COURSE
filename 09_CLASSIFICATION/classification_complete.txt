@@ -1,0 +1,563 @@
+================================================================================
+MODULE 09: CLASSIFICATION — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand the classification problem
+- Implement all major classification algorithms
+- Choose the right algorithm for your problem
+- Evaluate classification models properly
+- Build complete classification pipelines
+
+================================================================================
+1. WHAT IS CLASSIFICATION?
+================================================================================
+
+INTUITION
+---------
+Classification = assigning a category/label to an input.
+
+Real-world examples:
+- Email → spam or not spam
+- Image → cat or dog
+- Patient → sick or healthy
+- Transaction → fraud or legitimate
+
+FORMAL DEFINITION
+-----------------
+Given input features X, learn a function f(X) that maps to discrete
+class labels y ∈ {class_1, class_2, ..., class_k}
+
+TYPES
+-----
+Binary classification: 2 classes (spam/not spam)
+Multi-class: >2 classes (cat/dog/bird)
+Multi-label: multiple labels can apply (tagging)
+
+================================================================================
+2. LOGISTIC REGRESSION
+================================================================================
+
+NOT ACTUALLY REGRESSION — despite the name, it's a classifier!
+
+INTUITION
+---------
+Draws a line (or hyperplane) that separates classes, then converts
+the output to a probability using the sigmoid function.
+
+MATHEMATICS
+-----------
+Linear model:  z = w₁x₁ + w₂x₂ + ... + wₙxₙ + b = wᵀx + b
+Sigmoid:       σ(z) = 1 / (1 + e⁻ᶻ)
+Prediction:    ŷ = σ(z)
+               if ŷ ≥ 0.5 → class 1
+               if ŷ < 0.5 → class 0
+
+LOSS FUNCTION: Binary Cross-Entropy
+L = -[y·log(ŷ) + (1-y)·log(1-ŷ)]
+
+MULTI-CLASS EXTENSION: Softmax
+P(class_k) = eᶻᵏ / Σⱼ eᶻʲ
+
+IMPLEMENTATION
+--------------
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model', LogisticRegression(max_iter=1000))
+])
+
+pipeline.fit(X_train, y_train)
+y_pred = pipeline.predict(X_test)
+print(classification_report(y_test, y_pred))
+
+KEY HYPERPARAMETERS
+-------------------
+C: regularization strength (smaller = more regularization)
+penalty: 'l1', 'l2', 'elasticnet', None
+solver: 'liblinear', 'lbfgs', 'saga'
+max_iter: maximum iterations
+
+PROS: Fast, interpretable, good baseline
+CONS: Assumes linear decision boundary
+
+================================================================================
+3. K-NEAREST NEIGHBORS (KNN)
+================================================================================
+
+INTUITION
+---------
+"You are the average of your 5 closest friends."
+To classify a new point, look at the K nearest training points
+and take a majority vote.
+
+ALGORITHM
+---------
+1. Choose K
+2. Calculate distance from new point to all training points
+3. Find K closest points
+4. Majority vote determines class
+
+MATHEMATICS: DISTANCE
+----------------------
+Euclidean:  d(x,y) = √(Σ(xᵢ - yᵢ)²)
+Manhattan:  d(x,y) = Σ|xᵢ - yᵢ|
+Minkowski:  d(x,y) = (Σ|xᵢ - yᵢ|ᵖ)^(1/p)
+
+IMPLEMENTATION
+--------------
+from sklearn.neighbors import KNeighborsClassifier
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),  # KNN REQUIRES scaling!
+    ('model', KNeighborsClassifier(n_neighbors=5))
+])
+
+pipeline.fit(X_train, y_train)
+y_pred = pipeline.predict(X_test)
+
+CHOOSING K
+----------
+K too small → overfitting (sensitive to noise)
+K too large → underfitting (loses local structure)
+
+Use cross-validation to find optimal K:
+from sklearn.model_selection import cross_val_score
+
+k_range = range(1, 31)
+k_scores = [cross_val_score(
+    Pipeline([('scaler', StandardScaler()),
+              ('knn', KNeighborsClassifier(n_neighbors=k))]),
+    X_train, y_train, cv=5, scoring='accuracy'
+).mean() for k in k_range]
+
+best_k = k_range[np.argmax(k_scores)]
+
+PROS: Simple, no training phase, works well with small data
+CONS: Slow on large data, requires scaling, sensitive to irrelevant features
+
+================================================================================
+4. NAIVE BAYES
+================================================================================
+
+INTUITION
+---------
+Uses Bayes' theorem with the "naive" assumption that all features
+are independent given the class.
+
+MATHEMATICS
+-----------
+P(class|features) = P(features|class) × P(class) / P(features)
+
+Naive assumption: P(x₁,x₂,...,xₙ|class) = P(x₁|class) × P(x₂|class) × ...
+
+THREE TYPES:
+- GaussianNB: continuous features (assumes Gaussian distribution)
+- MultinomialNB: count data (text classification)
+- BernoulliNB: binary features
+
+IMPLEMENTATION
+--------------
+from sklearn.naive_bayes import GaussianNB, MultinomialNB
+
+# For continuous features
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+# For text (count vectors)
+model = MultinomialNB()
+model.fit(X_train_counts, y_train)
+
+WHEN TO USE TEXT CLASSIFICATION
+-------------------------------
+MultinomialNB is excellent for text because:
+- Word counts follow roughly multinomial distribution
+- Independence assumption is "less wrong" for bag-of-words
+- Very fast training and prediction
+
+PROS: Fast, works with small data, good for text
+CONS: Independence assumption rarely holds, poor probability estimates
+
+================================================================================
+5. DECISION TREES
+================================================================================
+
+INTUITION
+---------
+A flowchart of yes/no questions that splits data into purer groups.
+
+"How do you decide what to do on a weekend?"
+→ Is it raining? → Yes: Stay inside / No: Go outside
+→ Is it cold? → Yes: Watch movie / No: Go hiking
+
+MATHEMATICS: SPLITTING CRITERIA
+---------------------------------
+GINI IMPURITY:
+Gini = 1 - Σ(pᵢ²)
+where pᵢ = proportion of class i
+Gini = 0 → pure (all same class)
+Gini = 0.5 → maximum impurity (binary)
+
+ENTROPY:
+H = -Σ(pᵢ × log₂(pᵢ))
+H = 0 → pure
+H = 1 → maximum impurity (binary)
+
+INFORMATION GAIN:
+IG = H(parent) - Σ(|child|/|parent| × H(child))
+
+IMPLEMENTATION
+--------------
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+
+model = DecisionTreeClassifier(
+    max_depth=5,
+    min_samples_split=10,
+    min_samples_leaf=5,
+    random_state=42
+)
+model.fit(X_train, y_train)
+
+# Visualize
+plt.figure(figsize=(20, 10))
+plot_tree(model, feature_names=feature_names,
+          class_names=class_names, filled=True)
+plt.show()
+
+KEY HYPERPARAMETERS
+-------------------
+max_depth: maximum tree depth (controls overfitting)
+min_samples_split: minimum samples to split a node
+min_samples_leaf: minimum samples in a leaf
+max_features: number of features to consider for splitting
+
+PROS: Interpretable, handles mixed data types, no scaling needed
+CONS: Overfits easily, unstable (small data changes → different tree)
+
+================================================================================
+6. RANDOM FOREST
+================================================================================
+
+INTUITION
+---------
+"Many heads are better than one."
+Builds many decision trees on random subsets of data and features,
+then takes a majority vote.
+
+WHY IT WORKS
+------------
+- Each tree is different (random data + random features)
+- Errors of individual trees cancel out
+- Reduces variance without increasing bias much
+
+IMPLEMENTATION
+--------------
+from sklearn.ensemble import RandomForestClassifier
+
+model = RandomForestClassifier(
+    n_estimators=100,      # number of trees
+    max_depth=10,
+    min_samples_split=5,
+    max_features='sqrt',   # √n_features for classification
+    random_state=42,
+    n_jobs=-1              # use all CPU cores
+)
+
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+# Feature importance
+importances = pd.Series(
+    model.feature_importances_, index=feature_names
+).sort_values(ascending=False)
+importances.plot(kind='bar')
+plt.title('Feature Importance')
+plt.show()
+
+PROS: Robust, handles missing values, feature importance, minimal tuning
+CONS: Less interpretable than single tree, slower
+
+================================================================================
+7. SUPPORT VECTOR MACHINES (SVM)
+================================================================================
+
+INTUITION
+---------
+Find the widest possible "street" (margin) that separates the classes.
+The data points on the street edge are called support vectors.
+
+MATHEMATICS
+-----------
+Decision boundary: wᵀx + b = 0
+Margin: 2 / ||w||
+Objective: maximize margin while minimizing misclassification
+
+Soft margin (allows some misclassification):
+minimize: ||w||²/2 + C × Σξᵢ
+subject to: yᵢ(wᵀxᵢ + b) ≥ 1 - ξᵢ
+
+KERNEL TRICK
+------------
+Map data to higher dimensions where it becomes linearly separable.
+
+Linear kernel:   K(x,y) = xᵀy
+Polynomial:      K(x,y) = (xᵀy + c)^d
+RBF (Gaussian):  K(x,y) = exp(-γ||x-y||²)
+
+IMPLEMENTATION
+--------------
+from sklearn.svm import SVC
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),  # SVM REQUIRES scaling!
+    ('model', SVC(kernel='rbf', C=1.0, gamma='scale'))
+])
+
+pipeline.fit(X_train, y_train)
+y_pred = pipeline.predict(X_test)
+
+# For probabilities (requires calibration):
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model', SVC(kernel='rbf', probability=True))
+])
+
+KEY HYPERPARAMETERS
+-------------------
+C: regularization (small margin vs fewer misclassifications)
+kernel: 'linear', 'rbf', 'poly', 'sigmoid'
+gamma: RBF kernel parameter (decision boundary complexity)
+
+PROS: Effective in high dimensions, memory efficient (uses support vectors only)
+CONS: Slow on large datasets, hard to interpret, doesn't give probabilities by default
+
+================================================================================
+8. GRADIENT BOOSTING CLASSIFIERS
+================================================================================
+
+INTUITION
+---------
+Builds trees sequentially. Each new tree corrects the errors
+of the previous ensemble.
+
+ALGORITHM (SIMPLIFIED)
+---------------------
+1. Start with simple prediction (mean for regression, log-odds for classification)
+2. Compute residuals (errors)
+3. Fit a small tree to residuals
+4. Add tree to ensemble (with learning rate)
+5. Repeat
+
+IMPLEMENTATION (XGBoost)
+------------------------
+import xgboost as xgb
+
+model = xgb.XGBClassifier(
+    n_estimators=100,
+    max_depth=6,
+    learning_rate=0.1,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    random_state=42
+)
+model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=10)
+
+IMPLEMENTATION (LightGBM)
+-------------------------
+import lightgbm as lgb
+
+model = lgb.LGBMClassifier(
+    n_estimators=100,
+    max_depth=6,
+    learning_rate=0.1,
+    num_leaves=31,
+    random_state=42
+)
+model.fit(X_train, y_train)
+
+IMPLEMENTATION (sklearn GradientBoosting)
+-----------------------------------------
+from sklearn.ensemble import GradientBoostingClassifier
+
+model = GradientBoostingClassifier(
+    n_estimators=100, max_depth=3, learning_rate=0.1
+)
+model.fit(X_train, y_train)
+
+PROS: High accuracy, handles mixed features, built-in regularization
+CONS: Slower than RF, prone to overfitting if not tuned, sequential = harder to parallelize
+
+================================================================================
+9. ADABOOST
+================================================================================
+
+INTUITION
+---------
+Combines many "weak learners" (usually decision stumps = depth-1 trees).
+Each iteration gives more weight to misclassified samples.
+
+ALGORITHM
+---------
+1. Give equal weight to all samples
+2. Train weak learner
+3. Increase weight of misclassified samples
+4. Repeat, each new learner focuses on hard examples
+5. Final prediction = weighted vote
+
+IMPLEMENTATION
+--------------
+from sklearn.ensemble import AdaBoostClassifier
+
+model = AdaBoostClassifier(
+    n_estimators=50,
+    learning_rate=1.0,
+    random_state=42
+)
+model.fit(X_train, y_train)
+
+================================================================================
+10. ALGORITHM COMPARISON
+================================================================================
+
+| ALGORITHM        | SPEED   | ACCURACY | INTERPRETABILITY | DATA SIZE |
+|------------------|---------|----------|------------------|-----------|
+| Logistic Reg     | ★★★★★   | ★★★      | ★★★★★            | Any       |
+| KNN              | ★★      | ★★★      | ★★★★             | Small     |
+| Naive Bayes      | ★★★★★   | ★★★      | ★★★★             | Small     |
+| Decision Tree    | ★★★★    | ★★★      | ★★★★★            | Any       |
+| Random Forest    | ★★★     | ★★★★     | ★★★              | Any       |
+| SVM              | ★★      | ★★★★     | ★★               | Small-Med |
+| Gradient Boosting| ★★★     | ★★★★★    | ★★★              | Any       |
+
+ALGORITHM SELECTION GUIDE
+-------------------------
+Start with: Logistic Regression (fast baseline)
+Need interpretability: Decision Tree, Logistic Regression
+Small dataset: KNN, Naive Bayes, SVM
+Large dataset: Random Forest, Gradient Boosting
+Best accuracy: Gradient Boosting (XGBoost/LightGBM)
+Text classification: Naive Bayes, Logistic Regression, Transformers
+
+================================================================================
+11. COMPLETE PIPELINE EXAMPLE
+================================================================================
+
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.svm import SVC
+from sklearn.model_selection import cross_val_score
+import xgboost as xgb
+
+# Define pipelines
+pipelines = {
+    'Logistic Regression': Pipeline([
+        ('scaler', StandardScaler()),
+        ('model', LogisticRegression(max_iter=1000))
+    ]),
+    'Random Forest': Pipeline([
+        ('scaler', StandardScaler()),
+        ('model', RandomForestClassifier(n_estimators=100, random_state=42))
+    ]),
+    'SVM': Pipeline([
+        ('scaler', StandardScaler()),
+        ('model', SVC())
+    ]),
+    'XGBoost': Pipeline([
+        ('scaler', StandardScaler()),
+        ('model', xgb.XGBClassifier(n_estimators=100, use_label_encoder=False))
+    ])
+}
+
+# Compare models
+results = {}
+for name, pipeline in pipelines.items():
+    scores = cross_val_score(pipeline, X_train, y_train, cv=5, scoring='accuracy')
+    results[name] = scores.mean()
+    print(f"{name}: {scores.mean():.4f} ± {scores.std():.4f}")
+
+# Pick the best
+best_model_name = max(results, key=results.get)
+print(f"\nBest model: {best_model_name}")
+
+================================================================================
+12. CLASSIFICATION METRICS
+================================================================================
+
+ACCURACY = (TP + TN) / (TP + TN + FP + FN)
+  → misleading for imbalanced classes
+
+PRECISION = TP / (TP + FP)
+  → "Of all predicted positives, how many are correct?"
+  → Important when false positives are costly
+
+RECALL = TP / (TP + FN)
+  → "Of all actual positives, how many did we catch?"
+  → Important when false negatives are costly
+
+F1 = 2 × (Precision × Recall) / (Precision + Recall)
+  → Harmonic mean, balances precision and recall
+
+ROC-AUC = Area under ROC curve
+  → Threshold-independent measure
+  → 0.5 = random, 1.0 = perfect
+
+CONFUSION MATRIX
+                Predicted
+                Pos    Neg
+Actual Pos  [  TP  |  FN  ]
+Actual Neg  [  FP  |  TN  ]
+
+from sklearn.metrics import (accuracy_score, precision_score, recall_score,
+                              f1_score, roc_auc_score, confusion_matrix,
+                              classification_report)
+
+print(classification_report(y_test, y_pred))
+
+================================================================================
+13. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Using accuracy on imbalanced data
+  WRONG: 95% accuracy on 95% negative dataset → just predicts all negative
+  RIGHT: Use F1, ROC-AUC, or precision-recall AUC
+
+MISTAKE 2: Not scaling for SVM/KNN
+  WRONG: SVM on raw features with different ranges
+  RIGHT: Always StandardScaler for distance-based models
+
+MISTAKE 3: Using test set for hyperparameter tuning
+  WRONG: GridSearchCV on test set
+  RIGHT: GridSearchCV on training set with CV
+
+MISTAKE 4: Not using probability estimates when needed
+  WRONG: SVM without probability=True, then trying to get probabilities
+  RIGHT: Set probability=True for ROC-AUC, or use models that natively output probabilities
+
+MISTAKE 5: Ignoring class imbalance
+  WRONG: Treating 99/1 split as normal
+  RIGHT: Use class_weight='balanced', SMOTE, or threshold adjustment
+
+================================================================================
+14. SKILLS CHECKPOINT
+================================================================================
+
+Q1: Why is logistic regression called "regression" when it's a classifier?
+Q2: Why does KNN require feature scaling?
+Q3: What is the difference between Gini impurity and entropy?
+Q4: How does Random Forest reduce overfitting compared to a single decision tree?
+Q5: When would you choose SVM over Random Forest?
+Q6: What metric should you use for a fraud detection problem (1% fraud)?
+Q7: What is the purpose of the C parameter in SVM?
+
+================================================================================
+END OF MODULE 09: CLASSIFICATION
+================================================================================

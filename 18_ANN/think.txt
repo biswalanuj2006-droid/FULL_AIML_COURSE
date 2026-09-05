@@ -1,0 +1,50 @@
+================================================================================
+THINK.TXT - 18 ARTIFICIAL NEURAL NETWORKS
+================================================================================
+
+1. A single neuron with a sigmoid is logistic regression. Prove it.
+   Then argue what a hidden layer actually adds that a wider input
+   cannot.
+2. Universal approximation says an MLP with one hidden layer can
+   approximate any continuous function. Yet depth wins in practice.
+   Reconcile: what does the theorem NOT say (width, learnability,
+   sample complexity)?
+3. All-zero weights break learning; random init works. Explain
+   precisely why symmetry makes gradient descent stuck, and what
+   symmetry-breaking ReLU has that sigmoid lacks (dead neurons aside).
+4. The sigmoid saturates and its derivative -> 0. Trace how a 10-layer
+   sigmoid net's gradients behave and why that is worse than ReLU's
+   sparsity. Where does ReLU fail instead (dying ReLU)?
+5. Softmax + cross-entropy gives gradients (p - y). Derive this and
+   explain why MSE at the output trains 10-100x slower for
+   classification (hint: what happens to dMSE/dz when p is wrong but
+   sigmoid flattens?).
+6. Batch size 1 vs 1024: same model, same lr. Sketch both loss curves
+   and explain the noise-bias trade-off. Why does the optimal lr scale
+   with batch size (linear scaling rule)?
+7. Your train loss decreases but validation loss rises from epoch 3.
+   Rank the interventions (dropout, weight decay, early stopping,
+   more data, smaller model) by expected effect and justify the order.
+8. Weight initialization: what does He vs Xavier vs zero mean for
+   forward variance and backward variance? Derive the condition that
+   He init satisfies for ReLU.
+9. A 2-layer net needs 5 hidden units for your task, a 10-layer net
+   with 50 units per layer overfits catastrophically. Construct the
+   learning-curve argument for why the deep net is worse and when deep
+   nets are actually better (data scale, hierarchy).
+10. Numerical gradient checks pass at 1e-7 but training diverges.
+    Where does the analytic/numeric agreement break down (loss
+    landscape, floating point, batch norm)?
+11. Your net memorizes 100% of training but 50% of test on a dataset
+    with 1,000 samples and 10,000 features. Is it capacity, data, or
+    optimization? Design the experiment that distinguishes all three.
+12. A colleague removes the bias terms "to simplify" and accuracy drops
+    by 3%. Explain mathematically what biases buy (decision boundary
+    through the origin) and when removing them is harmless.
+13. OPEN PROBLEM: why gradient descent finds low-error solutions on
+    overparameterized nets (the "loss landscape" question) lacks a
+    complete theory. State what is known (implicit regularization of
+    GD/SGD) and what remains open.
+================================================================================
+END
+================================================================================

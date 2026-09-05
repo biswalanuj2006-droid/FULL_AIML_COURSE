@@ -1,0 +1,60 @@
+================================================================================
+PRACTICE - 04 K-MEANS FROM SCRATCH
+Work with code/04_kmeans_from_scratch.py open. Attempt everything before
+checking the implementation.
+================================================================================
+
+CONCEPTUAL (answer in 2-3 sentences each)
+ 1. What does K-Means minimize, formally?
+ 2. Why is k-means++ initialization better than random?
+ 3. Why can K-Means return different clusters on different runs?
+ 4. What does the elbow method measure, and what is its weakness?
+ 5. Why does K-Means fail on concentric circles but succeed on blobs?
+ 6. What happens if k > number of actual clusters?
+ 7. Why must features be scaled before K-Means?
+ 8. What is the difference between hard and soft assignment?
+
+NUMERICAL
+ 9. Points: (0,0), (1,0), (0,1), (5,5), (6,5), (5,6), k=2, centroids
+    start at (0,0) and (5,5). Assign all points to the nearest centroid.
+10. After assignment in Q9, compute the new centroids.
+11. Euclidean distance between (2,3) and (5,7). Now Manhattan distance.
+12. A dataset has 10,000 points in 20 dims. Each E-step is O(n*k*d).
+    Estimate iterations needed if k=5 and you run until assignments are
+    stable - explain your estimate.
+
+CODE (write and run)
+13. Write K-Means with random init on 3 Gaussian blobs; report inertia
+    for k=1..8 and find the elbow.
+14. Add k-means++ init (choose first centroid randomly, then weight
+    remaining choices by squared distance to nearest centroid).
+15. Vectorize the assignment step with broadcasting (no per-point loop).
+16. Write a function silhouette_score_simple(X, labels) for k=2 using
+    the definition a(i) = mean intra-cluster dist, b(i) = min mean
+    inter-cluster dist; score = (b-a)/max(a,b).
+17. Compare your implementation's final centroids vs sklearn KMeans on
+    the same data/seed. Report the max centroid distance.
+
+DEBUGGING (find the bug in each snippet)
+18. centroids update divides by cluster size including EMPTY clusters.
+19. Distances computed with squared differences but never sqrt'ed, and
+    assignments compared against squared distances inconsistently.
+20. Data has one column in units of 0.001 and one in millions; inertia
+    is dominated by one axis - what is the fix and where must it apply?
+21. Loop "for i in range(n_iter)" reassigns from the SAME points list but
+    updates centroids in place - what artifact does that cause?
+
+CHALLENGES
+22. Implement k-means on MNIST digits (784 dims, k=10 after PCA to 50)
+    and report which digits are hardest to separate.
+23. Implement mini-batch K-Means (sample subsets per iteration) and
+    compare final inertia vs full-batch on 100k points.
+
+REAL-WORLD SCENARIO
+24. A retail dataset of customers (spend, frequency, recency). Explain
+    step-by-step how you would run K-Means: preprocessing, k choice,
+    validation, and how you would interpret clusters for marketing.
+
+================================================================================
+END
+================================================================================

@@ -1,0 +1,45 @@
+================================================================================
+THINK.TXT - 21 RNN
+================================================================================
+
+1. An RNN shares weights across time. Derive why that sharing is what
+   makes BPTT's gradient a product over time steps, and show how
+   gradient norms behave with eigenvalues of the recurrent weight
+   matrix (the vanishing/exploding mechanism).
+2. Why can't an RNN with sigmoid/tanh remember a fact from 50 steps
+   back even with lots of capacity? Separate the optimization story
+   (vanishing gradients) from the capacity story (information
+   bottleneck).
+3. RNNs process sequences one step at a time - no parallelism across
+   time. Quantify the training-time cost vs a Transformer on a
+   512-token sequence and explain why this killed plain RNNs at scale.
+4. BPTT truncation (tbptt): you backprop through only k steps. What
+   bias does that introduce and how do you choose k for a 10,000-step
+   sequence?
+5. Exploding gradients: gradient clipping helps. Why does clipping by
+   NORM work better than clipping each element? What does the clip
+   value do to the effective step?
+6. Your char-level RNN produces fluent but nonsense text. Diagnose:
+   is it underfitting (capacity), overfitting (memorized), or a
+   decoding problem? What does the training/validation loss gap tell
+   you?
+7. Sequence tasks: language modeling, translation, speech, and time
+   series each need different input/output alignments (many-to-many,
+   seq2seq, teacher forcing). For each, sketch the RNN architecture
+   and where teacher forcing helps/hurts.
+8. When would you still choose an RNN over a Transformer in 2026?
+   Give two genuine cases (long sequences with linear memory
+   preference, small-data regimes, online/streaming) and defend them.
+9. A stock-price LSTM overfits training but looks great in backtests.
+   Explain what temporal leakage + random split does, and how walk-
+   forward evaluation changes the conclusion.
+10. Initialization of the recurrent weight matrix: orthogonal init
+    helps RNNs. Explain why (spectral radius) and what happens if the
+    spectral radius > 1.
+11. OPEN PROBLEM: whether recurrence or attention is the "right"
+    inductive bias for sequence modeling remains an active question
+    (state-space models, linear attention). Argue what an ideal
+    sequence layer must satisfy and which existing layer comes closest.
+================================================================================
+END
+================================================================================

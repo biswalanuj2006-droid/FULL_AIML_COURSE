@@ -1,0 +1,57 @@
+================================================================================
+FASTAPI MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: SIMPLE ML API (Beginner)
+=====================================
+Problem: Serve a trained model via REST API.
+Requirements:
+- Load trained model
+- POST /predict endpoint
+- Request validation with Pydantic
+- Error handling
+- Health check endpoint
+- Swagger documentation
+Evaluation: API returns predictions correctly
+
+PROJECT 2: AUTHENTICATED ML API (Intermediate)
+================================================
+Problem: Build ML API with user authentication.
+Requirements:
+- JWT authentication
+- User registration/login
+- Role-based access control
+- Model prediction endpoints
+- Prediction logging to database
+- Rate limiting
+- Comprehensive error handling
+Evaluation: Auth works, predictions logged
+
+PROJECT 3: PRODUCTION ML INFERENCE SERVICE (Advanced)
+=====================================================
+Problem: Build production-grade ML inference API.
+Requirements:
+- Multiple model support
+- Model versioning
+- Caching (Redis)
+- Background tasks
+- Streaming responses
+- Prometheus metrics
+- Docker deployment
+- Load testing
+Evaluation: Handles 100+ concurrent requests
+
+PROJECT 4: MULTI-Tenant AI PLATFORM (Expert)
+==============================================
+Problem: Build multi-tenant AI SaaS backend.
+Requirements:
+- Multi-tenant architecture
+- Custom model per tenant
+- Usage tracking and billing
+- API key management
+- Rate limiting per tenant
+- Admin dashboard API
+- Comprehensive documentation
+Evaluation: Multi-tenant isolation working
+
+================================================================================

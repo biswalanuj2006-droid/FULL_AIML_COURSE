@@ -1,0 +1,23 @@
+# ============================================================
+# docker-compose.yml — ML API service
+# Run: docker compose up --build
+# Test: curl http://127.0.0.1:8000/health
+#
+# A multi-container AI app (module 41_DOCKER) would add:
+#   postgres:        database for predictions/history
+#   qdrant/chroma:   vector store for RAG
+#   redis:           cache / rate limiting
+#   api:             depends_on those services with health checks
+# ============================================================
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped

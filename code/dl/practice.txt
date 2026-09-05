@@ -1,0 +1,40 @@
+================================================================================
+CODE PRACTICE - code/dl (Keras MLP, MNIST)
+Companion: 01_keras_mlp_mnist.py (use EPOCHS=3 for quick runs on CPU)
+================================================================================
+RUN & OBSERVE
+1. Run with EPOCHS=3; note final test accuracy, then run once with
+   EPOCHS=10 and record the gain per extra epoch.
+2. Print predictions for 5 misclassified test images: are they
+   genuinely ambiguous (visually)? This is your first error analysis.
+
+MODIFY
+3. Add a hidden layer (e.g. 512->256) and compare accuracy + params.
+4. Sweep batch size in {32, 128, 512} at the same epoch budget; explain
+   the accuracy/noise trade-off you observe.
+5. Add dropout after each hidden layer; show train vs test accuracy
+   before/after to demonstrate its regularization effect.
+6. Replace the final softmax loss with a from-scratch cross-entropy
+   check: verify model.evaluate matches your manual CE on 100 samples.
+
+DEBUG
+7. Set the learning rate to 0.5 (or remove scaling): show loss NaN or
+   divergence, then fix with a smaller lr or lr schedule. Log it.
+8. Introduce a label bug (shift labels by 1) and detect it via a
+   per-class confusion matrix instead of accuracy.
+9. Feed unnormalized inputs (0-255 instead of 0-1): show accuracy drop
+   and explain why (saturated/exploding activations).
+
+BUILD (mini)
+10. Early stopping + ModelCheckpoint: retrain, and prove the restored
+    weights match the best validation epoch.
+11. Implement a 2-layer MLP for MNIST in numpy (use the from-scratch
+    neural net as a base) and compare accuracy vs this Keras version -
+    the from-scratch-vs-library parity exercise from 16/18.
+
+RELATE
+12. Which of the 18_ANN think.txt claims can you verify with this
+    script (e.g. width vs depth, ReLU vs tanh)? Run one.
+13. (Interview) Why does normalizing inputs to 0-1 or standardizing
+    matter for MLPs but less for trees? Use your debugging #9 as
+    evidence.

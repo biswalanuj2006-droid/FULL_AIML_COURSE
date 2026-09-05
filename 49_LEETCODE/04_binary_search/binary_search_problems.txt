@@ -1,0 +1,85 @@
+================================================================================
+LEETCODE PATTERN: BINARY SEARCH — 25 PROBLEMS
+================================================================================
+
+================================================================================
+EASY (10 Problems)
+================================================================================
+
+1. BINARY SEARCH (LC #704)
+   def search(nums, target):
+       lo, hi = 0, len(nums) - 1
+       while lo <= hi:
+           mid = (lo + hi) // 2
+           if nums[mid] == target: return mid
+           elif nums[mid] < target: lo = mid + 1
+           else: hi = mid - 1
+       return -1
+
+2. SEARCH INSERT POSITION (LC #35)
+3. FIRST BAD VERSION (LC #278)
+4. VALID PERFECT SQUARE (LC #367)
+5. GUESS NUMBER HIGHER OR LOWER (LC #374)
+6. SQUARE ROOT (LC #69)
+7. POWER OF TWO (LC #231)
+8. ARRANGING COINS (LC #441)
+9. FIND Smallest LETTER GREATER (LC #744)
+10. TWO SUM II (LC #167)
+
+================================================================================
+MEDIUM (10 Problems)
+================================================================================
+
+11. SEARCH IN ROTATED SORTED ARRAY (LC #33)
+    def search(nums, target):
+        lo, hi = 0, len(nums) - 1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if nums[mid] == target: return mid
+            if nums[lo] <= nums[mid]:  # left sorted
+                if nums[lo] <= target < nums[mid]:
+                    hi = mid - 1
+                else:
+                    lo = mid + 1
+            else:  # right sorted
+                if nums[mid] < target <= nums[hi]:
+                    lo = mid + 1
+                else:
+                    hi = mid - 1
+        return -1
+
+12. FIND MINIMUM IN ROTATED SORTED ARRAY (LC #153)
+13. KOKO EATING BANANAS (LC #875)
+14. CAPACITY TO SHIP PACKAGES (LC #1011)
+15. SEARCH A 2D MATRIX (LC #74)
+16. FIND PEAK ELEMENT (LC #162)
+17. TIME BASED KEY-VALUE STORE (LC #981)
+18. H-INDEX II (LC #275)
+19. FIND IN ROTATED SORTED ARRAY II (LC #81)
+20. BOOK ALLOCATION / SPLIT ARRAY LARGEST SUM (LC #410)
+
+================================================================================
+HARD (5 Problems)
+================================================================================
+
+21. MEDIAN OF TWO SORTED ARRAYS (LC #4)
+22. AGGRESSIVE COWS / SPHELLER (LC #1552)
+23. FIND IN Mountain ARRAY (LC #1095)
+24. MINIMUM SPEED TO ARRIVE ON TIME (LC #1870)
+25. KTH SMALLEST NUMBER IN MULTIPLICATION TABLE (LC #668)
+
+================================================================================
+BINARY SEARCH ON ANSWER TEMPLATE
+==================================
+def binary_search_answer(lo, hi):
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if is_valid(mid):
+            hi = mid      # try smaller
+        else:
+            lo = mid + 1  # need larger
+    return lo
+
+================================================================================
+END OF BINARY SEARCH PATTERN
+================================================================================

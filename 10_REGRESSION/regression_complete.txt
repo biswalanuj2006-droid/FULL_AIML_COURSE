@@ -1,0 +1,484 @@
+================================================================================
+MODULE 10: REGRESSION — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand the regression problem
+- Implement all major regression algorithms
+- Choose the right regression model
+- Evaluate regression models properly
+- Build complete regression pipelines
+
+================================================================================
+1. WHAT IS REGRESSION?
+================================================================================
+
+INTUITION
+---------
+Regression = predicting a continuous number.
+
+Real-world examples:
+- House features → price
+- Student study hours → exam score
+- Temperature + humidity → energy consumption
+- Date → stock price
+
+FORMAL DEFINITION
+-----------------
+Given input features X, learn a function f(X) that predicts
+a continuous target y ∈ ℝ
+
+TYPES
+-----
+Simple regression: 1 feature
+Multiple regression: >1 feature
+Polynomial regression: non-linear relationships
+
+================================================================================
+2. LINEAR REGRESSION
+================================================================================
+
+INTUITION
+---------
+Find the straight line (or hyperplane) that best fits the data.
+
+MATHEMATICS
+-----------
+Simple:  ŷ = wx + b
+Multiple: ŷ = w₁x₁ + w₂x₂ + ... + wₙxₙ + b = wᵀx + b
+
+LOSS FUNCTION: Mean Squared Error (MSE)
+L = (1/n) Σ(yᵢ - ŷᵢ)²
+
+NORMAL EQUATION (closed-form solution):
+w = (XᵀX)⁻¹Xᵀy
+
+GRADIENT DESCENT:
+w = w - α × ∂L/∂w
+
+IMPLEMENTATION
+--------------
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+print(f"MSE:  {mean_squared_error(y_test, y_pred):.2f}")
+print(f"RMSE: {np.sqrt(mean_squared_error(y_test, y_pred)):.2f}")
+print(f"R²:   {r2_score(y_test, y_pred):.4f}")
+print(f"Coefficients: {model.coef_}")
+print(f"Intercept: {model.intercept_}")
+
+ASSUMPTIONS
+-----------
+1. Linear relationship between features and target
+2. Independence of errors
+3. Homoscedasticity (constant variance of errors)
+4. Normal distribution of errors
+5. No multicollinearity between features
+
+CHECKING ASSUMPTIONS
+--------------------
+residuals = y_test - y_pred
+
+# Linearity: residuals vs predicted should show no pattern
+plt.scatter(y_pred, residuals)
+plt.axhline(y=0, color='r')
+plt.xlabel('Predicted')
+plt.ylabel('Residuals')
+plt.title('Residual Plot')
+
+# Normality: Q-Q plot
+from scipy import stats
+stats.probplot(residuals, dist="norm", plot=plt)
+plt.show()
+
+PROS: Fast, interpretable, no hyperparameters
+CONS: Assumes linearity, sensitive to outliers, can underfit
+
+================================================================================
+3. REGULARIZED REGRESSION
+================================================================================
+
+PROBLEM: Overfitting in linear regression
+SOLUTION: Add penalty term to loss function
+
+3.1 RIDGE REGRESSION (L2 Penalty)
+----------------------------------
+Loss = MSE + α × Σwᵢ²
+
+Shrinks coefficients toward zero but never exactly zero.
+Keeps all features.
+
+from sklearn.linear_model import Ridge
+
+model = Ridge(alpha=1.0)
+model.fit(X_train, y_train)
+
+3.2 LASSO REGRESSION (L1 Penalty)
+----------------------------------
+Loss = MSE + α × Σ|wᵢ|
+
+Can set coefficients exactly to zero → automatic feature selection!
+
+from sklearn.linear_model import Lasso
+
+model = Lasso(alpha=0.1)
+model.fit(X_train, y_train)
+
+# Check which features were eliminated
+zero_coef = np.where(model.coef_ == 0)[0]
+print(f"Eliminated features: {[feature_names[i] for i in zero_coef]}")
+
+3.3 ELASTIC NET (L1 + L2)
+--------------------------
+Loss = MSE + α₁ × Σ|wᵢ| + α₂ × Σwᵢ²
+
+Combines both Ridge and Lasso.
+
+from sklearn.linear_model import ElasticNet
+
+model = ElasticNet(alpha=0.1, l1_ratio=0.5)  # l1_ratio mixes L1 and L2
+model.fit(X_train, y_train)
+
+CHOOSING BETWEEN THEM
+----------------------
+Ridge: when most features are useful, just need regularization
+Lasso: when you suspect many features are irrelevant
+ElasticNet: when you want both shrinkage and feature selection
+
+================================================================================
+4. POLYNOMIAL REGRESSION
+================================================================================
+
+INTUITION
+---------
+Fit a curve instead of a line by adding polynomial features.
+
+MATHEMATICS
+-----------
+ŷ = w₁x + w₂x² + w₃x³ + b
+
+Still linear in the parameters! Just non-linear in features.
+
+IMPLEMENTATION
+--------------
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import Pipeline
+
+pipeline = Pipeline([
+    ('poly', PolynomialFeatures(degree=2, include_bias=False)),
+    ('scaler', StandardScaler()),
+    ('model', LinearRegression())
+])
+
+pipeline.fit(X_train, y_train)
+y_pred = pipeline.predict(X_test)
+
+DEGREE SELECTION
+----------------
+Degree 1 → straight line (underfit if data is curved)
+Degree 2 → parabola (good for many real relationships)
+Degree 3+ → flexible but risks overfitting
+
+Use cross-validation to choose degree:
+degrees = [1, 2, 3, 4, 5]
+for d in degrees:
+    pipe = Pipeline([
+        ('poly', PolynomialFeatures(degree=d)),
+        ('scaler', StandardScaler()),
+        ('model', LinearRegression())
+    ])
+    scores = cross_val_score(pipe, X_train, y_train, cv=5, scoring='r2')
+    print(f"Degree {d}: {scores.mean():.4f} ± {scores.std():.4f}")
+
+PROS: Captures non-linear relationships
+CONS: Feature explosion (n features → n² or more), overfitting risk
+
+================================================================================
+5. DECISION TREE REGRESSION
+================================================================================
+
+INTUITION
+---------
+Like classification trees, but leaf nodes output the MEAN of training
+samples in that leaf instead of a class.
+
+IMPLEMENTATION
+--------------
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+
+model = DecisionTreeRegressor(max_depth=5, min_samples_leaf=10)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+# Visualization
+plt.figure(figsize=(20, 10))
+plot_tree(model, feature_names=feature_names, filled=True, rounded=True)
+plt.show()
+
+PROS: Handles non-linearity, no scaling needed, interpretable
+CONS: Overfits, unstable, discontinuous predictions
+
+================================================================================
+6. RANDOM FOREST REGRESSION
+================================================================================
+
+INTUITION
+---------
+Ensemble of decision trees. Each tree trained on random subset of data
+and features. Final prediction = average of all trees.
+
+IMPLEMENTATION
+--------------
+from sklearn.ensemble import RandomForestRegressor
+
+model = RandomForestRegressor(
+    n_estimators=100,
+    max_depth=10,
+    min_samples_split=5,
+    random_state=42,
+    n_jobs=-1
+)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+# Feature importance
+importances = pd.Series(
+    model.feature_importances_, index=feature_names
+).sort_values(ascending=False)
+importances.head(10).plot(kind='bar')
+plt.title('Top 10 Feature Importances')
+plt.show()
+
+PROS: Robust, handles non-linearity, feature importance
+CONS: Less interpretable, memory intensive
+
+================================================================================
+7. GRADIENT BOOSTING REGRESSION
+================================================================================
+
+INTUITION
+---------
+Sequential ensemble. Each new tree fits the RESIDUALS (errors) of
+the previous ensemble.
+
+IMPLEMENTATION (XGBoost)
+------------------------
+import xgboost as xgb
+
+model = xgb.XGBRegressor(
+    n_estimators=100,
+    max_depth=6,
+    learning_rate=0.1,
+    subsample=0.8,
+    random_state=42
+)
+model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=10)
+
+IMPLEMENTATION (LightGBM)
+-------------------------
+import lightgbm as lgb
+
+model = lgb.LGBMRegressor(
+    n_estimators=100,
+    max_depth=6,
+    learning_rate=0.1,
+    num_leaves=31,
+    random_state=42
+)
+model.fit(X_train, y_train)
+
+IMPLEMENTATION (sklearn)
+------------------------
+from sklearn.ensemble import GradientBoostingRegressor
+
+model = GradientBoostingRegressor(
+    n_estimators=100, max_depth=3, learning_rate=0.1
+)
+model.fit(X_train, y_train)
+
+KEY HYPERPARAMETERS
+-------------------
+n_estimators: number of trees (more = more complex, risk overfitting)
+max_depth: tree depth (controls complexity)
+learning_rate: contribution of each tree (smaller = need more trees)
+subsample: fraction of data per tree (reduces variance)
+colsample_bytree: fraction of features per tree
+
+PROS: Highest accuracy, handles mixed features, robust
+CONS: Slower to train, prone to overfitting, harder to tune
+
+================================================================================
+8. SUPPORT VECTOR REGRESSION (SVR)
+================================================================================
+
+INTUITION
+---------
+Fits a tube around the data. Points inside the tube have zero loss.
+Points outside are penalized.
+
+IMPLEMENTATION
+--------------
+from sklearn.svm import SVR
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model', SVR(kernel='rbf', C=1.0, epsilon=0.1))
+])
+pipeline.fit(X_train, y_train)
+
+KEY PARAMETERS
+--------------
+C: regularization
+epsilon: width of the tube (no penalty inside tube)
+kernel: 'linear', 'rbf', 'poly'
+
+================================================================================
+9. REGRESSION METRICS
+================================================================================
+
+MAE = (1/n) Σ|yᵢ - ŷᵢ|
+  → Mean Absolute Error
+  → Interpretable in original units
+  → Robust to outliers
+
+MSE = (1/n) Σ(yᵢ - ŷᵢ)²
+  → Mean Squared Error
+  → Penalizes large errors more
+  → Same units as y²
+
+RMSE = √MSE
+  → Root Mean Squared Error
+  → Same units as y
+  → Most commonly used
+
+R² = 1 - (SS_res / SS_tot)
+  → Coefficient of determination
+  → 1.0 = perfect, 0.0 = predicts mean, negative = worse than mean
+
+ADJUSTED R² = 1 - [(1-R²)(n-1)/(n-k-1)]
+  → Penalizes for number of features
+  → Use when comparing models with different numbers of features
+
+IMPLEMENTATION
+--------------
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+r2 = r2_score(y_test, y_pred)
+
+print(f"MAE:  {mae:.2f}")
+print(f"MSE:  {mse:.2f}")
+print(f"RMSE: {rmse:.2f}")
+print(f"R²:   {r2:.4f}")
+
+CHOOSING METRIC
+---------------
+Use MAE when: outliers are not important, want interpretability
+Use RMSE when: large errors should be penalized more
+Use R² when: want to compare across datasets
+
+================================================================================
+10. ALGORITHM COMPARISON
+================================================================================
+
+| ALGORITHM          | SPEED   | ACCURACY | INTERPRETABILITY | OVERFITTING RISK |
+|--------------------|---------|----------|------------------|------------------|
+| Linear Regression  | ★★★★★   | ★★★      | ★★★★★            | Low              |
+| Ridge/Lasso        | ★★★★★   | ★★★★     | ★★★★★            | Very Low         |
+| Polynomial         | ★★★★    | ★★★★     | ★★★★             | Medium           |
+| Decision Tree      | ★★★★    | ★★★      | ★★★★★            | High             |
+| Random Forest      | ★★★     | ★★★★     | ★★★              | Low              |
+| Gradient Boosting  | ★★★     | ★★★★★    | ★★★              | Medium           |
+| SVR                | ★★      | ★★★★     | ★★               | Medium           |
+
+ALGORITHM SELECTION GUIDE
+-------------------------
+Start with: Linear Regression (baseline)
+Need regularization: Ridge/Lasso/ElasticNet
+Non-linear patterns: Polynomial, Random Forest, Gradient Boosting
+Best accuracy: Gradient Boosting (XGBoost/LightGBM)
+Interpretability needed: Linear Regression, Decision Tree
+
+================================================================================
+11. COMPLETE PIPELINE EXAMPLE
+================================================================================
+
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.model_selection import cross_val_score
+import xgboost as xgb
+
+pipelines = {
+    'Linear': Pipeline([
+        ('scaler', StandardScaler()),
+        ('model', LinearRegression())
+    ]),
+    'Ridge': Pipeline([
+        ('scaler', StandardScaler()),
+        ('model', Ridge(alpha=1.0))
+    ]),
+    'Random Forest': RandomForestRegressor(n_estimators=100, random_state=42),
+    'XGBoost': xgb.XGBRegressor(n_estimators=100, random_state=42)
+}
+
+results = {}
+for name, pipeline in pipelines.items():
+    scores = cross_val_score(pipeline, X_train, y_train, cv=5,
+                             scoring='neg_mean_squared_error')
+    rmse_scores = np.sqrt(-scores)
+    results[name] = rmse_scores.mean()
+    print(f"{name}: RMSE = {rmse_scores.mean():.2f} ± {rmse_scores.std():.2f}")
+
+================================================================================
+12. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Not checking for linearity before using linear regression
+  WRONG: Assuming linear relationship without visualizing
+  RIGHT: Plot residuals vs predicted, check for patterns
+
+MISTAKE 2: Using MSE with outliers
+  WRONG: MSE on data with extreme outliers
+  RIGHT: Use MAE or Huber loss for robustness
+
+MISTAKE 3: Not regularizing with many features
+  WRONG: LinearRegression with 100+ features
+  RIGHT: Use Ridge, Lasso, or ElasticNet when features > samples
+
+MISTAKE 4: Forgetting to inverse-transform predictions
+  WRONG: Training on log(y), predicting, but not exponentiating
+  RIGHT: Use np.exp(y_pred) if target was log-transformed
+
+MISTAKE 5: Comparing R² across different datasets
+  WRONG: "My R² is 0.9, so my model is great!" (different data)
+  RIGHT: Compare R² only on the same or similar datasets
+
+================================================================================
+13. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between Ridge and Lasso regression?
+Q2: When would polynomial regression be better than linear regression?
+Q3: Why does Random Forest regression use averaging instead of voting?
+Q4: What is the relationship between RMSE and R²?
+Q5: Why is Linear Regression a good baseline even if you plan to use complex models?
+Q6: How do you handle a target variable with a skewed distribution?
+Q7: What does a residual plot with a U-shape tell you?
+
+================================================================================
+END OF MODULE 10: REGRESSION
+================================================================================

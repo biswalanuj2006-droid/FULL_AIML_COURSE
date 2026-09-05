@@ -1,0 +1,48 @@
+================================================================================
+THINK.TXT - 11 ANOMALY DETECTION
+================================================================================
+
+1. All anomaly detectors define "normal" implicitly. State the implicit
+   definition of normality for z-score, LOF, Isolation Forest, and a
+   trained autoencoder - then give one dataset where each definition is
+   catastrophically wrong.
+2. "Anomaly detection is density estimation at a specific quantile."
+   Defend or attack this claim. What breaks the equivalence when the
+   data has 100 dimensions?
+3. Masking and swamping: explain both with one dataset. Why do robust
+   estimators fix masking but introduce their own failure (breakdown
+   point)? What is the breakdown point of the median vs the mean?
+4. Isolation Forest scores depend on the random splits and the sampling
+   of max_samples. Characterize what kinds of anomalies are systematically
+   missed (thin regions along a feature where normal variance is large)
+   and propose a modification.
+5. You have labels for only the LAST month of fraud but 12 months of
+   unlabeled history. Design the exact training/evaluation protocol that
+   uses both without fooling yourself. Where does the "supervised"
+   upgrade (module 09) start paying off?
+6. A seasonal time series with an upward trend: walk through every
+   failure mode of a naive rolling-z detector, then design the detector
+   that handles trend + seasonality + spikes + regime shift with one
+   alert budget. Which of those four phenomena can one threshold serve?
+7. Distance concentration: in high dimensions all points are roughly
+   equidistant. Show why kNN/LOF degrade; does Isolation Forest suffer
+   the same way? (Think about what IF actually measures.)
+8. Contamination is a parameter, but real anomaly rates drift over
+   time. Design an adaptive threshold that tracks a changing anomaly
+   rate without labels. What are its failure modes?
+9. Novelty vs outlier: one-class methods distinguish "seen normal but
+   rare" from "never seen". When does a rare-but-normal cluster get
+   flagged, and how do you tell the difference operationally?
+10. Autoencoders trained on contaminated data memorize the anomalies.
+    Quantify when this happens (contamination fraction vs capacity) and
+    design the training scheme that prevents it.
+11. Every anomaly you catch is either a real event or a data-quality
+    bug, and the two look identical at first. Propose features of the
+    anomaly (persistence, affected columns, domain checks) that separate
+    them.
+12. OPEN PROBLEM: evaluation of unsupervised anomaly detection without
+    any labels has no settled metric. Design one (or argue none can
+    exist) and state exactly what it would measure and where it breaks.
+================================================================================
+END
+================================================================================

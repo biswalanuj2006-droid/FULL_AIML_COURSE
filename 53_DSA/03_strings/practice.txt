@@ -1,0 +1,249 @@
+# STRINGS — PRACTICE SET
+# 40 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is the time complexity of string concatenation in Python?
+   Answer: O(n) — creates a new string each time (strings are immutable)
+
+2. How do you reverse a string in Python?
+   Answer: s[::-1] — O(n) time and space
+
+3. What is a palindrome?
+   Answer: A string that reads the same forward and backward
+
+4. What is the time complexity of checking if a string is a palindrome?
+   Answer: O(n) — compare characters from both ends
+
+5. What is the difference between a substring and a subsequence?
+   Answer: Substring: contiguous characters. Subsequence: characters in order but not necessarily contiguous
+
+6. What is string hashing?
+   Answer: Converting a string to a numeric value for O(1) comparison using precomputed hash values
+
+7. What is the time complexity of naive string matching?
+   Answer: O(n × m) where n is text length and m is pattern length
+
+8. What is the KMP algorithm?
+   Answer: Knuth-Morris-Pratt — pattern matching algorithm that runs in O(n + m) using preprocessing
+
+9. What is an anagram?
+   Answer: Two strings containing the same characters with the same frequencies, in any order
+
+10. What is the time complexity of checking if two strings are anagrams?
+    Answer: O(n) using character frequency counting
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Find the first non-repeating character in a string.
+    ```python
+    def first_unique_char(s):
+        count = {}
+        for c in s:
+            count[c] = count.get(c, 0) + 1
+        for i, c in enumerate(s):
+            if count[c] == 1:
+                return i
+        return -1
+    ```
+
+12. Check if two strings are anagrams.
+    ```python
+    def is_anagram(s1, s2):
+        if len(s1) != len(s2): return False
+        count = [0] * 26
+        for c in s1: count[ord(c)-97] += 1
+        for c in s2: count[ord(c)-97] -= 1
+        return all(x == 0 for x in count)
+    ```
+
+13. Find the longest substring without repeating characters.
+    ```python
+    def length_of_longest_substring(s):
+        seen = {}
+        left = max_len = 0
+        for right, c in enumerate(s):
+            if c in seen and seen[c] >= left:
+                left = seen[c] + 1
+            seen[c] = right
+            max_len = max(max_len, right - left + 1)
+        return max_len
+    ```
+
+14. Implement Rabin-Karp string matching.
+    ```python
+    def rabin_karp(text, pattern):
+        n, m = len(text), len(pattern)
+        d, q = 256, 101  # base, prime
+        h = pow(d, m-1) % q
+        p_hash = t_hash = 0
+        for i in range(m):
+            p_hash = (d * p_hash + ord(pattern[i])) % q
+            t_hash = (d * t_hash + ord(text[i])) % q
+        for i in range(n - m + 1):
+            if p_hash == t_hash:
+                if text[i:i+m] == pattern:
+                    return i
+            if i < n - m:
+                t_hash = (d * (t_hash - ord(text[i]) * h) + ord(text[i+m])) % q
+        return -1
+    ```
+
+15. Longest palindromic substring (expand around center).
+    ```python
+    def longest_palindrome(s):
+        def expand(l, r):
+            while l >= 0 and r < len(s) and s[l] == s[r]:
+                l -= 1; r += 1
+            return s[l+1:r]
+        result = ""
+        for i in range(len(s)):
+            odd = expand(i, i)
+            even = expand(i, i + 1)
+            result = max(result, odd, even, key=len)
+        return result
+    ```
+
+16. Group anagrams together.
+    ```python
+    from collections import defaultdict
+    def group_anagrams(strs):
+        groups = defaultdict(list)
+        for s in strs:
+            key = tuple(sorted(s))
+            groups[key].append(s)
+        return list(groups.values())
+    ```
+
+17. What is the time complexity of KMP preprocessing?
+    Answer: O(m) for pattern of length m — builds the failure/prefix function
+
+18. Minimum window substring containing all characters of target.
+    ```python
+    from collections import Counter
+    def min_window(s, t):
+        need = Counter(t)
+        missing = len(t)
+        left = start = end = 0
+        for right, c in enumerate(s):
+            if need[c] > 0: missing -= 1
+            need[c] -= 1
+            while missing == 0:
+                if end == 0 or right - left < end - start:
+                    start, end = left, right
+                need[s[left]] += 1
+                if need[s[left]] > 0: missing += 1
+                left += 1
+        return s[start:end+1] if end else ""
+    ```
+
+19. Longest common prefix among an array of strings.
+    ```python
+    def longest_common_prefix(strs):
+        if not strs: return ""
+        prefix = strs[0]
+        for s in strs[1:]:
+            while not s.startswith(prefix):
+                prefix = prefix[:-1]
+                if not prefix: return ""
+        return prefix
+    ```
+
+20. Convert integer to Roman numeral.
+
+21. Implement strStr() (find first occurrence of pattern in text).
+
+22. Count and say the nth term.
+
+23. Letter combinations of a phone number.
+
+24. Valid parentheses using stack.
+
+25. Decode string (e.g., "3[a2[c]]" → "accaccacc").
+
+---
+
+## HARD (10 Questions)
+
+26. Longest palindromic subsequence (dynamic programming).
+    ```python
+    def longest_palindrome_subseq(s):
+        n = len(s)
+        dp = [[0] * n for _ in range(n)]
+        for i in range(n): dp[i][i] = 1
+        for length in range(2, n + 1):
+            for i in range(n - length + 1):
+                j = i + length - 1
+                if s[i] == s[j]:
+                    dp[i][j] = dp[i+1][j-1] + 2
+                else:
+                    dp[i][j] = max(dp[i+1][j], dp[i][j-1])
+        return dp[0][n-1]
+    ```
+
+27. Edit distance between two strings.
+
+28. Regular expression matching ('.' and '*').
+
+29. Wildcard matching ('?' and '*').
+
+30. Longest repeating character replacement.
+
+31. Minimum number of swaps to make strings anagram.
+
+32. Distinct subsequences (count ways to form target from source).
+
+33. String to integer (atoi) with all edge cases.
+
+34. Longest substring with at most two distinct characters.
+
+35. Concatenation of all words.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Rabin-Karp hash collision not handled
+def rabin_karp(text, pattern):
+    # After hash match, must verify with direct comparison
+    if hash_val == pattern_hash:
+        return i  # Bug: should verify text[i:i+m] == pattern
+
+# Debug 2: KMP failure function off-by-one
+def compute_lps(pattern):
+    m = len(pattern)
+    lps = [0] * m
+    length = 0
+    i = 1
+    while i < m:
+        if pattern[i] == pattern[length]:
+            length += 1
+            lps[i] = length  # Bug: should be lps[i] = length after increment
+            i += 1
+        elif length > 0:
+            length = lps[length - 1]
+        else:
+            lps[i] = 0
+            i += 1
+
+# Debug 3: Palindrome check includes non-alphanumeric
+def is_palindrome(s):
+    return s == s[::-1]  # Bug: should filter to alphanumeric and lowercase
+# Fix: s = ''.join(c.lower() for c in s if c.isalnum())
+
+# Debug 4: Anagram check uses sort (O(n log n))
+def is_anagram(s1, s2):
+    return sorted(s1) == sorted(s2)  # Works but O(n log n)
+# Fix: Use Counter or frequency array for O(n)
+
+# Debug 5: String concatenation in loop
+result = ""
+for word in words:
+    result += word  # O(n²) total — creates new string each time
+# Fix: Use "".join(words) → O(n)
+```

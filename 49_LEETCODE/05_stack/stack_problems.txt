@@ -1,0 +1,79 @@
+================================================================================
+LEETCODE PATTERN: STACK — 25 PROBLEMS
+================================================================================
+
+================================================================================
+EASY (10 Problems)
+================================================================================
+
+1. VALID PARENTHESES (LC #20)
+   def isValid(s):
+       stack = []
+       mapping = {')': '(', '}': '{', ']': '['}
+       for c in s:
+           if c in mapping:
+               if not stack or stack[-1] != mapping[c]:
+                   return False
+               stack.pop()
+           else:
+               stack.append(c)
+       return len(stack) == 0
+
+2. MIN STACK (LC #155)
+3. IMPLEMENT QUEUE USING STACKS (LC #232)
+4. BASEBALL GAME (LC #682)
+5. REMOVE ALL ADJACENT DUPLICATES (LC #1047)
+6. MAKE THE STRING GREAT (LC #1544)
+7. FINAL PRICES WITH SPECIAL DISCOUNT (LC #1475)
+8. VALIDATE STACK SEQUENCES (LC #946)
+9. NEXT GREATER ELEMENT I (LC #496)
+10. BACKSPACE STRING COMPARE (LC #844)
+
+================================================================================
+MEDIUM (10 Problems)
+================================================================================
+
+11. DAILY TEMPERATURES (LC #739)
+    def dailyTemperatures(temperatures):
+        n = len(temperatures)
+        result = [0] * n
+        stack = []
+        for i in range(n):
+            while stack and temperatures[i] > temperatures[stack[-1]]:
+                j = stack.pop()
+                result[j] = i - j
+            stack.append(i)
+        return result
+
+12. GENERATE PARENTHESES (LC #22)
+13. EVALUATE REVERSE POLISH NOTATION (LC #150)
+14. DECODE STRING (LC #394)
+15. ASTEROID COLLISION (LC #735)
+16. CAR FLEET (LC #853)
+17. ONLINE STOCK SPAN (LC #901)
+18. SIMPLIFY PATH (LC #71)
+19. LARGEST RECTANGLE IN HISTOGRAM (LC #84)
+20. TRAPPING RAIN WATER (LC #42)
+
+================================================================================
+HARD (5 Problems)
+================================================================================
+
+21. LARGEST RECTANGLE IN HISTOGRAM (LC #84)
+22. TRAPPING RAIN WATER (LC #42)
+23. BASIC CALCULATOR (LC #224)
+24. BASIC CALCULATOR II (LC #227)
+25. MAXIMAL RECTANGLE (LC #85)
+
+================================================================================
+MONOTONIC STACK TEMPLATE
+==========================
+for i in range(n):
+    while stack and arr[i] > arr[stack[-1]]:  # or <
+        idx = stack.pop()
+        result[idx] = ...  # process
+    stack.append(i)
+
+================================================================================
+END OF STACK PATTERN
+================================================================================

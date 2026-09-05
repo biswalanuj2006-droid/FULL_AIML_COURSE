@@ -1,0 +1,131 @@
+================================================================================
+PROJECT 7: PRODUCTION RAG PLATFORM (LEVEL 3)
+================================================================================
+
+PROBLEM STATEMENT
+-----------------
+Build a production-ready RAG (Retrieval-Augmented Generation) platform
+that allows users to upload documents, ask questions, and receive
+accurate, sourced answers.
+
+GOAL: Build a complete AI application with all production components.
+
+ARCHITECTURE
+------------
+User → Frontend (React/Streamlit)
+     → FastAPI Backend
+     → Authentication (JWT)
+     → Document Processing Pipeline
+     → Vector Database (Qdrant)
+     → PostgreSQL (metadata, users)
+     → Redis (caching)
+     → LLM (OpenAI/Claude)
+     → Monitoring (logging + metrics)
+     → Docker + Deployment
+
+COMPONENTS
+----------
+
+1. DOCUMENT PIPELINE
+   - Upload: PDF, TXT, DOCX
+   - Processing: Load → Clean → Chunk (512 tokens, 50 overlap)
+   - Embedding: sentence-transformers/all-MiniLM-L6-v2
+   - Storage: Qdrant vector DB + PostgreSQL metadata
+
+2. RETRIEVAL ENGINE
+   - Semantic search: top-K vector similarity
+   - Keyword search: BM25
+   - Hybrid: combine semantic + keyword
+   - Reranking: cross-encoder for precision
+
+3. GENERATION
+   - Prompt template with retrieved context
+   - LLM call with grounding
+   - Confidence scoring
+   - Source attribution
+
+4. API (FastAPI)
+   - POST /documents/upload → upload and index document
+   - POST /chat → ask question, get answer
+   - GET /documents → list user's documents
+   - DELETE /documents/{id} → remove document
+   - GET /health → health check
+
+5. AUTHENTICATION
+   - JWT-based auth
+   - User registration/login
+   - Document ownership
+
+6. DATABASE
+   - PostgreSQL: users, documents, chat history
+   - Qdrant: vector embeddings
+   - Redis: session cache, frequent queries
+
+7. TESTING
+   - Unit tests for preprocessing
+   - Integration tests for API
+   - RAG quality tests (faithfulness, relevance)
+
+8. DOCKER
+   docker-compose.yml:
+   - api service
+   - qdrant service
+   - postgres service
+   - redis service
+
+9. MONITORING
+   - Prediction logging
+   - Latency tracking
+   - Error rate monitoring
+   - Cost tracking (LLM API calls)
+
+FILES
+-----
+rag_platform/
+├── docker-compose.yml
+├── Dockerfile
+├── requirements.txt
+├── .env.example
+├── README.md
+│
+├── backend/
+│   ├── main.py                 # FastAPI app
+│   ├── config.py               # Configuration
+│   ├── auth/
+│   │   ├── routes.py
+│   │   ├── jwt_handler.py
+│   │   └── models.py
+│   ├── documents/
+│   │   ├── routes.py
+│   │   ├── processor.py        # Document chunking
+│   │   └── models.py
+│   ├── chat/
+│   │   ├── routes.py
+│   │   ├── retriever.py        # Hybrid search
+│   │   ├── generator.py        # LLM generation
+│   │   └── models.py
+│   └── database/
+│       ├── postgres.py
+│       ├── qdrant.py
+│       └── redis.py
+│
+├── frontend/
+│   └── app.py                  # Streamlit interface
+│
+├── tests/
+│   ├── test_preprocessing.py
+│   ├── test_retrieval.py
+│   ├── test_generation.py
+│   └── test_api.py
+│
+├── notebooks/
+│   └── evaluation.ipynb
+│
+├── monitoring/
+│   └── logging_config.py
+│
+└── docs/
+    ├── api_docs.md
+    └── architecture.md
+
+================================================================================

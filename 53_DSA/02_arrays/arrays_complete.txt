@@ -1,0 +1,220 @@
+================================================================================
+DSA MODULE 2: ARRAYS — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Master array traversal, insertion, deletion
+- Apply two pointers, sliding window, prefix sum techniques
+- Solve 15+ LeetCode-style array problems
+- Optimize brute-force solutions
+
+================================================================================
+1. ARRAY FUNDAMENTALS
+================================================================================
+
+WHAT IS AN ARRAY?
+-----------------
+Contiguous block of memory storing elements of the same type.
+Access by index in O(1) time.
+
+Python list is a dynamic array (resizable).
+
+BASIC OPERATIONS
+----------------
+Access:      arr[i]           → O(1)
+Search:      linear search    → O(n)
+Insert (end): append          → O(1) amortized
+Insert (middle): insert       → O(n)
+Delete (end): pop             → O(1)
+Delete (middle): pop(i)       → O(n)
+
+================================================================================
+2. TWO POINTERS PATTERN
+================================================================================
+
+INTUITION
+---------
+Use two indices moving toward each other (or in same direction)
+to solve problems in O(n) instead of O(n²).
+
+PROBLEM: Two Sum (Sorted Array)
+--------------------------------
+Given sorted array, find two numbers that add to target.
+
+Brute Force: O(n²) — check all pairs
+Two Pointers: O(n) — move pointers based on sum
+
+def two_sum_sorted(arr, target):
+    left, right = 0, len(arr) - 1
+    while left < right:
+        current_sum = arr[left] + arr[right]
+        if current_sum == target:
+            return [left, right]
+        elif current_sum < target:
+            left += 1      # need larger sum
+        else:
+            right -= 1     # need smaller sum
+    return [-1, -1]
+
+DRY RUN: arr = [1, 2, 3, 4, 6], target = 6
+  left=0, right=4: 1+6=7 > 6 → right--
+  left=0, right=3: 1+4=5 < 6 → left++
+  left=1, right=3: 2+4=6 = 6 → return [1, 3] ✓
+
+PROBLEM: Container With Most Water
+-----------------------------------
+Given heights array, find two lines that form container holding most water.
+
+def max_area(heights):
+    left, right = 0, len(heights) - 1
+    max_water = 0
+    while left < right:
+        width = right - left
+        height = min(heights[left], heights[right])
+        max_water = max(max_water, width * height)
+        if heights[left] < heights[right]:
+            left += 1
+        else:
+            right -= 1
+    return max_water
+
+WHY IT WORKS: Moving the shorter pointer is always optimal
+because the taller pointer can't increase the min height.
+
+================================================================================
+3. SLIDING WINDOW PATTERN
+================================================================================
+
+INTUITION
+---------
+Maintain a "window" (subarray) that slides across the array.
+Used for problems involving contiguous subarrays.
+
+FIXED WINDOW: Maximum sum of k consecutive elements
+def max_sum_subarray(arr, k):
+    window_sum = sum(arr[:k])
+    max_sum = window_sum
+    for i in range(k, len(arr)):
+        window_sum += arr[i] - arr[i-k]
+        max_sum = max(max_sum, window_sum)
+    return max_sum
+# Time: O(n), Space: O(1)
+
+VARIABLE WINDOW: Longest subarray with sum ≤ k
+def longest_subarray(arr, k):
+    left = 0
+    current_sum = 0
+    max_length = 0
+    for right in range(len(arr)):
+        current_sum += arr[right]
+        while current_sum > k:
+            current_sum -= arr[left]
+            left += 1
+        max_length = max(max_length, right - left + 1)
+    return max_length
+
+================================================================================
+4. PREFIX SUM
+================================================================================
+
+INTUITION
+---------
+Precompute cumulative sums so range queries become O(1).
+
+prefix[0] = 0
+prefix[i] = arr[0] + arr[1] + ... + arr[i-1]
+
+Range sum [l, r] = prefix[r+1] - prefix[l]
+
+def range_sum(arr, l, r):
+    prefix = [0] * (len(arr) + 1)
+    for i in range(len(arr)):
+        prefix[i+1] = prefix[i] + arr[i]
+    return prefix[r+1] - prefix[l]
+
+PROBLEM: Subarray Sum Equals K
+--------------------------------
+def subarray_sum(arr, k):
+    count = 0
+    prefix_sum = 0
+    seen = {0: 1}
+    for num in arr:
+        prefix_sum += num
+        if prefix_sum - k in seen:
+            count += seen[prefix_sum - k]
+        seen[prefix_sum] = seen.get(prefix_sum, 0) + 1
+    return count
+
+================================================================================
+5. KADANE'S ALGORITHM
+================================================================================
+
+PROBLEM: Maximum Subarray Sum
+-------------------------------
+def max_subarray(arr):
+    current_max = arr[0]
+    global_max = arr[0]
+    for i in range(1, len(arr)):
+        current_max = max(arr[i], current_max + arr[i])
+        global_max = max(global_max, current_max)
+    return global_max
+
+INTUITION: Either extend the previous subarray or start fresh.
+
+DRY RUN: arr = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
+  i=1: current=max(1, -2+1)=1,    global=1
+  i=2: current=max(-3, 1-3)=-2,   global=1
+  i=3: current=max(4, -2+4)=4,    global=4
+  i=4: current=max(-1, 4-1)=3,    global=4
+  i=5: current=max(2, 3+2)=5,     global=5
+  i=6: current=max(1, 5+1)=6,     global=6
+  i=7: current=max(-5, 6-5)=1,    global=6
+  i=8: current=max(4, 1+4)=5,     global=6
+  Answer: 6 (subarray [4,-1,2,1])
+
+================================================================================
+6. LEETCODE PROBLEMS
+================================================================================
+
+EASY
+----
+1. Two Sum (LC #1)
+2. Best Time to Buy and Sell Stock (LC #121)
+3. Contains Duplicate (LC #217)
+4. Maximum Subarray (LC #53)
+5. Move Zeroes (LC #283)
+
+MEDIUM
+------
+6. 3Sum (LC #15)
+7. Container With Most Water (LC #11)
+8. Product of Array Except Self (LC #238)
+9. Subarray Sum Equals K (LC #560)
+10. Find All Anagrams in a String (LC #438)
+
+HARD
+----
+11. Trapping Rain Water (LC #42)
+12. Sliding Window Maximum (LC #239)
+13. Minimum Window Substring (LC #76)
+
+PROBLEM FORMAT (for each):
+  Problem → Brute Force → Complexity → Optimization
+  → Pattern Recognition → Algorithm → Code → Dry Run
+  → Time/Space Complexity → Edge Cases → Alternative
+
+================================================================================
+7. COMMON MISTAKES
+================================================================================
+
+1. Off-by-one errors in loop bounds
+2. Not handling empty arrays
+3. Using O(n²) when O(n) pattern exists
+4. Not considering negative numbers in sliding window
+5. Forgetting to update pointers correctly
+
+================================================================================
+END OF MODULE 2
+================================================================================

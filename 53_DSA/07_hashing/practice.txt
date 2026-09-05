@@ -1,0 +1,182 @@
+# HASHING — PRACTICE SET
+# 35 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is hashing?
+   Answer: Mapping data to fixed-size values using a hash function for O(1) average lookup
+
+2. What is a hash table?
+   Answer: A data structure that stores key-value pairs using a hash function to compute an index
+
+3. What is a hash collision?
+   Answer: When two different keys produce the same hash value
+
+4. How are hash collisions resolved?
+   Answer: Chaining (linked lists at each bucket) or open addressing (linear/quadratic probing)
+
+5. What is the average time complexity of hash table operations?
+   Answer: O(1) for search, insert, delete
+
+6. What is the worst-case time complexity?
+   Answer: O(n) — when all keys collide into the same bucket
+
+7. What is a hash set?
+   Answer: A hash table that stores only keys (no values), used for membership checking
+
+8. What makes a good hash function?
+   Answer: Uniform distribution, low collision rate, fast to compute, deterministic
+
+9. What is Python's dictionary?
+   Answer: A hash table implementation mapping keys to values
+
+10. What is the time complexity of checking if an element exists in a set?
+    Answer: O(1) average
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Two Sum problem.
+    ```python
+    def two_sum(nums, target):
+        seen = {}
+        for i, num in enumerate(nums):
+            complement = target - num
+            if complement in seen:
+                return [seen[complement], i]
+            seen[num] = i
+    ```
+
+12. Group anagrams.
+    ```python
+    from collections import defaultdict
+    def group_anagrams(strs):
+        groups = defaultdict(list)
+        for s in strs:
+            groups[tuple(sorted(s))].append(s)
+        return list(groups.values())
+    ```
+
+13. Find the majority element using hashmap.
+    ```python
+    from collections import Counter
+    def majority_element(nums):
+        counts = Counter(nums)
+        for num, count in counts.items():
+            if count > len(nums) // 2:
+                return num
+    ```
+
+14. Subarray sum equals k.
+    ```python
+    def subarray_sum(nums, k):
+        count = {0: 1}
+        prefix = result = 0
+        for num in nums:
+            prefix += num
+            result += count.get(prefix - k, 0)
+            count[prefix] = count.get(prefix, 0) + 1
+        return result
+    ```
+
+15. Longest consecutive sequence (O(n) using set).
+    ```python
+    def longest_consecutive(nums):
+        num_set = set(nums)
+        longest = 0
+        for num in num_set:
+            if num - 1 not in num_set:
+                current = num
+                while current + 1 in num_set:
+                    current += 1
+                longest = max(longest, current - num + 1)
+        return longest
+    ```
+
+16. Find all duplicates in an array.
+    ```python
+    def find_duplicates(nums):
+        count = {}
+        duplicates = []
+        for num in nums:
+            count[num] = count.get(num, 0) + 1
+            if count[num] == 2:
+                duplicates.append(num)
+        return duplicates
+    ```
+
+17. Two strings are anagrams if they have same character frequencies.
+
+18. Find the intersection of two arrays.
+
+19. Find the difference between two strings.
+
+20. Implement LRU Cache using OrderedDict (hashmap + doubly linked list).
+
+21. Word pattern matching.
+
+22. Isomorphic strings.
+
+23. Minimum window substring.
+
+24. Find all anagrams in a string.
+
+25. Custom sort string based on given order.
+
+---
+
+## HARD (5 Questions)
+
+26. Implement a hash table from scratch with collision handling.
+27. Find the longest substring with at most k distinct characters.
+28. Design a time-based key-value store.
+29. Find median of two sorted arrays using binary search.
+30. Implement consistent hashing for distributed systems.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Hash collision handling
+class HashTable:
+    def __init__(self):
+        self.table = [None] * 10
+    def put(self, key, value):
+        idx = hash(key) % len(self.table)
+        if self.table[idx] is None:
+            self.table[idx] = []
+        self.table[idx].append((key, value))  # Bug: doesn't handle updates
+    # Fix: Check if key exists before appending
+
+# Debug 2: Counter doesn't handle empty
+from collections import Counter
+def most_common(nums):
+    return Counter(nums).most_common(1)[0]  # Crashes if nums is empty
+# Fix: Check if nums is not empty first
+
+# Debug 3: defaultdict creates entries on access
+from collections import defaultdict
+d = defaultdict(int)
+# d[key] += 1 will create entry even if key doesn't exist
+# This can cause issues if you're checking membership via 'in'
+
+# Debug 4: Set lookup with wrong hash
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+points = {Point(1,2), Point(3,4)}
+Point(1,2) in points  # Returns False! No __hash__ defined
+# Fix: Define __hash__ and __eq__
+
+# Debug 5: Dictionary size changes during iteration
+d = {'a': 1, 'b': 2, 'c': 3}
+for k in d:
+    if d[k] == 2:
+        del d[k]  # RuntimeError: dictionary changed size
+# Fix: Collect keys to delete, then delete after iteration
+```

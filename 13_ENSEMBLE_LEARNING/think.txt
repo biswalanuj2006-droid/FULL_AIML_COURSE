@@ -1,0 +1,46 @@
+================================================================================
+THINK.TXT - 13 ENSEMBLE LEARNING
+================================================================================
+
+1. Bagging reduces variance: derive why averaging N i.i.d. predictors
+   with variance sigma^2 gives sigma^2/N, and explain why trees in a
+   forest are NOT independent - what does the correlation do to the
+   formula, and how does feature sampling fight it?
+2. Boosting reduces bias: a shallow tree fit to residuals improves a
+   constant model. Formalize gradient boosting as gradient descent in
+   function space and identify the "step" and the "learning rate".
+3. Why can boosting overfit when the ensemble of weak learners gets
+   strong? Give the mechanism and the three controls that fight it.
+4. Random Forest vs Gradient Boosting on: (a) wide sparse data,
+   (b) tall clean data, (c) noisy labels. Argue which wins each and why.
+5. AdaBoost upweights misclassified samples. Derive the weight update and
+   explain why AdaBoost is fragile to label noise while RF is not.
+6. Stacking: why does a meta-learner over plain averaging help, and what
+   leakage trap appears if the meta-features are generated on the same
+   data the base models were trained on? How do you generate honest
+   meta-features?
+7. Voting: hard vs soft voting. When is soft voting worse than its best
+   member (think calibration), and how do you fix it?
+8. XGBoost adds a second-order (Hessian) approximation and explicit
+   regularization. Explain what each buys over plain gradient boosting
+   and why it converges faster.
+9. Feature importance disagreement: RF, gradient boosting, and
+   permutation importance rank features differently on the same data.
+   Explain the mechanisms and which one you trust for a regulatory
+   submission.
+10. 100 trees vs 10,000 trees: where do the gains saturate and how do you
+    detect the point empirically? What does the OOB curve look like as
+    you add trees?
+11. You have 50M rows. Contrast RF, XGBoost, LightGBM (histogram,
+    leaf-wise), and CatBoost (ordered target statistics) on memory,
+    training time, and accuracy, and pick for the dataset.
+12. An ensemble of an SVM, a logistic model, and a tree beats each alone,
+    yet a single deep model beats the ensemble. Construct the scenario
+    and explain why.
+13. OPEN PROBLEM: there is no settled theory of WHEN to stop adding models
+    to an ensemble or how to weight them optimally beyond heuristics
+    (stacking, Bayesian model averaging). Propose a criterion and its
+    failure modes.
+================================================================================
+END
+================================================================================

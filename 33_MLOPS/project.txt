@@ -1,0 +1,54 @@
+================================================================================
+MLOPS MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: MLFLOW EXPERIMENT TRACKING (Beginner)
+==================================================
+Problem: Track ML experiments with MLflow.
+Requirements:
+- Log parameters, metrics, artifacts
+- Compare experiments
+- Register best model
+- Load model for prediction
+- Create experiment dashboard
+Evaluation: All experiments tracked and comparable
+
+PROJECT 2: COMPLETE ML PIPELINE WITH DVC (Intermediate)
+========================================================
+Problem: Build version-controlled ML pipeline.
+Requirements:
+- DVC for data and model versioning
+- Pipeline stages (preprocess, train, evaluate)
+- Remote storage for data/models
+- Experiment comparison
+- Automated pipeline execution
+Evaluation: Full pipeline reproducible
+
+PROJECT 3: DOCKERIZED ML SERVICE (Advanced)
+=============================================
+Problem: Deploy ML model with Docker + monitoring.
+Requirements:
+- Dockerfile for model serving
+- Docker Compose with monitoring
+- Health checks
+- Logging
+- Basic metrics
+- Model performance monitoring
+- Automated restart on failure
+Evaluation: Service runs in Docker with monitoring
+
+PROJECT 4: COMPLETE MLOPS PLATFORM (Expert)
+=============================================
+Problem: Build end-to-end MLOps platform.
+Requirements:
+- MLflow for tracking
+- DVC for data versioning
+- Docker for containerization
+- CI/CD with GitHub Actions
+- Model registry
+- Monitoring with drift detection
+- Automated retraining pipeline
+- Documentation
+Evaluation: Complete platform working
+
+================================================================================

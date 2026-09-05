@@ -1,0 +1,39 @@
+================================================================================
+CODE PRACTICE - code/pandas (data manipulation)
+Companion: 01_pandas_fundamentals.py
+================================================================================
+RUN & OBSERVE
+1. Run the example; note every place a DataFrame vs Series appears.
+2. Generate a 1M-row DataFrame and time groupby.agg vs a python loop -
+   record the gap.
+
+MODIFY
+3. Extend the example with: (a) a merge of two tables, (b) a pivot
+   table, (c) a rolling mean with a window - and verify row counts.
+4. Add missing-data handling: introduce NaN patterns (MCAR/MAR) and
+   compare dropna vs fillna(mean) vs fillna(median) on a synthetic
+   linear regression - which preserves the slope best?
+5. Convert a datetime column, extract dayofweek/hour, and aggregate
+   activity by hour (a mini time-series prep).
+
+DEBUG
+6. SettingWithCopyWarning: construct the classic
+   df[df.x>0]['y'] = 1 bug, fix with .loc, and explain the warning.
+7. dtype trap: a numeric column read as object (because of a stray
+   string). Find it with df.dtypes, fix with pd.to_numeric(errors=
+   'coerce'), and count the coerced NaNs.
+8. Merge blow-up: two one-to-many keys produce more rows than expected.
+   Explain why and use drop_duplicates before merge.
+
+BUILD (mini)
+9. Chunked processing: read a 2GB-ish CSV in chunks and compute a
+   running mean/percentile without loading it all (the 05 memory lesson).
+10. Window feature engineering for 56_TIME_SERIES practice: lag-1,
+    rolling-7 mean, expanding max on a daily series; verify no future
+    leakage (shift negative?).
+
+RELATE
+11. Convert one 03_PANDAS lesson exercise into code and back into a
+    reusable function with a docstring + assert tests.
+12. (Interview) When would you use merge vs join vs concat? Give the
+    cardinality failure mode of each from your debugging above.

@@ -1,0 +1,72 @@
+================================================================================
+REAL PROBLEM - 26 TRANSFORMERS
+================================================================================
+
+PROBLEM A: "Fine-tuning BERT on my classification task gives 70%
+accuracy - WORSE than TF-IDF + logistic regression (78%)."
+WHY IT HAPPENS
+  1. Small dataset: a transformer needs thousands of examples to beat
+     a bag-of-words baseline; with <1k examples it memorizes then
+     overfits (check train vs val loss divergence).
+  2. Wrong learning rate: transformers need small LRs (2e-5 to 5e-5),
+     not the 0.01 you used for logistic regression; the whole pretrained
+     representation gets destroyed in one step ("catastrophic
+     forgetting" of pretraining).
+  3. No warmup: the first steps overshoot with Adam + big LR.
+  4. Freezing nothing: full fine-tune on tiny data destroys the
+     embeddings. Freeze all but the classifier head + last 2 layers.
+HOW TO SOLVE
+  1. Use a small LR schedule: linear warmup (10% of steps) then linear
+     decay; AdamW with weight decay 0.01.
+  2. Train longer with early stopping on validation.
+  3. If data < 5k examples: freeze most of the encoder, tune only the
+     head; or skip fine-tuning and use embeddings + a simple model.
+  4. Never compare a transformer at epoch 1-2 with a baseline trained
+     to convergence - give it a full schedule.
+
+PROBLEM B: "My model is 98% accurate in training, 60% in validation,
+and I can't find the bug."
+WHY: this is the signature of LEAKAGE or preprocessing asymmetry.
+  Most common causes with transformers:
+  1. You tokenized the WHOLE corpus before the train/val split, so the
+     tokenizer's vocab was fit on validation text (minor for BERT,
+     fatal if you train your own tokenizer).
+  2. The label leaks through the input: e.g. the input contains the
+     answer text for training rows but not validation rows.
+  3. Dropout was accidentally disabled during eval, or you trained with
+     a different max_length than you validated with, so val inputs get
+     truncated differently.
+HOW TO SOLVE
+  1. Split FIRST, then tokenize each split independently.
+  2. Print 5 misclassified validation examples with their inputs - the
+     leak is usually visible in the raw text.
+  3. Verify train/val preprocessing functions are literally the same
+     code path (one function called by both), not two copies.
+
+PROBLEM C: "Inference is 8 seconds per sample; I need <100ms."
+WHY IT HAPPENS
+  1. Beam search with a huge beam on a big model.
+  2. Full fp32 on CPU, no batching, no KV-cache reuse.
+  3. max_new_tokens far larger than needed.
+HOW TO SOLVE (cheapest wins first)
+  1. Reduce max_new_tokens; shrink beam width or use greedy/nucleus
+     sampling for chat-like tasks.
+  2. Batch: process 8-32 requests together (GPU utilization, not
+     latency per request, is what GPUs are good at).
+  3. Load in fp16/bf16; on CPU use ONNX Runtime or quantization
+     (int8). Use a distillation-small model if quality holds.
+  4. Cache the KV states across turns for conversational use; only
+     prefill the new tokens.
+
+PROBLEM D: "Generative model repeats the same phrase forever
+('repetition loop')."
+WHY: greedy decoding maximizes the probability of the next token, and
+in long generations repeating a high-probability phrase keeps
+probability high - a self-reinforcing loop.
+HOW TO SOLVE
+  1. Use repetition_penalty > 1.0 (e.g. 1.1-1.2).
+  2. Use no_repeat_ngram_size (block 3-grams from repeating).
+  3. Prefer sampling with temperature ~0.7 + top_p 0.9 over pure
+     greedy for anything creative.
+  4. If loops persist, the model is under-trained on the domain -
+     repetition is a symptom of uncertainty, not just a decoding bug.

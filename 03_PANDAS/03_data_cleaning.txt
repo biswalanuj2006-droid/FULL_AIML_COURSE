@@ -1,0 +1,110 @@
+================================================================================
+MODULE 03 — PANDAS
+LESSON 03: DATA CLEANING
+================================================================================
+
+## What You Will Learn
+- Detecting and handling missing values
+- Removing duplicates
+- Data type conversion
+- String cleaning
+- Outlier handling
+
+================================================================================
+1. MISSING VALUES
+================================================================================
+
+DETECTING:
+    df.isnull()              # Boolean DataFrame (True = null)
+    df.isnull().sum()        # Count nulls per column
+    df.isnull().sum().sum()  # Total nulls
+    df.isnull().mean() * 100 # Percentage nulls per column
+
+    # Columns with missing values
+    missing_cols = df.columns[df.isnull().any()].tolist()
+
+HANDLING — REMOVAL:
+    df.dropna()                      # Drop rows with ANY null
+    df.dropna(subset=["age"])        # Drop rows where 'age' is null
+    df.dropna(thresh=3)              # Keep rows with at least 3 non-null values
+    df.dropna(axis=1)                # Drop columns with any null
+
+HANDLING — IMPUTATION:
+    df["age"].fillna(0)                          # Fill with constant
+    df["age"].fillna(df["age"].mean())           # Fill with mean
+    df["age"].fillna(df["age"].median())         # Fill with median
+    df["age"].fillna(df["age"].mode()[0])        # Fill with mode
+    df["age"].fillna(method="ffill")             # Forward fill
+    df["age"].fillna(method="bfill")             # Backward fill
+
+    # For entire DataFrame
+    df.fillna(df.mean(numeric_only=True))        # Fill all numeric with mean
+
+ML USE:
+    # Strategy depends on the ML algorithm
+    # Tree-based models (RF, XGBoost) can handle NaN natively
+    # Linear models, neural networks require imputation
+
+    from sklearn.impute import SimpleImputer
+    imputer = SimpleImputer(strategy="mean")
+    X_imputed = imputer.fit_transform(X)
+
+================================================================================
+2. DUPLICATES
+================================================================================
+
+    df.duplicated()                    # Boolean: True if row is duplicate
+    df.duplicated().sum()              # Count of duplicates
+    df.drop_duplicates()               # Remove duplicates
+    df.drop_duplicates(subset=["name"]) # Remove based on specific columns
+    df.drop_duplicates(keep="last")    # Keep last occurrence
+
+================================================================================
+3. DATA TYPE CONVERSION
+================================================================================
+
+    df["age"] = df["age"].astype(int)
+    df["price"] = df["price"].astype(float)
+    df["churn"] = df["churn"].map({"Yes": 1, "No": 0})  # String to int
+    df["date"] = pd.to_datetime(df["date"])
+
+    # Check types
+    df.dtypes
+
+    # Force correct types on load
+    df = pd.read_csv("data.csv", dtype={"id": str, "amount": float})
+
+================================================================================
+4. STRING CLEANING
+================================================================================
+
+    df["name"] = df["name"].str.strip()           # Remove whitespace
+    df["name"] = df["name"].str.lower()            # Lowercase
+    df["name"] = df["name"].str.replace(" ", "_")  # Replace spaces
+    df["email"] = df["email"].str.contains("@")    # Check pattern
+
+    # Extract features from strings
+    df["domain"] = df["email"].str.split("@").str[1]
+
+================================================================================
+5. RENAMING AND REORDERING
+================================================================================
+
+    df.rename(columns={"old_name": "new_name"}, inplace=True)
+    df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
+
+    # Reorder columns
+    df = df[["target", "feature_1", "feature_2", "feature_3"]]
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. How do you find columns with missing values?
+2. What is the difference between fillna and dropna?
+3. When should you use mean vs median for imputation?
+4. How do you convert string labels to numbers?
+
+================================================================================
+NEXT LESSON: 04_filtering_sorting.txt
+================================================================================

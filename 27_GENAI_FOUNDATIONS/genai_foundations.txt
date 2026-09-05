@@ -1,0 +1,273 @@
+================================================================================
+MODULE 27: GENERATIVE AI FOUNDATIONS — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand the landscape of generative AI models
+- Differentiate between generative and discriminative models
+- Explain autoregressive, diffusion, and GAN approaches
+- Understand tokenization, context windows, and temperature
+- Know the capabilities and limitations of modern GenAI
+
+================================================================================
+1. WHAT IS GENERATIVE AI?
+================================================================================
+
+INTUITION
+---------
+Generative AI creates NEW content (text, images, audio, code)
+rather than analyzing existing content.
+
+DISCRIMINATIVE vs GENERATIVE
+-----------------------------
+Discriminative: "Is this email spam or not?" → learns P(y|x)
+Generative: "Write me a spam email" → learns P(x,y) or P(x)
+
+Types of generative content:
+- TEXT: GPT, Claude, LLaMA
+- IMAGES: DALL-E, Stable Diffusion, Midjourney
+- CODE: GitHub Copilot, CodeLlama
+- AUDIO: ChatGPT voice, ElevenLabs
+- VIDEO: Sora, Runway
+
+================================================================================
+2. TYPES OF GENERATIVE MODELS
+================================================================================
+
+2.1 AUTOREGRESSIVE MODELS
+--------------------------
+Generate one token at a time, left to right.
+
+"The cat sat on the [MASK]" → predict next token → "mat"
+
+Examples: GPT, LLaMA, Claude
+
+How they work:
+1. Input: "The cat sat on"
+2. Model computes probability distribution over all tokens
+3. Sample from distribution → "the"
+4. Now input is "The cat sat on the"
+5. Repeat
+
+2.2 DIFFUSION MODELS
+---------------------
+Learn to reverse a noise process.
+
+Training: gradually add noise to images until they're pure noise
+Generation: start from noise, gradually denoise
+
+Examples: Stable Diffusion, DALL-E 2, Midjourney
+
+2.3 VARIATIONAL AUTOENCODERS (VAE)
+-----------------------------------
+Learn a compressed latent representation, then generate from it.
+
+Encoder: input → latent space
+Decoder: latent space → generated output
+
+2.4 GENERATIVE ADVERSARIAL NETWORKS (GAN)
+-------------------------------------------
+Two networks compete:
+Generator: creates fake content
+Discriminator: detects fake content
+They improve each other through competition
+
+================================================================================
+3. TOKENIZATION
+================================================================================
+
+INTUITION
+---------
+Computers don't understand words — they understand tokens.
+Tokenization splits text into subword units.
+
+WHY SUBWORDS?
+--------------
+- "unhappiness" → "un", "happiness" (can handle unseen words)
+- Rare words split into known subwords
+- Balances vocabulary size vs sequence length
+
+TOKENIZER TYPES
+---------------
+Word-level: "I love NLP" → ["I", "love", "NLP"]
+Character-level: "NLP" → ["N", "L", "P"]
+Subword (BPE, WordPiece, SentencePiece): "unhappiness" → ["un", "happi", "ness"]
+
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained('gpt2')
+tokens = tokenizer.tokenize("I love natural language processing")
+print(tokens)  # ['I', 'Ġlove', 'Ġnatural', 'Ġlanguage', 'Ġprocessing']
+
+# Convert to IDs
+ids = tokenizer.encode("I love NLP")
+print(ids)  # [40, 1841, 2395]
+
+# Decode back
+text = tokenizer.decode(ids)
+print(text)  # "I love NLP"
+
+VOCABULARY SIZE
+---------------
+GPT-2: 50,257 tokens
+GPT-4: ~100,000 tokens
+BERT: 30,522 tokens
+
+================================================================================
+4. CONTEXT WINDOW
+================================================================================
+
+INTUITION
+---------
+The context window is the maximum number of tokens a model can
+process at once (input + output combined).
+
+MODEL COMPARISON
+----------------
+GPT-3.5: 4,096 tokens (~3,000 words)
+GPT-4: 8,192 or 32,768 tokens
+Claude 3: 200,000 tokens
+LLaMA 2: 4,096 tokens
+
+WHY IT MATTERS
+--------------
+- Long documents may not fit
+- Conversation history may be truncated
+- Affects cost (more tokens = higher API cost)
+
+WORKAROUNDS FOR LONG DOCUMENTS
+-------------------------------
+1. Truncation: cut off text that doesn't fit
+2. Chunking: split document into pieces, process separately
+3. Sliding window: overlap chunks
+4. RAG: retrieve relevant chunks instead of sending everything
+5. Long-context models: use models with large context windows
+
+================================================================================
+5. TEMPERATURE & SAMPLING
+================================================================================
+
+TEMPERATURE
+-----------
+Controls randomness in generation.
+
+temperature = 0.0: always pick the most likely token (deterministic)
+temperature = 0.7: moderate randomness (good default)
+temperature = 1.0: standard randomness
+temperature = 1.5+: very creative/unpredictable
+
+How it works:
+- Softmax with temperature: P(token_i) = exp(z_i / T) / Σ exp(z_j / T)
+- Lower T → sharper distribution (more deterministic)
+- Higher T → flatter distribution (more random)
+
+TOP-K SAMPLING
+--------------
+Only consider the K most likely tokens at each step.
+Reduces the chance of picking very unlikely tokens.
+
+TOP-P (NUCLEUS) SAMPLING
+-------------------------
+Consider tokens until their cumulative probability reaches P.
+More adaptive than top-k.
+
+OpenAI API example:
+response = openai.ChatCompletion.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Write a poem"}],
+    temperature=0.7,
+    top_p=0.9,
+    max_tokens=200
+)
+
+================================================================================
+6. HALLUCINATION
+================================================================================
+
+WHAT IS IT?
+-----------
+When the model generates plausible-sounding but factually incorrect
+or fabricated information.
+
+EXAMPLE:
+Q: "Who was the president of France in 2025?"
+A: "Jean-Pierre Dupont was elected president in 2025."
+→ This person doesn't exist! The model hallucinated.
+
+WHY IT HAPPENS
+--------------
+- Model optimizes for fluency, not accuracy
+- No access to real-time information (unless RAG is used)
+- Training data may contain errors
+- Model fills gaps with plausible-sounding text
+
+MITIGATION STRATEGIES
+---------------------
+1. RAG: Ground responses in retrieved documents
+2. Prompting: "Answer only based on the provided context"
+3. Fine-tuning: Train on verified, factual data
+4. Temperature reduction: Lower temperature reduces creativity/hallucination
+5. Chain of thought: Ask model to show reasoning
+6. Human review: For critical applications
+
+================================================================================
+7. GROUNDING
+================================================================================
+
+INTUITION
+---------
+Grounding = connecting model outputs to real, verifiable sources.
+
+WITHOUT GROUNDING:
+  "The capital of France is Berlin" (hallucination)
+
+WITH GROUNDING:
+  "According to [source], the capital of France is Paris"
+
+IMPLEMENTATION: RAG
+--------------------
+1. Retrieve relevant documents from knowledge base
+2. Include them in the prompt
+3. Model answers based on retrieved context
+4. Answer is verifiable against sources
+
+================================================================================
+8. CAPABILITIES & LIMITATIONS
+================================================================================
+
+CAPABILITIES
+------------
+✓ Natural language understanding and generation
+✓ Code generation and explanation
+✓ Translation
+✓ Summarization
+✓ Creative writing
+✓ Reasoning (chain of thought)
+✓ Few-shot learning (from examples in prompt)
+
+LIMITATIONS
+-----------
+✗ No real-time knowledge (unless connected to tools)
+✗ Can hallucinate facts
+✗ Limited reasoning on complex multi-step problems
+✗ No memory across conversations (without engineering)
+✗ Can be biased based on training data
+✗ Can't verify its own outputs
+✗ Context window limits
+
+================================================================================
+9. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between autoregressive and diffusion models?
+Q2: Why do language models use subword tokenization?
+Q3: How does temperature affect text generation?
+Q4: What is hallucination and how can it be mitigated?
+Q5: What is the context window and why does it matter?
+Q6: What is grounding and how does RAG help?
+
+================================================================================
+END OF MODULE 27: GENERATIVE AI FOUNDATIONS
+================================================================================

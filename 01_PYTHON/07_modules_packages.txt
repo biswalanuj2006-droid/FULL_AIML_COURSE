@@ -1,0 +1,168 @@
+================================================================================
+MODULE 01 — PYTHON FOR AI/ML
+LESSON 07: MODULES AND PACKAGES
+================================================================================
+
+## What You Will Learn
+- Importing modules
+- Creating your own modules
+- Package structure
+- Common import patterns
+- __name__ == "__main__"
+
+## Why You Need It
+Every ML project is organized into modules and packages. Understanding
+imports lets you organize code, reuse components, and navigate codebases.
+
+================================================================================
+1. IMPORTING MODULES
+================================================================================
+
+BASIC IMPORT:
+
+    import math
+    print(math.sqrt(16))    # 4.0
+
+IMPORT WITH ALIAS:
+
+    import numpy as np          # Standard ML convention
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    arr = np.array([1, 2, 3])
+
+IMPORT SPECIFIC ITEMS:
+
+    from math import sqrt, pi
+    print(sqrt(16))    # 4.0
+    print(pi)          # 3.14159...
+
+    from sklearn.linear_model import LinearRegression
+    model = LinearRegression()
+
+IMPORT ALL (AVOID):
+
+    from math import *    # Imports everything — BAD PRACTICE
+    # Makes it unclear where names come from
+
+RELATIVE IMPORTS (within packages):
+
+    from . import my_module          # Same package
+    from ..utils import helper       # Parent package's utils
+
+================================================================================
+2. CREATING YOUR OWN MODULES
+================================================================================
+
+A module is simply a .py file.
+
+FILE: my_utils.py
+    def calculate_accuracy(y_true, y_pred):
+        correct = sum(t == p for t, p in zip(y_true, y_pred))
+        return correct / len(y_true)
+
+    def print_results(results):
+        for name, score in results.items():
+            print(f"{name}: {score:.4f}")
+
+FILE: main.py
+    from my_utils import calculate_accuracy, print_results
+
+    y_true = [0, 1, 1, 0, 1]
+    y_pred = [0, 1, 0, 0, 1]
+    acc = calculate_accuracy(y_true, y_pred)
+    print(f"Accuracy: {acc}")
+
+================================================================================
+3. PACKAGE STRUCTURE
+================================================================================
+
+A package is a directory with an __init__.py file.
+
+    my_ml_project/
+    ├── __init__.py         # Makes directory a package
+    ├── data/
+    │   ├── __init__.py
+    │   ├── loader.py
+    │   └── preprocessor.py
+    ├── models/
+    │   ├── __init__.py
+    │   ├── classifier.py
+    │   └── regressor.py
+    └── utils/
+        ├── __init__.py
+        ├── metrics.py
+        └── visualization.py
+
+USAGE:
+    from my_ml_project.data.loader import load_dataset
+    from my_ml_project.models.classifier import MyClassifier
+    from my_ml_project.utils.metrics import calculate_f1
+
+================================================================================
+4. __name__ == "__main__"
+================================================================================
+
+    # my_script.py
+
+    def train_model(data):
+        # training code
+        pass
+
+    def main():
+        data = load_data()
+        model = train_model(data)
+        evaluate(model)
+
+    if __name__ == "__main__":
+        main()
+
+    WHEN TO USE:
+    - When a file can be both imported AND run directly
+    - Code under 'if __name__ == "__main__"' only runs when
+      the file is executed directly, not when imported
+
+    This is essential for writing testable, reusable code.
+
+================================================================================
+5. STANDARD ML IMPORT CONVENTIONS
+================================================================================
+
+    # Data
+    import numpy as np
+    import pandas as pd
+
+    # Visualization
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    # ML
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.metrics import accuracy_score, classification_report
+
+    # Deep Learning
+    import torch
+    import torch.nn as nn
+
+    # NLP
+    from transformers import pipeline
+
+    # API
+    from fastapi import FastAPI
+
+    LEARN THESE CONVENTIONS — they appear everywhere in ML code.
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between a module and a package?
+2. What does 'import numpy as np' do?
+3. What is __init__.py used for?
+4. What does if __name__ == "__main__" mean?
+5. Why avoid 'from module import *'?
+
+================================================================================
+NEXT LESSON: 08_virtual_environments.txt — venv, pip, requirements.txt
+================================================================================

@@ -1,0 +1,199 @@
+================================================================================
+ADVANCED PYTHON: PYTHON INTERNALS & MEMORY MANAGEMENT
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand Python's memory model and garbage collection
+- Optimize memory usage in ML/data science code
+- Use __slots__, sys.getsizeof, and memory profiling
+- Write memory-efficient Python code
+
+================================================================================
+1. PYTHON MEMORY MODEL
+================================================================================
+
+EVERYTHING IS AN OBJECT
+------------------------
+In Python, everything is an object including integers, functions, classes.
+
+x = 42
+y = x
+# x and y point to the SAME object in memory
+# id(x) == id(y)
+
+MUTABLE vs IMMUTABLE
+---------------------
+Immutable: int, float, str, tuple, frozenset
+  → Cannot change in place, new object created on modification
+
+Mutable: list, dict, set
+  → Can be modified in place
+
+# This creates a new object:
+x = "hello"
+x = x + " world"  # new string created
+
+# This modifies in place:
+lst = [1, 2, 3]
+lst.append(4)  # same list, modified
+
+================================================================================
+2. GARBAGE COLLECTION
+================================================================================
+
+REFERENCE COUNTING
+------------------
+Every object has a reference count.
+When count reaches 0, memory is freed.
+
+import sys
+a = [1, 2, 3]
+print(sys.getrefcount(a))  # 2 (a + getrefcount argument)
+
+del a  # reference count decreases
+
+CYCLE DETECTION
+---------------
+Circular references can't be caught by reference counting alone.
+Python's garbage collector handles cycles.
+
+import gc
+gc.collect()  # force garbage collection
+
+WEAK REFERENCES
+---------------
+import weakref
+
+class ExpensiveObject:
+    def __init__(self, data):
+        self.data = data
+
+obj = ExpensiveObject([1, 2, 3])
+weak = weakref.ref(obj)
+
+print(weak())        # <object>
+del obj
+print(weak())        # None
+
+USE FOR: caches, avoiding memory leaks
+
+================================================================================
+3. MEMORY OPTIMIZATION
+================================================================================
+
+__SLOTS__
+----------
+class RegularPoint:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+class SlottedPoint:
+    __slots__ = ('x', 'y')
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+import sys
+r = RegularPoint(1, 2)
+s = SlottedPoint(1, 2)
+print(sys.getsizeof(r.__dict__))  # ~104 bytes (dict overhead)
+# SlottedPoint has no __dict__ → ~40% less memory
+
+USE: Classes with many instances (ML pipeline nodes, data points)
+
+CHECKING MEMORY USAGE
+----------------------
+import sys
+import numpy as np
+
+# Python object size
+sys.getsizeof([1, 2, 3])  # ~88 bytes for list header
+
+# NumPy array (much more efficient)
+arr = np.array([1, 2, 3])
+arr.nbytes  # 24 bytes (3 × 8 bytes for int64)
+
+# Full memory usage
+import tracemalloc
+tracemalloc.start()
+# ... run code ...
+current, peak = tracemalloc.get_traced_memory()
+print(f"Current: {current / 1024:.1f} KB, Peak: {peak / 1024:.1f} KB")
+
+================================================================================
+4. MUTABILITY GOTCHAS
+================================================================================
+
+DEFAULT MUTABLE ARGUMENTS
+--------------------------
+# WRONG: list persists between calls
+def append_to(item, target=[]):
+    target.append(item)
+    return target
+
+print(append_to(1))  # [1]
+print(append_to(2))  # [1, 2] — NOT [2]!
+
+# RIGHT:
+def append_to(item, target=None):
+    if target is None:
+        target = []
+    target.append(item)
+    return target
+
+SHALLOW vs DEEP COPY
+---------------------
+import copy
+
+original = [[1, 2], [3, 4]]
+shallow = copy.copy(original)
+deep = copy.deepcopy(original)
+
+original[0][0] = 99
+print(shallow[0][0])  # 99 — affected (shared inner list)
+print(deep[0][0])     # 1  — not affected
+
+================================================================================
+5. MEMORY-EFFICIENT PATTERNS FOR ML
+================================================================================
+
+# BAD: List of Python objects
+features = [float(x) for x in range(1000000)]  # ~28MB
+
+# GOOD: NumPy array
+import numpy as np
+features = np.arange(1000000, dtype=np.float32)  # ~4MB
+
+# BAD: Storing all data in memory
+data = []
+for file in files:
+    data.append(load_file(file))  # memory grows
+
+# GOOD: Generator (lazy loading)
+def load_files(files):
+    for file in files:
+        yield load_file(file)  # one file at a time
+
+# BAD: Creating intermediate copies
+result = np.array(list(range(1000000))) * 2
+
+# GOOD: In-place operations
+arr = np.arange(1000000)
+arr *= 2  # in-place, no copy
+
+================================================================================
+6. COMMON MISTAKES
+================================================================================
+
+1. Not using generators for large datasets
+2. Creating unnecessary copies of large arrays
+3. Using Python lists instead of NumPy for numeric data
+4. Keeping references to large objects unnecessarily
+5. Not using __slots__ for classes with many instances
+
+================================================================================
+END OF MODULE
+================================================================================

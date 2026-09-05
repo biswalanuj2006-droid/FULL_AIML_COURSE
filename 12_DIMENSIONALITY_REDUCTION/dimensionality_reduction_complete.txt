@@ -1,0 +1,213 @@
+================================================================================
+MODULE 12 — DIMENSIONALITY REDUCTION
+COMPLETE GUIDE: PCA, t-SNE, UMAP
+================================================================================
+
+## What You Will Learn
+- Why dimensionality reduction matters
+- PCA: mathematics, implementation, interpretation
+- t-SNE: visualization of high-dimensional data
+- UMAP: fast alternative to t-SNE
+- When to use each method
+
+## Why You Need It
+High-dimensional data is hard to visualize, slow to process, and prone to
+the "curse of dimensionality." Dimensionality reduction finds the most
+important patterns and compresses data while preserving structure.
+
+================================================================================
+1. WHY DIMENSIONALITY REDUCTION?
+================================================================================
+
+THE CURSE OF DIMENSIONALITY:
+    As dimensions increase:
+    - Data becomes sparse
+    - Distance metrics become meaningless
+    - More data needed for same accuracy
+    - Computational cost explodes
+
+USE CASES:
+    - Visualization (reduce to 2D/3D for plotting)
+    - Feature compression (reduce features for speed)
+    - Noise reduction (remove irrelevant dimensions)
+    - Preprocessing (before clustering or classification)
+    - Data exploration (discover structure)
+
+================================================================================
+2. PCA — PRINCIPAL COMPONENT ANALYSIS
+================================================================================
+
+INTUITION:
+    Find the directions of maximum variance in the data.
+    Project data onto these directions (principal components).
+
+    Original 3D data → Find 2 best directions → Project to 2D
+
+MATHEMATICS:
+    1. Center data: X_centered = X - mean(X)
+    2. Compute covariance matrix: C = (1/n) XᵀX
+    3. Eigendecomposition: eigenvalues, eigenvectors = eig(C)
+    4. Sort by eigenvalue (largest first)
+    5. Project: X_pca = X_centered @ top_k_eigenvectors
+
+    - Eigenvectors = directions (principal components)
+    - Eigenvalues = variance explained by each direction
+
+IMPLEMENTATION:
+    from sklearn.decomposition import PCA
+
+    pca = PCA(n_components=2)
+    X_pca = pca.fit_transform(X)
+
+    print(f"Explained variance: {pca.explained_variance_ratio_}")
+    print(f"Total variance explained: {sum(pca.explained_variance_ratio_):.2%}")
+
+CHOOSING N_COMPONENTS:
+    # Method 1: Keep components explaining 95% variance
+    pca = PCA(n_components=0.95)
+    X_pca = pca.fit_transform(X)
+
+    # Method 2: Scree plot
+    pca = PCA().fit(X)
+    plt.plot(range(1, len(pca.explained_variance_ratio_) + 1),
+             np.cumsum(pca.explained_variance_ratio_))
+    plt.xlabel('Number of Components')
+    plt.ylabel('Cumulative Explained Variance')
+    plt.axhline(y=0.95, color='r', linestyle='--')
+
+INTERPRETATION:
+    # What does each component mean?
+    # PC1 = 0.5*age + 0.3*income + 0.2*tenure
+    # Means PC1 is a weighted combination of features
+
+    components = pd.DataFrame(
+        pca.components_,
+        columns=feature_names,
+        index=[f'PC{i+1}' for i in range(pca.n_components_)]
+    )
+    print(components)
+
+PROS:
+    - Fast and deterministic
+    - Preserves global structure
+    - Mathematical foundation
+    - Reversible (can reconstruct original data)
+
+CONS:
+    - Assumes linear relationships
+    - May lose important local structure
+    - Components can be hard to interpret
+    - Sensitive to scaling (always StandardScale first!)
+
+================================================================================
+3. t-SNE — t-DISTRIBUTED STOCHASTIC NEIGHBOR EMBEDDING
+================================================================================
+
+INTUITION:
+    Preserves LOCAL structure — nearby points stay nearby.
+    Great for visualization, not for feature reduction.
+
+    PCA: Preserves global structure (distances)
+    t-SNE: Preserves local structure (neighborhoods)
+
+ALGORITHM:
+    1. Compute pairwise similarities in high-dimensional space
+    2. Define similarities in low-dimensional space
+    3. Minimize difference between the two using gradient descent
+
+IMPLEMENTATION:
+    from sklearn.manifold import TSNE
+
+    tsne = TSNE(n_components=2, perplexity=30, random_state=42)
+    X_tsne = tsne.fit_transform(X)
+
+    plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=labels, cmap='viridis')
+    plt.title('t-SNE Visualization')
+
+KEY PARAMETERS:
+    - n_components: Usually 2 (for visualization)
+    - perplexity: Balance between local and global (5-50, default 30)
+    - n_iter: Number of iterations (1000+)
+    - learning_rate: Step size (10-1000, default 200)
+
+PROS:
+    - Excellent for visualization
+    - Captures local structure well
+    - Reveals clusters naturally
+
+CONS:
+    - Slow on large datasets (O(n²))
+    - Non-deterministic (different runs give different results)
+    - Cannot transform new data (no inverse)
+    - Distances between clusters are NOT meaningful
+    - Perplexity affects results significantly
+
+IMPORTANT: t-SNE distances are NOT meaningful.
+    Only use t-SNE for VISUALIZATION, not for distance-based algorithms.
+
+================================================================================
+4. UMAP — UNIFORM MANIFOLD APPROXIMATION AND PROJECTION
+================================================================================
+
+INTUITION:
+    Similar to t-SNE but faster and preserves more global structure.
+
+IMPLEMENTATION:
+    pip install umap-learn
+
+    import umap
+
+    reducer = umap.UMAP(n_components=2, n_neighbors=15, min_dist=0.1)
+    X_umap = reducer.fit_transform(X)
+
+    # Can also transform new data!
+    X_new_umap = reducer.transform(X_new)
+
+KEY PARAMETERS:
+    - n_components: Number of dimensions (2 for visualization)
+    - n_neighbors: Balance local vs global (5-50, default 15)
+    - min_dist: Minimum distance between points (0-1, default 0.1)
+    - metric: Distance metric ('euclidean', 'cosine', etc.)
+
+PROS:
+    - Much faster than t-SNE
+    - Preserves global structure better
+    - Can transform new data
+    - Works well for clustering preprocessing
+    - Supports different distance metrics
+
+CONS:
+    - Less mature than t-SNE
+    - Hyperparameters affect results
+    - Non-deterministic
+
+================================================================================
+5. COMPARISON
+================================================================================
+
+┌──────────────┬──────────┬──────────────┬───────────┬────────────────┐
+│ Method       │ Speed    │ Structure    │ Transform │ Best For       │
+├──────────────┼──────────┼──────────────┼───────────┼────────────────┤
+│ PCA          │ Fast     │ Global       │ Yes       │ Preprocessing  │
+│ t-SNE        │ Slow     │ Local        │ No        │ Visualization  │
+│ UMAP         │ Moderate │ Both         │ Yes       │ Both           │
+└──────────────┴──────────┴──────────────┴───────────┴────────────────┘
+
+WHEN TO USE:
+    - PCA: Preprocessing, feature reduction, speed
+    - t-SNE: Quick visualization of clusters
+    - UMAP: Visualization + clustering preprocessing
+    - Before clustering: PCA (to reduce noise and dimensions)
+    - For visualization: UMAP > t-SNE > PCA
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What do eigenvalues represent in PCA?
+2. Why must you StandardScaler before PCA?
+3. Why should you NOT use t-SNE distances for clustering?
+4. What is the advantage of UMAP over t-SNE?
+5. How do you choose the number of PCA components?
+
+================================================================================

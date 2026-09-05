@@ -1,0 +1,17 @@
+================================================================================
+KAFKA MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: KAFKA DEMO (Beginner)
+===================================
+Build simple producer-consumer messaging system.
+
+PROJECT 2: REAL-TIME LOG PROCESSOR (Intermediate)
+===================================================
+Build streaming log processing pipeline with Kafka.
+
+PROJECT 3: STREAMING ML INFERENCE (Advanced)
+==============================================
+Build real-time ML prediction pipeline with Kafka.
+
+================================================================================

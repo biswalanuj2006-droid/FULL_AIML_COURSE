@@ -1,0 +1,68 @@
+================================================================================
+LEETCODE PATTERN: HASHING — 25 PROBLEMS
+================================================================================
+
+================================================================================
+EASY (10 Problems)
+================================================================================
+
+1. TWO SUM (LC #1) — See Two Pointer module
+2. CONTAINS DUPLICATE (LC #217)
+   def containsDuplicate(nums):
+       return len(nums) != len(set(nums))
+
+3. VALID ANAGRAM (LC #242)
+   def isAnagram(s, t):
+       from collections import Counter
+       return Counter(s) == Counter(t)
+
+4. INTERSECTION OF TWO ARRAYS (LC #349)
+   def intersection(nums1, nums2):
+       return list(set(nums1) & set(nums2))
+
+5. HAPPY NUMBER (LC #202)
+6. ISOMORPHIC STRINGS (LC #205)
+7. WORD PATTERN (LC #290)
+8. MAXIMUM NUMBER OF BALLONS (LC #1189)
+9. DIFFERENCE OF TWO ARRAYS (LC #2215)
+10. COUNT CONSISTENT STRINGS (LC #1684)
+
+================================================================================
+MEDIUM (10 Problems)
+================================================================================
+
+11. GROUP ANAGRAMS (LC #49)
+12. TOP K FREQUENT ELEMENTS (LC #347)
+13. LONGEST CONSECUTIVE SEQUENCE (LC #128)
+    def longestConsecutive(nums):
+        num_set = set(nums)
+        longest = 0
+        for num in num_set:
+            if num - 1 not in num_set:  # start of sequence
+                length = 1
+                while num + length in num_set:
+                    length += 1
+                longest = max(longest, length)
+        return longest
+
+14. SUBARRAY SUM EQUALS K (LC #560)
+15. SORT CHARACTERS BY FREQUENCY (LC #451)
+16. FREQUENCY OF MOST FREQUENT ELEMENT (LC #1838)
+17. EQUAL ROW AND COLUMN PAIRS (LC #2352)
+18. DICTIONARY TWO SUMS (LC #1)
+19. RANSOM NOTE (LC #383)
+20. MINIMUM INDEX SUM OF TWO LISTS (LC #599)
+
+================================================================================
+HARD (5 Problems)
+================================================================================
+
+21. LONGEST SUBSTRING WITH AT MOST K DISTINCT (LC #340)
+22. MINIMUM WINDOW SUBSTRING (LC #76)
+23. SUBARRAY SUM DIVISIBLE BY K (LC #974)
+24. FIND MAXIMAL UNSORTED SUBARRAY (LC #581)
+25. COUNT OF RANGE SUM (LC #327)
+
+================================================================================
+END OF HASHING PATTERN
+================================================================================

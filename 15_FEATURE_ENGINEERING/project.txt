@@ -1,0 +1,17 @@
+================================================================================
+FEATURE ENGINEERING — PROJECTS
+================================================================================
+
+PROJECT 1: FEATURE ENGINEERING PIPELINE (Beginner)
+====================================================
+Build preprocessing + feature engineering pipeline for a real dataset.
+
+PROJECT 2: CUSTOM TRANSFORMER LIBRARY (Intermediate)
+=====================================================
+Build sklearn-compatible transformers for domain-specific features.
+
+PROJECT 3: PRODUCTION FEATURE PIPELINE (Advanced)
+===================================================
+Build feature pipeline with validation, versioning, and documentation.
+
+================================================================================

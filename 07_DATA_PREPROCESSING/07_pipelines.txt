@@ -1,0 +1,215 @@
+================================================================================
+MODULE 07: DATA PREPROCESSING - LESSON 7: SCIKIT-LEARN PIPELINES
+Pipeline, ColumnTransformer, and why they prevent the #1 ML bug
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able to:
+- Chain preprocessing + model in one sklearn Pipeline
+- Apply different transforms to numeric vs categorical columns with
+  ColumnTransformer
+- Fit/transform ONCE (no repeated fit_transform on full data)
+- Use pipelines inside cross-validation and grid search safely
+- Write custom transformers for reusable, leakage-free preprocessing
+
+================================================================================
+1. THE PROBLEM PIPELINES SOLVE
+================================================================================
+
+The most common silent ML bug:
+
+  scaler = StandardScaler()
+  X_train_scaled = scaler.fit_transform(X_train)   # ok
+  X_test_scaled = scaler.fit_transform(X_test)     # BUG! test scaler re-fit
+
+Fitting a second time on the test set "leaks" test statistics into the
+transformation (see lesson 08 for the full danger list). The correct code
+reuses the scaler fitted on TRAIN only:
+
+  scaler = StandardScaler()
+  X_train_scaled = scaler.fit_transform(X_train)
+  X_test_scaled = scaler.transform(X_test)         # transform, not fit
+
+Now multiply this by every transform (impute, encode, scale, select) and
+every fold of cross-validation, and manual bookkeeping breaks. Pipelines
+automate the rule:
+
+  fit EVERYTHING on the training portion only.
+  transform validation/test with the SAME fitted objects.
+
+================================================================================
+2. PIPELINE BASICS
+================================================================================
+
+  from sklearn.pipeline import Pipeline
+  from sklearn.preprocessing import StandardScaler
+  from sklearn.linear_model import LogisticRegression
+
+  pipe = Pipeline([
+      ("scaler", StandardScaler()),
+      ("model", LogisticRegression()),
+  ])
+
+  pipe.fit(X_train, y_train)          # scales (fit+transform), then trains
+  y_pred = pipe.predict(X_test)       # scales with TRAIN stats, then predicts
+
+  pipe.score(X_test, y_test)
+
+Steps are name/estimator pairs. Every step except the last must have
+fit_transform; the last must have predict (or transform for a pure
+preprocessing pipeline).
+
+Grid search over pipeline params uses double underscores:
+
+  from sklearn.model_selection import GridSearchCV
+  param_grid = {"model__C": [0.01, 0.1, 1.0],
+                "scaler__with_mean": [True, False]}
+  gs = GridSearchCV(pipe, param_grid, cv=5)
+  gs.fit(X_train, y_train)            # scaling re-fit inside every fold
+
+Because the scaler lives INSIDE the pipeline, each CV fold fits it on that
+fold's training data only - leakage-free by construction.
+
+================================================================================
+3. COLUMNTRANSFORMER: DIFFERENT RULES PER COLUMN TYPE
+================================================================================
+
+Real data mixes numeric and categorical columns needing different
+transforms. ColumnTransformer routes columns:
+
+  from sklearn.compose import ColumnTransformer
+  from sklearn.preprocessing import OneHotEncoder, StandardScaler
+  from sklearn.impute import SimpleImputer
+
+  numeric_cols = ["age", "income", "balance"]
+  categorical_cols = ["job", "marital", "education"]
+
+  preprocessor = ColumnTransformer([
+      ("num", Pipeline([
+          ("impute", SimpleImputer(strategy="median")),
+          ("scale", StandardScaler()),
+      ]), numeric_cols),
+      ("cat", Pipeline([
+          ("impute", SimpleImputer(strategy="most_frequent")),
+          ("onehot", OneHotEncoder(handle_unknown="ignore")),
+      ]), categorical_cols),
+  ])
+
+  pipe = Pipeline([
+      ("prep", preprocessor),
+      ("model", RandomForestClassifier(n_estimators=200)),
+  ])
+  pipe.fit(X_train, y_train)
+
+handle_unknown="ignore" is critical: it prevents crashes when a category
+appears in test/production that training never saw.
+
+Full pipeline, no leakage, and your model sees numeric + one-hot columns in
+the right order automatically.
+
+================================================================================
+4. WHY PIPELINES ARE THE ONLY CORRECT WAY
+================================================================================
+
+Without pipelines you will eventually:
+  - fit_transform on the full dataset before splitting  (leak!)
+  - transform validation data with its own scaler       (optimistic bias)
+  - apply a target encoder outside CV folds              (leak!)
+  - forget one transform when moving notebook->service   (train/serve skew)
+
+With pipelines:
+  - One object captures the ENTIRE data->model recipe
+  - CV and grid search re-fit transforms per fold automatically
+  - The same object can be dumped (joblib) and reused at serving time,
+    so serving applies identical preprocessing to training
+
+  import joblib
+  joblib.dump(pipe, "model_pipeline.joblib")
+  loaded = joblib.load("model_pipeline.joblib")
+  loaded.predict(X_new)               # same preprocessing, guaranteed
+
+================================================================================
+5. MAKING THE PREPROCESSOR: fit_transform vs transform (recap)
+================================================================================
+
+  - fit()       : learn parameters (mean, categories, median)
+  - transform() : apply learned parameters
+  - fit_transform(): learn AND apply on the same data (TRAIN ONLY)
+
+A transform's parameters may ONLY be learned from training data. Every
+pipeline handles this for you; hand-rolled code almost never does.
+
+================================================================================
+6. CUSTOM TRANSFORMERS
+================================================================================
+
+For domain logic (log transform, clipping, derived features):
+
+  from sklearn.base import BaseEstimator, TransformerMixin
+
+  class LogClip(BaseEstimator, TransformerMixin):
+      def __init__(self, clip_at=3.0):
+          self.clip_at = clip_at
+      def fit(self, X, y=None):
+          return self                    # nothing to learn
+      def transform(self, X):
+          import numpy as np
+          X = np.log1p(np.asarray(X))    # log(1+x): safe for zeros
+          return np.clip(X, None, self.clip_at)
+
+  pipe = Pipeline([("logclip", LogClip()), ("model", LinearRegression())])
+
+Rules for custom transformers:
+  - Subclass BaseEstimator + TransformerMixin
+  - __init__ params must be stored verbatim (sklearn cloning relies on it)
+  - fit returns self; transform returns a 2D array-like
+  - NEVER fit inside transform (that is the leak you are trying to kill)
+
+================================================================================
+7. PIPELINES INSIDE CROSS-VALIDATION (why it changes your results)
+================================================================================
+
+  from sklearn.model_selection import cross_val_score
+  scores = cross_val_score(pipe, X, y, cv=5, scoring="roc_auc")
+
+Each of the 5 folds:
+  1. splits train/val
+  2. fits imputers/scalers/encoders on the fold's train
+  3. transforms the fold's val
+  4. fits the model and scores it
+
+Compare with the common WRONG approach (scale once on all X, then CV) -
+the wrong approach scores higher but that score is fiction.
+
+================================================================================
+8. COMMON MISTAKES
+================================================================================
+
+1. scaler.fit_transform(X_test) or scaler.fit(X_train) then forgetting
+   transform on test - the classic.
+2. Grid-searching on a pipeline vs on raw model params inconsistently.
+3. Dropping handle_unknown="ignore" -> crash on unseen category in prod.
+4. Column name typos in ColumnTransformer silently dropping columns
+   (sklearn >= 1.2 raises; older versions silently produce all-NaN - check
+   with pipe[:-1].transform(X_train).shape).
+5. Putting ColumnTransformer OUTSIDE the pipeline and fitting it on all data.
+6. Not dumping the whole pipeline for serving -> train/serve skew.
+
+================================================================================
+9. MINI CHALLENGE (do this now, code it)
+================================================================================
+
+Use any mixed dataset (titanic-style):
+  1. Build a ColumnTransformer: median-impute + scale numeric;
+     most_frequent-impute + one-hot categorical.
+  2. Chain with RandomForestClassifier in a Pipeline.
+  3. Compare CV scores: (a) pipeline inside cross_val_score vs
+     (b) scaling the whole X once before CV. Expect (a) <= (b) - explain
+     the gap in your own words (that gap is leaked information).
+  4. Grid search 3 hyperparameters over the pipeline with double-underscore
+     names.
+
+================================================================================
+END OF LESSON 7 - continue to 08_data_leakage.txt
+================================================================================

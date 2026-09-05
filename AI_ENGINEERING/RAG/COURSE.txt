@@ -1,0 +1,822 @@
+================================================================================
+ULTRA-DEEP RAG COURSE  -  COURSE.txt
+================================================================================
+Track      : AI_ENGINEERING/RAG/  (Course 2 of the AI_ENGINEERING set:
+             DEEP_LEARNING -> RAG -> LANGCHAIN -> LANGGRAPH)
+Companion  : PRACTICE.txt (levels 0-5), PROJECT.txt (tiers E-S+),
+             EXAMPLE.py (runnable lab - verified by execution)
+Prereq     : Python, NumPy, ML basics, text basics. Transformers/LLM
+             awareness helps (see llm_course/).
+Mission    : teach retrieval-augmented generation from FIRST PRINCIPLES:
+             ingestion -> chunking -> embeddings -> indexes -> retrieval
+             -> reranking -> generation -> evaluation -> failure analysis
+             -> production -> security. You must be able to build a RAG
+             system WITHOUT any framework before you are allowed a
+             framework (no-framework-first rule).
+
+================================================================================
+RAG-00 - ORIENTATION: WHAT RAG IS AND WHY IT EXISTS
+================================================================================
+1. THE PROBLEM
+   An LLM's knowledge is frozen at its training cutoff, stored implicitly
+   in weights, and cannot be updated cheaply. Asking the model a question
+   about YOUR documents is like asking a brilliant generalist who has never
+   seen your files. Two failure modes dominate:
+     a) HALLUCINATION - the model says something fluent but false because
+        it has no source of truth for your domain.
+     b) STALENESS - even when correct, the answer reflects the training
+        cutoff, not today's data.
+2. THE IDEA (INTUITION)
+   Instead of storing knowledge in weights, store it OUTSIDE the model (in
+   an index) and hand the model the relevant pieces at query time. The
+   model becomes a READER that answers from the passages you give it.
+   Analogy: a good exam strategy. The LLM is the student who writes fast;
+   RAG is handing that student the correct textbook pages before the exam.
+   The student still must not invent facts that are not on the pages.
+3. FORMAL DEFINITION
+   RAG = retrieval + generation:
+     given query q and corpus D:
+       1) encode q and each d in D into a shared space (or lexical space),
+       2) retrieve the k most relevant passages R(q) = top_k(sim(q, d)),
+       3) build a prompt  [instructions + R(q) + q],
+       4) generate the answer conditioned on the prompt.
+   The answer is 'grounded' when every claim is supported by R(q).
+4. WHY RAG WINS OVER FINE-TUNING FOR KNOWLEDGE
+   - Freshness: rebuild/replace documents -> rebuild index; no retraining.
+   - Attribution: answers can cite the exact source chunk.
+   - Cost: one base model serves many knowledge bases.
+   - Updates: add a document in minutes, not GPU-hours.
+   Fine-tuning instead teaches STYLE/BEHAVIOR/FORMAT or rare skills. The
+   rule of thumb: knowledge that changes -> RAG; behavior that must hold ->
+   fine-tuning; both when needed.
+5. THE COMPLETE ARCHITECTURE (two lanes)
+   INGEST LANE (offline, once per document set):
+     raw docs -> parse -> clean -> chunk -> embed -> index (+ metadata)
+   QUERY LANE (online, per question):
+     query -> (rewrite) -> embed -> retrieve -> (rerank) -> context ->
+     prompt -> LLM -> answer with citations -> (verify) -> return
+6. WHEN RAG IS THE WRONG TOOL
+   - The answer must be computed, not read (math, code execution): give a
+     calculator/code tool instead.
+   - The knowledge is small, static, and fully in weights already.
+   - You need a global synthesis across 1000 documents: retrieve +
+     iterate (agentic RAG) rather than one-shot.
+   - Strict per-row database queries: use SQL, not similarity.
+7. THE NON-NEGOTIABLES (design constraints)
+   1. Every claim you serve must be traceable to a chunk you can show.
+   2. Retrieval quality bounds answer quality: garbage in, garbage out.
+   3. Eval retrieval SEPARATELY from generation. Both can fail.
+   4. The index is production infrastructure: it can be stale, poisoned,
+      or leaky. Treat it like a database.
+8. WHAT THIS COURSE BUILDS TOWARD
+   By the end you can build, evaluate, debug, secure, and operate a
+   production RAG platform - first with numpy, then with a vector DB,
+   then (in the LANGCHAIN course) with frameworks on top.
+
+================================================================================
+RAG-01 - DOCUMENT INGESTION (LOAD + CLEAN + NORMALIZE)
+================================================================================
+1. THE INPUT PROBLEM
+   Real documents are not text files: PDFs with layouts, DOCX, HTML with
+   boilerplate, scanned images needing OCR, tables, spreadsheets, code,
+   chat logs. Ingestion converts ANY of these into clean, well-formed text
+   with metadata you can trust.
+2. THE INGESTION PIPELINE
+   SOURCE -> PARSER -> CLEANER -> NORMALIZER -> METADATA -> CHUNKER ->
+   EMBEDDER -> INDEX
+3. PARSING (per format)
+   - PDF: extract text with layout awareness (PyMuPDF/pdfplumber style);
+     PDFs are NOT text files - 'copy-paste' extraction breaks on columns,
+     headers/footers, and scans. Scanned PDFs need OCR first.
+   - DOCX/PPTX: they are zip files of XML; parse the XML for real content,
+     not just the raw text run.
+   - HTML: strip tags, but ALSO strip nav/ads/footers; use readability
+     heuristics (main-content detection) not regex tag-stripping.
+   - Tables/CSV: parse structurally; a table flattened to prose loses
+     meaning - keep row/column context or serialize as text with headers.
+   - Code: keep it verbatim with language tags; do not 'clean' it.
+4. CLEANING (what to remove vs preserve)
+   Remove: page numbers, running headers/footers, boilerplate disclaimers,
+   duplicate navigation, ligature garbage, control characters.
+   Preserve: headings (structure!), emphasis (it marks importance), lists,
+   table structure, hyperlinks-as-citations, section numbering.
+5. NORMALIZATION
+   - Unicode normalization (NFKC) for fullwidth/halfwidth and accents.
+   - Consistent newlines; collapse runaway whitespace.
+   - Resolve encoding issues; fix common OCR errors if you OCR'd.
+   - Language detection if the corpus is multilingual (chunk per language
+     or tag metadata - don't mix languages in one chunk).
+6. METADATA - THE FORGOTTEN HALF OF RETRIEVAL
+   Every chunk should carry: doc_id, source path/URL, title, section
+   path, page/section anchor, author, date, language, access level
+   (tenant/role!), version, hash. Metadata enables:
+   - filtering (date, tenant, doc type) BEFORE similarity,
+   - citation (show WHERE the answer came from),
+   - compliance (delete/audit per source),
+   - access control (never retrieve what the user may not see).
+7. IMPLEMENTATION NOTES (see EXAMPLE.py S1)
+   Represent a document as: {doc_id, title, meta: dict, sections: [
+   {heading_path, text}]}. Parse -> yield clean sections -> chunk later.
+8. ENGINEERING IMPLICATIONS
+   - Idempotent ingestion: re-running the pipeline on the same docs must
+     not duplicate chunks (hash doc content -> doc_id).
+   - Incremental updates: only re-ingest changed/new docs; keep a
+     manifest with content hashes.
+   - Backpressure and resumability: ingestion of 1M docs is a batch job;
+     design it to checkpoint.
+9. COMMON MISTAKES
+   - Trusting PDF text extraction blindly (silent garbage in).
+   - Regex tag-stripping HTML and keeping boilerplate (retrieval noise).
+   - No metadata (then you cannot filter, cite, or isolate tenants).
+   - Dropping structure (headings) so chunking cannot use it.
+10. LIMITATIONS / RESEARCH
+    Layout-aware document understanding (layout models, VLM-based
+    extraction) beats classical parsing for complex pages but is costlier;
+    PDF 'digital native' vs scanned is a data-distribution decision.
+    Evaluate: sample-check parse quality per format with a labeled set.
+
+================================================================================
+RAG-02 - CHUNKING: CUTTING DOCUMENTS INTO RETRIEVABLE PIECES
+================================================================================
+1. WHY CHUNK AT ALL
+   Retrieval works on units. Whole documents are too coarse (one doc may
+   answer 100 questions - retrieval is imprecise) and single sentences
+   too fine (context is lost, embeddings are noisy). Chunking picks the
+   unit you will embed, index, retrieve, and hand to the model.
+2. THE CENTRAL TENSION
+   - SMALL chunks: precise retrieval, better hit@k on narrow questions,
+     but less context for the answer, more chunks to manage.
+   - LARGE chunks: self-contained context (fewer calls, model sees whole
+     section) but lower retrieval precision - irrelevant halves drag the
+     similarity down or up.
+   There is no universal size. Size is a HYPERPARAMETER you tune with
+   your eval (see RAG-09). Typical ranges: 200-1500 tokens with overlap.
+3. STRATEGIES (ranked by control)
+   a) FIXED-SIZE (naive): N tokens per chunk, M overlap. Fast, breaks
+      sentences and meaning. Baseline only.
+   b) RECURSIVE SPLITTING (standard): split on paragraph -> sentence ->
+      word boundaries until each piece is under budget; keeps natural
+      units. This is the default you should implement first.
+   c) STRUCTURE-AWARE: use headings/sections (from RAG-01 metadata) as
+      the primary boundaries - chunk per section, split only when a
+      section exceeds the budget. Best for manuals/legal/reports.
+   d) SEMANTIC CHUNKING: split where embedding similarity between
+      adjacent sentences drops (topic boundary). Better boundaries,
+      costs embeddings, sensitive to the threshold.
+   e) PARENT-CHILD: index small chunks (search units) but return the
+      PARENT section as context (reading unit). Small for precision,
+      big for generation - the best of both. (RAG-07 deep-dive.)
+4. OVERLAP - WHY AND HOW MUCH
+   A sentence split across a boundary loses its meaning in both halves.
+   Overlap (10-20% of chunk length) lets boundary-straddling content
+   survive in at least one chunk. Cost: duplicated tokens in the index.
+5. CHUNK = RETRIEVAL UNIT AND PROMPT UNIT ARE DIFFERENT
+   Modern systems separate them:
+     search_unit (embedded, ~200-400 tokens) ->
+     context_unit (returned, parent section ~800-1500 tokens).
+   This single idea fixes most 'right doc, wrong section' failures.
+6. CHUNK SIZE AND THE EMBEDDING MODEL
+   Embedders have a max sequence length and degrade past their training
+   length. Chunk near or under the embedder's sweet spot. A 384-token
+   model given a 2000-token chunk truncates - your chunk silently loses
+   its tail.
+7. METADATA ON CHUNKS
+   Each chunk: text + {doc_id, chunk_index, section_path, char/token
+   span, hash}. chunk_index lets you reconstruct document order; spans
+   let you cite exact locations and support 'previous/next' navigation.
+8. IMPLEMENTATION NOTES (see EXAMPLE.py S2)
+   Implement: recursive splitter with (a) separator hierarchy
+   ['\n\n', '\n', '. ', ' '], (b) size measured in tokens via a simple
+   tokenizer (whitespace+BPE-lite or tiktoken-style when available),
+   (c) overlap that does not duplicate a separator, (d) a chunker class
+   you can unit-test on adversarial text (huge words, tiny sentences).
+9. ENGINEERING IMPLICATIONS
+   - Deterministic chunking is a prerequisite for reproducible retrieval
+     and for diffing index changes.
+   - Store chunk boundaries; changing the chunker invalidates the index
+     (version the chunker config in the index metadata).
+10. FAILURE MODES
+    - Mid-sentence cuts (no recursive splitter) -> garbage embeddings.
+    - Overlap doubling storage for no gain on short docs.
+    - Chunking tables/JSON into prose that loses structure.
+    - Chunker config changed -> silently mixed chunk styles in one index.
+11. RESEARCH
+    Chunking research is really retrieval-unit research: learnable chunk
+    boundaries, late chunking (embed tokens then pool at query time),
+    and 'contextual retrieval' (prepend doc-level context to each chunk
+    before embedding) all attack the same context-loss problem.
+
+================================================================================
+RAG-03 - EMBEDDINGS: PUTTING MEANING INTO VECTORS
+================================================================================
+1. WHAT AN EMBEDDING IS
+   A function text -> vector in R^d such that similar meanings land
+   nearby (cosine/dot-product). Dense retrieval = nearest-neighbor
+   search in that space. The quality of your ENTIRE RAG system is
+   bounded by how well this space captures the similarity your users
+   mean.
+2. TWO FAMILIES OF RETRIEVAL REPRESENTATIONS
+   - LEXICAL (sparse): TF-IDF/BM25 vectors - one dimension per term.
+     Exact-match power, no semantics, no OOV.
+   - DENSE (learned): embedder output - semantic power, can match
+     paraphrase, needs training data and compute.
+   You will usually want BOTH (hybrid, RAG-06).
+3. HOW DENSE EMBEDDERS ARE TRAINED (why they work)
+   Contrastive learning: pull (query, positive_doc) together, push
+   (query, negative_doc) apart. The key ingredients:
+   - Hard negatives (documents that LOOK relevant but are not) - this is
+     what makes the space sharp instead of mushy.
+   - In-batch negatives (other queries' positives) for cheap scale.
+   - Temperature on the similarity (sharpens the distribution).
+   InfoNCE loss:  L = -log( exp(sim(q,p)/tau) / sum_j exp(sim(q,n_j)/tau) )
+4. COSINE VS DOT PRODUCT - KNOW WHICH YOU ARE USING
+   - Cosine: normalized vectors; range [-1, 1]; ignores magnitude.
+   - Dot: used on normalized vectors gives the same ranking as cosine;
+     if vectors are NOT normalized the two rank DIFFERENTLY.
+   Practical rule: normalize, then search with dot product (faster); or
+   store normalized and search with cosine. Never mix unnormalized
+   vectors with a cosine claim.
+5. EMBEDDING DIMENSIONALITY
+   384/768/1536 are common. Higher dims = more capacity, more memory,
+   more compute. Matryoshka models let you truncate (768 -> 384 -> 128)
+   with graceful quality loss - tune dims to your corpus/budget.
+6. CHOOSING AN EMBEDDER
+   Match the embedder to your data:
+   - Language(s): multilingual models for multilingual corpora.
+   - Domain: code, biomed, legal have specialized embedders; a generic
+     model on legal text underperforms a legal-tuned one.
+   - Length: long-document vs sentence optimizations.
+   - Dimensions/cost: for 100M docs, dims and model cost dominate.
+   Evaluate with YOUR retrieval task (hit@k/MRR on your queries), not
+   the model card.
+7. EMBEDDING VERSIONING (the silent killer)
+   Your corpus is embedded with model v1; six months later you embed new
+   docs with v2. v1 and v2 spaces are NOT comparable -> new docs never
+   match old ones and vice versa. Rules:
+   - Store embedding_model + dims + normalize flag in index metadata.
+   - Re-embed the whole corpus when you change models (or run dual
+     indexes during migration).
+8. IMPLEMENTATION NOTES (see EXAMPLE.py S3-S4)
+   EXAMPLE.py trains REAL dense embeddings in-file from a small corpus
+   (PPMI + truncated SVD, the classic Word2Vec-era recipe) so you can see
+   the whole pipeline with no downloads: build co-occurrence, PPMI,
+   SVD, cosine search, and compare against a lexical baseline. The same
+   eval harness later accepts a real HF embedder when one is cached.
+9. COMMON MISTAKES
+   - Forgetting normalization (silent ranking changes after updates).
+   - Mixing embedder versions in one index.
+   - Embedding the query with a different model than the corpus.
+   - Not truncating long chunks to the embedder's context length.
+10. RESEARCH
+    'What makes a good embedding space for retrieval' is active: hard
+    negative mining, distillation, matryoshka dims, and late interaction
+    (ColBERT-style) which keeps per-token detail at rerank time.
+
+================================================================================
+RAG-04 - VECTOR STORES AND ANN SEARCH
+================================================================================
+1. WHAT A VECTOR STORE IS
+   A database whose primary query is 'give me the k nearest vectors to
+   this one', with persistence, metadata filtering, and concurrency.
+   At small scale (<= 100k chunks) a numpy matrix + argpartition is
+   genuinely enough. At scale you need an ANN index.
+2. EXACT SEARCH COST
+   Brute force on N vectors of dim d costs O(Nd) per query. For 10M x
+   768 fp32 that is ~60 GB of reads per full scan - too slow for
+   interactive use. ANN trades a little recall for 10-100x speed.
+3. THE MAIN ANN FAMILIES (conceptual)
+   - IVF (inverted file): cluster the corpus (k-means) into nlist cells;
+     probe only a few cells. Recall controlled by nprobe.
+   - HNSW (hierarchical navigable small world): multi-layer graph;
+     greedy search from the top layer down. Recall controlled by M
+     (edges/node) and efSearch (search width). The default for most
+     vector DBs.
+   - PQ (product quantization): compress each vector into short codes
+     (split dims, per-subvector codebook); search on codes, decode only
+     candidates. Massive memory cut, some distortion.
+   Real systems stack them: IVF+HNSW, IVFPQ, HNSW+PQ.
+4. MEMORY MATH (see EXAMPLE.py S5)
+   Raw fp32 matrix: N * d * 4 bytes. N=1M, d=768 -> ~3 GB just for
+   vectors. HNSW adds edges: ~M * 12 bytes per node (int4 src/dst +
+   float). Quantization (PQ m=96) can cut vector memory ~8x.
+5. FILTERING IS PART OF THE QUERY
+   Metadata filters (tenant, date, doc type, access level) must combine
+   with similarity. POST-filtering (search 100, then filter) silently
+   starves results when the filter is selective. PRE-filtering or
+   filtered-ANN (biasing the search with the predicate) is correct.
+   This is where many production RAG systems 'randomly' return nothing.
+6. PICKING A STORE: LIBRARY VS SERVER
+   - FAISS: library, in-process, fast, you manage persistence. Great
+     embedded in a service; you own durability.
+   - Chroma/Qdrant/Weaviate/Milvus: servers with CRUD, filtering,
+     replication, and (some) hybrid. pgvector: when you already live in
+     Postgres and your scale is moderate.
+   Decision: moderate scale + existing Postgres -> pgvector. Heavy
+   vector workloads -> a dedicated store. Small/in-process -> FAISS.
+7. INDEX LIFECYCLE (the operational core)
+   create (embed all) -> update (incremental adds/deletes) -> rebuild
+   (chunker/embedder changed) -> version (record model+config) ->
+   shadow-test before switch -> rollback path. An index is an artifact
+   with a schema, like a table - version it and migrate deliberately.
+8. IMPLEMENTATION NOTES (see EXAMPLE.py S5)
+   Implement a tiny IVF (k-means cells + brute force per cell) and an
+   HNSW-lite (or FAISS when available), then measure recall@10 vs brute
+   force on the S3 embeddings. Recall@10 >= 0.95 at 10x+ speedup is the
+   bar.
+9. COMMON MISTAKES
+   - Post-filtering with selective metadata (silent empty results).
+   - One giant index mixing tenants without a tenant filter.
+   - Not re-embedding after embedder upgrade (mixed spaces).
+   - Tuning efSearch/M on the eval set and reporting the tuned number.
+10. RESEARCH
+    Filtered ANN, learned indexes, and disk-ANN for billion-scale
+    corpora are active areas; HNSW remains the pragmatic default.
+
+================================================================================
+RAG-05 - RETRIEVAL: DENSE vs SPARSE vs HYBRID
+================================================================================
+1. WHAT RETRIEVAL MUST DO
+   Given a query, return the k chunks most likely to CONTAIN the answer.
+   Note: retrieval is recall work. Precision is fixed later (reranking,
+   RAG-06) and final quality is fixed by generation (RAG-08).
+2. DENSE RETRIEVAL (embedding search)
+   Query and chunks live in one semantic space; search = nearest
+   neighbors. Strengths: paraphrase/synonym matching, no exact term
+   needed. Weaknesses: rare terms and exact identifiers (model names,
+   SKUs, error codes, product codes) are poorly matched unless the
+   embedder saw them; out-of-domain queries degrade.
+3. SPARSE RETRIEVAL (lexical: BM25)
+   Bag-of-words scoring. BM25 = sum over matched terms of IDF *
+   saturation(k1) * length-normalization(b). Strengths: exact-match on
+   identifiers, robust out-of-domain, no training, interpretable.
+   Weaknesses: zero semantic overlap = zero score (synonym blind);
+   sensitive to tokenization.
+4. WHY HYBRID IS THE DEFAULT ANSWER
+   Dense and sparse fail on DIFFERENT queries. The identifier query
+   ('error code 0x80070002') is a sparse win; the paraphrase query
+   ('how do I stop the flickering screen') is a dense win. A real
+   corpus has both. Hybrid = run both + fuse scores.
+5. FUSION METHODS
+   - RRF (reciprocal rank fusion): score(d) = sum over systems of
+     1/(k + rank_s(d)), k~60. Rank-based, no score calibration needed,
+     robust. The pragmatic default.
+   - Weighted score fusion: alpha * dense + (1-alpha) * sparse. Needs
+     score normalization and alpha tuning.
+   - Learned fusion: a model over the two scores - better, needs labels.
+6. QUERY-SIDE PROBLEMS RAG MUST FIX
+   Real queries are short, vague, or conversational ('it broke').
+   Options: query rewriting for retrieval (expand the query into search
+   terms), multi-query (issue several rewritten queries and merge), and
+   HyDE (ask an LLM to draft a hypothetical answer, retrieve with ITS
+   embedding - the draft is closer to the doc than the query is).
+   Measure before adopting: rewriting helps some query classes and
+   hurts others (see RAG-09 eval).
+7. THE RETRIEVAL FUNNEL (two-stage)
+   Stage 1 (cheap, wide): hybrid top-50..100. Stage 2 (expensive,
+   precise): rerank to top-3..5. Never let stage 1 do precision work or
+   stage 2 see the whole corpus.
+8. IMPLEMENTATION NOTES (see EXAMPLE.py S6-S7)
+   Implement BM25 from scratch (IDF + saturation + length norm) and
+   fuse it with the dense cosine results via RRF. On the S3 corpus
+   paraphrase eval: expect hybrid >= best single system (the EXAMPLE
+   measures dense 9/9, lexical 6/9, paraphrases 6/6 vs 4/6 on its set).
+9. FAILURE MODES
+   - Query is a full question; BM25 matches function words only - use
+     hybrid or query rewriting.
+   - Corpus has near-duplicate chunks: top-k collapses to one doc.
+   - Tokenization mismatch: 'C++' vs 'c plus plus' never matches
+     lexically - dense saves it.
+   - RRF on systems with very different list lengths needs a k tuned
+     for your depths.
+10. RESEARCH
+    Learned sparse models (SPLADE-style, term-weighting with neural
+    context) aim for sparse interpretability + dense semantics; late
+    interaction (ColBERT) blurs dense retrieval into per-token rerank.
+
+================================================================================
+RAG-06 - RERANKING (CROSS-ENCODERS AND THE TWO-STAGE FUNNEL)
+================================================================================
+1. WHY A RETRIEVER CANNOT BE PERFECT
+   Retrievers encode query and doc SEPARATELY (bi-encoder) so they can
+   run over millions of docs. That separation loses the fine interplay
+   between the query's words and the doc's words. A retriever is a
+   coarse filter BY DESIGN.
+2. THE CROSS-ENCODER
+   Feed [query tokens + doc tokens] into ONE transformer jointly -> a
+   relevance score. The model sees token-level interaction, so it can
+   judge 'does this passage actually answer THIS question', not just
+   'is this passage similar to the question'.
+   Cost: O(query+doc) per pair - cannot scan a corpus, only a candidate
+   list. Hence the funnel:
+     retrieve 50-100 (cheap, recall) -> cross-encode each -> top 3-5.
+3. WHAT RERANKING ACTUALLY FIXES
+   - 'Right document, wrong section': the parent section ranks above
+     the retrieved fragment.
+   - The top hit is semantically similar but does NOT answer (similar
+     topic, wrong claim).
+   - Near-duplicate chunks crowd the top-k; rerank de-duplicates by
+     relevance.
+4. RERANKER vs EMBEDDER TRAINING DIFFERENCE
+   Embedders train on (q, relevant) vs (q, irrelevant) pairs - a
+   retrieval loss. Rerankers train on (q, passage) -> label (relevant /
+   not, or graded) - a judgment loss closer to the final question. This
+   is why a good reranker improves answer quality beyond retrieval
+   metrics.
+5. WHEN NOT TO RERANK
+   - Tiny candidate lists (<= 10): the gain is small; measure it.
+   - Budget-critical high QPS: cross-encoder latency on 50 candidates
+     may exceed the generation call. Distill to a smaller reranker or
+     rerank top-20 only.
+   - When retrieval already returns exactly the answer chunk and eval
+     shows no gain: remove the stage, keep the money.
+   Always measure stage value with ablations (RAG-09).
+6. IMPLEMENTATION NOTES (see EXAMPLE.py S8)
+   A real cross-encoder needs a trained transformer; EXAMPLE.py ships a
+   lightweight STAND-IN reranker (overlap + position + length features)
+   so the two-stage mechanics run end-to-end offline, and the eval
+   shows whether reranking changed top-1/top-3. Swap the stand-in for a
+   real cross-encoder when one is available offline.
+7. COMMON MISTAKES
+   - Reranking 50 docs per query at 10 QPS without measuring latency.
+   - Using the SAME model for retrieval and reranking (no new signal).
+   - Reranker trained on a different domain applied blindly.
+8. RESEARCH
+   Distilled rerankers, late-interaction reranking, and listwise
+   rerankers (score the whole candidate set jointly) are active areas.
+
+================================================================================
+RAG-07 - ADVANCED RAG (QUERY REWRITE + PARENT-CHILD + AGENTIC + GRAPH)
+================================================================================
+1. THE GAP BETWEEN NAIVE AND ADVANCED RAG
+   Naive RAG: embed the raw query once, retrieve top-k, stuff the
+   prompt. It fails on conversational queries, multi-hop questions,
+   questions spanning documents, and vague 'it broke' queries. Advanced
+   RAG adds stages that attack specific, MEASURED failures - never add
+   a stage because it sounds good.
+2. QUERY REWRITING FAMILY
+   - Expansion: 'the refund policy' -> 'refund policy return window'
+     (better for sparse); add synonyms/translations.
+   - Multi-query: generate 3-5 search variants, retrieve each, fuse
+     (RRF) - covers phrasing uncertainty.
+   - HyDE: draft a hypothetical answer, retrieve with its embedding.
+   - Conversational decompression: resolve 'it' and 'that policy'
+     against chat history BEFORE retrieval (rewrite query + history
+     into a standalone search query).
+   Each costs an LLM call per query; evaluate the retrieval gain before
+   keeping it.
+3. PARENT-CHILD / HIERARCHICAL RETRIEVAL (the highest-leverage trick)
+   Store SMALL search units (child chunks, ~200-400 tokens) for precise
+   embedding; retrieve children; return their PARENT section
+   (~800-1500 tokens) as the model context. Precision of small units +
+   context of large units. Implementation: chunk into children, record
+   parent_id, on retrieval map child -> parent and dedupe parents.
+4. CONTEXTUAL RETRIEVAL / CONTEXT-AWARE CHUNKS
+   Embedding a bare chunk loses document-level context ('what is the
+   policy?' in a chunk about 'exceptions to the policy'). Fix: prepend
+   a short document/section summary to each chunk before embedding
+   (index-time), or retrieve then expand (contextual compression at
+   prompt time).
+5. SELF-CORRECTION LOOPS (corrective / self-RAG family)
+   After retrieval, GRADE the chunks: are they actually relevant? If
+   none pass, rewrite the query and retry, or fall back to a different
+   retriever. After generation, VERIFY: is each claim grounded in a
+   chunk (citation check)? Re-generate or abstain on failure. This is a
+   loop, i.e. agentic behavior - see RAG-13 for where loops belong.
+6. AGENTIC RAG (when the loop earns its keep)
+   Naive RAG is one-shot. Agentic RAG lets the system: choose tools
+   (vector search vs SQL vs code), iterate (retry with a better query),
+   decompose (multi-hop: answer part 1, use it to search part 2), and
+   stop when confident. Costs: latency, tokens, debugging. Adopt when
+   eval shows one-shot RAG fails on a real query class (multi-hop,
+   vague, tool-requiring).
+7. GRAPH RAG (knowledge graphs over chunks)
+   Vector RAG retrieves by similarity; it cannot answer 'what changed
+   between Q1 and Q2 across all regions' - a question about ENTITIES and
+   RELATIONSHIPS, not passages. Graph RAG: extract entities +
+   relations from documents (LLM), build a graph, retrieve by
+   community/entity expansion, aggregate. Expensive to build and
+   maintain; wins on global/multi-hop questions, loses on plain
+   lookups. Build vector RAG first; add graph only when eval demands
+   multi-hop synthesis.
+8. SQL RAG (text-to-SQL) IS DIFFERENT
+   When the answer lives in structured rows ('total sales by region for
+   March'), vector search is the wrong tool. Generate SQL from the
+   question (schema in the prompt), execute in a sandboxed read-only
+   DB, format rows for the answer. Security is the core: read-only,
+   row-level permissions, never raw user SQL.
+9. IMPLEMENTATION NOTES (see EXAMPLE.py S9-S10)
+   EXAMPLE.py adds: conversational query decompression on chat history,
+   multi-query + RRF, and a grade-retry loop (all with stub LLM calls
+   replaced by deterministic functions so the mechanics run offline).
+10. ORDER OF ADOPTION (measure at every step)
+    1 hybrid + rerank (biggest, cheapest wins) -> 2 parent-child ->
+    3 query rewriting on the failing query classes -> 4 corrective
+    loop -> 5 agentic/graph only when eval shows a concrete gap.
+11. COMMON MISTAKES
+    - Stacking every technique; latency and cost grow, eval is flat.
+    - Rewriting queries that were already good (added LLM call, no
+      gain).
+    - Parent-child with no dedupe: the same section returned 4x.
+12. RESEARCH
+    Self-RAG (retrieval on demand + self-reflection tokens), adaptive
+    retrieval (when to retrieve at all), and GraphRAG-style community
+    summarization are the current frontier of this stage.
+
+================================================================================
+RAG-08 - GENERATION: PROMPTING WITH EVIDENCE + GROUNDING
+================================================================================
+1. THE GENERATION CONTRACT
+   The model receives: instructions (role + rules), the retrieved
+   evidence (with citations), and the user question. It must answer
+   ONLY from the evidence. The prompt is a CONTRACT, and like any
+   contract it is violated unless you verify - prompting alone is not
+   a grounding guarantee.
+2. PROMPT STRUCTURE (what actually matters)
+   - Instructions: 'Answer from the context only. If the context does
+     not contain the answer, say so.' - the abstain rule is the single
+     most important line for hallucination control.
+   - Evidence block: numbered sources [1]..[k] with visible text.
+   - The question last (models weight recent text heavily).
+   - Output format: answer + per-claim citations, or JSON for
+     structured use.
+3. THE CONTEXT BUDGET
+   Context windows are finite; retrieved chunks share it with the
+   instructions. Overfilling with marginal chunks reduces answer
+   quality (distraction + the model cannot weight 20 sources).
+   Practical rules: keep instructions short, retrieve only what is
+   needed (top-3..5 after rerank), and cut chunks that fail a
+   relevance floor. Budget math: context - system - question - room
+   for the answer = space for evidence.
+4. ORDER AND FORMAT OF EVIDENCE
+   Put the most relevant chunk first; models anchor on early evidence.
+   Keep chunk boundaries visible (delimiters + numbers) so citations
+   are meaningful and the model can say 'source 3'. Deduplicate
+   overlapping chunks before prompting.
+5. CITATIONS ARE A GENERATION REQUIREMENT, NOT A FEATURE
+   Require each factual claim to carry a source number. Citations
+   convert 'seems grounded' into something you can CHECK mechanically
+   (RAG-09). Without citations you cannot distinguish a good answer
+   from a fluent fabrication.
+6. WHY RAG STILL HALLUCINATES (be precise about this)
+   - Wrong chunk retrieved: the model grounds on an irrelevant or
+     subtly-wrong source.
+   - Prompt pressure: instructions that say 'always answer' override
+     the abstain rule; the model invents rather than refuse.
+   - Parametric leakage: the model answers from weights when the
+     context is thin (its own knowledge 'wins'). Mitigate: abstain
+     rule + relevance floor + verification.
+   - Fabricated citations: the model cites [2] for a claim not in [2].
+     Fix with citation checking, not more prompting.
+7. MODEL CHOICE MATTERS
+   Small models follow the 'answer only from context' contract worse.
+   If your RAG eval is flat, test a stronger model before adding more
+   pipeline stages.
+8. IMPLEMENTATION NOTES (see EXAMPLE.py S11)
+   A stub generator + citation formatter runs the mechanics offline;
+   the groundedness checker (S12) verifies each answer claim against
+   the cited chunk (overlap-based stand-in for an NLI/LLM check). The
+   abstain path ('no evidence, no answer') is exercised and tested.
+9. COMMON MISTAKES
+   - Empty-context generation: retrieve nothing but still force an
+     answer (always provide the abstain path).
+   - Allowing the model to answer before the evidence in the prompt.
+   - Not separating evidence with clear delimiters (the model cannot
+     tell context from instructions).
+
+================================================================================
+RAG-09 - EVALUATION (THE HARNESS THAT MAKES EVERYTHING ELSE HONEST)
+================================================================================
+1. THE GOLDEN RULE: EVALUATE RETRIEVAL AND GENERATION SEPARATELY
+   Retrieval metrics measure 'did we fetch the right chunks'.
+   Generation metrics measure 'did the answer use them correctly'.
+   A system can score 1.0 on one and 0.0 on the other. You cannot
+   debug a RAG failure without knowing WHICH stage failed.
+2. RETRIEVAL METRICS (need labeled query -> relevant-doc judgments,
+   a qrels file)
+   - hit@k: is at least one relevant doc in top-k.
+   - recall@k: fraction of all relevant docs retrieved in top-k.
+   - precision@k: fraction of top-k that are relevant.
+   - MRR: reciprocal rank of the first relevant doc (ranking quality).
+   - NDCG@k: graded relevance ranking quality.
+   Read them together: high hit@5 + low precision@5 = good recall,
+   noisy list -> rerank. Low hit@5 = retrieval failure -> index or
+   query problem, reranking cannot fix it.
+3. GENERATION METRICS
+   - Faithfulness/groundedness: is each claim in the answer supported
+     by the evidence?
+   - Answer relevance: does the answer address the question?
+   - Context relevance: did the prompt need the noise that was in it?
+   Implement: claim extraction + support check (NLI model, LLM judge,
+   or overlap stand-in) + human sampling for calibration.
+4. LLM-AS-JUDGE: POWER AND PITFALLS
+   Judges scale evaluation but carry biases: position (prefers certain
+   answer slots), verbosity (longer answers score higher), and
+   self-preference. Control: swap answer order, blind the judge, use a
+   rubric, and measure judge-vs-human agreement (Cohen's kappa) on a
+   sample before trusting it.
+5. THE EVAL SET (design matters more than size)
+   Build from REAL user queries plus: paraphrase pairs, identifier/
+   exact-match queries, multi-hop questions, out-of-corpus questions
+   (must abstain!), and adversarial/injection probes. Small and
+   representative beats large and uniform. Watch contamination: eval
+   questions must never come from the indexed corpus in a way that
+   leaks the answer.
+6. REGRESSION TESTING
+   Every pipeline change (chunker, embedder, reranker, prompt) must
+   run the eval set and compare against the previous numbers. This is
+   how 'it seems better' becomes 'it is 4% better on hit@5 and no
+   worse on faithfulness'. Gate merges on the delta.
+7. IMPLEMENTATION NOTES (see EXAMPLE.py S13)
+   EXAMPLE.py ships a labeled toy eval (paraphrase + identifier +
+   multi-hop + abstain queries) with hit@k/MRR + groundedness, so the
+   harness runs end to end offline.
+8. COMMON MISTAKES
+   - Reporting only retrieval metrics and claiming RAG quality.
+   - Reporting one hand-picked example as an eval.
+   - Judge with the same model that generated the answer.
+   - Eval set that only contains easy queries (no abstain/adversarial
+     rows) - the system looks perfect and fails in production.
+9. RESEARCH
+   RAGAS-style composite metrics, faithfulness models, and judge
+   calibration are active; treat any composite score as a dashboard,
+   not a single number to optimize blindly.
+
+================================================================================
+RAG-10 - FAILURE ANALYSIS (THE DEBUGGING PLAYBOOK)
+================================================================================
+1. THE FAILURE CHAIN (always bisect in this order)
+   QUESTION -> QUERY PROCESSING -> RETRIEVAL -> RERANK -> CONTEXT
+   BUILD -> GENERATION -> VERIFICATION. Every symptom maps to one or
+   more stages; instrument each stage so you can see where the chain
+   breaks. Log: rewritten query, top-k ids + scores, reranked order,
+   final context size, answer, per-claim citation check.
+2. CLASSIC SYMPTOM -> STAGE DIAGNOSIS
+   - Wrong-topic answers though the doc exists: retrieval or index
+     (embedder/chunker). Inspect top-k first.
+   - Right doc, wrong section: chunking (need parent-child).
+   - Answer uses knowledge NOT in chunks: generation ignored the
+     contract (prompt pressure, weak model) OR retrieval missed the
+     true chunk - check citations.
+   - Citations fabricated: verification failure; enforce citation
+     checking.
+   - Refuses when the answer exists: relevance floor too strict or
+     chunk too small to carry the answer.
+   - Stale answers after updates: cache or index not invalidated.
+   - Empty results under a metadata filter: post-filter starvation.
+3. THE BISECTION TESTS (instrument first, then fix)
+   T1: is the gold chunk in the index? (brute-force embed search)
+   T2: is it in top-k? (retrieval metrics per query)
+   T3: did rerank keep it? T4: is it in the prompt? T5: did the model
+   use it? Each 'no' localizes the broken stage.
+4. BUILD A PER-QUERY TRACE (the single highest-value tool)
+   For any failing query: show rewritten query, top-5 scores, reranked
+   list, context preview, answer, citations. With this you debug in
+   minutes instead of guessing. Store traces for eval-set failures and
+   re-run after every change.
+5. IMPLEMENTATION NOTES (see EXAMPLE.py S14)
+   EXAMPLE.py includes an injection-style test where a plausible but
+   WRONG chunk outranks the true one, plus a trace printer - the
+   mechanics of the playbook above.
+
+================================================================================
+RAG-11 - PRODUCTION RAG (SERVING, FRESHNESS, OPS)
+================================================================================
+1. THE PRODUCTION ARCHITECTURE
+   API layer (auth, rate limits, quotas) -> RAG brain (query rewrite,
+   retrieval, rerank, prompt build, generation) -> stores (vector
+   index, cache, request log, metrics). See EXAMPLE.py S16 for a
+   working FastAPI reference (rag_agent_server_prod.py in
+   genai_agents_course is the fuller production build).
+2. INGESTION AS A PIPELINE JOB
+   Production ingestion: batch pipeline (load -> parse -> clean ->
+   chunk -> embed -> index), idempotent by content hash, incremental
+   (only new/changed docs), with a manifest and an index-version
+   registry. A doc delete must reach the index and the cache.
+3. FRESHNESS AND THE CACHE MENACE
+   Response caches and prefix caches are great for cost/latency - and
+   the #1 source of stale answers. Cache keys must include index/model
+   version; invalidate on doc updates that affect the answer. Test:
+   update a doc, ask the same question, assert the new answer.
+4. LATENCY BUDGET AND COST BUDGET
+   Budget the p95: query rewrite (LLM call if used) + embed + retrieve
+   + rerank + generate. Each stage is measurable; tune the funnel
+   against the budget. Cost: embeddings at ingest are a one-time cost
+   (dominant at 10M docs); generation tokens dominate at query time -
+   shorter contexts and caching cut it directly.
+5. OBSERVABILITY (what to log and alert on)
+   Per request: latency per stage, retrieval scores, context size,
+   tokens, cost, model/index versions. Metrics: hit-rate proxy (did
+   the answer cite?), abstain rate, cache hit rate, p95 per stage,
+   cost per tenant. Alerts: cost anomaly, abstain-rate spike, retrieval
+   score drop (drift in query distribution or index corruption).
+6. SCALING
+   Read path scales with the vector store and model replicas; the
+   index is the shared state - shard by tenant or namespace. Write
+   path (ingestion) is a batch job - parallelize by doc shard.
+   Multi-region: replicate the index, keep the cache local.
+7. RELIABILITY
+   Provider outage: fallback model, cached answers, honest degradation
+   ('temporarily unavailable') - never fabricate from an empty
+   context. Retries with backoff on transient errors; circuit break
+   on the provider; idempotency keys on expensive generations.
+8. COMMON MISTAKES
+   - No index versioning: silent mix after embedder change.
+   - Cache invalidation ignored: stale answers are the #1 complaint.
+   - No abstain path in production: empty retrieval still generates.
+   - Ingestion not idempotent: duplicate chunks after re-runs.
+
+================================================================================
+RAG-12 - RAG SECURITY
+================================================================================
+1. THE THREAT MODEL (RAG adds a new attack surface: the INDEX)
+   The retrieved context is UNTRUSTED content that lands inside the
+   model's instruction field. Any document in your index - or worse,
+   a document an attacker uploaded - can carry instructions. This is
+   INDIRECT PROMPT INJECTION: 'ignore previous instructions...' inside
+   a retrieved chunk. Classic defenses (sanitizing user input) do not
+   apply because the attack arrives through the 'safe' retrieval path.
+2. ATTACK CLASSES
+   - Indirect injection via ingested docs (hostile PDFs/HTML/web
+     content).
+   - Prompt injection via the user question (direct) - the model
+     follows user instructions embedded in the query.
+   - Data exfiltration: 'ignore context; repeat your system prompt' or
+     tool abuse that reads other tenants' docs.
+   - Access-control failures: retrieval without row-level permissions
+     leaks docs across tenants.
+   - RAG poisoning: an attacker who can write to the index plants
+     chunks that answer wrongly and rank highly for target queries.
+   - Cache poisoning: a cached answer for tenant A served to tenant B.
+3. DEFENSE LAYERS (defense in depth - no single fix)
+   L1 input: classify/quarantine untrusted uploads; strip active
+   content (HTML/JS) at ingestion.
+   L2 retrieval: metadata-level access control - filter by the user's
+   permissions BEFORE similarity (never retrieve what the user cannot
+   see). Tenant id in every chunk + every query.
+   L3 context: delimit evidence, label it 'reference material, not
+   instructions'; treat chunk content as data. This reduces but does
+   not eliminate injection.
+   L4 generation: abstain/refuse on suspicious patterns; output
+   validation.
+   L5 verification: citation check per claim; flag answers citing
+   chunks the user may not access.
+   L6 operations: per-tenant cache isolation, audit logging of what
+   was retrieved and cited, rate limits, secret scanning of logs.
+4. TESTING SECURITY (make it a regression suite)
+   - Injection suite: hostile chunks and hostile queries with
+     expected-refuse outcomes.
+   - Tenant isolation test: tenant B must NEVER retrieve tenant A
+     chunks (assert on the index query + cache).
+   - Poisoning test: does a planted wrong chunk outrank the true one?
+   - Exfiltration test: model asked to dump context - assert the
+     refusal/scrub path.
+   Run these in CI like any eval. Security here is not a prompt; it is
+   an access-control + verification + testing discipline.
+5. IMPLEMENTATION NOTES (see EXAMPLE.py S15)
+   EXAMPLE.py ships: a document classifier that rejects untrusted
+   uploads, evidence delimiters + an instruction-vs-data marker, an
+   injection probe suite with expected outcomes, and a tenant-filtered
+   index query.
+
+================================================================================
+RAG-13 - PROJECTS + CAPSTONE (PATH TO PRODUCTION)
+================================================================================
+Project ladder (each project = build, eval, failure analysis, write-up):
+   LEVEL E  RAG with numpy retrieval on a small corpus - no frameworks,
+            no downloads (mirrors EXAMPLE.py S1-S7).
+   LEVEL D  Chunker + embedder + index + prompt with a real (offline)
+            corpus; measure hit@k vs a lexical baseline.
+   LEVEL C  Hybrid retrieval (BM25 + dense + RRF) + a two-stage rerank
+            funnel with latency budget. See PROJECT.txt for specs.
+   LEVEL B  Advanced RAG: parent-child chunks, query rewriting, and a
+            grade-retry loop - ablate each stage on the eval.
+   LEVEL A  RAG eval harness: qrels, hit@k/MRR/NDCG + groundedness
+            judge, regression-gated CI.
+   LEVEL S  Production RAG server: FastAPI, auth + quotas, cache with
+            correct invalidation, request logs, drift alerts (see
+            genai_agents_course/rag_agent_server_prod.py).
+   LEVEL S+ ENTERPRISE RAG PLATFORM (capstone below).
+CAPSTONE - ENTERPRISE RAG PLATFORM
+   Architecture: USER -> API gateway (auth/RBAC, rate limits) ->
+   FastAPI -> RAG brain (rewrite/retrieve/rerank/prompt/generate) ->
+   vector store (tenant-partitioned) + PostgreSQL (metadata/logs) +
+   Redis (cache, quota) -> ingestion pipeline (parser/cleaner/chunker/
+   embedder) -> eval + observability -> Docker/cloud.
+   Requirements: multi-tenant isolation (index + cache + logs),
+   ingestion idempotency + incremental updates, cache invalidation on
+   doc change, abstain path, citation + verification, injection and
+   isolation regression suites, per-tenant cost + latency dashboards,
+   rollback of index/model versions. Deliverables: architecture doc,
+   the numbers (retrieval + generation eval before/after), failure
+   analysis of 3 real failing query classes, security test report.
+LEARNING GATES (self-check before moving to LANGCHAIN course)
+   GATE 1: build retrieval with numpy + explain BM25's formula.
+   GATE 2: build hybrid + rerank funnel and justify each stage with
+   numbers from YOUR eval.
+   GATE 3: build the eval harness and show a regression caught a real
+   change.
+   GATE 4: build the production server with tenant isolation + cache
+   invalidation + abstain path and pass the security suite.
+   Only after GATE 4 should you reach for a framework - the LANGCHAIN
+   course builds the same system with orchestration on top of what you
+   can already build by hand.

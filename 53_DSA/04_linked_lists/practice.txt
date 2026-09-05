@@ -1,0 +1,209 @@
+# LINKED LISTS — PRACTICE SET
+# 35 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is a linked list?
+   Answer: A linear data structure where elements are stored in nodes, each pointing to the next node
+
+2. What is the time complexity of accessing element at index i?
+   Answer: O(n) — must traverse from head
+
+3. What is the time complexity of inserting at the beginning?
+   Answer: O(1) — just update head pointer
+
+4. What is the time complexity of deleting from the beginning?
+   Answer: O(1) — just update head pointer
+
+5. What is the difference between singly and doubly linked list?
+   Answer: Singly: each node points to next. Doubly: each node points to both next and previous
+
+6. What is a sentinel/dummy node?
+   Answer: A fake node placed before head to simplify edge cases in insertion/deletion
+
+7. What is the time complexity of finding the length of a linked list?
+   Answer: O(n) — must traverse all nodes
+
+8. What is a cycle in a linked list?
+   Answer: When a node's next pointer eventually leads back to a previously visited node
+
+9. How do you detect a cycle?
+   Answer: Floyd's cycle detection (slow/fast pointers) — O(n) time, O(1) space
+
+10. What is the advantage of linked list over array?
+    Answer: O(1) insertion/deletion at any position (given pointer), dynamic size
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Reverse a linked list iteratively.
+    ```python
+    def reverse(head):
+        prev, curr = None, head
+        while curr:
+            nxt = curr.next
+            curr.next = prev
+            prev = curr
+            curr = nxt
+        return prev
+    ```
+
+12. Reverse a linked list recursively.
+    ```python
+    def reverse_recursive(head):
+        if not head or not head.next:
+            return head
+        new_head = reverse_recursive(head.next)
+        head.next.next = head
+        head.next = None
+        return new_head
+    ```
+
+13. Detect cycle and find the start node.
+    ```python
+    def detect_cycle(head):
+        slow = fast = head
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            if slow == fast:
+                slow = head
+                while slow != fast:
+                    slow = slow.next
+                    fast = fast.next
+                return slow
+        return None
+    ```
+
+14. Merge two sorted linked lists.
+    ```python
+    def merge(l1, l2):
+        dummy = ListNode(0)
+        curr = dummy
+        while l1 and l2:
+            if l1.val <= l2.val:
+                curr.next = l1; l1 = l1.next
+            else:
+                curr.next = l2; l2 = l2.next
+            curr = curr.next
+        curr.next = l1 or l2
+        return dummy.next
+    ```
+
+15. Find the middle of a linked list (fast/slow pointer).
+    ```python
+    def middle(head):
+        slow = fast = head
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+        return slow
+    ```
+
+16. Remove nth node from end of list.
+    ```python
+    def remove_nth_from_end(head, n):
+        dummy = ListNode(0, head)
+        fast = slow = dummy
+        for _ in range(n + 1):
+            fast = fast.next
+        while fast:
+            fast = fast.next
+            slow = slow.next
+        slow.next = slow.next.next
+        return dummy.next
+    ```
+
+17. Add two numbers represented as linked lists.
+
+18. Intersection of two linked lists.
+
+19. Palindrome linked list (using fast/slow + reverse).
+
+20. Flatten a multilevel doubly linked list.
+
+21. Swap nodes in pairs.
+
+22. Rotate list by k positions.
+
+23. Copy list with random pointer.
+
+24. LRU Cache using doubly linked list + hashmap.
+
+25. Remove duplicates from sorted linked list.
+
+---
+
+## HARD (10 Questions)
+
+26. Merge k sorted linked lists (using min-heap).
+27. Reverse nodes in k-group.
+28. Sort a linked list (merge sort — O(n log n)).
+29. Implement a doubly linked list with O(1) operations.
+30. Flatten a linked list with next and child pointers.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Infinite loop in cycle detection
+def has_cycle(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast: return True
+    return False  # Bug: if head is None, fast.next crashes
+
+# Debug 2: Reverse linked list loses tail
+def reverse(head):
+    prev = None
+    curr = head
+    while curr:
+        nxt = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nxt
+    return prev  # Correct — prev is new head
+
+# Debug 3: Merge sorted lists creates cycle
+def merge(l1, l2):
+    dummy = ListNode(0)
+    curr = dummy
+    while l1 and l2:
+        if l1.val <= l2.val:
+            curr.next = l1  # Bug: modifies original list
+            l1 = l1.next
+        else:
+            curr.next = l2
+            l2 = l2.next
+        curr = curr.next
+    curr.next = l1 or l2
+    return dummy.next
+# Fix: Create new nodes instead of reusing
+
+# Debug 4: Delete node doesn't handle head
+def delete_node(head, val):
+    if head.val == val:
+        return head.next  # Correct for head deletion
+    curr = head
+    while curr.next:
+        if curr.next.val == val:
+            curr.next = curr.next.next
+            return head
+        curr = curr.next
+    return head
+
+# Debug 5: Middle of list off by one for even length
+def middle(head):
+    slow = fast = head
+    while fast.next and fast.next.next:  # Returns first middle for even
+        slow = slow.next
+        fast = fast.next.next
+    return slow
+# For second middle: while fast and fast.next
+```

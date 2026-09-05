@@ -1,0 +1,299 @@
+================================================================================
+KEY AI/ML CONCEPTS — VISUAL DIAGRAMS
+================================================================================
+
+These diagrams explain the most important AI/ML concepts visually.
+Each diagram includes explanation of what you're looking at.
+
+================================================================================
+1. NEURAL NETWORK ARCHITECTURE
+================================================================================
+
+INPUT        HIDDEN 1      HIDDEN 2      OUTPUT
+LAYER        LAYER         LAYER         LAYER
+
+(x₁) ─────── (h₁) ─────── (h₃) ─────── (ŷ)
+   \         / \         / \
+    \       /   \       /   \
+(x₂) ─────── (h₂) ─────── (h₄) ─────── (ŷ₂)
+   /         \ /         \ /
+  /           \           \
+(x₃) ─────── (h₅) ─────── (h₆) ─────── (ŷ₃)
+
+DATA FLOW: Input → Weighted Sum → Activation → Output
+
+Each arrow = weight (w)
+Each node = neuron (computes: z = w·x + b, then a = f(z))
+
+================================================================================
+2. CNN ARCHITECTURE
+================================================================================
+
+INPUT IMAGE    CONV+RELU    POOLING    CONV+RELU    POOLING    FC    OUTPUT
+(32×32×3)      (28×28×32)   (14×14×32) (10×10×64)   (5×5×64)  (256)  (10)
+
+┌─────────┐   ┌─────────┐  ┌───────┐  ┌────────┐  ┌──────┐  ┌───┐  ┌───┐
+│ ████████│   │░░░░░░░░░│  │▓▓▓▓▓▓▓│  │░░░░░░░░│  │▓▓▓▓▓▓│  │███│  │ 0 │
+│ ████████│ → │░░░░░░░░░│→ │▓▓▓▓▓▓▓│→ │░░░░░░░░│→ │▓▓▓▓▓▓│→ │███│→│ 1 │
+│ ████████│   │░░░░░░░░░│  │▓▓▓▓▓▓▓│  │░░░░░░░░│  │▓▓▓▓▓▓│  │███│  │...│
+└─────────┘   └─────────┘  └───────┘  └────────┘  └──────┘  └───┘  └───┘
+
+Conv layers extract features: edges → textures → patterns → objects
+Pool layers reduce spatial dimensions
+FC layers make final classification
+
+================================================================================
+3. RNN / LSTM UNROLLING
+================================================================================
+
+TIME STEP:    t=0           t=1           t=2           t=3
+
+              ┌───┐         ┌───┐         ┌───┐         ┌───┐
+  x₀ ───────→│ h │────────→│ h │────────→│ h │────────→│ h │────→ output
+              └───┘         └───┘         └───┘         └───┘
+
+RNN: Same weights at every time step (parameter sharing)
+
+LSTM: Has 3 gates + cell state
+
+              ┌──────────────────────────┐
+              │   CELL STATE (C_t)        │ ← Highway for long-range memory
+              │   ════════════════════     │
+              │   ↑ forget  ↑ input  ↑ output│
+              └──────────────────────────┘
+
+GATES:
+  Forget gate:  f = σ(W_f · [h_{t-1}, x_t])     → what to forget
+  Input gate:   i = σ(W_i · [h_{t-1}, x_t])     → what to store
+  Output gate:  o = σ(W_o · [h_{t-1}, x_t])     → what to output
+
+================================================================================
+4. ATTENTION MECHANISM
+================================================================================
+
+QUERY (q)     KEY (k)       VALUE (v)
+    │              │             │
+    │              │             │
+    ▼              ▼             │
+┌────────┐    ┌────────┐        │
+│ Q × Kᵀ │───→│ Scale  │───→ Softmax ──→ Attention Weights ──→ × V ──→ Output
+└────────┘    └────────┘        │              │
+              ÷ √d_k           │              │
+                               │              │
+              Attention Score   │         Weighted Sum
+              (similarity)      │
+
+INTUITION: "Which words should I pay attention to?"
+  Q = "What am I looking for?"
+  K = "What do I have?"
+  V = "What do I return?"
+
+================================================================================
+5. TRANSFORMER ARCHITECTURE
+================================================================================
+
+ENCODER (N layers)                    DECODER (N layers)
+┌─────────────────────┐               ┌─────────────────────┐
+│  Multi-Head Attention│               │  Masked Multi-Head  │
+│         ↓           │               │    Attention         │
+│  Add & Layer Norm   │               │         ↓           │
+│         ↓           │               │  Add & Layer Norm   │
+│  Feed-Forward Net   │               │         ↓           │
+│         ↓           │               │  Cross-Attention    │←── Encoder
+│  Add & Layer Norm   │               │    (Q=dec, K,V=enc) │    Output
+└────────┬────────────┘               │         ↓           │
+         │                            │  Add & Layer Norm   │
+         │                            │         ↓           │
+         │                            │  Feed-Forward Net   │
+         │                            │         ↓           │
+         │                            │  Add & Layer Norm   │
+         │                            └────────┬────────────┘
+         │                                     │
+         │         Positional Encoding         │
+         │              ↓                      │
+         │         Input Embedding             │
+         │              ↓                      │
+         │         Input Tokens                │
+         └─────────────────────────────────────┘
+
+KEY INNOVATION: Self-attention processes ALL positions in parallel
+(no sequential dependency like RNNs)
+
+================================================================================
+6. RAG PIPELINE
+================================================================================
+
+DOCUMENTS                 RETRIEVAL                  GENERATION
+                                                     
+┌──────────┐             ┌──────────┐              ┌──────────┐
+│ PDF/Text │             │  Query   │              │   LLM    │
+│ /Web/DB  │             │ (user)   │              │ (GPT/    │
+└────┬─────┘             └────┬─────┘              │ Claude)  │
+     │                        │                    └────┬─────┘
+     ▼                        ▼                         ▲
+┌──────────┐             ┌──────────┐                   │
+│  Parse   │             │  Embed   │                   │
+│  Clean   │             │  Query   │                   │
+│  Chunk   │             └────┬─────┘                   │
+└────┬─────┘                  │                         │
+     │                        ▼                         │
+     ▼                   ┌──────────┐                   │
+┌──────────┐             │  Vector  │    Top-K Docs     │
+│  Embed   │             │   DB     │──────────────────→│
+│  Store   │             │ (Qdrant/ │                   │
+└────┬─────┘             │  FAISS)  │                   │
+     │                   └──────────┘                   │
+     ▼                                                  │
+┌──────────┐             ┌──────────┐                   │
+│  Vector  │             │  Answer  │←──────────────────┘
+│   DB     │             │ + Sources│
+└──────────┘             └──────────┘
+
+FLOW: Load → Parse → Chunk → Embed → Store → Query → Retrieve → Generate
+
+================================================================================
+7. GRADIENT DESCENT OPTIMIZATION
+================================================================================
+
+LOSS SURFACE (2D cross-section):
+
+Loss
+  │     ╭─╮
+  │    ╭╯ ╰╮        ← Local minimum
+  │   ╭╯   ╰╮
+  │  ╭╯     ╰─╮
+  │ ╭╯        ╰──╮
+  │╭╯             ╰─── Global minimum
+  │╰╮                    ↓
+  │  ╰╮                ╭──╮
+  │    ╰╮             ╭╯  ╰╮
+  │      ╰───────────╯    ╰──
+  └──────────────────────────── Parameters
+
+GRADIENT DESCENT UPDATE:
+  w_new = w_old - learning_rate × gradient
+
+  If gradient > 0 → move left (decrease w)
+  If gradient < 0 → move right (increase w)
+
+ADAM OPTIMIZER:
+  Combines momentum (velocity) + RMSProp (adaptive learning rate)
+  m = β₁·m + (1-β₁)·gradient      (momentum)
+  v = β₂·v + (1-β₂)·gradient²     (second moment)
+  w = w - lr · m̂ / (√v̂ + ε)
+
+================================================================================
+8. OVERFITTING vs UNDERFITTING
+================================================================================
+
+                    MODEL COMPLEXITY →
+
+UNDERFITTING        GOOD FIT           OVERFITTING
+(High Bias)                          (High Variance)
+
+  │    ╱              │   ╭─╮           │ ╭╮ ╭─╮
+  │   ╱               │  ╱   ╲          │╱  ╲╱  ╲
+  │  ╱                │ ╱     ╲         │  ●  ●  ●
+  │ ╱                 │╱   ●   ╲        │ ●  ●  ●
+  │╱          ●       │    ●    ╲       │●  ●  ●  ●
+  │     ●      ●      │  ●   ●   ╲     │●  ●  ●  ●
+  │  ●    ●   ●       │ ●  ●  ●        │
+  └──────────────     └──────────────   └──────────────
+  Too simple          Just right         Too complex
+
+FIX UNDERFITTING:           FIX OVERFITTING:
+- More complex model        - Simpler model
+- More features             - Regularization
+- Less regularization       - More data
+- Train longer              - Early stopping
+                             - Dropout
+
+================================================================================
+9. ML SYSTEM ARCHITECTURE
+================================================================================
+
+                    ┌─────────┐
+                    │  USER   │
+                    └────┬────┘
+                         │
+                    ┌────▼────┐
+                    │FRONTEND │  (React / Streamlit)
+                    └────┬────┘
+                         │
+                    ┌────▼────┐
+                    │API GATE │  (Rate limiting, Auth)
+                    └────┬────┘
+                         │
+              ┌──────────▼──────────┐
+              │    BACKEND API      │  (FastAPI / Flask)
+              │   /predict          │
+              │   /train            │
+              │   /health           │
+              └──┬─────┬─────┬─────┘
+                 │     │     │
+          ┌──────▼┐ ┌──▼──┐ ┌▼──────┐
+          │  ML   │ │ DB  │ │ CACHE │
+          │ MODEL │ │PGSQL│ │ Redis │
+          └───┬───┘ └─────┘ └───────┘
+              │
+         ┌────▼────┐
+         │PREDICT  │
+         │RESPONSE │
+         └────┬────┘
+              │
+         ┌────▼────┐
+         │LOGGING  │ ← Monitoring (latency, errors, drift)
+         │& METRICS│
+         └─────────┘
+
+================================================================================
+10. BIAS-VARIANCE TRADEOFF
+================================================================================
+
+ERROR
+  │
+  │╲                    ╱
+  │ ╲                  ╱
+  │  ╲   TOTAL ERROR  ╱
+  │   ╲      ╭──╮    ╱
+  │    ╲    ╱    ╲  ╱
+  │     ╲  ╱      ╲╱  ← Sweet spot
+  │      ╲╱
+  │     ╱╲
+  │    ╱  ╲
+  │   ╱    ╲
+  │  ╱ VARIANCE
+  │ ╱
+  │╱ BIAS
+  └──────────────────── MODEL COMPLEXITY →
+
+  Low complexity → High bias (underfitting)
+  High complexity → High variance (overfitting)
+  Goal → Find the minimum total error
+
+================================================================================
+11. RAG vs FINE-TUNING vs PROMPTING
+================================================================================
+
+┌─────────────────────────────────────────────────────────┐
+│                    DECISION GUIDE                        │
+├──────────────┬──────────────┬───────────────────────────┤
+│  PROMPTING   │ FINE-TUNING  │         RAG               │
+├──────────────┼──────────────┼───────────────────────────┤
+│ Quick setup  │ Needs data   │ Needs knowledge base      │
+│ No training  │ Training req │ Retrieval + generation    │
+│ General task │ Domain adapt │ Grounded answers          │
+│ Context limit│ Long context  │ Sources verifiable        │
+│ No custom    │ Custom style  │ Always fresh data         │
+│ Cheap        │ Expensive    │ Moderate cost             │
+│ Hallucination│ Hallucination│ Reduced hallucination     │
+└──────────────┴──────────────┴───────────────────────────┘
+
+WHEN TO USE:
+- Prompting: Simple tasks, few examples needed
+- Fine-tuning: Consistent format, domain terminology, custom behavior
+- RAG: Private data, verifiable sources, frequently updated knowledge
+
+================================================================================
+END OF DIAGRAMS
+================================================================================

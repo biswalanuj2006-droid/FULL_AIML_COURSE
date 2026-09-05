@@ -1,0 +1,75 @@
+# LLM FUNDAMENTALS — PROJECTS
+
+---
+
+## PROJECT 1 — BASIC LLM CHATBOT (Level 1)
+
+### Problem Statement
+Build a simple chatbot using an LLM API.
+
+### Requirements
+- Use OpenAI/Anthropic API or local model
+- Implement chat interface
+- Handle conversation history
+- Add system prompt
+- Handle errors and rate limits
+- Save conversations
+
+### Expected Output
+- Working chatbot
+- Conversation history management
+- Error handling
+- README with setup instructions
+
+---
+
+## PROJECT 2 — DOCUMENT Q&A SYSTEM (Level 2)
+
+### Problem Statement
+Build a Q&A system that answers questions from documents.
+
+### Requirements
+- Load documents (PDF, TXT, MD)
+- Split into chunks
+- Create embeddings
+- Store in vector database
+- Retrieve relevant chunks
+- Generate answers with LLM
+- Add citations
+
+### Architecture
+```
+Documents → Chunking → Embedding → Vector DB
+                                      ↑
+User Query → Embedding → Search
+                                      ↓
+                          Retrieved chunks + Query → LLM → Answer
+```
+
+### Expected Output
+- Working Q&A system
+- Citation support
+- Multiple document types
+- API endpoint
+
+---
+
+## PROJECT 3 — LLM EVALUATION PIPELINE (Level 3)
+
+### Problem Statement
+Build an evaluation pipeline for LLM outputs.
+
+### Requirements
+- Define evaluation metrics (relevance, coherence, factuality)
+- Create test dataset
+- Implement automated evaluation
+- Implement human evaluation interface
+- Compare multiple models
+- Generate evaluation report
+
+### Expected Output
+- Evaluation framework
+- Test dataset
+- Automated metrics
+- Comparison report
+- Human evaluation interface

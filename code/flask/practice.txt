@@ -1,0 +1,45 @@
+================================================================================
+CODE PRACTICE - code/flask (ML API with Flask)
+Companion: 01_flask_ml_api.py (run it, then curl the endpoint)
+================================================================================
+RUN & OBSERVE
+1. Run the server and POST a valid payload; then POST malformed JSON
+   and observe the 400/500 handling.
+2. Note the difference from the FastAPI example: manual JSON parsing,
+   no auto-schema/validation, manual docs. List what you lose.
+
+MODIFY
+3. Add proper error handling with @app.errorhandler for 400/404/500
+   returning JSON bodies (never raw HTML for an API).
+4. Add a /health route and structured logging (logging module with
+   request id) for each prediction.
+5. Add input validation without Pydantic: a small schema-check function
+   that returns which field is wrong.
+6. Load the model once at startup (module scope) and confirm with a
+   startup log; move any accidental per-request loads.
+
+DEBUG
+7. Send a request with a list instead of a dict and read the TypeError -
+   fix by validating types before float() conversion.
+8. Reproduce the NaN-in-response problem: predict on an input that
+   produces NaN and show the JSON response contains NaN (invalid JSON)
+   - fix by validating/sanitizing the output (the 34 lesson's "never
+   return NaN" rule).
+9. Thread-safety: run 100 concurrent requests against a model object
+   and check for corruption; explain when a model is thread-safe.
+
+BUILD (mini)
+10. Add a /batch endpoint that accepts a list of inputs and returns a
+    list of predictions (vectorized predict) - measure the speed-up vs
+    N single calls.
+11. Write a minimal load test (requests in threads) and report p95;
+    compare with the FastAPI version's numbers (what differs and why).
+12. Wrap the response with a version + timestamp envelope and a simple
+    HMAC-signed request header (auth-lite from 39_AUTH).
+
+RELATE
+13. When would you still choose Flask over FastAPI for an ML service?
+    Give one production reason (maturity, ecosystem) and one cost
+    (validation/docs) from what you observed.
+14. (Interview) How do you keep Flask's manual validation from rotting?
+    Propose the test you would write for the schema function.

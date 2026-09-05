@@ -1,0 +1,185 @@
+================================================================================
+MODULE 07: DATA PREPROCESSING — LESSON 2: DUPLICATE DETECTION & REMOVAL
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able to:
+- Identify exact and near-duplicate rows
+- Understand why duplicates hurt ML models
+- Remove duplicates correctly (considering train/test leakage)
+- Use pandas and sklearn tools for deduplication
+
+================================================================================
+1. WHAT ARE DUPLICATES?
+================================================================================
+
+INTUITION
+---------
+Imagine a student database where the same enrollment record appears twice.
+The model would "see" that student twice during training, giving it undue
+influence on the learned parameters.
+
+TYPES OF DUPLICATES
+-------------------
+1. EXACT DUPLICATES — every column value is identical
+2. NEAR DUPLICATES  — rows differ only in trivial ways (whitespace, casing)
+3. SEMANTIC DUPLICATES — different IDs but same logical entity
+
+================================================================================
+2. WHY DUPLICATES ARE PROBLEMATIC
+================================================================================
+
+IMPACT ON ML
+------------
+- Biased model: duplicated rows get more weight during training
+- Inflated metrics: test set may contain duplicates from training set
+- Skewed statistics: mean, variance, correlations are distorted
+- Data leakage: if duplicate of a test row exists in training data
+
+EXAMPLE
+-------
+Training data has 1000 rows. Row #42 is duplicated 5 times.
+That single data point now has 6x the influence of other rows.
+
+================================================================================
+3. DETECTION
+================================================================================
+
+3.1 EXACT DUPLICATES
+---------------------
+
+import pandas as pd
+
+df = pd.DataFrame({
+    'name': ['Alice', 'Bob', 'Alice', 'Charlie', 'Bob'],
+    'score': [85, 90, 85, 78, 90]
+})
+
+# Count duplicates
+print(df.duplicated().sum())  # 2
+
+# Show which rows are duplicates
+print(df[df.duplicated(keep=False)])  # keep=False marks ALL copies
+
+# Show just the extra copies (default keep='first')
+print(df[df.duplicated()])  # rows 2 and 4
+
+KEEP PARAMETER
+--------------
+- keep='first' — mark all except first occurrence as duplicate (default)
+- keep='last'  — mark all except last occurrence as duplicate
+- keep=False   — mark ALL occurrences as duplicate
+
+3.2 NEAR DUPLICATES
+--------------------
+Near duplicates require fuzzy matching or threshold-based comparison.
+
+# Case/whitespace normalization before checking
+df['name_clean'] = df['name'].str.strip().str.lower()
+print(df.duplicated(subset=['name_clean', 'score']).sum())
+
+3.3 DUPLICATES BASED ON SUBSET OF COLUMNS
+------------------------------------------
+# Check duplicates based on specific columns
+print(df.duplicated(subset=['name']).sum())  # duplicates by name only
+
+================================================================================
+4. REMOVAL
+================================================================================
+
+4.1 BASIC REMOVAL
+-----------------
+df_clean = df.drop_duplicates()
+print(f"Removed {len(df) - len(df_clean)} duplicate rows")
+
+4.2 KEEP SPECIFIC COPY
+-----------------------
+df_clean = df.drop_duplicates(keep='first')  # keep first occurrence
+df_clean = df.drop_duplicates(keep='last')   # keep last occurrence
+
+4.3 REMOVE BASED ON SUBSET
+---------------------------
+df_clean = df.drop_duplicates(subset=['name', 'score'])
+
+4.4 RESET INDEX
+---------------
+df_clean = df.drop_duplicates().reset_index(drop=True)
+
+================================================================================
+5. CRITICAL: DUPLICATES AND TRAIN/TEST SPLIT
+================================================================================
+
+THE WRONG WAY
+-------------
+df_train, df_test = train_test_split(df, test_size=0.2)
+# If df has duplicates, both train and test may contain the same row!
+# This is DATA LEAKAGE.
+
+THE RIGHT WAY
+-------------
+1. Remove duplicates BEFORE splitting
+2. Or: remove duplicates within training set, keep unique rows in test
+
+df_clean = df.drop_duplicates()
+df_train, df_test = train_test_split(df_clean, test_size=0.2, random_state=42)
+
+BETTER: DEDUPLICATE AFTER SPLIT (for production)
+-------------------------------------------------
+df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
+df_train = df_train.drop_duplicates()
+# Leave test set as-is to reflect real-world data quality
+
+================================================================================
+6. PRACTICAL DECISION FRAMEWORK
+================================================================================
+
+ASK YOURSELF:
+1. Are these true data entry errors? → Remove
+2. Are these legitimately repeated observations? → Consider grouping/aggregating
+3. Could they cause train/test leakage? → Always deduplicate before split
+4. Is the dataset very small? → Be cautious, count impact first
+
+EXAMPLE: CUSTOMER ORDERS
+-------------------------
+customer_id | product | quantity | date
+101         | phone   | 2        | 2024-01-01
+101         | phone   | 2        | 2024-01-01  ← duplicate? or re-entry?
+
+If it's the same order logged twice → remove
+If it's two separate orders that happen to be identical → keep
+
+================================================================================
+7. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Removing duplicates that are real
+  WRONG: df.drop_duplicates() on sensor data where same reading appears twice
+  RIGHT: Understand your data before deduplication
+
+MISTAKE 2: Not checking before train/test split
+  WRONG: split first, then deduplicate
+  RIGHT: deduplicate first, or at minimum deduplicate training set
+
+MISTAKE 3: Ignoring near-duplicates
+  WRONG: Only checking exact duplicates
+  RIGHT: Normalize text, check near-matches for critical columns
+
+MISTAKE 4: Forgetting to reset index
+  WRONG: df.drop_duplicates() then df.iloc[index_number]
+  RIGHT: df.drop_duplicates().reset_index(drop=True)
+
+================================================================================
+8. SKILLS CHECKPOINT
+================================================================================
+
+Q1: When should you remove duplicates — before or after train/test split?
+Q2: What does keep='first' mean in drop_duplicates()?
+Q3: How would you detect near-duplicates in a text column?
+Q4: Why are duplicates problematic for model training?
+Q5: How would you handle a dataset where duplicate rows represent
+    legitimate repeated observations?
+
+================================================================================
+END OF LESSON 2
+================================================================================

@@ -1,0 +1,543 @@
+# ADDITIONAL DIAGRAMS — KEY AI/ML CONCEPTS
+# Visual Reference Guide
+
+---
+
+## DIAGRAM 1: SUPERVISED vs UNSUPERVISED vs REINFORCEMENT LEARNING
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    TYPES OF MACHINE LEARNING                     │
+├─────────────────────┬─────────────────────┬─────────────────────┤
+│   SUPERVISED        │   UNSUPERVISED      │  REINFORCEMENT      │
+│                     │                     │                     │
+│  ┌───────────┐      │  ┌───────────┐      │  ┌───────────┐      │
+│  │ Labeled   │      │  │ Unlabeled │      │  │ Agent     │      │
+│  │ Data      │      │  │ Data      │      │  │           │      │
+│  └─────┬─────┘      │  └─────┬─────┘      │  └─────┬─────┘      │
+│        ↓            │        ↓            │        ↓            │
+│  ┌───────────┐      │  ┌───────────┐      │  ┌───────────┐      │
+│  │ Model     │      │  │ Model     │      │  │ Environment│     │
+│  │ Learns    │      │  │ Finds     │      │  │ Provides   │     │
+│  │ Mapping   │      │  │ Patterns  │      │  │ Reward     │     │
+│  └─────┬─────┘      │  └─────┬─────┘      │  └─────┬─────┘      │
+│        ↓            │        ↓            │        ↓            │
+│  ┌───────────┐      │  ┌───────────┐      │  ┌───────────┐      │
+│  │Predicts   │      │  │ Groups/   │      │  │ Learns    │      │
+│  │Labels     │      │  │Reduces    │      │  │ Policy    │      │
+│  └───────────┘      │  └───────────┘      │  └───────────┘      │
+│                     │                     │                     │
+│ Examples:           │ Examples:           │ Examples:           │
+│ • Classification    │ • K-Means           │ • Game AI           │
+│ • Regression        │ • PCA               │ • Robotics          │
+│ • Object Detection  │ • Anomaly Detection │ • Chatbot RLHF      │
+└─────────────────────┴─────────────────────┴─────────────────────┘
+```
+
+---
+
+## DIAGRAM 2: CNN FEATURE EXTRACTION PIPELINE
+
+```
+Input Image (224×224×3)
+        ↓
+┌──────────────────┐
+│ Conv Layer 1     │  → Feature Maps (224×224×32)
+│ 3×3 kernel × 32  │     Edges, colors, textures
+│ + ReLU           │
+│ + MaxPool 2×2    │  → (112×112×32)
+└──────────────────┘
+        ↓
+┌──────────────────┐
+│ Conv Layer 2     │  → Feature Maps (112×112×64)
+│ 3×3 kernel × 64  │     Patterns, shapes
+│ + ReLU           │
+│ + MaxPool 2×2    │  → (56×56×64)
+└──────────────────┘
+        ↓
+┌──────────────────┐
+│ Conv Layer 3     │  → Feature Maps (56×56×128)
+│ 3×3 kernel × 128 │     Complex patterns
+│ + ReLU           │
+│ + MaxPool 2×2    │  → (28×28×128)
+└──────────────────┘
+        ↓
+┌──────────────────┐
+│ Conv Layer 4     │  → Feature Maps (28×28×256)
+│ 3×3 kernel × 256 │     Object parts
+│ + ReLU           │
+│ + MaxPool 2×2    │  → (14×14×256)
+└──────────────────┘
+        ↓
+┌──────────────────┐
+│ Flatten          │  → 14×14×256 = 50176
+│ + Dense(512)     │  → 512
+│ + Dropout(0.5)   │
+│ + Dense(10)      │  → 10 class scores
+│ + Softmax        │  → probabilities
+└──────────────────┘
+```
+
+---
+
+## DIAGRAM 3: ATTENTION MECHANISM (Scaled Dot-Product)
+
+```
+Input: Query (Q), Key (K), Value (V)
+        ↓
+┌───────────────────────────────────────────────┐
+│                                               │
+│    Q × Kᵀ  →  Attention Scores               │
+│       ↓                                       │
+│    ÷ √d_k  →  Scaled Scores                  │
+│       ↓                                       │
+│    Softmax →  Attention Weights               │
+│       ↓                                       │
+│    Weights × V  →  Output                     │
+│                                               │
+└───────────────────────────────────────────────┘
+
+Mathematical Formula:
+    Attention(Q, K, V) = softmax(QKᵀ / √d_k) × V
+
+Where:
+    Q = Query matrix    (sequence_length × d_model)
+    K = Key matrix      (sequence_length × d_model)
+    V = Value matrix    (sequence_length × d_model)
+    d_k = dimension of keys (scaling factor)
+```
+
+---
+
+## DIAGRAM 4: RNN UNFOLDING THROUGH TIME
+
+```
+        Unrolled RNN
+        ───────────────────────────────────────
+
+  x₁       x₂       x₃       x₄       x₅
+  ↓        ↓        ↓        ↓        ↓
+┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐
+│RNN  │→ │RNN  │→ │RNN  │→ │RNN  │→ │RNN  │
+│Cell │  │Cell │  │Cell │  │Cell │  │Cell │
+└──┬──┘  └──┬──┘  └──┬──┘  └──┬──┘  └──┬──┘
+   ↓        ↓        ↓        ↓        ↓
+  h₁       h₂       h₃       h₄       h₅
+
+  h_t = f(W_hh · h_{t-1} + W_xh · x_t + b)
+
+  Problem: h₁ influences h₅ through 4 multiplications
+  → Vanishing/Exploding Gradients
+```
+
+---
+
+## DIAGRAM 5: LSTM CELL ARCHITECTURE
+
+```
+    ┌─────────────────────────────────────────────┐
+    │              LSTM Cell                       │
+    │                                              │
+    │  C_{t-1} ──────→ [×] ──────→ [+] ────→ C_t │
+    │                   ↑           ↑              │
+    │              ┌────┴────┐  ┌───┴───┐          │
+    │              │ Forget  │  │ Input │          │
+    │              │ Gate    │  │ Gate  │          │
+    │              │ σ(W·[h,x])│ tanh(W·[h,x])│   │
+    │              └─────────┘  └───────┘          │
+    │                                              │
+    │  h_{t-1} ──→ [tanh] ──→ [×] ──→ [×] ──→ h_t│
+    │                            ↑                  │
+    │                      ┌─────┴─────┐            │
+    │                      │ Output    │            │
+    │                      │ Gate      │            │
+    │                      │ σ(W·[h,x])│            │
+    │                      └───────────┘            │
+    └─────────────────────────────────────────────┘
+
+    Gates:
+    Forget: f_t = σ(W_f · [h_{t-1}, x_t] + b_f)
+    Input:  i_t = σ(W_i · [h_{t-1}, x_t] + b_i)
+    Output: o_t = σ(W_o · [h_{t-1}, x_t] + b_o)
+    Candidate: C̃_t = tanh(W_C · [h_{t-1}, x_t] + b_C)
+    Cell: C_t = f_t * C_{t-1} + i_t * C̃_t
+    Hidden: h_t = o_t * tanh(C_t)
+```
+
+---
+
+## DIAGRAM 6: TRANSFORMER ARCHITECTURE
+
+```
+┌─────────────────────────────────────────────┐
+│              TRANSFORMER                      │
+│                                              │
+│  ┌──────────────┐    ┌──────────────┐        │
+│  │   ENCODER    │    │   DECODER    │        │
+│  │   (×N)       │    │   (×N)       │        │
+│  │              │    │              │        │
+│  │ ┌──────────┐ │    │ ┌──────────┐ │        │
+│  │ │Multi-Head│ │    │ │Masked    │ │        │
+│  │ │Self-Attn │ │    │ │Multi-Head│ │        │
+│  │ └────┬─────┘ │    │ │Self-Attn │ │        │
+│  │      ↓       │    │ └────┬─────┘ │        │
+│  │ ┌──────────┐ │    │      ↓       │        │
+│  │ │Add & Norm│ │    │ ┌──────────┐ │        │
+│  │ └────┬─────┘ │    │ │Add & Norm│ │        │
+│  │      ↓       │    │ └────┬─────┘ │        │
+│  │ ┌──────────┐ │    │      ↓       │        │
+│  │ │Feed      │ │    │ ┌──────────┐ │        │
+│  │ │Forward   │ │    │ │Cross-Attn│ │←─ K,V from Encoder
+│  │ └────┬─────┘ │    │ └────┬─────┘ │        │
+│  │      ↓       │    │      ↓       │        │
+│  │ ┌──────────┐ │    │ ┌──────────┐ │        │
+│  │ │Add & Norm│ │    │ │Add & Norm│ │        │
+│  │ └──────────┘ │    │ └────┬─────┘ │        │
+│  └──────────────┘    │      ↓       │        │
+│                      │ ┌──────────┐ │        │
+│                      │ │Feed      │ │        │
+│                      │ │Forward   │ │        │
+│                      │ └────┬─────┘ │        │
+│                      │      ↓       │        │
+│                      │ ┌──────────┐ │        │
+│                      │ │Add & Norm│ │        │
+│                      │ └──────────┘ │        │
+│                      └──────────────┘        │
+│                            ↓                  │
+│                      ┌──────────┐             │
+│                      │ Linear  │             │
+│                      │ Softmax │             │
+│                      └──────────┘             │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## DIAGRAM 7: RAG PIPELINE ARCHITECTURE
+
+```
+┌─────────────────────────────────────────────────────┐
+│                 RAG PIPELINE                         │
+│                                                      │
+│  DOCUMENT INGESTION          RETRIEVAL               │
+│  ─────────────────          ──────────               │
+│  ┌────────────┐            ┌────────────┐           │
+│  │ PDF/HTML/  │            │ User Query │           │
+│  │ Word/TXT   │            └─────┬──────┘           │
+│  └─────┬──────┘                  ↓                   │
+│        ↓                  ┌────────────┐            │
+│  ┌────────────┐           │ Embed      │            │
+│  │ Text       │           │ Query      │            │
+│  │ Splitter   │           └─────┬──────┘            │
+│  └─────┬──────┘                 ↓                   │
+│        ↓                  ┌────────────┐            │
+│  ┌────────────┐           │ Vector     │            │
+│  │ Embedder   │           │ Similarity │            │
+│  └─────┬──────┘           │ Search     │            │
+│        ↓                  └─────┬──────┘            │
+│  ┌────────────┐                 ↓                   │
+│  │ Vector     │           ┌────────────┐            │
+│  │ Database   │ ←────────│ Top-K      │            │
+│  │ (FAISS/    │           │ Documents  │            │
+│  │  Chroma)   │           └─────┬──────┘            │
+│  └────────────┘                 ↓                   │
+│                           ┌────────────┐            │
+│         CONTEXT CONSTRUCTION│ Reranker  │            │
+│                           └─────┬──────┘            │
+│                                 ↓                   │
+│                           ┌────────────┐            │
+│                           │ LLM Prompt │            │
+│                           │ (Context + │            │
+│                           │  Query)    │            │
+│                           └─────┬──────┘            │
+│                                 ↓                   │
+│                           ┌────────────┐            │
+│                           │ LLM        │            │
+│                           │ Generate   │            │
+│                           └─────┬──────┘            │
+│                                 ↓                   │
+│                           ┌────────────┐            │
+│                           │ Answer +   │            │
+│                           │ Sources    │            │
+│                           └────────────┘            │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## DIAGRAM 8: GRADIENT DESCENT VARIANTS
+
+```
+┌─────────────────────────────────────────────────────┐
+│           GRADIENT DESCENT COMPARISON                │
+│                                                      │
+│  BATCH GD          STOCHASTIC GD      MINI-BATCH GD │
+│  ─────────         ───────────        ───────────── │
+│                                                      │
+│  Uses ALL data     Uses ONE sample    Uses BATCH     │
+│  per update        per update         samples        │
+│                                                      │
+│  ┌────────┐        ┌────────┐         ┌────────┐    │
+│  │ ●→     │        │ ●↗     │         │ ●→     │    │
+│  │  ●→    │        │   ●←   │         │  ●→    │    │
+│  │   ●→   │        │    ●→  │         │   ●→   │    │
+│  │    ●→  │        │     ●↗ │         │    ●→  │    │
+│  │     ●  │        │      ● │         │     ●  │    │
+│  └────────┘        └────────┘         └────────┘    │
+│  Smooth path       Noisy path         Moderate noise │
+│                                                      │
+│  Slow per epoch    Fast per epoch     Balanced       │
+│  Stable            Unstable           Most common    │
+│  O(n) per step     O(1) per step      O(batch)      │
+│                                                      │
+│  Common optimizers:                                   │
+│  SGD: w = w - lr × gradient                          │
+│  Momentum: v = β×v + gradient; w = w - lr×v         │
+│  Adam: adaptive lr per parameter                     │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## DIAGRAM 9: OVERFITTING vs UNDERFITTING
+
+```
+Loss
+ ↑
+ │   ┌───────────────────────────────────────────┐
+ │   │                                           │
+ │   │  Training Loss    Validation Loss         │
+ │   │  ─────────────    ───────────────         │
+ │   │                                           │
+ │   │       ●──●──●──●                          │
+ │   │      /              ●──●──●  ← underfit   │
+ │   │     /                                       │
+ │   │    /          ●──●──●──●──●  ← good fit   │
+ │   │   /         /                              │
+ │   │  ●──●──●──●                                │
+ │   │       \                                    │
+ │   │        \    ●                              │
+ │   │         \  / ← overfitting                 │
+ │   │          ●/                                │
+ │   │                                           │
+ │   └───────────────────────────────────────────┘
+ │
+ └───────────────────────────────────────────────→ Epochs
+
+ UNDERFITTING: Both training and validation loss high
+ GOOD FIT: Both losses low and close
+ OVERFITTING: Training loss low, validation loss high (gap)
+```
+
+---
+
+## DIAGRAM 10: DECISION BOUNDARY ILLUSTRATION
+
+```
+        Feature 2
+        ↑
+   ○    │    ○        ○
+        │  ○    ●
+   ○    │        ●         LINEAR BOUNDARY
+        │    ●    ○        ──────────────────
+   ○    │  ●              A single line separates
+        │    ●    ○        the two classes
+   ─────┼──────────────
+        │  ●    ○
+        │    ●
+        │  ○    ●         NON-LINEAR BOUNDARY
+   ○    │        ●        ═══════════════════
+        │    ●    ○       A curved boundary needed
+        │  ●              (e.g., SVM with RBF kernel)
+        │       ○
+        └───────────────────→ Feature 1
+
+   ○ = Class 0    ● = Class 1
+
+   Linear SVM: straight line
+   RBF SVM: curved boundary
+   Decision Tree: axis-aligned rectangles
+   Neural Network: complex non-linear boundary
+```
+
+---
+
+## DIAGRAM 11: MLOps LIFECYCLE
+
+```
+┌─────────────────────────────────────────────────────┐
+│                 MLOps LIFECYCLE                       │
+│                                                      │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐          │
+│  │  DATA    │→ │  MODEL   │→ │  MODEL   │          │
+│  │ PREP     │  │ TRAINING │  │ EVAL     │          │
+│  └──────────┘  └──────────┘  └────┬─────┘          │
+│       ↑                           ↓                  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐          │
+│  │  DATA    │← │  MODEL   │← │  MODEL   │          │
+│  │ MONITOR  │  │ RETRAIN  │  │ DEPLOY   │          │
+│  └──────────┘  └──────────┘  └──────────┘          │
+│                                                      │
+│  Tools:                                              │
+│  • DVC → Data versioning                             │
+│  • MLflow → Experiment tracking                      │
+│  • Docker → Reproducibility                          │
+│  • Kubernetes → Orchestration                        │
+│  • Prometheus/Grafana → Monitoring                   │
+│  • CI/CD → Automated pipeline                        │
+│                                                      │
+│  Key Metrics to Monitor:                             │
+│  • Prediction latency                                │
+│  • Throughput (requests/sec)                         │
+│  • Model accuracy drift                              │
+│  • Data distribution shift                           │
+│  • Feature drift                                     │
+│  • Error rates                                       │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## DIAGRAM 12: GAN ARCHITECTURE
+
+```
+┌─────────────────────────────────────────────────┐
+│              GAN (Generative Adversarial Network) │
+│                                                  │
+│  Random Noise z                                  │
+│       ↓                                          │
+│  ┌──────────────┐                                │
+│  │  GENERATOR   │                                │
+│  │  (creates    │──→ Fake Image                  │
+│  │   fake data) │     ↓                          │
+│  └──────────────┘     ↓                          │
+│                    ┌──────────────┐               │
+│                    │ DISCRIMINATOR│               │
+│  Real Image ──────→│ (classifies  │──→ Real/Fake │
+│                    │  real/fake)  │               │
+│                    └──────────────┘               │
+│                                                  │
+│  Training:                                       │
+│  1. Train Discriminator: distinguish real/fake   │
+│  2. Train Generator: fool Discriminator          │
+│  3. Repeat until Generator creates realistic     │
+│     images                                       │
+│                                                  │
+│  Loss:                                           │
+│  min_G max_D V(D,G) = E[log D(x)] + E[log(1-D(G(z)))] │
+└─────────────────────────────────────────────────┘
+```
+
+---
+
+## DIAGRAM 13: BERT vs GPT ARCHITECTURE
+
+```
+┌─────────────────────────────────────────────────┐
+│                                                  │
+│  BERT (Encoder-Only)     GPT (Decoder-Only)      │
+│  ──────────────────     ──────────────────       │
+│                                                  │
+│  ┌──────────────┐        ┌──────────────┐        │
+│  │ Input Tokens │        │ Input Tokens │        │
+│  │ [CLS] w1 w2  │        │ [START] w1   │        │
+│  │ w3 [SEP]     │        │ w2 w3 ...    │        │
+│  └──────┬───────┘        └──────┬───────┘        │
+│         ↓                       ↓                │
+│  ┌──────────────┐        ┌──────────────┐        │
+│  │ Self-Attention│       │Masked Self-  │        │
+│  │ (bidirectional)│      │Attention     │        │
+│  │ ALL tokens   │        │(left-to-right)│       │
+│  │ see ALL      │        │ each token   │        │
+│  │ other tokens │        │ sees only    │        │
+│  └──────┬───────┘        │ previous     │        │
+│         ↓                └──────┬───────┘        │
+│  ┌──────────────┐        ┌──────↓───────┐        │
+│  │ Classification│       │ Next Token   │        │
+│  │ Head         │        │ Prediction   │        │
+│  └──────────────┘        └──────────────┘        │
+│                                                  │
+│  Best for:              Best for:                │
+│  • Classification       • Text generation         │
+│  • NER                  • Code generation         │
+│  • Sentiment            • Conversation            │
+│  • Retrieval            • Summarization           │
+│                                                  │
+│  Examples:              Examples:                 │
+│  BERT, RoBERTa          GPT-2/3/4, LLaMA         │
+└─────────────────────────────────────────────────┘
+```
+
+---
+
+## DIAGRAM 14: ENSEMBLE METHODS
+
+```
+┌─────────────────────────────────────────────────────┐
+│                ENSEMBLE METHODS                       │
+│                                                      │
+│  BAGGING (Random Forest)                             │
+│  ──────────────────────                              │
+│  Training Data → Bootstrap Samples                   │
+│       ↓           ↓         ↓                        │
+│    ┌─────┐    ┌─────┐   ┌─────┐                     │
+│    │Model│    │Model│   │Model│  Independent models  │
+│    │  1  │    │  2  │   │  3  │  trained in parallel │
+│    └──┬──┘    └──┬──┘   └──┬──┘                     │
+│       ↓          ↓         ↓                         │
+│    ┌────────────────────────────┐                    │
+│    │    Majority Vote / Average │                    │
+│    └────────────┬───────────────┘                    │
+│                 ↓                                    │
+│           Final Prediction                           │
+│                                                      │
+│  BOOSTING (XGBoost, AdaBoost)                        │
+│  ──────────────────────────                          │
+│  Data → Model 1 → Errors → Model 2 → Errors → ...   │
+│                                                      │
+│  Each model focuses on previous model's mistakes     │
+│  Models trained sequentially                         │
+│  Weighted combination                                │
+│                                                      │
+│  STACKING                                            │
+│  ────────                                            │
+│  Level 0: Multiple diverse models                    │
+│  Level 1: Meta-learner combines predictions          │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## DIAGRAM 15: FULL ML PROJECT PIPELINE
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              END-END ML PROJECT PIPELINE                  │
+│                                                          │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐   │
+│  │ Problem │→ │ Data    │→ │  EDA    │→ │ Feature │   │
+│  │Define   │  │Collect  │  │         │  │Engineer │   │
+│  └─────────┘  └─────────┘  └─────────┘  └────┬────┘   │
+│                                               │         │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐       ↓         │
+│  │Deploy   │← │  API    │← │  Train  │← ┌─────────┐   │
+│  │         │  │  Build  │  │  Model  │  │Preprocess│   │
+│  └────┬────┘  └─────────┘  └─────────┘  └─────────┘   │
+│       │                                                 │
+│  ┌────↓────┐  ┌─────────┐  ┌─────────┐                 │
+│  │Monitor  │→ │Retrain  │→ │Improve  │                 │
+│  │         │  │         │  │         │                 │
+│  └─────────┘  └─────────┘  └─────────┘                 │
+│                                                          │
+│  Checkpoints:                                            │
+│  ✓ Data quality validated                                │
+│  ✓ EDA insights documented                               │
+│  ✓ Baseline model established                            │
+│  ✓ Hyperparameters tuned                                 │
+│  ✓ Model evaluated on holdout set                        │
+│  ✓ API tested                                            │
+│  ✓ Docker containerized                                  │
+│  ✓ Monitoring configured                                 │
+│  ✓ Documentation complete                                │
+└─────────────────────────────────────────────────────────┘
+```

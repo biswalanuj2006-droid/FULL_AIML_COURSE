@@ -1,0 +1,83 @@
+================================================================================
+LEETCODE PATTERN: INTERVALS — 15 PROBLEMS
+================================================================================
+
+PATTERN: Sort intervals by start/end, then merge or count.
+
+================================================================================
+EASY (5 Problems)
+================================================================================
+
+1. MERGE INTERVALS (LC #56)
+   def merge(intervals):
+       intervals.sort(key=lambda x: x[0])
+       merged = [intervals[0]]
+       for start, end in intervals[1:]:
+           if start <= merged[-1][1]:
+               merged[-1][1] = max(merged[-1][1], end)
+           else:
+               merged.append([start, end])
+       return merged
+
+2. INTERVAL LIST INTERSECTIONS (LC #986)
+3. NON-OVERLAPPING INTERVALS (LC #435)
+4. MINIMUM NUMBER OF ARROWS (LC #452)
+5. INSERT INTERVAL (LC #57)
+
+================================================================================
+MEDIUM (7 Problems)
+================================================================================
+
+6. MEETING ROOMS II (LC #253)
+   def minMeetingRooms(intervals):
+       import heapq
+       intervals.sort()
+       heap = []
+       for start, end in intervals:
+           if heap and heap[0] <= start:
+               heapq.heapreplace(heap, end)
+           else:
+               heapq.heappush(heap, end)
+       return len(heap)
+
+7. INTERVAL SCHEDULING MAXIMIZATION (LC #435 variant)
+8. EMPLOYEE FREE TIME (LC #759)
+9. OVERLAPPING INTERVALS (LC #435)
+10. INTERVALS BETWEEN IDENTICAL ELEMENTS (LC #2104)
+11. MOST ACTIVE KEEPERS (LC #602 variant)
+12. DATA STREAM AS DISJOINT INTERVALS (LC #352)
+
+================================================================================
+HARD (3 Problems)
+================================================================================
+
+13. MINIMUM INTERVAL TO INCLUDE EACH QUERY (LC #218)
+14. SET INTERSECTION SIZE AT LEAST TWO (LC #757)
+15. COURSE SCHEDULE III (LC #630)
+
+================================================================================
+INTERVAL TEMPLATE
+===================
+# Sort by start time
+intervals.sort(key=lambda x: x[0])
+
+# Merge overlapping
+merged = [intervals[0]]
+for start, end in intervals[1:]:
+    if start <= merged[-1][1]:
+        merged[-1][1] = max(merged[-1][1], end)
+    else:
+        merged.append([start, end])
+
+# Sort by end time (for max non-overlapping)
+intervals.sort(key=lambda x: x[1])
+count = 0
+last_end = -float('inf')
+for start, end in intervals:
+    if start >= last_end:
+        count += 1
+        last_end = end
+
+================================================================================
+END OF INTERVALS PATTERN
+================================================================================

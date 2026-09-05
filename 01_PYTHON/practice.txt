@@ -1,0 +1,252 @@
+# PYTHON — PRACTICE SET
+# 50 Questions + Coding + Debugging
+
+---
+
+## EASY (15 Questions)
+
+1. What is the difference between a list and a tuple?
+   Answer: List is mutable (can change), tuple is immutable (cannot change after creation)
+
+2. What is the output of `print(type([]))`?
+   Answer: <class 'list'>
+
+3. How do you create a dictionary?
+   Answer: `d = {'key': 'value'}` or `d = dict(key='value')`
+
+4. What is a set in Python?
+   Answer: An unordered collection of unique elements
+
+5. What is the difference between `==` and `is`?
+   Answer: `==` compares values, `is` compares identity (memory address)
+
+6. What is a list comprehension?
+   Answer: Concise way to create lists: `[x**2 for x in range(10)]`
+
+7. What is the output of `print('hello' * 3)`?
+   Answer: `hellohellohello`
+
+8. How do you remove duplicates from a list?
+   Answer: `list(set(my_list))` or use dict.fromkeys()
+
+9. What is a lambda function?
+   Answer: Anonymous function: `lambda x: x + 1`
+
+10. What does `*args` do in a function?
+    Answer: Allows passing variable number of positional arguments as a tuple
+
+11. What does `**kwargs` do?
+    Answer: Allows passing variable number of keyword arguments as a dictionary
+
+12. What is the output of `print(3 * 'ab')`?
+    Answer: `ababab`
+
+13. How do you check if a key exists in a dictionary?
+    Answer: `key in dict` or `dict.get(key) is not None`
+
+14. What is the difference between `append()` and `extend()`?
+    Answer: `append()` adds one element. `extend()` adds multiple elements from iterable.
+
+15. What is slicing in Python?
+    Answer: Extracting portions of sequences: `list[start:stop:step]`
+
+---
+
+## MEDIUM (20 Questions)
+
+16. What is the output?
+    ```python
+    x = [1, 2, 3]
+    y = x
+    y.append(4)
+    print(x)
+    ```
+    Answer: `[1, 2, 3, 4]` — both reference the same list
+
+17. Implement a function to check if a string is a palindrome.
+    ```python
+    def is_palindrome(s):
+        s = ''.join(c.lower() for c in s if c.isalnum())
+        return s == s[::-1]
+    ```
+
+18. What is the output?
+    ```python
+    def foo(x=[]):
+        x.append(1)
+        return x
+    print(foo())
+    print(foo())
+    ```
+    Answer: `[1]` then `[1, 1]` — default argument is mutable and shared
+
+19. What is a decorator?
+    Answer: A function that takes a function and returns a modified function
+
+20. Write a decorator that logs function calls.
+    ```python
+    def log_calls(func):
+        def wrapper(*args, **kwargs):
+            print(f"Calling {func.__name__} with {args}, {kwargs}")
+            result = func(*args, **kwargs)
+            print(f"Returned {result}")
+            return result
+        return wrapper
+    ```
+
+21. What is the difference between `deepcopy` and `copy`?
+    Answer: `copy` creates shallow copy (nested objects still referenced). `deepcopy` creates independent nested copies.
+
+22. What is a context manager?
+    Answer: Object that implements `__enter__` and `__exit__` for use with `with` statement
+
+23. Implement a context manager.
+    ```python
+    class Timer:
+        def __enter__(self):
+            import time
+            self.start = time.time()
+            return self
+        def __exit__(self, *args):
+            self.elapsed = time.time() - self.start
+            print(f"Elapsed: {self.elapsed:.4f}s")
+    ```
+
+24. What is the difference between `__str__` and `__repr__`?
+    Answer: `__str__` is for user-friendly output. `__repr__` is for developer debugging.
+
+25. What are generators?
+    Answer: Functions using `yield` that produce values lazily, saving memory
+
+26. Write a generator that yields Fibonacci numbers.
+    ```python
+    def fibonacci():
+        a, b = 0, 1
+        while True:
+            yield a
+            a, b = b, a + b
+    ```
+
+27. What is the Global Interpreter Lock (GIL)?
+    Answer: A mutex that allows only one thread to execute Python bytecode at a time
+
+28. How do you handle exceptions properly?
+    ```python
+    try:
+        result = risky_operation()
+    except SpecificException as e:
+        handle_error(e)
+    except Exception as e:
+        handle_unexpected(e)
+    finally:
+        cleanup()
+    ```
+
+29. What is the difference between `threading` and `multiprocessing`?
+    Answer: Threading: shared memory, limited by GIL. Multiprocessing: separate memory, true parallelism.
+
+30. What is `asyncio` used for?
+    Answer: Asynchronous programming for I/O-bound tasks using `async`/`await`
+
+31. What is a dataclass?
+    Answer: A class with automatically generated `__init__`, `__repr__`, `__eq__` etc.
+
+32. What is `typing` used for?
+    Answer: Type hints for better code documentation and IDE support
+
+33. What is `pathlib`?
+    Answer: Object-oriented filesystem path manipulation
+
+34. What is `collections.namedtuple`?
+    Answer: A tuple subclass with named fields for better readability
+
+35. What is `functools.lru_cache`?
+    Answer: A memoization decorator that caches function results
+
+---
+
+## HARD (10 Questions)
+
+36. Implement a metaclass.
+    ```python
+    class SingletonMeta(type):
+        _instances = {}
+        def __call__(cls, *args, **kwargs):
+            if cls not in cls._instances:
+                cls._instances[cls] = super().__call__(*args, **kwargs)
+            return cls._instances[cls]
+    ```
+
+37. Implement `__getitem__` for custom iteration.
+    ```python
+    class Fibonacci:
+        def __getitem__(self, n):
+            if n <= 1: return n
+            a, b = 0, 1
+            for _ in range(2, n + 1):
+                a, b = b, a + b
+            return b
+    ```
+
+38. What is descriptor protocol?
+    Answer: Classes implementing `__get__`, `__set__`, `__delete__` for attribute access control
+
+39. Explain memory management in Python.
+    Answer: Reference counting + generational garbage collector. Objects are freed when reference count reaches 0.
+
+40. What is the difference between `__new__` and `__init__`?
+    Answer: `__new__` creates the instance. `__init__` initializes it after creation.
+
+41. Implement an LRU cache from scratch using OrderedDict.
+
+42. What is monkey patching?
+    Answer: Dynamically modifying classes or modules at runtime
+
+43. What is `abc` module?
+    Answer: Abstract Base Classes for defining interfaces
+
+44. What is `enum` used for?
+    Answer: Creating enumerated constants
+
+45. What is the difference between `map`, `filter`, and `reduce`?
+    Answer: `map`: transform elements. `filter`: select elements. `reduce`: accumulate to single value.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Mutable default argument
+def append_to(element, to=[]):
+    to.append(element)
+    return to
+# Bug: Default list is shared across calls
+# Fix: Use None: to=None; if to is None: to = []
+
+# Debug 2: Late binding closure
+funcs = [lambda x: x + i for i in range(5)]
+print([f(0) for f in funcs])  # [4, 4, 4, 4, 4] — all use i=4
+# Fix: lambda x, i=i: x + i
+
+# Debug 3: Dictionary size change during iteration
+d = {'a': 1, 'b': 2, 'c': 3}
+for k, v in d.items():
+    if v == 2: del d[k]  # RuntimeError
+# Fix: Collect keys to delete, then delete after iteration
+
+# Debug 4: Class variable vs instance variable
+class Counter:
+    count = 0
+    def __init__(self):
+        self.count += 1  # Creates instance variable, doesn't update class
+c1 = Counter(); c2 = Counter()
+print(Counter.count)  # 0 — class variable not modified
+
+# Debug 5: Generator exhaustion
+def gen():
+    yield 1; yield 2; yield 3
+g = gen()
+list(g)  # [1, 2, 3]
+list(g)  # [] — generator is exhausted!
+# Fix: Create new generator or use itertools.tee
+```

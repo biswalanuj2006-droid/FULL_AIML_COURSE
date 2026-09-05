@@ -1,0 +1,71 @@
+================================================================================
+LEETCODE PATTERN: GREEDY — 25 PROBLEMS
+================================================================================
+
+================================================================================
+EASY (10 Problems)
+================================================================================
+
+1. BEST TIME TO BUY/SELL STOCK (LC #121)
+2. MAXIMUM SUBARRAY (LC #53)
+3. JUMP GAME (LC #55)
+   def canJump(nums):
+       max_reach = 0
+       for i in range(len(nums)):
+           if i > max_reach: return False
+           max_reach = max(max_reach, i + nums[i])
+       return True
+
+4. MAXIMUM 69 NUMBER (LC #1323)
+5. Lemonade Change (LC #860)
+6. Array Partition (LC #561)
+7. Minimum Cost of Buying Candies (LC #2144)
+8. Maximum Units on a Truck (LC #1710)
+9. Can Place Flowers (LC #605)
+10.轟 Children (LC #2578)
+
+================================================================================
+MEDIUM (10 Problems)
+================================================================================
+
+11. JUMP GAME II (LC #45)
+    def jump(nums):
+        jumps = current_end = farthest = 0
+        for i in range(len(nums) - 1):
+            farthest = max(farthest, i + nums[i])
+            if i == current_end:
+                jumps += 1
+                current_end = farthest
+        return jumps
+
+12. GAS STATION (LC #134)
+13. HAND OF STRAIGHTS (LC #846)
+14. PARTITION LABELS (LC #763)
+15. NON-OVERLAPPING INTERVALS (LC #435)
+16. MINIMUM NUMBER OF ARROWS (LC #452)
+17. QUEUE RECONSTRUCTION BY HEIGHT (LC #406)
+18. COIN CHANGE (LC #322) — greedy doesn't work, use DP
+19. TASK SCHEDULER (LC #621)
+20. REORGANIZE STRING (LC #767)
+
+================================================================================
+HARD (5 Problems)
+================================================================================
+
+21. COURSE SCHEDULE III (LC #630)
+22. RUSSIAN DOLL ENVELOPES (LC #354)
+23. MINIMUM COST TO HIRE K WORKERS (LC #857)
+24. CANDY (LC #135)
+25. IPO (LC #502)
+
+================================================================================
+GREEDY CHECKLIST
+=================
+1. Can I make a local optimal choice?
+2. Does local optimal lead to global optimal?
+3. Can I prove it with exchange argument?
+4. If not, consider DP instead.
+
+================================================================================
+END OF GREEDY PATTERN
+================================================================================

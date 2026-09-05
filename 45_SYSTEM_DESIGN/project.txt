@@ -1,0 +1,17 @@
+================================================================================
+SYSTEM DESIGN — PROJECTS
+================================================================================
+
+PROJECT 1: ML SYSTEM DESIGN DOC (Beginner)
+=============================================
+Write system design document for ML prediction system.
+
+PROJECT 2: ARCHITECTURE DESIGN (Intermediate)
+================================================
+Design complete architecture for AI application.
+
+PROJECT 3: PRODUCTION ARCHITECTURE (Advanced)
+================================================
+Design and document production AI system architecture.
+
+================================================================================

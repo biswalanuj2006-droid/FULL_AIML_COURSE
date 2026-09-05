@@ -1,0 +1,178 @@
+================================================================================
+RESEARCH PAPER TRACK - a 5-level reading and reproduction progression
+================================================================================
+Companion to research_engineering_complete.txt (methods). This file is
+the READING LIST with, for each paper: the prereqs, the one-sentence
+idea, what to implement, and the reproduction task that proves you
+understood it. Read actively: for every paper write a 10-line card
+(motivation / problem / contribution / method / key equations /
+experiments / limitations / your improvement idea).
+
+--------------------------------------------------------------------------------
+LEVEL 1 - FOUNDATIONS (read to build vocabulary; no reproduction needed)
+--------------------------------------------------------------------------------
+1. Rosenblatt 1958, "The Perceptron"
+   Idea: first trainable linear classifier; the update rule is SGD on
+   the perceptron loss.
+   Task: implement the perceptron in 20 lines; find a case where it
+   never converges (non-separable data) and explain why.
+2. Rumelhart, Hinton, Williams 1986, "Learning representations by
+   back-propagating errors"
+   Idea: the chain rule applied to layered networks makes credit
+   assignment tractable.
+   Task: derive backprop for a 2-layer net by hand on paper, then match
+   it with autograd numerically (finite differences).
+3. Breiman 2001, "Random Forests"
+   Idea: bagging + random feature selection decorrelates trees, turning
+   high-variance learners into a stable ensemble.
+   Task: implement bagged trees with and without feature subsampling;
+   show the decorrelation effect on error.
+4. LeCun et al. 1998, "Gradient-Based Learning Applied to Document
+   Recognition" (LeNet-5)
+   Idea: convolutional + subsampling stacks learn translation-invariant
+   features; end-to-end training beats hand-crafted OCR pipelines.
+   Task: rebuild LeNet-5 in your DL framework; report test error on
+   MNIST against the paper.
+
+--------------------------------------------------------------------------------
+LEVEL 2 - CLASSICAL ML (reproduce numbers; know the math)
+--------------------------------------------------------------------------------
+5. Cortes & Vapnik 1995, "Support-vector networks"
+   Idea: maximize the margin in the dual; sparsity + kernels.
+   Task: solve the dual QP on a small dataset and confirm your support
+   vectors match sklearn's (see 09 svm_deep_dive.txt).
+6. Freund & Schapire 1997, "A decision-theoretic generalization of
+   on-line learning" (AdaBoost)
+   Idea: reweight misclassified examples; boosting reduces bias of weak
+   learners.
+   Task: implement AdaBoost with stumps; plot train/test error vs rounds
+   and explain when it overfits (it often does not - why?).
+7. Vapnik/Platt 1999, "Probabilistic outputs for SVMs" (Platt scaling)
+   Idea: map SVM scores to probabilities with a fitted logistic.
+   Task: reproduce the calibration curve improvement on an SVM.
+8. Ng & Jordan 2002, "On Discriminative vs Generative classifiers"
+   Idea: generative models reach their asymptotic error faster; linear
+   discriminative models have lower asymptotic error. Different
+   regimes favor different families.
+   Task: the classic Naive-Bayes-vs-logistic experiment on increasing
+   data fractions; reproduce the crossover.
+9. Breiman 2001, "Statistical Modeling: The Two Cultures"
+   (methodology essay, not an algorithm)
+   Idea: algorithmic modeling (predictive) vs data modeling
+   (inferential) are different enterprises.
+   Task: write a 1-page opinion with a concrete example from your own
+   work where the two cultures would disagree.
+
+--------------------------------------------------------------------------------
+LEVEL 3 - REPRESENTATION LEARNING (implement or fine-tune; reproduce key
+results)
+--------------------------------------------------------------------------------
+10. Hinton & Salakhutdinov 2006, "Reducing the dimensionality of data
+    with neural networks"
+    Idea: deep autoencoders beat PCA on some manifolds.
+    Task: compare a 2-D autoencoder embedding vs PCA on a dataset where
+    the structure is nonlinear; report reconstruction error.
+11. Mikolov et al. 2013, "Efficient Estimation of Word Representations
+    in Vector Space" (Word2Vec)
+    Idea: predict context from word (skip-gram) so similar words get
+    similar vectors; analogies emerge (king - man + woman ~= queen).
+    Task: train skip-gram on a small corpus with negative sampling;
+    evaluate on an analogy list.
+12. Kingma & Ba 2015, "Adam"
+    Idea: per-parameter adaptive learning rates with momentum and bias
+    correction; works across tasks with little tuning.
+    Task: implement Adam; verify the bias-correction term matters on a
+    sparse-gradient problem.
+13. He et al. 2015, "Deep Residual Learning" (ResNet)
+    Idea: identity skip connections let very deep nets optimize.
+    Task: train a 20-layer vs 56-layer plain net and a ResNet of the
+    same depths on CIFAR-10; reproduce the degradation curve and its
+    fix. (This is the single best deep-learning reproduction.)
+14. Srivastava et al. 2014, "Dropout"
+    Idea: randomly dropping units is an ensemble/regularization effect.
+    Task: measure dropout's effect on train vs test error; try the
+    "dropout as ensemble" test-time averaging.
+
+--------------------------------------------------------------------------------
+LEVEL 4 - MODERN ML (reproduce or run the released code; understand the
+claims)
+--------------------------------------------------------------------------------
+15. Vaswani et al. 2017, "Attention Is All You Need"
+    Idea: self-attention replaces recurrence; parallelizable and better
+    at long range.
+    Task: implement the scaled dot-product attention and multi-head
+    block from the equations; verify shapes and masking; (see 25 and
+    26 modules).
+16. Devlin et al. 2019, "BERT"
+    Idea: masked-language pretraining gives transferable representations.
+    Task: fine-tune BERT (use the course's code/transformers example)
+    on GLUE-ish tasks; report the gap vs a bag-of-words baseline.
+17. Goodfellow et al. 2014, "Generative Adversarial Nets"
+    Idea: a generator and discriminator play a minimax game.
+    Task: train a GAN on MNIST; diagnose the failure modes you hit
+    (mode collapse, non-convergence) and connect them to the training
+    dynamics (see 27).
+18. Krizhevsky et al. 2012, "ImageNet Classification with Deep CNNs"
+    Idea: depth + ReLU + dropout + GPU = step change on ImageNet.
+    Task: reproduce the architecture's key choices on CIFAR-10 and
+    quantify each one's contribution (ablation study practice).
+19. Ho et al. 2020, "Denoising Diffusion Probabilistic Models"
+    Idea: learn to reverse a gradual noising process.
+    Task: implement DDPM on a small image set (or MNIST) and show
+    samples improve over training steps. (Challenging - acceptable to
+    run an existing implementation and reproduce the loss curve.)
+
+--------------------------------------------------------------------------------
+LEVEL 5 - RESEARCH-LEVEL (your own extension)
+--------------------------------------------------------------------------------
+20. Choose ONE area paper from this menu and go deep:
+    - Attention: "Attention Is All You Need" follow-ups - e.g. "Long
+      Range Arena" or a sparse-attention paper (Child et al.).
+    - LLMs: "Language Models are Few-Shot Learners" (GPT-3) or "Training
+      Language Models to Follow Instructions" (InstructGPT/RLHF).
+    - RLHF/RAG systems: "Retrieval-Augmented Generation for
+      Knowledge-Intensive NLP Tasks" (Lewis et al. 2020) - reproduce the
+      retriever-generator setup on a QA dataset.
+    - Robustness: "Towards Deep Learning Models Resistant to Adversarial
+      Attacks" (Madry et al.) - implement the PGD attacker + adversarial
+      training loop.
+    - Interpretability: "A Unified Approach to Interpreting Model
+      Predictions" (SHAP, Lundberg & Lee 2017) - reimplement the
+      Shapley computation for a small model and verify additivity.
+    - Continual learning: "Overcoming Catastrophic Forgetting" (EWC,
+      Kirkpatrick et al. 2017) - reproduce the permutation-MNIST
+      experiment.
+FOR THE CHOSEN PAPER, DELIVER:
+  a) A 1-page summary card (idea, method, key equations, results).
+  b) A reproduction: run the released code or your implementation on
+     the paper's benchmark; report the numbers YOU got vs theirs, and
+     explain any gap (compute, hyperparameters, data versioning).
+  c) An ablation: remove one component (regularization term, contrastive
+     loss, distillation step...) and quantify the drop.
+  d) One improvement idea with a hypothesis and a minimal experiment
+     that would test it - run it even if it fails; failure analyses are
+     the deliverable.
+  e) A limitations paragraph: where does the method break, and what
+     evidence supports your claim?
+
+--------------------------------------------------------------------------------
+HOW TO READ A PAPER (speed method for the whole track)
+--------------------------------------------------------------------------------
+  PASS 1 (5 min): title, abstract, figures, conclusion. Can you say
+  what they claim and why it matters? If not, stop - read the intro.
+  PASS 2 (30 min): intro + method + experimental setup. Can you
+  reproduce the method from the text alone? Note every undefined symbol
+  and every missing experimental detail - those gaps are the
+  reproducibility problems you will hit.
+  PASS 3 (as needed): related work and appendix; check the claims
+  against the numbers yourself (did they compare against the right
+  baselines? Same compute? Same data?).
+  CARD TEMPLATE: fill this after every paper - it is your research log
+  and your interview evidence.
+    Title / year / authors
+    Problem (one sentence) / Claimed contribution
+    Method + key equations (write them out, do not paste)
+    Experiments + main numbers
+    Assumptions & limitations
+    Reproduction notes (what I ran, what I got)
+    My improvement idea + test

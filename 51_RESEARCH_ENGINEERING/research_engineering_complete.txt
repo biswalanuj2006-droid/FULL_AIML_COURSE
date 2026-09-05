@@ -1,0 +1,173 @@
+================================================================================
+RESEARCH ENGINEERING — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Read and understand ML research papers
+- Reimplement papers from descriptions
+- Design and conduct ML experiments
+- Write technical research reports
+
+================================================================================
+1. HOW TO READ RESEARCH PAPERS
+================================================================================
+
+FIRST PASS (5 minutes)
+-----------------------
+- Read title, abstract, introduction
+- Look at figures and tables
+- Read conclusion
+- Get the "big picture"
+
+SECOND PASS (30 minutes)
+-------------------------
+- Read methods section carefully
+- Understand the architecture/approach
+- Note key equations
+- Skip complex proofs for now
+
+THIRD PASS (1-2 hours)
+-----------------------
+- Understand every equation
+- Reproduce figures mentally
+- Identify assumptions and limitations
+- Think about improvements
+
+================================================================================
+2. PAPER IMPLEMENTATION PROCESS
+================================================================================
+
+1. UNDERSTAND THE PROBLEM
+   What is the paper trying to solve?
+
+2. UNDERSTAND THE APPROACH
+   What is their proposed solution?
+
+3. IDENTIFY KEY COMPONENTS
+   What are the novel contributions?
+
+4. IMPLEMENT COMPONENT BY COMPONENT
+   Build each part separately, test it.
+
+5. COMBINE AND TEST
+   Put it all together, debug.
+
+6. COMPARE WITH BASELINE
+   Does it match paper results?
+
+7. EXPERIMENT
+   Try variations, ablations.
+
+================================================================================
+3. EXPERIMENT DESIGN
+================================================================================
+
+HYPOTHESIS FORMATION
+---------------------
+"A good hypothesis is specific, testable, and falsifiable."
+
+Example:
+"Weak hypothesis: Deep learning is good for NLP."
+"Strong hypothesis: Fine-tuning BERT with domain-specific data
+improves sentiment analysis accuracy by >5% on financial text."
+
+BASELINES
+---------
+Always compare against:
+- Simple baseline (random, majority class)
+- Previous state-of-the-art
+- Your proposed method
+
+ABLATION STUDIES
+----------------
+Systematically remove components to understand their contribution.
+Example:
+- Full model: 92% accuracy
+- Without attention: 87% (attention helps +5%)
+- Without pretraining: 84% (pretraining helps +8%)
+- Without regularization: 85% (regularization helps +7%)
+
+STATISTICAL SIGNIFICANCE
+-------------------------
+Never compare two numbers without statistical testing.
+
+from scipy import stats
+
+# Paired t-test
+t_stat, p_value = stats.ttest_rel(accuracies_model_a, accuracies_model_b)
+print(f"p-value: {p_value:.4f}")
+# p < 0.05 → significant difference
+
+# For multiple runs
+import numpy as np
+model_a_scores = [run_model_a(seed) for seed in range(10)]
+model_b_scores = [run_model_b(seed) for seed in range(10)]
+print(f"Model A: {np.mean(model_a_scores):.4f} ± {np.std(model_a_scores):.4f}")
+print(f"Model B: {np.mean(model_b_scores):.4f} ± {np.std(model_b_scores):.4f}")
+
+================================================================================
+4. IMPORTANT PAPERS TO IMPLEMENT
+================================================================================
+
+CLASSIC ML
+----------
+1. "Random Forests" — Breiman (2001)
+2. "XGBoost" — Chen & Guestrin (2016)
+3. "Adam Optimizer" — Kingma & Ba (2014)
+
+DEEP LEARNING
+--------------
+4. "AlexNet" — Krizhevsky et al. (2012)
+5. "ResNet" — He et al. (2015)
+6. "Batch Normalization" — Ioffe & Szegedy (2015)
+7. "Dropout" — Srivastava et al. (2014)
+
+NLP / TRANSFORMERS
+------------------
+8. "Attention Is All You Need" — Vaswani et al. (2017)
+9. "BERT" — Devlin et al. (2018)
+10. "GPT-2" — Radford et al. (2019)
+
+RAG / LLM
+----------
+11. "Retrieval-Augmented Generation" — Lewis et al. (2020)
+12. "LoRA" — Hu et al. (2021)
+13. "Chain-of-Thought Prompting" — Wei et al. (2022)
+
+================================================================================
+5. TECHNICAL WRITING
+================================================================================
+
+RESEARCH REPORT STRUCTURE
+---------------------------
+1. Title and Abstract
+2. Introduction (problem, motivation, contribution)
+3. Related Work
+4. Method (detailed approach)
+5. Experiments (setup, results, analysis)
+6. Conclusion
+
+WRITING RULES
+--------------
+- Be precise: "Model A achieved 94.2% accuracy" not "Model A is good"
+- Show tables, not just prose
+- Include ablation studies
+- Discuss limitations honestly
+- Cite related work properly
+
+================================================================================
+6. REPRODUCIBILITY CHECKLIST
+=============================
+- [ ] Random seeds set
+- [ ] Hyperparameters documented
+- [ ] Dataset version noted
+- [ ] Environment documented (Python version, library versions)
+- [ ] Code published
+- [ ] Results reported with mean ± std over multiple runs
+- [ ] Statistical significance tested
+
+================================================================================
+END OF RESEARCH ENGINEERING
+================================================================================

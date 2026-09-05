@@ -1,0 +1,55 @@
+================================================================================
+DOCKER MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (10 Questions)
+================================
+Q1: What is a container vs a virtual machine?
+Q2: What is a Docker image?
+Q3: What is a Dockerfile?
+Q4: What is the difference between COPY and ADD?
+Q5: What is a Docker volume?
+Q6: What is Docker Compose?
+Q7: What is a .dockerignore file?
+Q8: What is container orchestration?
+Q9: What is a multi-stage build?
+Q10: What are Docker layers and caching?
+
+SECTION B — MEDIUM (10 Questions)
+==================================
+Q11: Write a Dockerfile for a Python FastAPI application.
+Q12: Build a multi-container app with Docker Compose.
+Q13: Implement multi-stage build to reduce image size.
+Q14: Set up volume mounting for persistent data.
+Q15: Configure environment variables in Docker.
+Q16: Implement health checks in Dockerfile.
+Q17: Build a Docker image for ML model serving.
+Q18: Implement Docker networking between containers.
+Q19: Set up Docker for development vs production.
+Q20: Optimize Docker image size.
+
+SECTION C — HARD (5 Questions)
+================================
+Q21: Build a complete AI application with Docker Compose (API + DB + Cache).
+Q22: Implement Docker security best practices.
+Q23: Build a CI/CD pipeline that builds and pushes Docker images.
+Q24: Implement container logging and monitoring.
+Q25: Design a multi-service Docker architecture.
+
+SECTION D — DEBUGGING (5 Problems)
+====================================
+D1: Why is Docker build failing?
+D2: Fix: Container exits immediately after starting.
+D3: Why can't containers communicate with each other?
+D4: Fix: Volume mount not working.
+D5: Why is Docker image so large?
+
+SECTION E — INTERVIEW (5 Questions)
+=====================================
+I1: Explain Docker layer caching and how to optimize it.
+I2: How do you handle secrets in Docker?
+I3: What is the difference between Docker Compose and Kubernetes?
+I4: How do you debug a failing container?
+I5: How would you containerize a machine learning application?
+
+================================================================================

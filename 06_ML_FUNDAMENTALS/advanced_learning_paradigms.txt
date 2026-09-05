@@ -1,0 +1,245 @@
+================================================================================
+LESSON: ADVANCED LEARNING PARADIGMS (beyond plain supervised learning)
+================================================================================
+Semi-supervised, self-supervised, active, online/incremental, transfer,
+domain adaptation, multi-task, meta, continual, and federated learning.
+For each: what it is, the setting, when it wins, the core algorithm, the
+assumption it relies on, and what happens when that assumption fails.
+
+--------------------------------------------------------------------------------
+1. THE UNIFYING QUESTION
+--------------------------------------------------------------------------------
+Every paradigm answers one question differently:
+    "Where does supervision come from, and how scarce is it?"
+Supervised learning assumes a labeled sample. Real systems usually do not
+have that. Each paradigm below is a strategy for learning when labels,
+data, time, compute, or privacy are constrained. Pick by CONSTRAINT, not
+by fashion.
+
+--------------------------------------------------------------------------------
+2. SEMI-SUPERVISED LEARNING (SSL)
+--------------------------------------------------------------------------------
+SETTING: few labeled, many unlabeled (e.g. 500 labeled, 50k unlabeled).
+WHY IT CAN WORK: unlabeled data still constrains the model through the
+shape of the input distribution (the "cluster assumption": similar
+inputs tend to share a label; the "smoothness assumption": the decision
+boundary should not cut through dense regions).
+CORE ALGORITHMS
+  1. Self-training / pseudo-labeling: train on labeled, predict
+     unlabeled with high confidence, add as pseudo-labels, iterate.
+     Failure mode: confident errors entrench themselves (confirmation
+     bias). Fix: only accept high-confidence, agreement across views.
+  2. Label propagation / spreading (graph-based): build a similarity
+     graph over ALL points, propagate labels through the graph. The
+     label of a point is a weighted vote of its neighbors.
+  3. Consistency regularization (modern SSL): augment the same input
+     twice; require the model to give the same prediction for both
+     (e.g., FixMatch, Mean Teacher). Unlabeled data acts as a
+     smoothness prior directly on the function.
+WHEN TO USE: label cost >> unlabeled cost (medical images, legal docs).
+WHEN NOT TO: when the unlabeled pool comes from a DIFFERENT distribution
+than the labeled set (the cluster assumption then misleads).
+
+--------------------------------------------------------------------------------
+3. SELF-SUPERVISED LEARNING (SSL2 - no labels at all)
+--------------------------------------------------------------------------------
+SETTING: no labels; learn representations from the data itself by
+creating surrogate tasks whose "labels" are free.
+CORE TRICKS (pretext tasks)
+  1. Masked prediction (BERT): mask tokens, predict them.
+  2. Contrastive learning (SimCLR, CLIP): two views of the same input
+     must have similar embeddings; different inputs, dissimilar ones.
+     The loss is a softmax over similarities:
+        L = -log [ exp(sim(z_i, z_j)/tau) / sum_k exp(sim(z_i, z_k)/tau) ]
+  3. Next-token prediction (GPT): predict the next token.
+WHY IT WORKS: to predict masked tokens / match views, the model must
+learn syntax, semantics, and structure - a general representation you
+can later fine-tune with few labels.
+KEY IDEA TO REMEMBER: the pretraining objective defines the inductive
+bias. A model trained to predict text learns text regularities, not
+necessarily facts (see 28_LLM_FUNDAMENTALS on hallucination).
+
+--------------------------------------------------------------------------------
+4. ACTIVE LEARNING
+--------------------------------------------------------------------------------
+SETTING: labels are expensive; you may CHOOSE which points to label.
+CORE QUESTION: which unlabeled point, once labeled, improves the model
+the most?
+SELECTION STRATEGIES
+  1. Uncertainty sampling: label the point with the least confident
+     prediction (or highest entropy, or smallest margin between top-2
+     classes). Targets the decision boundary.
+  2. Query-by-committee: train several models; label points where they
+     disagree most. More robust than raw uncertainty.
+  3. Diversity-based / coreset: pick points that cover the input space
+     (so you do not label 50 near-duplicates of the same region).
+THE TRAP: pure uncertainty sampling can over-explore outliers that will
+never appear again; combine uncertainty + diversity.
+MEASURE: learning curve (accuracy vs number of labels). Active learning
+wins if it reaches target accuracy with far fewer labels than random
+sampling.
+
+--------------------------------------------------------------------------------
+5. ONLINE / INCREMENTAL LEARNING
+--------------------------------------------------------------------------------
+SETTING: data arrives as a stream; you cannot store or re-train on all
+of it; the distribution may drift over time.
+CORE ALGORITHMS
+  1. Online gradient descent: one update per example
+        w <- w - lr * grad(loss(w; x_t, y_t))
+  2. Passive-Aggressive (classification): if the margin is violated,
+     take the smallest step that fixes it (closed-form).
+  3. Streaming trees / Hoeffding trees: grow a decision tree where each
+     leaf waits until enough evidence (Hoeffding bound) that a split is
+     better than any alternative.
+  4. Incremental learners on top of a fixed feature stream (e.g. k-means
+     with online centroid updates, or an incremental PCA via covariance
+     update).
+CONCEPT DRIFT: the mapping x->y changes. Detect with ADWIN (adaptive
+window) or monitoring error rate in sliding windows; react by retraining
+on a recent window or ensemble of windows weighted by recency.
+REMEMBER: "online" buys you memory bounds and adaptivity, not accuracy -
+an online learner on stationary data is usually slightly WORSE than a
+batch model given the same data. Use it when data is unbounded or
+non-stationary, not out of fashion.
+
+--------------------------------------------------------------------------------
+6. TRANSFER LEARNING & DOMAIN ADAPTATION
+--------------------------------------------------------------------------------
+SETTING: you have a task with little data (target) and a related task
+with a lot of data (source).
+TRANSFER LEARNING: reuse the source model's representations (e.g.,
+freeze a pretrained encoder, retrain only the head; or fine-tune all
+weights with a small LR - see 32_FINE_TUNING). Works because low-level
+features (edges, syntax) transfer across tasks.
+DOMAIN ADAPTATION (a special case): source and target have the same
+label space but different input distributions (real photos vs
+renderings; news text vs legal text).
+  - Unsupervised DA: no target labels. Align feature distributions
+    (adversarial domain confusion: a discriminator cannot tell whether
+    a feature came from source or target; train features to fool it).
+  - Self-training on target with confidence filtering (pseudo-labels).
+NEGATIVE TRANSFER: when source and target are too different, transfer
+HURTS (the frozen features are irrelevant). Always measure against a
+from-scratch baseline.
+
+--------------------------------------------------------------------------------
+7. MULTI-TASK LEARNING
+--------------------------------------------------------------------------------
+SETTING: several related tasks share one input. Learn them together
+with a SHARED encoder + task-specific heads.
+WHY: shared features are forced to be useful for all tasks - this
+regularizes (less overfitting per task) and can improve each task when
+data per task is limited.
+TRAP: tasks fight each other (conflicting gradients). Fixes: loss
+weighting by uncertainty, gradient surgery (project one task's gradient
+away from another's), or task grouping.
+
+--------------------------------------------------------------------------------
+8. META-LEARNING ("learning to learn")
+--------------------------------------------------------------------------------
+SETTING: many small tasks; you want an algorithm that adapts to a NEW
+task from a few examples (few-shot learning).
+CORE IDEAS
+  1. Learn a good INITIALIZATION: MAML - train theta0 such that one or a
+     few gradient steps on any task's support set produces a model that
+     performs well on its query set. Optimization: meta-gradient
+     through the inner steps.
+  2. Learn a good METRIC space (prototypical networks: embed examples;
+     classify by distance to class prototypes) so that new classes are
+     separable with few shots.
+  3. Learn the OPTIMIZER itself (LSTM-based meta-optimizers).
+WHEN IT WINS: only when the task distribution is consistent (all tasks
+are "rotate MNIST digits by k degrees") - meta-learning over wildly
+different tasks rarely beats plain fine-tuning.
+
+--------------------------------------------------------------------------------
+9. CONTINUAL (LIFELONG) LEARNING
+--------------------------------------------------------------------------------
+SETTING: learn tasks sequentially from a stream, without forgetting old
+tasks and without storing all old data.
+THE PROBLEM: catastrophic forgetting - gradient updates for task B
+overwrite weights that encoded task A.
+FIXES (the research frontier)
+  1. Replay: store/generate a small memory of old examples and
+     interleave them (cheap and shockingly effective).
+  2. Regularization: penalize changing weights important to old tasks
+     (EWC uses the Fisher information as an importance mask).
+  3. Parameter isolation: allocate disjoint parameters per task
+     (prefixes, adapters, masks).
+REMEMBER: without replay or isolation, sequential fine-tuning forgets.
+This is not exotic - it is why you do NOT naively keep fine-tuning a
+chat model on only the newest data.
+
+--------------------------------------------------------------------------------
+10. FEDERATED LEARNING
+--------------------------------------------------------------------------------
+SETTING: data lives on many devices (phones, hospitals) and cannot be
+moved (privacy, bandwidth, regulation). Learn a shared model without
+centralizing data.
+CORE LOOP (FedAvg):
+  Round t: server sends current weights to a sample of clients; each
+  client trains locally on ITS data for a few epochs; clients send back
+  only weight UPDATES; server averages them.
+KEY ISSUES (know these - they are the interview topics)
+  1. Non-IID data: each client's distribution differs; naive averaging
+     drifts. Fix: partial client participation tuning, server-side
+     momentum, personalized federated learning.
+  2. Communication cost: full-model updates per round are expensive;
+     compression (quantized/structured updates) is standard.
+  3. Security: a malicious client can poison the global model
+     (gradient poisoning); defenses: robust aggregation (median,
+     trimmed mean), differential privacy on updates, secure aggregation
+     (cryptographic).
+REMEMBER: federated learning is a SYSTEMS + PRIVACY solution, not an
+accuracy solution - it exists because you are not allowed to centralize
+the data.
+
+--------------------------------------------------------------------------------
+CHOOSING A PARADIGM (decision table)
+--------------------------------------------------------------------------------
+  Constraint                    -> Paradigm
+  Few labels, many unlabeled    -> Semi-supervised (pseudo-labels /
+                                   consistency / label propagation)
+  No labels at all              -> Self-supervised (masking / contrastive)
+  Labels expensive per point    -> Active learning (uncertainty+coreset)
+  Data is a stream, drifts      -> Online/incremental + drift detection
+  Little data for a new task    -> Transfer / fine-tune pretrained
+  Same task, shifted input dist -> Domain adaptation
+  Several related tasks, one net-> Multi-task with shared encoder
+  New tasks with a few examples -> Meta-learning (initialization/metrics)
+  Sequential tasks, must not    -> Continual (replay / EWC / isolation)
+    forget the past
+  Data cannot leave devices     -> Federated (FedAvg + privacy tools)
+
+--------------------------------------------------------------------------------
+PRACTICE
+--------------------------------------------------------------------------------
+1. (Concept) Explain the difference between semi-supervised and
+   self-supervised in one sentence each.
+2. (Reasoning) Why can pseudo-labeling entrench errors, and what
+   mechanism in consistency regularization avoids this?
+3. (Math) Write the contrastive (InfoNCE) loss; explain the role of the
+   temperature tau.
+4. (Design) You have 10k medical images, 300 labeled. Compare: active
+   learning vs semi-supervised vs pretrained-transfer. Which do you try
+   first and why?
+5. (Code) Implement uncertainty sampling for logistic regression:
+   given predicted probabilities, pick the n points closest to 0.5.
+6. (Reasoning) Online learning on stationary data is usually worse than
+   batch. Explain why, and when you accept that cost.
+7. (Code) Implement a Hoeffding-tree-like split check: given counts of
+   class labels in a leaf, compute when the top class is statistically
+   ahead (use the Hoeffding bound).
+8. (Reasoning) When does transfer learning cause negative transfer?
+   Design the experiment that detects it.
+9. (Math) EWC: define the quadratic penalty on parameters using Fisher
+   information; why does it protect task A?
+10. (Systems) FedAvg: walk through one round; name the two biggest
+    threats if clients are adversarial and the standard defenses.
+11. (Debugging) A team fine-tunes a chatbot weekly on only the newest
+    support tickets. Over a year it forgets old product features. Name
+    the phenomenon and two concrete fixes.
+12. (Open-ended) OPEN PROBLEM: principled continual learning without
+    any stored data that matches replay's performance is unsolved for
+    large models - propose a mechanism and how you would test it.

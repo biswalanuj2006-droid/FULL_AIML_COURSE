@@ -1,0 +1,317 @@
+================================================================================
+GRADIENT BOOSTING LIBRARIES — XGBOOST, LIGHTGBM, CATBOOST
+================================================================================
+
+## What You Will Learn
+- XGBoost, LightGBM, and CatBoost
+- Installation, API, parameters, training
+- When to use each library
+- Comparison and best practices
+
+## Why These Libraries Matter
+Gradient boosting consistently WINS Kaggle competitions on tabular data.
+These three libraries are the most important ML algorithms for structured data.
+
+================================================================================
+1. XGBOOST
+================================================================================
+
+WHAT IS XGBOOST?
+    eXtreme Gradient Boosting. An optimized gradient boosting library
+    that is fast, accurate, and widely used.
+
+    pip install xgboost
+
+BASIC USAGE:
+    import xgboost as xgb
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import accuracy_score
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    # Classification
+    model = xgb.XGBClassifier(
+        n_estimators=100,
+        max_depth=6,
+        learning_rate=0.1,
+        random_state=42
+    )
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+
+    # Regression
+    model = xgb.XGBRegressor(
+        n_estimators=100,
+        max_depth=6,
+        learning_rate=0.1
+    )
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+KEY PARAMETERS:
+    ┌──────────────────┬──────────────────────────────────────┐
+    │ Parameter        │ Effect                               │
+    ├──────────────────┼──────────────────────────────────────┤
+    │ n_estimators     │ Number of trees (more = complex)     │
+    │ max_depth        │ Tree depth (deeper = more complex)   │
+    │ learning_rate    │ Step size shrinkage (smaller = better│
+    │                  │ but needs more trees)                 │
+    │ subsample        │ Row sampling (0.8 = 80% of rows)     │
+    │ colsample_bytree │ Feature sampling per tree            │
+    │ reg_alpha        │ L1 regularization                   │
+    │ reg_lambda       │ L2 regularization                   │
+    │ min_child_weight │ Minimum weight in leaf               │
+    │ gamma            │ Minimum loss reduction for split     │
+    └──────────────────┴──────────────────────────────────────┘
+
+HYPERPARAMETER TUNING STRATEGY:
+    Step 1: Start with defaults (learning_rate=0.1, max_depth=6)
+    Step 2: Tune n_estimators (use early stopping)
+    Step 3: Tune max_depth and min_child_weight
+    Step 4: Tune learning_rate (reduce, increase n_estimators)
+    Step 5: Tune subsample and colsample_bytree
+    Step 6: Tune regularization (reg_alpha, reg_lambda)
+
+EARLY STOPPING:
+    model = xgb.XGBClassifier(n_estimators=1000, learning_rate=0.05)
+    model.fit(
+        X_train, y_train,
+        eval_set=[(X_val, y_val)],
+        early_stopping_rounds=50,
+        verbose=False
+    )
+    print(f"Best iteration: {model.best_iteration}")
+
+FEATURE IMPORTANCE:
+    import matplotlib.pyplot as plt
+
+    xgb.plot_importance(model, max_num_features=10)
+    plt.tight_layout()
+    plt.savefig("feature_importance.png")
+
+    # Or programmatically
+    importance = model.feature_importances_
+    for name, imp in sorted(zip(feature_names, importance), key=lambda x: -x[1]):
+        print(f"{name}: {imp:.4f}")
+
+CATEGORICAL FEATURES:
+    # XGBoost can handle categorical features (native)
+    model = xgb.XGBClassifier(
+        enable_categorical=True,
+        tree_method='hist'    # Required for native categorical
+    )
+    # Encode categories as integers before passing
+
+CROSS-VALIDATION:
+    from sklearn.model_selection import cross_val_score
+
+    scores = cross_val_score(
+        xgb.XGBClassifier(n_estimators=100),
+        X, y, cv=5, scoring='f1'
+    )
+    print(f"F1: {scores.mean():.4f} ± {scores.std():.4f}")
+
+================================================================================
+2. LIGHTGBM
+================================================================================
+
+WHAT IS LIGHTGBM?
+    A fast, distributed, high-performance gradient boosting framework
+    by Microsoft. Uses leaf-wise growth (vs level-wise in XGBoost).
+
+    pip install lightgbm
+
+BASIC USAGE:
+    import lightgbm as lgb
+
+    # Classification
+    model = lgb.LGBMClassifier(
+        n_estimators=100,
+        max_depth=-1,        # -1 means no limit
+        learning_rate=0.1,
+        num_leaves=31,       # KEY parameter (not max_depth)
+        random_state=42
+    )
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    # Regression
+    model = lgb.LGBMRegressor(n_estimators=100, learning_rate=0.1)
+    model.fit(X_train, y_train)
+
+KEY PARAMETERS:
+    ┌──────────────────┬──────────────────────────────────────┐
+    │ Parameter        │ Effect                               │
+    ├──────────────────┼──────────────────────────────────────┤
+    │ n_estimators     │ Number of boosting rounds            │
+    │ num_leaves       │ Maximum leaves (KEY — controls       │
+    │                  │ complexity, not max_depth)            │
+    │ max_depth        │ Tree depth (-1 = no limit)           │
+    │ learning_rate    │ Step size shrinkage                  │
+    │ min_data_in_leaf │ Minimum samples in leaf              │
+    │ feature_fraction │ Feature sampling per tree            │
+    │ bagging_fraction │ Row sampling per iteration           │
+    │ bagging_freq     │ Frequency of bagging                 │
+    │ lambda_l1        │ L1 regularization                   │
+    │ lambda_l2        │ L2 regularization                   │
+    └──────────────────┴──────────────────────────────────────┘
+
+    IMPORTANT: LightGBM uses num_leaves (not max_depth) as the
+    primary complexity parameter. Default 31 is usually good.
+
+LIGHTGBM vs XGBOOST:
+    - LightGBM is FASTER (especially on large datasets)
+    - LightGBM uses leaf-wise growth (can overfit easier)
+    - XGBoost uses level-wise growth (more conservative)
+    - LightGBM handles categorical features natively (better)
+    - Both are excellent; LightGBM preferred for speed
+
+CATEGORICAL FEATURES:
+    # LightGBM handles categoricals natively
+    model = lgb.LGBMClassifier()
+    model.fit(X_train, y_train, categorical_feature=['color', 'size'])
+
+    # Or specify by index
+    model.fit(X_train, y_train, categorical_feature=[0, 2, 5])
+
+LOGGING:
+    # LightGBM can log to files
+    model = lgb.LGBMClassifier(n_estimators=100)
+    model.fit(X_train, y_train,
+              eval_set=[(X_val, y_val)],
+              callbacks=[lgb.log_evaluation(100)])    # Log every 100
+
+================================================================================
+3. CATBOOST
+================================================================================
+
+WHAT IS CATBOOST?
+    A gradient boosting library by Yandex that excels with categorical
+    features. Uses ordered boosting to reduce overfitting.
+
+    pip install catboost
+
+BASIC USAGE:
+    from catboost import CatBoostClassifier, CatBoostRegressor
+
+    # Classification
+    model = CatBoostClassifier(
+        iterations=100,
+        learning_rate=0.1,
+        depth=6,
+        random_seed=42,
+        verbose=0    # Suppress output
+    )
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    # Regression
+    model = CatBoostRegressor(iterations=100, learning_rate=0.1)
+    model.fit(X_train, y_train)
+
+KEY PARAMETERS:
+    ┌──────────────────┬──────────────────────────────────────┐
+    │ Parameter        │ Effect                               │
+    ├──────────────────┼──────────────────────────────────────┤
+    │ iterations       │ Number of trees                      │
+    │ learning_rate    │ Step size shrinkage                  │
+    │ depth            │ Tree depth (1-16)                    │
+    │ l2_leaf_reg      │ L2 regularization                   │
+    │ random_strength  │ Randomness for scoring splits       │
+    │ bagging_temperature │ Controls bagging                 │
+    │ border_count     │ Number of splits for numeric features│
+    └──────────────────┴──────────────────────────────────────┘
+
+CATEGORICAL FEATURES (CATBOOST'S STRENGTH):
+    # Specify categorical columns
+    model = CatBoostClassifier(
+        iterations=100,
+        cat_features=['color', 'city', 'plan']    # Column names
+    )
+    model.fit(X_train, y_train, cat_features=['color', 'city', 'plan'])
+
+    # No need for one-hot encoding!
+    # CatBoost handles categoricals internally using ordered target statistics
+
+EVALUATION:
+    model = CatBoostClassifier(iterations=500)
+    model.fit(
+        X_train, y_train,
+        eval_set=(X_val, y_val),
+        early_stopping_rounds=50,
+        verbose=100
+    )
+
+FEATURE IMPORTANCE:
+    importance = model.get_feature_importance()
+    for name, imp in sorted(zip(feature_names, importance), key=lambda x: -x[1]):
+        print(f"{name}: {imp:.4f}")
+
+================================================================================
+4. COMPARISON TABLE
+================================================================================
+
+┌──────────────────┬────────────┬────────────┬────────────┬──────────────┐
+│ Feature          │ XGBoost    │ LightGBM   │ CatBoost   │ sklearn GB   │
+├──────────────────┼────────────┼────────────┼────────────┼──────────────┤
+│ Speed            │ Fast       │ Fastest    │ Fast       │ Slowest      │
+│ Accuracy         │ Excellent  │ Excellent  │ Excellent  │ Good         │
+│ Categorical      │ Manual     │ Native     │ Best native│ Manual       │
+│ Overfitting ctrl │ Good       │ Moderate   │ Best       │ Moderate     │
+│ GPU support      │ Yes        │ Yes        │ Yes        │ No           │
+│ Warm starting    │ Yes        │ Yes        │ Yes        │ Yes          │
+│ Learning curve   │ Moderate   │ Moderate   │ Easy       │ Easy         │
+│ Default params   │ Good       │ Good       │ Excellent  │ OK           │
+│ Memory usage     │ Moderate   │ Low        │ Higher     │ Moderate     │
+│ Best for         │ General    │ Speed,     │ Many       │ Prototyping  │
+│                  │            │ large data │ categoricals│             │
+└──────────────────┴────────────┴────────────┴────────────┴──────────────┘
+
+WHEN TO USE WHICH:
+    - Default choice: LightGBM (fast, accurate)
+    - Many categorical features: CatBoost
+    - Need GPU acceleration: XGBoost or LightGBM
+    - Prototyping: sklearn GradientBoosting
+    - Production: Any of the three (all are production-ready)
+
+================================================================================
+5. PRACTICAL COMPARISON
+================================================================================
+
+    from sklearn.datasets import make_classification
+    from sklearn.model_selection import cross_val_score
+    import xgboost as xgb
+    import lightgbm as lgb
+    from catboost import CatBoostClassifier
+    from sklearn.ensemble import GradientBoostingClassifier
+
+    X, y = make_classification(n_samples=5000, n_features=20,
+                               n_informative=10, random_state=42)
+
+    models = {
+        "XGBoost": xgb.XGBClassifier(n_estimators=100, learning_rate=0.1,
+                                       eval_metric='logloss', use_label_encoder=False),
+        "LightGBM": lgb.LGBMClassifier(n_estimators=100, learning_rate=0.1,
+                                         verbose=-1),
+        "CatBoost": CatBoostClassifier(iterations=100, learning_rate=0.1,
+                                         verbose=0),
+        "sklearn GB": GradientBoostingClassifier(n_estimators=100,
+                                                  learning_rate=0.1)
+    }
+
+    for name, model in models.items():
+        scores = cross_val_score(model, X, y, cv=5, scoring='f1')
+        print(f"{name:15s}: F1 = {scores.mean():.4f} ± {scores.std():.4f}")
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the key difference between XGBoost and LightGBM growth strategies?
+2. Why is CatBoost best for categorical features?
+3. What does learning_rate do and how does it relate to n_estimators?
+4. When should you use early stopping?
+5. How do you get feature importance from any gradient boosting model?
+
+================================================================================

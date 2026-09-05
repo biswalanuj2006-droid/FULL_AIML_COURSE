@@ -1,0 +1,40 @@
+================================================================================
+CODE PRACTICE - code/numpy (numerical foundations)
+Companion: 01_numpy_fundamentals.py
+================================================================================
+RUN & OBSERVE
+1. Run the example; for each operation predict the output shape BEFORE
+   it prints, then check yourself (shape literacy is the #1 numpy skill).
+2. Time a python-loop dot product vs np.dot on 10k x 10k - record the
+   speed-up and explain where it comes from (BLAS + vectorization).
+
+MODIFY
+3. Vectorize the remaining python loops in the example (list
+   comprehensions -> array ops); verify identical outputs.
+4. Add broadcasting demos: column-wise z-score without a loop
+   ((X - X.mean(0)) / X.std(0)) and a pairwise distance matrix with
+   the (a-b)^2 expansion trick - explain why it is faster than loops.
+5. Implement np.clip, np.where masking, and fancy-index selection on a
+   random array; use boolean masks to count values in intervals.
+
+DEBUG
+6. The classic: reshape vs ravel vs flatten - build a case where
+   reshaping shares memory and mutating it corrupts the source (views).
+   Detect it with .flags.owndata / np.shares_memory.
+7. NaN poisoning: find where a NaN appears in a pipeline and trace it
+   back with np.errstate + np.where(np.isnan(...)). Add
+   np.isnan().any() guards.
+8. Integer overflow: compute mean of a uint8 image correctly (cast to
+   float before summing) and show the wrong result.
+
+BUILD (mini)
+9. Implement row-wise softmax with the max-subtraction trick and check
+   your rows sum to 1 and match scipy.special.softmax.
+10. Mini linear regression: fit slope/intercept with the normal
+    equation using np.linalg.lstsq on generated data; compare with
+    sklearn's result.
+
+RELATE
+11. Re-implement one 05_MATHEMATICS exercise (e.g. matrix inverse
+    properties, eigen check Av=lambda v) in numpy.
+12. (Interview) Explain views vs copies and when fancy indexing copies.

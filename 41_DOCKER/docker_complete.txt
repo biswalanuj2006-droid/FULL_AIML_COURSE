@@ -1,0 +1,155 @@
+================================================================================
+MODULE 41: DOCKER — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand containers vs virtual machines
+- Write Dockerfiles for AI/ML applications
+- Use Docker Compose for multi-container apps
+- Containerize ML APIs and services
+- Deploy containerized applications
+
+================================================================================
+1. WHAT IS DOCKER?
+================================================================================
+
+INTUITION
+---------
+Docker packages your application and ALL its dependencies into a
+"container" that runs the same way everywhere.
+
+"It works on my machine" → Docker makes it work on EVERY machine.
+
+CONTAINER vs VIRTUAL MACHINE
+-----------------------------
+Container: shares host OS kernel, lightweight, fast startup
+VM: full OS, isolated, heavier, slower startup
+
+================================================================================
+2. DOCKERFILE
+================================================================================
+
+# ML API Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies first (cached layer)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Expose port
+EXPOSE 8000
+
+# Run with production server
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+BUILD & RUN
+-----------
+docker build -t ml-api .
+docker run -p 8000:8000 ml-api
+
+================================================================================
+3. DOCKER COMPOSE
+================================================================================
+
+MULTI-CONTAINER AI APPLICATION
+-------------------------------
+# docker-compose.yml
+version: '3.8'
+
+services:
+  api:
+    build: ./api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/mydb
+      - REDIS_URL=redis://cache:6379
+    depends_on:
+      - db
+      - cache
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  cache:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+
+RUN:
+  docker-compose up -d
+  docker-compose down
+
+================================================================================
+4. USEFUL DOCKER COMMANDS
+================================================================================
+
+# Build
+docker build -t image_name .
+
+# Run
+docker run -d -p 8000:8000 --name my-container image_name
+
+# List containers
+docker ps
+
+# Logs
+docker logs my-container
+
+# Execute command in container
+docker exec -it my-container bash
+
+# Stop/Remove
+docker stop my-container
+docker rm my-container
+
+# Clean up
+docker system prune -a
+
+================================================================================
+5. ML DOCKER BEST PRACTICES
+================================================================================
+
+1. Use multi-stage builds to reduce image size
+2. Copy requirements.txt before code (leverage Docker cache)
+3. Use .dockerignore to exclude unnecessary files
+4. Don't run as root (add USER instruction)
+5. Use slim base images (python:3.11-slim)
+6. Mount model files as volumes (don't bake into image)
+7. Use health checks
+
+HEALTH CHECK
+------------
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+================================================================================
+6. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between a container and a VM?
+Q2: Why copy requirements.txt before the rest of the code?
+Q3: What is the purpose of docker-compose?
+Q4: How do you persist data in Docker?
+Q5: What is a .dockerignore file?
+
+================================================================================
+END OF MODULE 41: DOCKER
+================================================================================

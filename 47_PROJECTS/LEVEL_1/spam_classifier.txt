@@ -1,0 +1,94 @@
+================================================================================
+PROJECT 3: SPAM CLASSIFIER (LEVEL 1)
+================================================================================
+
+PROBLEM STATEMENT
+-----------------
+Classify SMS/email messages as spam or not spam.
+
+GOAL: Learn text classification workflow.
+
+DATASET
+-------
+- Source: UCI SMS Spam Collection / Kaggle Spam Dataset
+- Features: message text
+- Target: spam/ham
+- Size: ~5,000 messages
+- Imbalance: ~13% spam
+
+IMPLEMENTATION STEPS
+--------------------
+
+1. LOAD DATA
+   import pandas as pd
+   df = pd.read_csv('spam.csv', encoding='latin-1')
+   df = df[['v1', 'v2']]
+   df.columns = ['label', 'text']
+   df['label'] = (df['label'] == 'spam').astype(int)
+
+2. TEXT PREPROCESSING
+   import re
+   from nltk.corpus import stopwords
+   from nltk.stem import WordNetLemmatizer
+
+   def preprocess(text):
+       text = text.lower()
+       text = re.sub(r'[^a-zA-Z\s]', '', text)
+       words = text.split()
+       lemmatizer = WordNetLemmatizer()
+       words = [lemmatizer.lemmatize(w) for w in words
+                if w not in stopwords.words('english')]
+       return ' '.join(words)
+
+   df['clean_text'] = df['text'].apply(preprocess)
+
+3. FEATURE EXTRACTION
+   from sklearn.feature_extraction.text import TfidfVectorizer
+
+   tfidf = TfidfVectorizer(max_features=3000, ngram_range=(1, 2))
+   X = tfidf.fit_transform(df['clean_text']).toarray()
+   y = df['label'].values
+
+4. MODEL TRAINING
+   from sklearn.model_selection import train_test_split
+   from sklearn.linear_model import LogisticRegression
+   from sklearn.naive_bayes import MultinomialNB
+   from sklearn.ensemble import RandomForestClassifier
+
+   X_train, X_test, y_train, y_test = train_test_split(
+       X, y, test_size=0.2, random_state=42, stratify=y
+   )
+
+   models = {
+       'Naive Bayes': MultinomialNB(),
+       'Logistic Regression': LogisticRegression(max_iter=1000),
+       'Random Forest': RandomForestClassifier(n_estimators=100)
+   }
+
+5. EVALUATION
+   from sklearn.metrics import classification_report, confusion_matrix
+
+   for name, model in models.items():
+       model.fit(X_train, y_train)
+       y_pred = model.predict(X_test)
+       print(f"\n{name}:")
+       print(classification_report(y_test, y_pred))
+
+6. INTERFACE
+   Streamlit app where user types a message and gets spam/ham prediction
+
+FILES
+-----
+spam_classifier/
+├── data/
+│   └── spam.csv
+├── src/
+│   ├── preprocess.py
+│   ├── train.py
+│   └── app.py
+├── models/
+│   └── model.pkl
+├── requirements.txt
+└── README.md
+
+================================================================================

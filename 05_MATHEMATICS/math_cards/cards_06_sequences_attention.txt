@@ -1,0 +1,71 @@
+================================================================================
+CARD: RNN / LSTM
+================================================================================
+PROBLEM   process variable-length sequences with shared parameters over
+          time.
+RNN       h_t = tanh(W_h h_{t-1} + W_x x_t + b) ;  y_t = g(W_y h_t)
+          Shared W across time = order-invariant parameter count.
+          THE failure: backprop through time multiplies ~T Jacobians;
+          ||product of Jacobians|| <= ||W||^T -> explodes if the largest
+          singular value > 1, vanishes if < 1. Hence vanilla RNNs cannot
+          learn long dependencies (T > ~10-20).
+          Fix for explosion: gradient clipping
+          (clip_grad_norm_(w, max_norm)) - mandatory, cheap.
+
+LSTM GATES (the fix for vanishing gradients via an additive cell path)
+          f_t = sigmoid(W_f x_t + U_f h_{t-1} + b_f)   forget
+          i_t = sigmoid(W_i x_t + U_i h_{t-1} + b_i)   input
+          o_t = sigmoid(W_o x_t + U_o h_{t-1} + b_o)   output
+          c_tilde = tanh(W_c x_t + U_c h_{t-1} + b_c) candidate
+          c_t = f_t . c_{t-1} + i_t . c_tilde          CELL update
+          h_t = o_t . tanh(c_t)
+          The cell c_t has a DIRECT additive path c_{t-1} -> c_t
+          modulated by the forget gate: gradient flows through time
+          with factor f_t ~ 1 instead of multiplying by W each step -
+          that is the entire mechanism. GRU merges forget+input and
+          cell+hidden (fewer params, similar quality).
+COMPLEXITY O(T * d^2) per sequence (d = hidden size) train (BPTT);
+          sequential in time (no parallel across t).
+FAILURES  still struggle past ~100-500 steps vs attention; sequential
+          = slow; need scaled targets, teacher forcing care, gradient
+          clipping.
+CONNECTS  see 22 lstm_gru_complete.txt; transformers replace the
+          recurrence with attention (next card).
+
+================================================================================
+CARD: SCALED DOT-PRODUCT ATTENTION (the transformer core)
+================================================================================
+PROBLEM   let every token gather information from every other token
+          with content-based weighting, in parallel.
+SETTING  Q (queries, n_q x d_k), K (keys, n_k x d_k), V (values,
+          n_k x d_v).
+FORMULA  Attention(Q,K,V) = softmax( Q K^T / sqrt(d_k) ) V
+          score_ij = q_i . k_j / sqrt(d_k)   (similarity of token i
+          to token j)
+          softmax over j normalizes to weights summing to 1 per i
+          output_i = sum_j weight_ij * v_j    (weighted average of
+          values)
+WHY /sqrt(d_k): if d_k is large, q.k ~ d_k-variance inner products
+          push softmax into a saturated regime with tiny gradients;
+          dividing by sqrt(d_k) keeps the logits ~ O(1) variance.
+SELF-ATTENTION  Q,K,V all computed from the same sequence X via learned
+          projections: Q = X W_Q, K = X W_K, V = X W_V.
+MULTI-HEAD   run attention h times with different projections, concat:
+          MultiHead = Concat(head_1..head_h) W_O
+          Heads specialize (syntax, coreference, position...) and the
+          concat lets the layer attend with several patterns at once.
+POSITION     attention is permutation-invariant (bag of tokens) ->
+          add positional encodings (sinusoidal or learned) to X.
+MASKING      decoder self-attention masks future positions (set score
+          to -inf before softmax); padding masks ignore pad tokens.
+COMPLEXITY  O(n^2 d) per layer - the quadratic cost in sequence length
+          n; parallel over all positions (the RNN advantage dies here).
+KEY PROPERTY content-based routing: an information-flow graph built by
+          the data, one layer deep, repeated L times; gradients have a
+          direct path between any two positions (no T-step chain) ->
+          long-range dependencies without the RNN vanishing problem.
+FAILURES  O(n^2) memory/time; needs large data to learn (inductive bias
+          weaker than CNN/RNN); no built-in notion of order.
+CONNECTS  25_ATTENTION + 26_TRANSFORMERS modules; the inner-product
+          query-key similarity is the kernel trick's cousin (see SVM
+          card).

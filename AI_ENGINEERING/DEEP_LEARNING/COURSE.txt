@@ -1,0 +1,1638 @@
+================================================================================
+ULTRA-DEEP DEEP LEARNING  -  COURSE.txt  (Part 1: header + Modules 0-6)
+================================================================================
+Course    : AI_ENGINEERING/DEEP_LEARNING/  (Course 1 of 4: DL -> RAG ->
+            LangChain -> LangGraph)
+Track     :  ML -> DEEP LEARNING -> NLP/Transformers -> LLMs -> RAG ->
+            LangChain -> LangGraph -> AI Agents -> Production AI
+Companion : PRACTICE.txt (Levels 0-5)  PROJECT.txt (Tiers E-S+ + platform)
+            EXAMPLE.py (reference implementations; every section runnable)
+Depth     : every major concept is taught at SIX levels: intuition ->
+            engineering -> mathematics -> code -> system -> research.
+Rule      : never hide an important concept behind a library call.  The
+            framework comes only after the mechanism is implemented.
+Audience  : B.Tech AI & ML student with solid ML foundations (ml_course).
+
+How to read this file: modules are numbered DL-00..DL-22 to match the master
+prompt.  Each module ends with FAILURE MODES / DEBUGGING / INTERVIEW /
+RESEARCH so you can study by outcome, not just by module.
+
+================================================================================
+DL-00 - DEEP LEARNING ORIENTATION
+================================================================================
+1. INTUITION
+A neural network is a stack of learned transformations.  Each layer takes a
+representation (numbers) and reshapes it into a slightly more useful one.  A
+"deep" network is a stack deep enough that the first layers learn simple,
+generic patterns (edges, motifs) and the last layers learn task-specific
+patterns (faces, words, decisions).  You do not design the features; you
+design the architecture and the network learns the features from data.
+
+2. WHAT DL ACTUALLY IS
+Deep learning = learning a parameterized function f(x; theta) that maps
+inputs to outputs, where f is a composition of differentiable layers, and
+the parameters theta are fitted by gradient descent on a loss.  Three ideas
+made it dominant:
+  1) REPRESENTATION LEARNING: features are learned, not hand-engineered.
+  2) END-TO-END LEARNING: raw input -> prediction without a separate feature
+     pipeline.
+  3) SCALING: given enough data + compute, capacity translates into accuracy
+     (the same force that later produced scaling laws for LLMs).
+
+3. WHY NEURAL NETWORKS WORK (mathematical intuition)
+A single layer with enough hidden units can approximate any continuous
+function on a compact domain (universal approximation).  Depth is what makes
+approximation EFFICIENT: a deep network can represent a function that a
+shallow one needs exponentially more units for (e.g. a "checkerboard" or
+"composition" function).  So depth buys representational efficiency; the
+optimizer + data decide whether that capacity is actually used.
+
+4. ML vs DL (decide correctly)
+  ML (trees/linear/kernel)         DL
+  -------------------------------  --------------------------------
+  engineered features              learned features
+  works on tabular, small n        shines on raw/high-dim (images, audio,
+                                    text, sequences)
+  interpretable, cheap, stable     opaque but often more accurate
+  little data needed               data-hungry (but transferable)
+When DL is UNNECESSARY: small clean tabular problems, strict interpretability
+requirements, tight latency with no GPU, tiny datasets.  A gradient-boosted
+tree frequently beats a neural net on a 10k-row table.  Choose by evidence.
+
+5. THE DL WORKFLOW (memorize this ordering)
+  DATA -> PREPROCESS -> TRAIN/VAL/TEST SPLIT -> MODEL -> LOSS -> BACKPROP ->
+  OPTIMIZER -> TRAIN -> VALIDATE -> ERROR ANALYSIS -> (repeat) -> DEPLOY.
+The error-analysis loop is where real engineering happens: 80% of DL time is
+spent on data + debugging, not on fancy architectures.
+
+6. FAILURE MODES AT THE OUTSET
+  * Training on the wrong split (leakage) - the model looks great and dies.
+  * Judging the model on train loss only.
+  * Picking an architecture before knowing the baseline.
+  * Ignoring compute/energy budget.
+
+7. INTERVIEW
+  * "When would you NOT use deep learning?"  Small data, tabular + trees win,
+    interpretability/regulatory needs, no GPU budget.
+  * "What does representation learning mean?"  Features emerge from the loss;
+    layers build hierarchical abstractions.
+  * "Why depth over width?"  Depth composes features exponentially more
+    efficiently; width alone needs far more parameters (cite compositionality).
+
+8. RESEARCH
+Current direction: deep learning is merging with foundation models
+(self-supervised pretraining on raw data, then adaptation) - DL-00's "learned
+features" at web scale.  Also: geometric DL (graphs), neural operators
+(PDEs), and the scaling-law view that architecture choices matter less than
+data + compute at the frontier.
+
+================================================================================
+DL-01 - COMPLETE DL MATHEMATICS (bootcamp)
+================================================================================
+This module re-derives, from memory, the math DL sits on.  It assumes the
+ml_course linear-algebra/probability modules are done; here we stress the
+pieces that appear INSIDE the training loop.
+
+1. LINEAR ALGEBRA ESSENTIALS
+  * Vectors x in R^d; inner product <x,y> = sum x_i y_i (a similarity).
+  * Matrix-vector product (Wx)_i = sum_j W_ij x_j - each row of W is a
+    "detector" dotted with x.  An nn.Linear(d_in, d_out) is exactly this +
+    bias: y = Wx + b, W in R^(d_out x d_in).
+  * Matrix multiplication AB: (AB)_ij = sum_k A_ik B_kj.  Composition of
+    linear maps; cost O(n^3) naive (Strassen ~O(n^2.807)).
+  * Transpose, rank (number of independent rows/cols), determinant, trace.
+  * Norms: ||x||_2 = sqrt(sum x_i^2); ||x||_1 = sum |x_i| (sparsity).
+  * Eigen-decomposition Av = lambda v; symmetric matrices diagonalize
+    orthogonally -> PCA (covariance eigenvectors).  SVD A = U S V^T works
+    for ANY matrix -> truncated SVD = low-rank approximation (used for
+    word embeddings in the RAG course and for LoRA in the LLM course).
+  * Why this matters for DL: a linear layer is a matrix; the loss landscape
+    is a function over matrices; gradients are matrices; weight decay is an
+    L2 norm penalty on the weight matrices.
+
+2. CALCULUS ESSENTIALS
+  * Derivative measures local change; partial derivative fixes all variables
+    but one; the GRADIENT grad f = (df/dx_1, ..., df/dx_d) points in the
+    direction of steepest ascent.  Gradient descent moves opposite.
+  * Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).  Backpropagation is the
+    chain rule applied to a computational graph, from the loss backwards,
+    reusing intermediate derivatives (dynamic programming over the graph).
+  * Jacobian: the matrix of all first partial derivatives of a vector
+    function f: R^n -> R^m, J_ij = df_i/dx_j.  The chain rule for vectors:
+    J(f o g)(x) = J_f(g(x)) J_g(x)  (matrix product!).
+  * Hessian: matrix of second derivatives; its eigenvalues tell you local
+    curvature (positive -> min).  Used conceptually for optimizer design
+    (Adam approximates diagonal curvature) and for understanding saddle
+    points (high-dimensional losses are full of saddles, not local minima).
+
+3. PROBABILITY ESSENTIALS
+  * Random variable, expectation E[X] = sum x p(x), variance,
+    covariance/correlation.  Bayes: p(A|B) = p(B|A)p(A)/p(B).
+  * Distributions you will actually see: Bernoulli (binary), categorical
+    (multi-class -> softmax), Gaussian (regression noise, init), and the
+    exponential family view (softmax + cross-entropy is the categorical
+    maximum-likelihood loss).
+  * MLE: choose theta maximizing p(data|theta); equivalent to minimizing
+    negative log likelihood; NLL for a Gaussian = MSE, NLL for a categorical
+    = cross-entropy.  THIS is why MSE and CE are the default losses.
+
+4. INFORMATION THEORY ESSENTIALS
+  * Entropy H(p) = -sum p log p: expected surprise of p.
+  * Cross-entropy H(p,q) = -sum p log q: code length if you use q to code p.
+  * KL(p||q) = H(p,q) - H(p) >= 0: extra cost of using q instead of p.
+  * Mutual information I(X;Y) = H(X) - H(X|Y): how much Y explains X.
+  * In DL: the classification loss IS cross-entropy; training minimizes
+    KL(empirical || model); "loss in nats" = ln(perplexity) for LMs.
+
+5. WORKED BACKPROP EXAMPLE (compute every gradient by hand)
+  f(x) = relu(w2 * relu(w1 x + b1) + b2), loss L = (f(x) - y)^2.
+  Forward with x=1, w1=1.5, b1=0.1, w2=2.0, b2=-0.2, y=3:
+    z1 = 1.5*1 + 0.1 = 1.6;  a1 = relu(1.6) = 1.6
+    z2 = 2.0*1.6 - 0.2 = 3.0; f = 3.0;  L = (3.0-3)^2 = 0
+  Backward (chain rule from L):
+    dL/df = 2(f-y) = 0
+    dL/dz2 = dL/df * 1 = 0
+    dL/dw2 = dL/dz2 * a1 = 0*1.6 = 0
+    dL/da1 = dL/dz2 * w2 = 0
+    dL/dz1 = dL/da1 * 1{z1>0} = 0   (relu derivative is the indicator)
+    dL/dw1 = dL/dz1 * x = 0
+  The loss is 0 so every gradient is 0; rerun with y=5: L=4,
+    dL/df=4, dL/dw2=4*1.6=6.4, dL/dw1=4*2.0*1=8.0.
+  Gradient descent: w1 -= lr*8.0, w2 -= lr*6.4.  This is the WHOLE of
+  backprop - every autograd library automates exactly this recursion.
+
+6. FAILURE MODES IN THE MATH
+  * Forgetting that softmax + cross-entropy should be fused numerically
+    (never softmax then log then CE - overflow/underflow; use
+    log_softmax + nll_loss or the fused cross_entropy).
+  * Confusing cross-entropy (target = labels) with KL.
+  * Gradient of softmax: d softmax_i / d z_j = s_i (delta_ij - s_j) - the
+    Jacobian is dense; the fused CE gradient is simply (s - onehot) - one
+    of the most useful identities in DL.  Derive it once.
+
+7. INTERVIEW
+  * Derive dCE/dz for softmax output.  Answer: s - y (logits gradient is
+    prediction minus one-hot target).
+  * "Why does backprop need the chain rule?"  Composition; the loss depends
+    on parameters through many nested functions.
+  * "What is a Jacobian and where does it appear?"  Vector chain rule;
+    conceptually in backprop through vector-valued layers.
+
+8. RESEARCH
+The "loss landscape" literature (visualizing Hessian spectra, mode
+connectivity) explains why SGD finds flat minima that generalize; the
+lottery-ticket hypothesis says most of a network's weights are redundant at
+init - pruning research builds on this.
+
+================================================================================
+DL-02 - PYTORCH FROM ZERO TO ADVANCED
+================================================================================
+1. INTUITION
+PyTorch is NumPy + automatic differentiation + GPU.  You write the forward
+pass in normal Python; PyTorch records every operation on a tape; calling
+.backward() plays the tape backward and fills .grad on every tensor that
+needs it.  You never compute gradients by hand.
+
+2. TENSOR ESSENTIALS
+  * torch.tensor([...]), .shape, .dtype, .device.
+  * Indexing/slicing like NumPy; .view/.reshape (view needs contiguous
+    memory - call .contiguous() after transpose!), .permute, .transpose.
+  * Broadcasting: shapes align from the right; (3,1)*(1,4) -> (3,4).
+  * dtype: float32 default; float16/bfloat16 for mixed precision.
+    bfloat16 keeps the exponent range of float32 with fewer mantissa bits -
+    the LLM training workhorse (see llm_course Parts 22/31).
+  * device: .to("cuda") moves everything; keep model+data+loss on ONE device.
+
+3. AUTOGRAD - THE COMPUTATIONAL GRAPH
+  * requires_grad=True marks a leaf to track.  Every op builds a node.
+  * loss.backward() computes dLoss/dx for all leaves reachable from loss.
+  * .no_grad(): inference/validation - no graph, no memory growth.
+  * .detach(): cut the graph (use the value as a constant).
+  * .grad accumulates!  Zero it every step (optimizer.zero_grad()).
+  * Gradient accumulation: skip zero_grad for k steps then step -> effective
+    batch size x k without the memory.  MUST divide the loss by k (averaging
+    over the accumulated minibatches).
+
+4. nn.Module API
+  * nn.Linear(in,out), nn.Conv2d, nn.Embedding, nn.LayerNorm, nn.BatchNorm,
+    nn.ReLU/GELU/SiLU, nn.Dropout, nn.Sequential, nn.ModuleList/Dict.
+  * Define layers in __init__, compute in forward.  Parameters live on
+    registered modules (model.parameters(), model.state_dict()).
+  * model.train() vs model.eval(): toggles dropout/batchnorm behavior -
+    forgetting eval() is a classic silent inference bug.
+  * ModuleList (not a plain list!) so parameters register.
+
+5. DATA
+  * torch.utils.data.Dataset: __len__ + __getitem__.
+  * DataLoader(dataset, batch_size, shuffle, num_workers, collate_fn):
+    yields batches; pin_memory=True before GPU transfer.
+  * Custom collate_fn handles variable-length sequences (padding).
+
+6. OPTIMIZERS + LOSSES
+  * optim.SGD/Adam/AdamW.  AdamW: decoupled weight decay (correct L2) -
+    default for transformers.  (Full equations: ml_course Module 30 + this
+    course's DL-06.)
+  * Losses: nn.MSELoss, nn.CrossEntropyLoss (fused log-softmax + NLL; takes
+    raw logits and integer labels), nn.BCEWithLogitsLoss.
+
+7. ENGINEERING CHECKLIST
+  * torch.manual_seed everywhere for reproducibility; also set the Python +
+    numpy seeds and (if applicable) cuda seed.
+  * Save: torch.save({"model": state_dict, "optim": state_dict, "step": n},
+    path) - the checkpoint triplet (model/optimizer/scheduler/RNG) so runs
+    RESUME exactly (llm_course Part 32).
+  * Inference under torch.no_grad(); optionally torch.inference_mode().
+  * Mixed precision: torch.autocast + GradScaler (fp16) or bf16 autocast
+    without scaler.
+  * Detect CPU/GPU: model.to(dev) where dev = "cuda" if available.
+
+8. DEBUGGING (the systematic list lives in DL-20)
+  * Shape mismatch -> print x.shape at each layer (or use a tiny input).
+  * NaN loss -> clip gradients, lower LR, check inputs (inf/NaN), check
+    logits (are labels in range?), bf16 overflow.
+  * Silent wrong results -> eval() missing, wrong device mixing, forgetting
+    .contiguous().
+
+9. INTERVIEW
+  * "How does autograd work?"  Tape/record + reverse-mode chain rule.
+  * "Why zero_grad?"  .grad accumulates by default (gradient accumulation is
+    the intentional use).
+  * "view vs reshape?"  view = no copy if contiguous; reshape may copy.
+  * "What does model.eval() change?"  Dropout off, batchnorm uses running
+    stats, gradients not needed.
+
+10. RESEARCH
+PyTorch 2 compiles graphs (torch.compile) for fused kernels; FSDP shards
+parameters/optimizer/gradients across GPUs (used for the LLM course's
+distributed training module); the autograd graph itself is the substrate of
+gradient-based meta-learning and differentiable programming.
+
+================================================================================
+DL-03 - PYTORCH INTERNALS (what actually happens)
+================================================================================
+1. INTUITION
+"Deep learning frameworks are just compilers for the chain rule."  The
+forward pass builds a directed acyclic graph of operations; backward walks
+it in reverse, multiplying Jacobians.
+
+2. EAGER EXECUTION + THE TAPE
+  * Eager: each Python line runs immediately (debuggable, Pythonic).
+  * Autograd wraps every tensor op in a Node holding the op + inputs.
+  * loss.backward(): reverse topological order; each node receives the
+    upstream gradient dL/d(out) and computes dL/d(in) = dL/d(out) * local
+    Jacobian.  Results accumulate into leaf .grad.
+  * Memory: the tape stores activations needed for backward; this is why
+    activations dominate training memory (llm_course Part 30) and why
+    gradient checkpointing (recompute forward in backward) trades compute
+    for memory.
+
+3. THE FULL TRAINING STEP (know it cold)
+  logits = model(x)         # forward: builds graph
+  loss = criterion(logits, y)
+  loss.backward()           # fills param.grad
+  optimizer.step()          # theta -= lr * f(grad, moments)
+  optimizer.zero_grad()     # clear .grad for next step
+Order matters: step BEFORE zero_grad in the same loop iteration; many bugs
+come from zeroing before stepping or forgetting it entirely.
+
+4. PARAMETERS, BUFFERS, STATE
+  * Parameters: nn.Parameter - registered, trained, in .parameters().
+  * Buffers: e.g. BatchNorm running_mean - registered via
+    register_buffer, in state_dict, NOT trained.
+  * state_dict: full serializable snapshot; load with load_state_dict
+    (strict=True catches architecture mismatch - a great bug detector).
+
+5. TRAIN vs EVAL MODE (mechanism)
+  * Dropout: train() applies random mask; eval() is identity.
+  * BatchNorm: train() normalizes by the CURRENT batch and updates running
+    stats; eval() normalizes by running stats.  Wrong mode = distribution
+    shift at inference = silent accuracy drop.
+
+6. NUMERICAL DETAILS
+  * Float32 has ~7 decimal digits; float16 ~3 and a tiny range (max ~65k) ->
+    overflow in mixed precision is why GradScaler exists.
+  * bfloat16: same 8-bit exponent as fp32, fewer mantissa bits -> same range,
+    no scaler needed; the standard for large-model training.
+  * Loss scaling (fp16): multiply loss by a scale so small gradients survive,
+    backward, then unscale before optimizer.step.
+
+7. FAILURE MODES
+  * Two models on different devices multiplied -> error or silent copy.
+  * state_dict keys mismatch -> load with strict=False hides bugs.
+  * Reusing a graph after backward (need retain_graph=True only for exotic
+    multi-loss cases; usually a smell).
+
+8. INTERVIEW
+  * "What is stored for backward?"  The forward activations (via graph
+    edges), not gradients.
+  * "Why does inference not need autograd?"  No gradients -> no stored
+    activations -> huge memory saving (plus KV cache later).
+  * "What is a leaf tensor?"  A tensor created directly (no op), typically a
+    parameter; only leaves receive .grad by default.
+
+================================================================================
+DL-04 - PERCEPTRON (the atomic unit)
+================================================================================
+1. INTUITION
+A perceptron is one weighted vote: score = sign(w.x + b).  It draws a
+hyperplane that separates two classes.  One neuron = one linear boundary.
+
+2. FORMALISM
+  y_hat = sign(w . x + b) = sign(sum_j w_j x_j + b).
+  Decision boundary: w.x + b = 0 (a hyperplane; in 2D, a line).
+
+3. LEARNING RULE (the perceptron algorithm)
+  For each misclassified sample (y_i * (w.x_i + b) <= 0):
+      w <- w + y_i x_i,  b <- b + y_i
+  Guarantee: if the data is linearly separable, this converges in a finite
+  number of updates (Perceptron Convergence Theorem).
+  Geometric meaning: every mistake moves the boundary toward the sample.
+
+4. WHY XOR BREAKS IT (the canonical fact)
+  XOR is not linearly separable: no single line separates (0,0),(1,1) from
+  (0,1),(1,0).  Proof: the four points form a checkerboard; any line leaves
+  one pair on the wrong side.  Consequence: one neuron is too weak; you need
+  a HIDDEN LAYER (an MLP) - DL-05.  This historical "defeat" (Minsky 1969)
+  triggered the first AI winter, then the MLP revival.
+
+5. IMPLEMENTATION NOTES
+  Pure Python ~10 lines; NumPy vectorized: w += lr * (y_hat != y) @ x.
+  In PyTorch it is nn.Linear(2,1) trained with a margin/hinge-style loss.
+
+6. ENGINEERING
+  The perceptron never died: SVMs are "perceptrons with maximum margin +
+  kernels"; a single linear layer is the head of every classifier/LLM
+  (nn.Linear(d_model, vocab)); logistic regression is a smooth perceptron.
+
+7. FAILURE MODES
+  * Non-separable data -> the rule never converges (oscillates); use soft
+    margin (logistic/SVM) or more capacity.
+  * Scale sensitivity: the rule is scale-invariant in theory, but gradient
+    versions need normalized features.
+
+8. INTERVIEW
+  * "Prove XOR isn't linearly separable."  (Show the four points / parity
+    argument.)
+  * "Perceptron vs logistic regression?"  Sign loss vs log loss; the latter
+    is differentiable, gives probabilities, always converges on the loss.
+  * "Why bias?"  Without b the hyperplane always passes through the origin.
+
+9. RESEARCH
+Modern "wide" linear models (linear attention heads, Hopfield-style
+associative memories, and the NTK view that wide nets behave like kernels)
+all trace back to this unit.
+
+================================================================================
+DL-05 - MULTI-LAYER PERCEPTRON (MLP)
+================================================================================
+1. INTUITION
+Stack layers: h1 = f(W1 x + b1), h2 = f(W2 h1 + b2), y = W3 h2 + b3.
+Each hidden layer re-represents the input; with one hidden layer + a
+nonlinearity you can separate XOR; with enough width, approximate anything.
+
+2. MATHEMATICS
+  Forward:  z^(l) = W^(l) a^(l-1) + b^(l),  a^(l) = sigma(z^(l)).
+  Output (regression): y = z^(L).  Classification: p = softmax(z^(L)).
+  Universal approximation (informal): one hidden layer with enough neurons
+  and a squashing nonlinearity can approximate any continuous function on a
+  compact set.  Depth's real win = sample/parameter EFFICIENCY (DL-00).
+
+3. ACTIVATIONS - the full zoo (know derivative + failure of each)
+  Sigmoid: 1/(1+e^-z).  Range (0,1); gradient max 0.25 -> deep stacks
+  vanish; output saturated ~0/~1 kills gradient.  Use at the FINAL layer
+  (binary probability) only.
+  Tanh: (e^z - e^-z)/(e^z + e^-z) = 2*sigmoid(2z)-1.  Range (-1,1);
+  zero-centered (better than sigmoid); still saturates.
+  ReLU: max(0,z).  Derivative 1 for z>0 - kills the vanishing-gradient
+  problem; BUT dead neurons for z<=0 (gradient exactly 0 forever).
+  Leaky ReLU: max(alpha z, z) (alpha ~0.01-0.1) - fixes dead neurons.
+  ELU / SELU: smooth negative branch; SELU self-normalizes with proper init.
+  GELU: z*Phi(z) (used by transformers; smooth approximation of ReLU).
+  SiLU/Swish: z*sigmoid(z); smooth, non-monotonic - used in modern LLM FFNs
+  (SwiGLU is the gated variant - llm_course Part 26).
+  Softmax (final): s_i = e^z_i / sum_j e^z_j -> a probability vector.
+
+4. WHY GELU/SiLU IN TRANSFORMERS
+  Smooth activations have nonzero gradient everywhere -> better conditioning
+  for very deep stacks and stable training at scale; ReLU's hard zero at
+  exactly 0 creates measure-zero but real optimization cliffs.  Empirically
+  GELU/SiLU beat ReLU in deep transformers.
+
+5. INITIALIZATION MATTERS (bridge to DL-07)
+  All-zero weights -> all hidden units identical (symmetry) -> network never
+  differentiates.  Xavier/Glorot (variance ~ 1/fan_in) for tanh; He
+  (variance ~ 2/fan_in) for ReLU - derived from keeping forward/backward
+  variances stable through layers.
+
+6. REGULARIZATION QUICK VIEW (bridge to DL-09)
+  Weight decay (L2) shrinks weights; dropout randomly zeroes units during
+  training (forces redundancy); early stopping on validation; label
+  smoothing softens one-hot targets (calibration + robustness).
+
+7. ENGINEERING DEFAULTS (an MLP that just works)
+  AdamW lr 1e-3 (tune 3e-4..3e-2), hidden 2-3 layers x 128-512 with ReLU/
+  GELU + LayerNorm, He init, batch 32-256, 20-50 epochs with cosine or
+  reduce-on-plateau, dropout 0.1-0.5 by overfit, watch train vs val gap.
+
+8. DEBUGGING (first five checks, in order)
+  1) Does the loss DECREASE on one batch?  (If not: code/LR bug.)
+  2) Does a tiny net overfit a tiny dataset?  (If not: capacity/optimizer.)
+  3) Are inputs/labels scaled and typed right (float32, int64)?
+  4) Overfit -> regularize; underfit -> capacity + longer training.
+  5) NaN -> LR, gradient clip, data check.
+
+9. INTERVIEW
+  * "Why can't a linear model learn XOR but an MLP can?"  Nonlinearity +
+    hidden re-representation.
+  * "ReLU vs sigmoid hidden layers?"  ReLU avoids vanishing gradient and is
+    cheap; sigmoid hidden layers are a historical relic.
+  * "What does depth buy you?"  Compositional efficiency (DL-00).
+  * "Why can't all-ReLU activations be linear-ish?"  It is piecewise linear -
+    still a nonlinear map overall; the NETWORK can express nonlinear
+    decision boundaries.
+
+10. RESEARCH
+Modern MLPs underpin everything: transformer FFNs are MLPs (llm_course Part
+26); the "MLP-mixer" showed even convolutions/attention can be replaced by
+MLPs on tokens; Mixture-of-Experts (Part 51) is an MLP whose FFN experts are
+routed sparsely.
+
+================================================================================
+DL-06 - LOSS FUNCTIONS + OPTIMIZATION (the training engine)
+================================================================================
+1. INTUITION
+The loss is your goal written as a differentiable number.  The optimizer is
+the driver that moves weights downhill.  If the loss is wrong, the whole
+model learns the wrong thing; if the optimizer is wrong, the right loss
+never gets minimized.
+
+2. LOSSES - regression
+  MSE L = (1/n) sum (y - y_hat)^2.  Gradient 2/n sum (y_hat - y) - large
+  errors dominate (sensitive to outliers).  NLL of a Gaussian (DL-01).
+  MAE L = (1/n) sum |y - y_hat|.  Robust to outliers; gradient is +/-1
+  everywhere (no vanishing for large errors, but not smooth at 0).
+  Huber: quadratic inside delta, linear outside - best of both.
+  When: MSE for clean targets, Huber/MAE when outliers exist, and in
+  forecasting MSE punishes variance - choose by business cost.
+
+3. LOSSES - classification
+  Binary cross entropy: L = -[y log p + (1-y) log(1-p)] with p = sigmoid(z).
+  Use BCEWithLogitsLoss (fused, stable).  NEVER hand-code sigmoid+log.
+  Categorical cross entropy (softmax + NLL): L = -log p_y.  Gradient wrt
+  logits = softmax(z) - onehot(y) - the beautiful identity from DL-01.
+  Focal loss: (1-p)^gamma * CE - down-weights easy examples; for heavy class
+  imbalance (objects, rare events).  gamma=2 typical.
+  Why loss choice matters: CE is proper (calibrated under the right model);
+  squared error on probabilities is miscalibrated and gradients vanish for
+  confident mistakes.
+
+4. GRADIENT DESCENT FAMILY (equations for every variant)
+  Batch GD:   theta <- theta - lr * (1/n) sum grad_i          (full dataset)
+  SGD:        theta <- theta - lr * grad_i                     (one sample)
+  Mini-batch: theta <- theta - lr * (1/B) sum_{i in batch} grad_i
+  Momentum:   v <- mu v + grad;  theta <- theta - lr v         (mu ~0.9)
+              - smooths noisy gradients, escapes small local wobbles.
+  Nesterov:   lookahead version of momentum (evaluate grad at the
+              momentum-advanced position).
+  AdaGrad:    accumulates squared grads, per-param lr shrinks - good sparse,
+              but lr -> 0 forever.
+  RMSProp:    EMA of squared grads -> AdaGrad without the death.
+  Adam:       m = b1 m + (1-b1) g;  v = b2 v + (1-b2) g^2;  bias-correct:
+              m_hat = m/(1-b1^t), v_hat = v/(1-b2^t);
+              theta -= lr * m_hat / (sqrt(v_hat) + eps)
+              (b1=0.9, b2=0.999, eps=1e-8).  Per-parameter adaptive LR.
+  AdamW:      Adam but weight decay is applied DIRECTLY to theta (decoupled),
+              not folded into the gradient: theta -= lr * wd * theta
+              separately.  Fixes Adam's L2 coupling bug and generalizes
+              better - the transformer default.
+  Why AdamW over Adam: with Adam, weight decay (as L2 in the loss) is
+  divided by sqrt(v) -> the regularization gets scaled inconsistently per
+  parameter; decoupling makes decay an explicit constant force.
+
+5. THE LEARNING RATE + SCHEDULES
+  lr is THE most important hyperparameter.  Too high: divergence/NaN.
+  Too low: snails.  Orders of magnitude matter (1e-2 vs 1e-4).
+  Schedules: step decay (halve every k epochs), exponential decay,
+  cosine decay (smooth down to ~0 - best for long training), and WARMUP
+  (ramp lr over the first few hundred steps - protects against the huge
+  early gradients of randomly initialized transformers).
+  Gradient clipping: g <- g * clip / ||g|| (norm clip ~1.0) - stops
+  exploding-gradient blowups (RNNs, transformers).
+
+6. VANISHING vs EXPLODING GRADIENTS (mechanism)
+  Backprop multiplies many Jacobians (one per layer).  If each factor has
+  spectral norm < 1, the product -> 0 (vanishing - deep nets stop learning
+  early layers; sigmoid/tanh in deep stacks = guaranteed trouble).  If
+  > 1, it blows up (exploding - NaN; RNNs are famous for this).
+  Fixes: ReLU-family (derivative ~1), residual connections (add the input -
+  gradient has an identity path), normalization (stable scale), proper
+  init, gradient clipping, and (for RNNs) gates (LSTM/GRU).
+
+7. FAILURE MODES / DEBUGGING
+  * Loss plateaus high -> LR too low or schedule dead (AdaGrad), or model
+    too small; log LR vs loss.
+  * Loss explodes -> LR too high; clip; check data (huge outliers).
+  * val loss diverges from train -> overfit (regularize) or LR too high
+    near the end (decay it).
+  * Different losses for the same task (MSE on logits vs CE) - CE is the
+    right class loss, always.
+
+8. INTERVIEW
+  * "Adam vs SGD?"  Adam: adaptive, robust default, more memory (2 moments),
+    often worse final generalization than well-tuned SGD+momentum.
+  * "Why bias correction in Adam?"  m,v start at 0 -> early steps are
+    underestimated; correction removes the warm-up bias.
+  * "What does weight decay do and how does AdamW differ?"  Shrinks weights;
+    AdamW decouples it from the adaptive step.
+  * "Why warmup for transformers?"  Early random init produces enormous
+    gradient norms; ramp the LR to avoid destabilizing the first steps.
+
+9. RESEARCH
+Adaptive methods keep evolving (LAMB/LARS for huge batches, Lion, Sophia
+with Hessian info); the generalization gap of adaptive vs SGD is an active
+question; loss design now includes contrastive, ranking, and RLHF-style
+preference losses - but the optimizer core below is the same.
+
+================================================================================
+DL-07 - INITIALIZATION
+================================================================================
+1. INTUITION
+Before training, weights are random.  If they start wrong, training is
+slow (bad symmetry break, saturated activations) or dead (activations
+explode or vanish within the first forward pass).  Initialization sets the
+starting scale so information survives the first forward AND the first
+backward pass.
+
+2. THE PROBLEM MATHEMATICALLY
+Consider stacking layers y = W x with unit variance activations.  After L
+layers, variance scales as (fan_in * Var[W])^L.  For the signal to survive
+we need fan_in * Var[W] ~ 1 for the forward pass AND fan_out * Var[W] ~ 1
+for the backward pass.  A single Var[W] cannot satisfy both when
+fan_in != fan_out - hence the fan-in/fan-out compromise constants.
+
+3. THE STANDARD SCHEMES
+  * Zero init: all units identical -> every gradient identical -> the
+    network is one effective unit forever (symmetry).  NEVER for weights.
+  * Random (small Gaussian): breaks symmetry but naive scale saturates
+    deep sigmoid nets.
+  * Xavier/Glorot: Var[W] = 2 / (fan_in + fan_out) (uniform: +-sqrt(6/(fin+fout))).
+    Derived for symmetric activations (tanh); keeps forward/backward
+    variance stable.
+  * He (Kaiming): Var[W] = 2 / fan_in.  Derived for ReLU: because ReLU
+    zeroes ~half the mass, you need 2x the variance to keep signal.
+  * Orthogonal init: rows orthonormal; preserves norm through recurrent
+    steps (RNNs) - helps long sequences.
+  * Bias init: zeros normally; output bias = prior (e.g. set final bias so
+    the initial prediction is the class prior).
+
+4. ENGINEERING RULES
+  * PyTorch defaults are already He-style for Conv/Linear with ReLU; be
+    deliberate only when you diverge.
+  * Match the init to the ACTIVATION: Glorot for tanh/sigmoid, He for
+    ReLU-family, and for transformers the default nn.Linear init is fine.
+  * The LAST layer before softmax: small init (e.g. xavier with tiny gain)
+    so early logits are near uniform -> training starts smoothly (this is
+    also why the transformer LM head uses ~0.02 std).
+
+5. FAILURE MODES / DEBUGGING
+  * All hidden units output the same value -> init too small (or zero) +
+    symmetric data; check per-layer activation std with a probe.
+  * First forward produces inf/NaN -> init too large (or LR wild).
+  * Deep net never learns early layers -> vanishing; verify gradient norm
+    per layer (should not decay by orders per layer).
+  * Debug habit: log activation mean/std per layer for 10 steps at init.
+
+6. INTERVIEW
+  * "Why not zero init?"  Symmetry -> no differentiation between units.
+  * "Xavier vs He?"  He accounts for ReLU's 50% zeroing (2/fan_in).
+  * "How would you check your init is healthy?"  Forward-pass activation
+    statistics / gradient norms per layer.
+
+7. RESEARCH
+Init interacts with normalization: with LayerNorm/BatchNorm the exact init
+scale matters less (normalization rescales) - one reason transformers can
+use simpler default inits.  Modern work studies init through the lens of
+signal propagation at infinite width (dynamical isometry, the NTK regime).
+
+================================================================================
+DL-08 - NORMALIZATION
+================================================================================
+1. INTUITION
+Internal covariate shift is the observation that each layer sees inputs
+whose distribution drifts as earlier layers learn.  Normalization layers
+rescale activations so every layer sees well-behaved (unit-ish variance)
+inputs - making deep training dramatically more stable.
+
+2. THE FOUR LAYERS (mechanism)
+  BatchNorm (per channel, across the batch):
+    y = gamma * (x - mu_batch)/sqrt(var_batch + eps) + beta
+    mu/var computed over (N, H, W) per channel.  TRAIN: current batch stats
+    + running averages updated.  EVAL: uses the running stats.  Problem:
+    batch statistics make results depend on batch mates; bad for small
+    batches and sequence models (variable lengths) and batchnorm in
+    transformers destabilizes training.
+  LayerNorm (per sample, across features):
+    y = gamma * (x - mu_sample)/sqrt(var_sample + eps) + beta,
+    mu/var over the feature dimension of ONE sample.  Batch-independent -
+    stable at any batch size, works for sequences.  Why transformers love
+    it: attention outputs have per-token statistics; LayerNorm is the
+    per-position normalizer (plus it leaves the residual stream scale free).
+  GroupNorm: normalize over groups of channels per sample - the CNN answer
+    when batches are tiny (detection/segmentation).
+  RMSNorm: drop the mean subtraction - just rescale by RMS:
+    y = x / sqrt(mean(x^2) + eps) * gamma.  Cheaper, and empirically fine
+    or better for transformers (used by Llama; llm_course Part 24).
+
+3. PRE-NORM vs POST-NORM (architectures)
+  Post-norm (original transformer): norm AFTER the residual add
+    (x + Attn(.) then LN).  Training deep stacks is fragile; needs LR
+    warmup + care.
+  Pre-norm (modern): norm BEFORE the sublayer, residual adds the raw path
+    (x + Attn(LN(x))).  The identity path means gradients flow ~unscaled -
+    much easier to train deep; small quality cost that scale absorbs.
+    Every modern LLM is pre-norm + RMSNorm.
+
+4. ENGINEERING
+  * model.train()/eval() correctness is CRITICAL with BatchNorm (running
+    stats vs batch stats) - the silent eval bug.
+  * BatchNorm with batch_size=1 is broken; use GroupNorm or LayerNorm.
+  * In transformers: LayerNorm/RMSNorm only - never BatchNorm on tokens.
+
+5. INTERVIEW
+  * "BatchNorm vs LayerNorm?"  Normalize over batch vs over features;
+    LayerNorm is batch-independent (sequence models, tiny batches).
+  * "Why does pre-norm train better?"  Residual gradient path avoids
+    repeated norm scaling; identity shortcut.
+  * "What are gamma/beta?"  Learned per-channel scale/shift (restores
+    representational power after normalization).
+
+6. RESEARCH
+Normalization is still not fully understood (why does BatchNorm help
+optimization beyond input scaling?).  Modern frontier: normalization-free
+nets (DeepNorm), and normalization's role in the residual-stream view of
+LLMs where LN mainly controls the scale of updates.
+
+================================================================================
+DL-09 - REGULARIZATION
+================================================================================
+1. INTUITION
+A big enough network can memorize the training set (it has the capacity).
+Regularization is every technique that prevents the model from fitting
+noise instead of signal - i.e. that shrinks the gap between train and
+validation performance without wrecking train performance.
+
+2. THE BAG OF TRICKS (mechanism + when)
+  L2 / weight decay: add (wd/2)||theta||^2 to the loss; gradient pulls
+    weights toward zero.  Small weights = simpler, smoother functions.
+    UNIVERSAL default (AdamW applies it decoupled - DL-06).
+  L1: add wd * ||theta||_1 -> pushes weights EXACTLY to zero (sparsity);
+    used for feature selection, not usually for nets.
+  Dropout: in training, zero each activation with prob p (and scale by
+    1/(1-p) to keep expectation).  Forces the network to be robust to
+    missing units = implicit ensemble of thinned networks.  eval(): off.
+    Typical p=0.1-0.5 (transformers use small p on MLP/attention output).
+  Early stopping: train until val loss stops improving (patience k), keep
+    the best checkpoint.  The cheapest, most reliable regularizer.
+  Data augmentation: create plausible new training inputs (crops/flips for
+    images, noise for tabular/audio) - more data beats every other trick.
+  Label smoothing: train against (1-eps)*onehot + eps/K instead of hard
+    one-hot.  Softens overconfidence, improves calibration + robustness,
+    often a free accuracy point in distillation-style settings.
+  Noise: inject small Gaussian noise on inputs or weights (the Bayesian
+    view: shrinkage toward simpler functions).
+
+3. OVERFITTING DIAGNOSIS
+  train loss << val loss  -> overfit (capacity too high for data):
+  regularize more / augment / more data / smaller model.
+  train loss ~ val loss but both high -> underfit: MORE capacity.
+  Learning curves (train vs val loss vs epochs) are the diagnostic tool;
+  the gap IS the overfitting signal.
+
+4. ENGINEERING
+  * Weight decay and dropout are NOT interchangeable: decay constrains
+    weight scale; dropout adds stochastic robustness.  Use both when
+    overfitting.
+  * Dropout placement: after activations in MLP; for CNNs small p after
+    conv blocks; for transformers on the FFN output (not attention scores).
+  * Always tune dropout/decay against VALIDATION, with the same data split
+    discipline as everything else (leakage still applies!).
+
+5. INTERVIEW
+  * "L1 vs L2?"  L1 -> sparse, L2 -> small; L1's gradient is constant so
+    it drives exact zeros.
+  * "Why does dropout work?"  Prevents co-adaptation of units; implicit
+    ensemble.
+  * "What is early stopping really doing?"  Selecting the checkpoint that
+    generalizes best by validation.
+  * "Label smoothing?"  Soft targets -> calibrated probabilities.
+
+6. RESEARCH
+Modern view: implicit regularization matters as much as explicit - SGD
+itself prefers flat minima (small-batch noise), weight decay interacts
+with LR schedules, and large models regularize via data + augmentation
+rather than classical penalties.  The deep-learning theory of
+generalization (double descent, benign overfitting) explains why big models
+can fit noise yet still generalize.
+
+================================================================================
+DL-10 - CONVOLUTIONAL NEURAL NETWORKS (CNN)
+================================================================================
+1. INTUITION
+A convolution slides a small learned filter over the image.  Each filter
+is a pattern detector (edges, textures, shapes) and its response map shows
+WHERE that pattern appears.  Stacking convolutions builds detectors of
+detectors: layer 1 finds edges, layer 2 finds corners/motifs, later layers
+find objects.  Unlike an MLP on flattened pixels (which must re-learn
+"edge at position (3,7)" separately from "edge at (4,7)"), a conv filter is
+SHARED across all positions - translation equivariance + massive parameter
+savings.
+
+2. THE CONVOLUTION OP, PRECISELY
+  Input: (C_in, H, W).  Output channel j: sum over input channels of
+  cross-correlation of filter j with the input (what frameworks call
+  convolution is technically cross-correlation - no kernel flip; it does
+  not matter for learned filters).
+  Output H = (H - K + 2P)/S + 1 (same for W).
+  K kernel size, P padding, S stride.  Memorize this formula - every
+  architecture computes dims with it, and shape bugs are the #1 CNN error.
+  Params per conv = C_in * K * K * C_out + C_out (bias).  A 3x3 conv with
+  64 channels: 64*9*64+64 ~ 37k params - compare an MLP connecting a
+  224x224 image to 64 units: 3*224*224*64 ~ 9.6M.  That is the conv
+  advantage: local + shared.
+
+3. RECEPTIVE FIELD
+  After L layers of KxK convs with stride 1, a pixel sees an input patch
+  of size 1 + L*(K-1).  Stacking 3x3s gives the same receptive field as
+  one big kernel with fewer params + more nonlinearity: two 3x3 = one 5x5
+  receptive field with 18 vs 25 params; three 3x3 = one 7x7 with 27 vs 49.
+
+4. POOLING
+  Max pool (2x2, stride 2): keep the max in each window - local
+  translation invariance + downsample.  Average pool: smoother.  Modern
+  nets often prefer stride-2 convs to pooling (learned downsampling), but
+  pooling remains in classic architectures.
+
+5. NAIVE IMPLEMENTATION (the loop you should write once)
+  for each output pixel (oh, ow), each output channel oc:
+     acc = bias[oc]
+     for ic, kh, kw: acc += x[ic, oh*S+kh-P, ow*S+kw-P] * W[oc, ic, kh, kw]
+  This is 6 nested loops - hopelessly slow, which is why convs are
+  implemented as matrix multiplies (im2col: gather patches into columns,
+  then GEMM; cuDNN uses implicit GEMM / FFT / Winograd variants).
+  Vectorized numpy/torch: unfold (im2col) + matmul, or F.conv2d.
+
+6. COMMON LAYER STACK PATTERN
+  Conv3x3 -> BN -> ReLU -> (Conv3x3 -> BN -> ReLU) -> downsample
+  (pool or stride-2) ... -> global pool -> FC/head.  Repeat with growing
+  channels (64->128->256->512) and shrinking spatial size.
+
+7. FAILURE MODES / DEBUGGING
+  * Shape errors: run the dim formula (DL-10.2) or print tensor shapes
+    after each layer on a dummy input - the standard CNN debug loop.
+  * Memory blowup: conv activations are large early (H*W big); use
+    gradient checkpointing or smaller batch.
+  * Overfit on small data: augment + pretrained transfer (DL-12).
+  * Channels-last vs channels-first memory layout mismatches.
+
+8. INTERVIEW
+  * "Why convolutions and not an MLP on pixels?"  Local connectivity,
+    weight sharing, translation equivariance - far fewer params, more
+    sample-efficient.
+  * "Compute output size of a conv" (K=3,P=1,S=1 keeps H,W; K=3,P=0,S=1
+    drops 2; etc.).
+  * "1x1 conv?"  Channel mixing / dimension change with no spatial
+    interaction (a learned pooling across channels - bottleneck layers).
+  * "Why stack small kernels?"  Receptive field growth at fewer params +
+    more nonlinearity (DL-10.3).
+
+9. RESEARCH
+Convs remain the backbone of vision encoders even in transformer age
+(ConvNeXt modernized them; hybrid ViT/conv models dominate detection).
+Depthwise-separable convs (MobileNet) cut params ~8x; dilated convs grow
+receptive fields without losing resolution.
+
+================================================================================
+DL-11 - CNN ARCHITECTURES (the evolution, why each step happened)
+================================================================================
+1. THE LINEAGE WITH THE WHY
+  LeNet-5 (1998): conv+pool+FC on 32x32 digits.  Proved convs work.
+  AlexNet (2012): deeper + ReLU + dropout + data augmentation + GPU;
+  won ImageNet by a landslide - started the deep learning era.  Big
+  kernels (11x11) early.
+  VGG (2014): the insight that DEPTH with small 3x3 kernels wins
+  (receptive-field argument, DL-10.3); uniform stack of 3x3s; simple,
+  huge (138M params) - still the go-to feature extractor in many codebases.
+  GoogLeNet/Inception (2014): same accuracy with ~10x fewer params via
+  the INCEPTION module - parallel 1x1/3x3/5x5/pool branches merged;
+  1x1 convs as cheap bottleneck dim-reducers; auxiliary losses for deep
+  training.
+  ResNet (2015): the game-changer.  Problem: deeper plain nets got WORSE
+  train error (optimization, not just overfitting - the degradation
+  problem).  Fix: learn the RESIDUAL f(x) = H(x) - x so the layer output
+  is x + f(x).  If identity is optimal, f -> 0 (easy); gradient flows
+  through the identity shortcut.  152-layer ResNet won ImageNet; residual
+  connections became universal (transformers too - llm_course Part 25).
+  DenseNet (2017): connect each layer to ALL later layers (dense blocks)
+  - feature reuse, fewer params, strong gradients.
+  EfficientNet (2019): NEURAL ARCHITECTURE SEARCH over depth/width/
+  resolution - compound scaling found the efficient frontier.  This is
+  the modern answer to "what shape should the net be?".
+
+2. THE KEY MODULES (know each)
+  Residual block: y = x + F(x) (F = conv-BN-ReLU-conv-BN); when dims
+  change, project x (1x1 conv stride 2).  Bottleneck residual:
+  1x1 (reduce) -> 3x3 -> 1x1 (expand) - cuts FLOPs ~4x for depth.
+  Inception module: parallel branches, concatenated.
+  Depthwise separable: 3x3 per-channel + 1x1 mixing.
+
+3. PARAMETER COUNTING (interview staple)
+  Conv params = C_in*K*K*C_out (+bias).  FC = in*out.  VGG-16: mostly
+  the FC head (~102M of 138M) -> global average pooling replaced FCs in
+  later nets (ResNet: ~25M total).  Be able to add up a small net's
+  params by hand.
+
+4. ENGINEERING
+  * Start from a pretrained backbone for ANY real vision task
+    (transfer learning, DL-12).
+  * Batch norm between conv and ReLU; keep the same pattern everywhere.
+  * Depth (ResNet) is the reliable lever; width second; augmentation is
+    the cheapest accuracy.
+
+5. FAILURE MODES
+  * Degradation returns if residuals are removed - keep shortcuts on dim
+    change correct (pad vs project - a classic bug).
+  * Auxiliary heads (Inception) forgotten at inference.
+  * FLOPS vs accuracy trade: EfficientNet scaling beats blind widening.
+
+6. INTERVIEW
+  * "Why did ResNet work?"  Identity shortcut solves the degradation
+    problem (optimization) and gives gradient highways.
+  * "ResNet vs VGG?"  Residuals + bottlenecks: deeper with fewer params.
+  * "Count params of this block" (do it: 3x3 conv 64->64: 64*9*64+64
+    ~37k; with 1x1 bottleneck: 64*64 + 64*9*64/… you do the arithmetic).
+  * "What problem did BatchNorm solve in deep CNNs?"  Stable layer input
+    distributions (DL-08).
+
+7. RESEARCH
+The conv backbone is being displaced at the frontier by vision
+transformers (ViT - image patches as tokens; llm_course Transformer
+skills) but conv inductive biases (locality, translation equivariance)
+still make hybrid models data-efficient winners; NAS + scaling laws now
+choose architectures semi-automatically.
+
+================================================================================
+DL-12 - COMPUTER VISION TASKS + TRANSFER LEARNING
+================================================================================
+1. THE TASK MAP
+  Classification: one label per image.  Baseline task; simplest eval.
+  Object detection: boxes + class per object.  Two families:
+    two-stage (Faster R-CNN: region proposals -> per-region classify)
+    one-stage (YOLO/SSD: dense grid of boxes directly - fast; YOLO v8+
+    is the industry default for realtime).  Eval: mAP (precision/recall
+    over IoU thresholds).
+  Segmentation: per-pixel label.  Semantic (class per pixel) vs
+    instance (separate each object copy).  U-Net (encoder-decoder with
+    skip connections - the medical standard) and Mask R-CNN (detection +
+    per-instance mask) are the canonical architectures.
+  Representation tasks: embeddings for retrieval/similarity.
+
+2. TRANSFER LEARNING - THE PRACTICAL SUPERPOWER
+  Idea: features learned on ImageNet (edges -> shapes -> objects) are
+  largely reusable.  Two strategies:
+  FEATURE EXTRACTION: freeze the pretrained backbone, train only a new
+  head (and optionally a few late layers).  Cheap, works with tiny data.
+  FINE-TUNING: unfreeze and train everything with a small LR (1/10 of
+  scratch).  Best accuracy when your data is close to the source domain.
+  GRADUAL UNFREEZING: train the head, then unfreeze top blocks first -
+  the smooth middle ground.  LEARNING RATES: use ~10-30x lower than
+  scratch; often a per-layer decay (earlier layers move least).
+  When transfer FAILS: extreme domain shift (X-rays vs photos, medical vs
+  natural), different modality/input structure, tiny target data with
+  aggressive fine-tuning (overfit + catastrophic forgetting of the
+  pretrained features).
+
+3. THE PIPELINE (for any vision project)
+  1) Load images + labels; visualize 20 (catch label/format bugs).
+  2) Preprocess: resize to model input, normalize with the pretrained
+     stats, augment (flips/crops/color jitter) in TRAINING only.
+  3) Split: stratified by class; keep the test set truly unseen.
+  4) Use a pretrained backbone; head -> your classes; train head, then
+     fine-tune.
+  5) Eval per class (confusion matrix); error analysis on failure images.
+  6) Calibrate, export (ONNX/TorchScript), serve, monitor drift.
+
+4. FAILURE MODES / DEBUGGING
+  * Wrong normalization stats vs the pretrained model (silent 5-10% drop).
+  * Augmenting the validation/test set (leakage) - augment TRAIN only.
+  * Class imbalance -> weighted loss / focal (DL-06) / oversample.
+  * Tiny objects missed -> higher input resolution + feature pyramids
+    (FPN) instead of only deeper nets.
+  * Overfit during fine-tuning -> lower LR, freeze more, augment.
+
+5. INTERVIEW
+  * "Why does transfer learning work?"  Lower-level features transfer
+    across tasks; only the task head must adapt.
+  * "Feature extraction vs fine-tuning?"  Data size + domain closeness
+    decide; fine-tune when data is enough or domain shifts.
+  * "What is catastrophic forgetting?"  Fine-tuning overwrites useful
+    features when data is scarce - why we freeze or use small LRs.
+  * "YOLO vs Faster R-CNN?"  Speed vs accuracy; one-stage vs two-stage.
+
+6. RESEARCH
+Detection/segmentation now use transformer detectors (DETR, Mask2Former);
+foundation vision models (CLIP, DINOv2, SAM) make zero/few-shot vision
+real; self-supervised pretraining (masked image modeling, contrastive -
+see ml_course Module 31) replaces supervised ImageNet pretraining.
+
+================================================================================
+DL-13 - RECURRENT NEURAL NETWORKS (RNN)
+================================================================================
+1. INTUITION
+An RNN processes a sequence one step at a time while carrying a hidden
+state h_t - a running summary of everything seen so far.  The SAME weights
+are used at every timestep (weight sharing across time, like convolution
+shares across space).  h_t = f(W_h h_{t-1} + W_x x_t + b); prediction uses
+h_t.  This gives variable-length handling and order sensitivity that a
+bag-of-words MLP lacks.
+
+2. UNROLLING + BPTT
+  The recurrence is unrolled into L copies of the same cell for
+  backpropagation through time: the loss at step t depends on all steps
+  1..t through the chain h_1 -> h_2 -> ... -> h_t.  Gradients multiply
+  along this chain: dL/dh_1 = prod_{t} (d h_t / d h_{t-1}) * ...  - a
+  product of Jacobians of length T.  THIS product is the RNN's curse.
+
+3. VANISHING / EXPLODING GRADIENTS IN RNNs (mechanism)
+  If the recurrent Jacobian has spectral norm < 1, gradients vanish
+  exponentially with sequence length -> the RNN cannot learn long-range
+  dependencies (can't remember token 1 when predicting token 50).  If
+  > 1, gradients explode (NaN).  tanh hidden units cap activations but the
+  Jacobian product still vanishes.  This is WHY naive RNNs fail on long
+  sequences - the motivation for LSTM/GRU (DL-14/15) and, later, for
+  attention/transformers removing recurrence entirely.
+  Mitigations that help but don't solve: gradient clipping (exploding),
+  orthogonal init, smaller depths, good scaling.  Gates are the real fix.
+
+4. VARIANT ARCHITECTURES
+  Many-to-one (sentiment from a sentence), one-to-many (caption from an
+  image), many-to-many (translation; video frames).  Encoder-decoder
+  seq2seq: encoder compresses the source to a final state; decoder
+  generates conditioned on it (the pre-attention NMT architecture;
+  attention fixed the "fixed-size bottleneck" flaw - DL-16).
+  Bidirectional RNN: two RNNs (forward + backward) concatenated - each
+  position sees past AND future context (not causal; wrong for
+  generation, right for tagging).
+
+5. IMPLEMENTATION CORE (the cell loop)
+  for t in range(T):
+      h = tanh(W_h @ h + W_x @ x[t] + b)     # shared weights
+      outs[t] = h
+  PyTorch: nn.RNN(input_size, hidden, batch_first=True) or the manual
+  loop (which you should write once - see EXAMPLE.py).
+
+6. ENGINEERING
+  * Never train a naive RNN on long sequences; if you must, clip + init
+    + short sequences, and prefer GRU/LSTM.
+  * RNNs are sequential at inference (each step needs the previous) -
+    slow to parallelize; transformers replaced them partly for this.
+  * For time-series tabular forecasting, gradient boosting often beats
+    RNNs - sequence DL shines with raw sequential structure + lots of data.
+
+7. FAILURE MODES / DEBUGGING
+  * NaN after a few steps -> exploding gradient: clip (max_norm 1-5),
+    lower LR, check data scale.
+  * Long dependency not learned (val loss flat vs sequence length) ->
+    vanishing; switch to LSTM/GRU or attention.
+  * Wrong shapes: RNN wants (seq, batch, feat) unless batch_first=True.
+  * Forgetting to reset h between sequences in a batch/epoch boundary.
+
+8. INTERVIEW
+  * "Why can't RNNs learn long sequences?"  BPTT multiplies Jacobians;
+    vanishing/exploding gradients (explain the product).
+  * "What does weight sharing across time buy?"  Parameter efficiency +
+    length generalization (same cell any length).
+  * "Gradient clipping?"  Norm-based cap on exploding gradients.
+
+9. RESEARCH
+Plain RNNs are mostly historical for NLP, but recurrence is not dead:
+linear RNNs / state-space models (S4, Mamba) fix the vanishing problem
+with structured state matrices and reach transformer-level quality at
+linear sequence cost - the current long-context frontier.
+
+================================================================================
+DL-14 - LSTM (LONG SHORT-TERM MEMORY)
+================================================================================
+1. INTUITION
+LSTM fixes the vanishing-gradient problem by adding a CELL STATE c_t - a
+conveyor belt that information flows along with only gentle, LEARNED
+modification.  Gates decide what to forget, what to store, and what to
+reveal.  The belt gives gradients a near-identity path across time, so
+long-range memory becomes learnable.
+
+2. THE FOUR GATES, WITH EQUATIONS (memorize)
+  Input x_t, previous hidden h_{t-1}, previous cell c_{t-1}.
+  Forget gate:     f_t = sigmoid(W_f [h_{t-1}, x_t] + b_f)   (0..1 per dim)
+  Input gate:      i_t = sigmoid(W_i [h_{t-1}, x_t] + b_i)
+  Candidate:       g_t = tanh(W_g [h_{t-1}, x_t] + b_g)     (new content)
+  Output gate:     o_t = sigmoid(W_o [h_{t-1}, x_t] + b_o)
+  Cell update:     c_t = f_t * c_{t-1} + i_t * g_t
+                     (forget old * keep + input gate * candidate)
+  Hidden:          h_t = o_t * tanh(c_t)                     (filtered readout)
+  [h,x] concatenated; * is elementwise.  W_f etc are the learned gates.
+
+3. WHY THIS FIXES VANISHING GRADIENTS
+  The cell recurrence c_t = f_t * c_{t-1} + ... is a weighted identity:
+  if f_t ~ 1, d c_t / d c_{t-1} ~ 1 - the gradient flows through the belt
+  without multiplication by a small tanh derivative.  Forget gates that
+  open let the network LEARN to keep information (and gradients) over long
+  spans.  That is the whole trick: linear-ish cell path + gated writes.
+
+4. GATE INTUITION (what each learns)
+  Forget: drop irrelevant old context (new topic -> forget the old).
+  Input/candidate: write new info worth remembering.
+  Output: decide what the hidden state (used for prediction) reveals.
+  Bias trick: initialize forget bias to ~1 so long memory is the default
+  at the start of training (learn to forget later) - a real practical win.
+
+5. IMPLEMENTATION (manual cell, ~15 lines - EXAMPLE.py has it)
+  Standard matrix form: concat [h_prev, x], ONE big W (4*hidden x
+  (hidden+in)), one big b; split the 4 gates; apply activations; combine.
+  PyTorch: nn.LSTM(input_size, hidden, num_layers, batch_first=True).
+  Outputs: (all hidden states, (h_n, c_n)).  num_layers stacks cells; the
+  h of layer L feeds layer L+1.  Bidirectional=True doubles hidden (for
+  tagging, not generation).
+
+6. ENGINEERING
+  * LSTM param count: 4 * (hidden*(hidden+in) + hidden) per layer -
+    know how to count (interview).
+  * For long sequences still watch memory: BPTT unrolls the whole
+    sequence; truncate/backprop through limited windows when needed.
+  * Sequence packing (pack_padded_sequence) for variable lengths avoids
+    wasting compute on padding.
+  * LSTMs remain strong for: speech, audio, streaming ASR, some
+    forecasting; transformers win on big text/code corpora.
+
+7. FAILURE MODES / DEBUGGING
+  * h vs c confusion (return_sequences/hidden handling) - shape check.
+  * Forgetting to reset states across sequences.
+  * Output gate saturation can still limit memory; deep LSTMs + residual
+    connections help.
+  * On very long contexts attention-style memory still beats LSTM.
+
+8. INTERVIEW
+  * "Walk through the four gates."  Say the equations and the intuition.
+  * "Why does LSTM beat RNN on long sequences?"  The cell state is a
+    near-identity gradient path (explain d c_t/d c_{t-1} ~ f_t).
+  * "Count LSTM params for hidden=128, in=64."
+    4*(128*(128+64)+128) = 4*(128*192+128) = 4*24704 = 98,816 per layer.
+  * "Why init forget bias to 1?"  Start with long memory, learn to drop.
+
+9. RESEARCH
+LSTM-era ideas (gates, state, memory) live on in modern sequence models:
+Mamba/SSMs use data-dependent gating; transformer attention is the other
+pole (no recurrence); hybrid models combine both.
+
+================================================================================
+DL-15 - GRU + RNN FAMILY COMPARISON
+================================================================================
+1. GRU EQUATIONS (update + reset - only TWO gates)
+  Update gate:  z_t = sigmoid(W_z [h_{t-1}, x_t] + b_z)   (how much to keep)
+  Reset gate:   r_t = sigmoid(W_r [h_{t-1}, x_t] + b_r)   (how much old to use)
+  Candidate:    h_tilde = tanh(W_h [r_t * h_{t-1}, x_t] + b_h)
+  Hidden:       h_t = (1 - z_t) * h_{t-1} + z_t * h_tilde
+  No separate cell state; the update gate interpolates between the old
+  hidden (memory) and the candidate (new info).  z~1 -> keep everything
+  (gradient path ~identity, same anti-vanishing benefit as LSTM's f).
+
+2. LSTM vs GRU (honest comparison)
+  LSTM: cell + hidden, 3 gates + candidate -> more capacity, more params.
+  GRU: 2 gates, fewer params, similar quality on many tasks; often faster
+  to train and better with small data.  Rule of thumb: try GRU first for
+  small/medium problems; LSTM when you need the extra capacity or on
+  speech/audio where it has a long track record.
+
+3. RNN vs LSTM vs GRU TABLE
+  | model | gates | params | vanishing fix      | use when          |
+  | RNN   | none  | least  | none (bad long)    | short sequences   |
+  | GRU   | 2     | mid    | update gate path   | general default   |
+  | LSTM  | 3     | most   | cell-state path    | capacity/speech   |
+  All three are sequential at inference and hard to parallelize across
+  time - the structural reason transformers (parallel attention over all
+  positions) displaced them for large-scale language.
+
+4. ENGINEERING NOTES
+  * nn.GRU(input, hidden, num_layers, batch_first=True); bidirectional
+    for tagging.  Same packing/state-reset discipline as LSTM.
+  * Sequence tasks in production today usually mean transformers; keep
+    RNN-family knowledge for the math, legacy systems, and edge/streaming
+    cases (tiny footprint, streaming-friendly).
+
+5. INTERVIEW
+  * "GRU vs LSTM?"  Two gates vs three; fewer params; comparable quality;
+    update gate = forget+input combined.
+  * "Why do both beat plain RNNs?"  Gated near-identity paths for
+    gradients across time.
+  * "Why did transformers replace RNNs for LLMs?"  Parallel training over
+    positions + direct O(1) paths between any two tokens (attention) vs
+    O(T) sequential dependency - see DL-16/17.
+
+6. RESEARCH
+State-space models (Mamba/S4) now offer the RNN family's linear scaling
+with transformer quality; GRU-style gating is also the template for
+modern recurrent components in hybrid long-context architectures.
+
+================================================================================
+DL-16 - ATTENTION
+================================================================================
+1. INTUITION
+A query asks a question; keys are the labels on everything you could
+look at; values are the content behind each label.  Attention scores every
+key against the query, converts scores to weights (softmax), and returns
+a weighted blend of values: mostly the content whose key best matched.
+In a sentence, each word queries all other words and gathers context from
+the relevant ones - "bank" looks at "river" (and "money") and mixes in
+only what fits.
+
+2. FORMALISM + DIMENSIONS (derive every shape)
+  Query Q (n_q x d_k), Keys K (n_k x d_k), Values V (n_k x d_v).
+  Scores:     S = Q K^T            (n_q x n_k)  - how well q_i matches k_j
+  Scale:      S / sqrt(d_k)        (keeps softmax gradients alive; the
+              variance of each dot product grows with d_k, so we divide)
+  Weights:    A = softmax(S / sqrt(d_k), dim=-1)     (n_q x n_k, rows sum 1)
+  Output:     Attention(Q,K,V) = A V          (n_q x d_v)
+  Complete:   Attention(Q,K,V) = softmax(Q K^T / sqrt(d_k)) V
+  In self-attention (DL-17) Q=K=V=xW projections from the SAME sequence -
+  each token attends to every token.
+
+3. WHY SCALE BY sqrt(d_k)? (the classic interview)
+  For unit-variance q,k entries, each dot product has variance ~d_k, so
+  scores spread as sqrt(d_k).  Large scores push softmax into the flat
+  saturation region where gradients -> 0 (and numerically, near one-hot).
+  Dividing by sqrt(d_k) restores O(1) variance - gradients stay healthy.
+
+4. WORKED NUMERICAL EXAMPLE (verify by hand)
+  d_k = 2.  Q = [[1,0],[0,1]], K = [[1,0],[0,1]] (identity), V = [[10],[20]]
+  (d_v=1).  Scores: row0 = [1,0], row1 = [0,1].  sqrt(d_k)=1.414.
+  Scaled row0 = [0.707, 0]; softmax -> [0.668, 0.332].
+  Row1 scaled = [0, 0.707] -> softmax [0.332, 0.668].
+  Output = A V: row0 = 0.668*10 + 0.332*20 = 13.32;
+             row1 = 0.332*10 + 0.668*20 = 16.68.
+  Intuition: q0 matches k0 -> output leans toward v0's 10.
+
+5. MASKS (two kinds - never confuse them)
+  Padding mask: don't attend to padding tokens (add -inf so softmax
+  ignores them).  Causal (look-ahead) mask: for GENERATION, token i may
+  only attend to tokens <= i (add -inf above the diagonal).  Attention
+  with -inf entries: softmax treats them as zero probability.  Implement
+  once from scratch (EXAMPLE.py).
+
+6. COMPLEXITY
+  Attention scores are O(n^2 * d_k) time and O(n^2) memory for a length-n
+  sequence (every pair).  This quadratic cost drives long-context
+  research (FlashAttention for memory, sparse/linear attention, GQA,
+  sliding windows - DL-18 + the LLM course Parts 48/49/64/65).
+
+7. ENGINEERING
+  * For NLP use causal masks during training so the model learns to
+    predict, not peek; use padding masks in batches of different lengths.
+  * Fuse softmax with masking correctly: add -inf BEFORE softmax, never
+    zero after.
+  * Always validate attention on a toy (the EXAMPLE.py self-check).
+
+8. INTERVIEW
+  * "Why attention?"  Direct dependency between any two positions
+    (O(1) path) + soft weighting + parallelizable (vs RNN's sequential
+    compression).
+  * "Why sqrt(d_k)?"  Variance stabilization of dot products (DL-16.3).
+  * "What if a row of Q is all zeros?"  Uniform attention (all keys equal
+    weight) - good sanity question.
+  * "Why -inf in masks?"  Softmax must EXCLUDE masked positions, and
+    -inf makes e^-inf = 0 without renormalizing the rest.
+
+9. RESEARCH
+Attention is where modern NLP/vision graphs meet: cross-attention
+(queries from one sequence, keys/values from another - seq2seq,
+multimodal), causal attention (generation), and the whole family of
+approximations (linear attention, MQA/GQA, FlashAttention) covered in the
+LLM course Parts 63-65.
+
+================================================================================
+DL-17 - TRANSFORMERS
+================================================================================
+1. INTUITION
+A transformer is a stack of blocks that mix information ACROSS positions
+(attention) and THROUGH features (MLP), with residual connections and
+normalization keeping training stable.  No recurrence: every token is
+processed in parallel, and attention gives any token a direct view of any
+other.  Position is injected separately (embeddings/RoPE) because
+attention alone is order-agnostic (it is a weighted average over a SET).
+
+2. THE BLOCK, END TO END (memorize the order)
+  x = Embedding(tokens) + PositionalEncoding(tokens)
+  for each block:
+      x = x + Attention(LayerNorm(x))     # pre-norm style (DL-08)
+      x = x + MLP(LayerNorm(x))           # MLP = Linear -> act -> Linear
+  x = LayerNorm(x); logits = x @ W_head^T
+  Self-attention inside the block: Q,K,V = x Wq, x Wk, x Wv;
+  out = softmax(Q K^T/sqrt(d_k) + mask) V, projected by Wo; several heads
+  in parallel (multi-head: each head attends in its own subspace -
+  different relationships: syntax, coreference, position - then heads
+  concatenate and project).
+
+3. WHY EACH PIECE EXISTS
+  Attention: cross-position mixing.  MLP: per-token nonlinear feature
+  computation (the "knowledge" storage in LLMs).  Residuals: gradient
+  highways + let later blocks refine earlier representations.  LayerNorm:
+  stable scale per token.  Position info: order (sinusoidal/learned/RoPE).
+  Causal mask: next-token prediction can't see the future.
+
+4. ENCODER vs DECODER vs ENCODER-DECODER
+  Encoder-only (BERT): bidirectional attention - deep understanding of
+  the whole input; used for classification/tagging/retrieval embeddings.
+  Decoder-only (GPT): causal attention - generates one token at a time;
+  the modern LLM default (scales best, unified pretrain+task format).
+  Encoder-decoder (T5/BART): encoder reads the source, decoder generates
+  conditioned on it via cross-attention; translation/summarization.
+  (Full comparison: llm_course Part 11.)
+
+5. KEY HYPERPARAMETERS + HOW THEY SCALE
+  d_model (width), n_heads (with d_head = d_model/n_heads), n_layers
+  (depth), d_ff (MLP width, ~4x d_model), vocab.  Attention params per
+  head-projections: 4*d_model^2 (Q,K,V,out).  MLP: 2*d_model*d_ff.  Total
+  ~ 12*d_model^2 per layer for d_ff=4*d_model.  Know how to COUNT (the
+  llm_course Part 19 does full arithmetic).
+
+6. TRAINING NOTES
+  Transformers are famously sensitive to: LR (AdamW + warmup + cosine -
+  DL-06), scale of init (small, ~0.02), and data scale.  They train
+  efficiently because attention is parallel across positions (unlike
+  RNNs) - the compute reason for their dominance.
+
+7. FAILURE MODES / DEBUGGING
+  * Forgetting the causal mask in a decoder (train loss looks great,
+    generation is garbage).
+  * No position info -> order-blind model (degenerate for text).
+  * Instability at scale -> warmup, gradient clipping, pre-norm,
+    smaller init; monitor gradient norms.
+  * Shape bugs: (B,T,C) everywhere; heads reshape/permute errors are the
+    classic (the KV lab's mask bug is a real example).
+
+8. INTERVIEW
+  * "Explain the transformer block from memory" (say the DL-17.2 flow).
+  * "Why residuals + LayerNorm in transformers?"  Stable deep training;
+    residuals give gradient shortcuts, LN stabilizes scale.
+  * "Encoder vs decoder attention?"  Bidirectional vs causal.
+  * "Why multi-head?"  Different subspaces capture different
+    relationships; more expressivity per parameter.
+
+9. RESEARCH
+The transformer is the backbone of the LLM course (Parts 6-18) - from
+here the next steps are scaling (Part 27), efficiency (KV cache, GQA,
+FlashAttention), and the agent/RAG stacks.  Vision transformers apply the
+same block to image patches; the architecture is now universal.
+
+================================================================================
+DL-18 - ADVANCED TRANSFORMERS (what modern LLMs actually use)
+================================================================================
+1. THE MODERN CHECKLIST (each item is a lecture in the LLM course)
+  RoPE (rotary positional embeddings): inject position by ROTATING the
+  q/k vectors by an angle proportional to the token index; dot products
+  then depend only on RELATIVE distance (nice length generalization,
+  extrapolation).  Math: q' = R(theta_t) q with block-diagonal rotation
+  matrices; derived in llm_course Part 9.
+  ALiBi: add a linear bias -alpha*distance to attention scores instead
+  of any position embedding; simpler, extrapolates well.
+  RMSNorm: LayerNorm without mean subtraction (DL-08) - Llama-family.
+  SwiGLU: replace the MLP activation with a gated variant
+  (SiLU(xW) * (xV)) - better quality at same compute; the modern FFN.
+  Pre-norm + residual (DL-08).
+  KV cache: cache past keys/values during decoding so each new token
+  only attends over the cache instead of recomputing (llm_course Part
+  41; measured in the KV decode sweep lab).
+  FlashAttention: IO-aware tiling so attention never materializes the
+  n x n matrix in HBM (llm_course Part 65).
+  GQA/MQA: group/multi-query attention - SHARE keys/values across heads
+  to shrink the KV cache (llm_course Part 64).
+  MoE: replace each MLP with many experts + a router; each token uses a
+  few experts (sparse activation) - more params, same FLOPs (Part 51).
+
+2. ENGINEERING VIEW
+  Every one of these is a compute/memory optimization or a training
+  stability fix that scale forced.  When you read a modern model card
+  (Llama/Qwen/Mistral), decode it with this checklist: RMSNorm, pre-norm,
+  RoPE, SwiGLU, GQA, FlashAttention - that is ~90% of the recipe.
+
+3. INTERVIEW
+  * "RoPE in one sentence?"  Rotate q/k by position; relative
+    distances fall out of the dot product.
+  * "Why GQA?"  KV-cache memory for multi-head attention is 96% of
+    decode memory at long contexts; sharing K/V across head groups cuts
+    it without much quality loss.
+  * "FlashAttention?"  Online softmax in tiles; O(n) memory instead of
+    O(n^2) with identical outputs.
+
+4. RESEARCH
+The full depth lives in the LLM course (Parts 18, 24, 26, 41-43, 63-65).
+This module's job is to name the parts so the DL -> LLM bridge is clear.
+
+================================================================================
+DL-19 - GENERATIVE DEEP LEARNING
+================================================================================
+1. INTUITION
+Discriminative models answer "what is this?" (p(y|x)).  Generative
+models answer "make me one of these" - they learn the DATA distribution
+p(x) and sample from it.  Four families matter: autoencoders (learn a
+latent code), VAEs (probabilistic latent code), GANs (adversarial
+generation), and diffusion models (denoise from noise).
+
+2. AUTOENCODER (AE)
+  Encoder maps x to a low-dim latent z = f(x); decoder reconstructs
+  x_hat = g(z).  Loss = ||x - x_hat||^2 (reconstruction).  The bottleneck
+  forces z to capture the salient structure - a nonlinear PCA.  Uses:
+  anomaly detection (reconstruction error spikes on anomalies),
+  denoising (input x + noise, target x), pretraining representations.
+  A plain AE's latent space is NOT smooth - nearby z may decode to
+  unrelated x, and sampling z ~ N(0,1) gives garbage.
+
+3. VARIATIONAL AUTOENCODER (VAE) - the fix + the math
+  Make the latent DISTRIBUTIONAL: encoder outputs mean mu(x) and log
+  variance log sigma^2(x); sample z ~ N(mu, sigma^2) (reparametrization
+  trick: z = mu + sigma * eps, eps ~ N(0,1) - keeps gradients flowing
+  through the sampling).  Loss = reconstruction + KL( q(z|x) || N(0,1) )
+  = ELBO (evidence lower bound):
+    ELBO = E_q[log p(x|z)] - KL(q(z|x) || p(z))
+  Maximizing ELBO = reconstruction accuracy + latent regularization
+  (keep the encoding near the prior).  Result: a SMOOTH latent space you
+  can sample from - the basis of all modern latent generative models.
+  Trade-off: VAEs give blurry samples vs GANs/diffusion (pixel
+  independence + Gaussian decoder), but stable training + a real latent
+  space.
+
+4. GAN - the adversarial game
+  Generator G(z) maps noise -> fake x; discriminator D(x) outputs
+  p(real).  Train alternately:
+    D: maximize log D(x_real) + log(1 - D(G(z)))      (tell real from fake)
+    G: minimize log(1 - D(G(z)))                      (fool D)
+  The equilibrium is D = 1/2 everywhere (G matches the data).  Famous
+  failure modes: mode collapse (G produces a few samples), non-convergence
+  (the game oscillates), vanishing gradients (D too strong).  Practical
+  fixes: Wasserstein loss + gradient penalty, label smoothing,
+  spectral norm, better architectures (DCGAN/ProGAN/StyleGAN for faces).
+
+5. DIFFUSION - the current king
+  Forward process: gradually add Gaussian noise over T steps until the
+  image is pure noise: x_t = sqrt(1-beta_t) x_{t-1} + sqrt(beta_t) eps.
+  Reverse process (learned): a UNet (or transformer) predicts the noise
+  eps_theta(x_t, t) added at each step; training is just denoising:
+    L = E[ || eps - eps_theta(x_t, t) ||^2 ]  (on random t)
+  Sampling: start from pure noise, apply the reverse step T times.
+  Why it wins: stable training (a regression loss, no adversarial game),
+  and the iterative refinement produces sharp, diverse samples - the
+  basis of DALL-E/Stable Diffusion/Midjourney.  Latent diffusion runs
+  the process in a VAE latent space (cheaper) - the Stable Diffusion
+  recipe.  Classifier-free guidance: train with/without condition, then
+  sample with a condition-strength weight w to sharpen adherence.
+
+6. ENGINEERING
+  * Set all random seeds; fix input normalization per model family.
+  * VAEs: watch KL annealing (schedule the KL weight) to avoid latent
+    collapse; monitor reconstruction vs KL trade.
+  * GANs: log both losses; if D hits 0 instantly, G is too weak; if G
+    wins trivially, D needs capacity.
+  * Diffusion: T=1000 steps typical; DDIM sampling cuts steps ~10-50x;
+    train at low resolution then upsample.
+
+7. INTERVIEW
+  * "AE vs VAE?"  VAE regularizes the latent to a prior -> smooth,
+    sampleable; AE latents are unconstrained.
+  * "The reparametrization trick?"  Sample noise OUTSIDE the
+    distribution so backprop flows through mu/sigma.
+  * "What is mode collapse?"  Generator finds a few high-probability
+    outputs and stops exploring.
+  * "Why diffusion over GANs?"  Stable (regression loss), diverse,
+    scalable; slower sampling (mitigated by DDIM/LCM).
+  * "ELBO in one line?"  Reconstruction minus KL to prior; its gradient
+    is what a VAE trains on.
+
+8. RESEARCH
+Generative models are converging: latent diffusion + transformers
+(diT), flow matching (a deterministic-path generalization of diffusion),
+and autoregressive generation over tokens now dominate images/audio as
+well as text - the same next-token machinery as LLMs.
+
+================================================================================
+DL-20 - DEEP LEARNING DEBUGGING (the systematic playbook)
+================================================================================
+1. PHILOSOPHY
+Debug the MODEL-PIPELINE, not the code, in this order: data -> pipeline
+-> overfit-check -> loss behavior -> gradients -> architecture.  Most
+"model bugs" are data bugs wearing a model costume.
+
+2. THE GOLDEN CHECKS (run in order)
+  1) OVERFIT ONE BATCH: train on a single batch until the loss ~ 0.  If
+     it CANNOT, the model/optimizer/loss is broken - do not touch the
+     dataset until this passes.  This one check catches most code bugs.
+  2) SHAPE SANITY: run a dummy input through the net; print shapes at
+     every layer; assert the output shape.
+  3) GRADIENT CHECK: compare autograd gradients vs finite differences on
+     a tiny net (rel diff < 1e-4) - proves backprop plumbing.
+  4) TINY-DATA OVERFIT: fit 100 samples perfectly; then scale up.
+  5) BASELINE: a dumb model (constant prediction, linear) must beat
+     random; your net must beat the baseline - else the task setup is
+     wrong or the signal is absent.
+
+3. SYMPTOM -> CAUSE TABLE (the cheat sheet)
+  | symptom                  | likely cause / first action          |
+  | loss stays ~constant     | LR dead or data/labels shuffled;
+  |                          |   check LR*loss curve; check labels  |
+  | NaN loss                 | LR too high, logits inf, data inf;
+  |                          |   clip, reduce LR, sanitize inputs   |
+  | loss -> 0 on train only  | overfit: regularize / more data       |
+  | val >> train forever     | leakage OR capacity (check both)     |
+  | gradients vanish         | init/norm/deep stack; ReLU + resid   |
+  | gradients explode        | clip; LR; check data scale            |
+  | accuracy stuck ~prior    | class imbalance / wrong loss / no
+  |                          |   signal in features                  |
+  | perfect train, bad test  | distribution shift or leakage in test |
+  | GPU OOM                  | smaller batch, grad checkpointing,    |
+  |                          |   AMP, less padding                   |
+  | slow to converge         | LR too low, bad init, BN in wrong
+  |                          |   mode, no normalization              |
+
+4. THE DEBUGGING LOOP (habit, not heroics)
+  Reproduce the failure on the SMALLEST case (one batch -> tiny net ->
+  toy data).  Change ONE variable.  Measure (loss/grad norms/metrics).
+  Keep an experiment log (MLflow or a table) - reproducibility is a
+  debugging tool: you can only debug what you can re-run.
+
+5. LEAKAGE AUDIT (do it for every dataset)
+  * Split BEFORE preprocessing/feature scaling (fit scalers on train).
+  * Temporal data: split by TIME, not randomly.
+  * Duplicates across splits (near-dup images/text).
+  * Target-derived features sneaking into inputs.
+  Test: does the model score impossibly high?  -> audit now.
+
+6. INFERENCE-TIME BUGS (silent killers)
+  * model.eval() missing (dropout/BN active).
+  * Different preprocessing at train vs serve.
+  * Training-time augmentation applied at inference.
+  * Float/dtype drift between train and export.
+
+7. INTERVIEW
+  * "Your loss is NaN - walk through your debug."  (Data -> LR ->
+    clip -> logits -> dtype; say the ordered checklist.)
+  * "How do you know your model code is right?"  Overfit-one-batch +
+    gradient check.
+  * "Train great, test terrible?"  Leakage or distribution shift; how
+    would you detect each (holdout discipline, drift metrics).
+
+8. RESEARCH
+Debugging at the frontier is about SCALE pathologies (loss spikes at
+large LR, grokking, double descent) - the systematic tools here (small
+repro, one-variable changes, logging) are exactly what research engineers
+use to study those.
+
+================================================================================
+DL-21 - DEEP LEARNING PERFORMANCE (GPU, memory, scale)
+================================================================================
+1. WHERE THE TIME GOES
+  Training time = steps * time/step.  Steps = epochs * n/batch.  Cut
+  time/step with GPU efficiency (below) or cut steps with better data/
+  LR schedules.  Memory decides the biggest batch you can fit, and batch
+  size decides throughput.
+
+2. GPU UTILIZATION
+  The GPU starves when it waits on data (CPU loading + transfer) or on
+  small operations.  Fixes, in order of impact:
+  * num_workers >> 0 + prefetch; pin_memory=True; keep preprocessing off
+    the critical path (cache processed tensors).
+  * Bigger batches (more parallel work per kernel).
+  * Avoid tiny per-sample Python loops; vectorize.
+  * torch.compile (kernel fusion) where supported.
+  * Profile: torch.profiler shows kernel time vs gaps; target >60-80%
+    utilization on the GPU.
+
+3. MIXED PRECISION
+  float32 -> bfloat16/float16 halves memory and often doubles throughput
+  (tensor cores).  fp16: small range -> overflow risk -> GradScaler
+  (scale loss, backward, unscale).  bf16: fp32 range with less mantissa
+  precision - NO scaler needed; the LLM training standard.
+  torch.autocast("cuda", dtype=torch.bfloat16) around fwd+loss;
+  fp16 needs GradScaler.  Keep loss/moments in fp32 (master weights).
+
+4. GRADIENT ACCUMULATION
+  Effective batch = physical batch * k: accumulate gradients over k
+  micro-batches, step once.  Divide the loss by k so the effective
+  gradient is the average (not the sum - a classic LR-mismatch bug).
+
+5. GRADIENT CHECKPOINTING (activation recomputation)
+  Don't store every activation; store only every k-th layer's and
+  RECOMPUTE the rest during backward.  Memory O(L/k) instead of O(L);
+  costs ~1.3-1.5x compute.  The cheap lever when OOM on activations.
+
+6. OTHER MEMORY LEVERS
+  * Smaller batch + accumulation; lower input resolution (late);
+  * Remove padding (packed sequences);
+  * Free unused graphs (no_grad at eval; del intermediates);
+  * Watch memory fragmentation (batch size multiples of 8).
+  Memory math: params+grads+optimizer (Adam ~ 2x params for moments) +
+  activations.  Adam fp32: ~16 bytes/param total (4 w + 4 g + 8 m/v).
+  (Full budget walkthrough: llm_course Part 30.)
+
+7. DISTRIBUTED CONCEPTS (names + one-liners)
+  DataParallel/DDP: same model on each GPU, split the BATCH, average
+  grads (DDP is correct: gradient all-reduce, no module replication
+  bugs).  FSDP/ZeRO: SHARD params+grads+moments across GPUs (train
+  bigger models).  Tensor parallel: split a layer's weight matrix across
+  GPUs (needed when one layer > one GPU).  Pipeline parallel: split
+  LAYERS across GPUs.  In practice: DDP for small, FSDP for LLM-scale.
+  (Full depth: llm_course Part 29.)
+
+8. INFERENCE PERFORMANCE (bridges to the LLM course)
+  Batch requests; quantize (INT8/INT4 - llm_course Part 39); fuse
+  kernels; cache repeated work (KV cache Part 41); watch latency
+  percentiles, not just mean.  A model that trains fine but serves slow
+  is an engineering failure - measure early.
+
+9. INTERVIEW
+  * "Train OOM - what do you do?"  Ordered: smaller batch (+accumulate),
+    grad checkpointing, AMP/bf16, remove padding, then distribute.
+  * "Mixed precision?"  fp16 needs scaling, bf16 does not; master
+  weights fp32.
+  * "Gradient accumulation math?"  Divide loss by k; step every k.
+  * "DDP vs FSDP?"  Replicate vs shard.
+
+10. RESEARCH
+Efficiency research (quantization-aware training, speculative decoding,
+MoE, distillation - all in the LLM course) is where DL performance work
+converges; the DL skill here is knowing which lever to pull first.
+
+================================================================================
+DL-22 - DL PROJECTS + THE PRODUCTION DL PLATFORM
+================================================================================
+1. THE PROJECT LADDER (full specs: PROJECT.txt)
+  E  two-layer MLP on a tabular/linear-separable toy (from scratch)
+  D  CNN image classifier on a small public dataset + augmentation
+  C  transfer learning: pretrained backbone fine-tuned; report vs scratch
+  B  sequence task: LSTM/GRU forecast OR text classifier
+  A  transformer from scratch on a small corpus (mini-GPT - the llm_course
+     mini_gpt_lab is the reference implementation)
+  S  generative: VAE or diffusion on a small image set; quality metrics
+  S+ PRODUCTION DEEP LEARNING PLATFORM (below)
+  Every tier must ship: README, data card, experiment report, error
+  analysis, metrics vs baseline, and the interview-story (PORTFOLIO_KIT).
+
+2. THE S+ CAPSTONE - PRODUCTION DL PLATFORM
+  Architecture: model registry (MLflow) -> FastAPI inference service
+  -> batch + online paths -> monitoring -> retraining trigger.
+  Components and the DL skills each exercises:
+  * Data versioning + leakage-free splits (DL-20).
+  * Training pipeline with checkpoint/resume + experiment tracking
+    (MLflow; llm_course Part 32 discipline).
+  * Model export (ONNX/TorchScript) + quantization (INT8) - DL-21.
+  * FastAPI /predict + /batch with auth, rate limit, request logging.
+  * Online monitoring: latency percentiles, drift (input distribution,
+    prediction distribution), alert on degradation.
+  * Retraining pipeline + champion/challenger eval.
+  * Docker + CI (tests: shape checks, leakage tests, golden outputs).
+  Deliverables beyond code: architecture diagram, model card, cost and
+  latency analysis, failure analysis, security notes (DL-20/21 material).
+
+3. HOW THIS COURSE CONNECTS FORWARD
+  The platform above uses the same muscle as every later course:
+  transformers -> LLMs (llm_course) -> retrieval/RAG -> LangChain -
+  LangGraph orchestration -> multi-agent production AI (AI_ENGINEERING
+  courses 2-4).  Every architecture you design there is this one with
+  more moving parts.
+
+================================================================================
+FINAL AUDIT (DL course)
+================================================================================
+[ ] DL orientation + when NOT to use DL ............ DL-00
+[ ] Math bootcamp (backprop by hand) ................ DL-01
+[ ] PyTorch mastery + autograd internals ............ DL-02/03
+[ ] Perceptron + XOR proof ........................... DL-04
+[ ] MLP + activation zoo ............................. DL-05
+[ ] Losses + optimizers (Adam/AdamW equations) ....... DL-06
+[ ] Initialization (Xavier/He, symmetry) ............. DL-07
+[ ] Normalization (BN/LN/GN/RMSNorm, pre/post) ....... DL-08
+[ ] Regularization (decay/dropout/early stop/labelsm) DL-09
+[ ] CNN math + receptive fields + from-scratch ....... DL-10
+[ ] CNN architecture evolution (LeNet..EfficientNet) . DL-11
+[ ] CV tasks + transfer learning ..................... DL-12
+[ ] RNN + BPTT + vanishing/exploding ................. DL-13
+[ ] LSTM gates + why it fixes vanishing .............. DL-14
+[ ] GRU + RNN/LSTM/GRU comparison .................... DL-15
+[ ] Attention (derive equation + shapes + example) ... DL-16
+[ ] Transformers (block order, enc/dec) .............. DL-17
+[ ] Advanced transformers (RoPE/RMSNorm/SwiGLU/GQA/..) DL-18
+[ ] Generative (AE/VAE/GAN/diffusion) ................ DL-19
+[ ] DL debugging playbook ............................ DL-20
+[ ] DL performance (AMP/accum/checkpoint/distributed)  DL-21
+[ ] Projects E->S+ + production platform ............. DL-22
+Cross-checked: PRACTICE.txt (Levels 0-5)  PROJECT.txt (tiers E-S+ +
+platform)  EXAMPLE.py (runnable sections S1..Sx) - see each file.
+
+================================================================================
+END OF COURSE.txt (DEEP_LEARNING)
+================================================================================

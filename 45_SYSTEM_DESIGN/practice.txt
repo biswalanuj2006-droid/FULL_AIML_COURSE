@@ -1,0 +1,29 @@
+================================================================================
+SYSTEM DESIGN — PRACTICE SET (15 Questions)
+================================================================================
+
+EASY (6)
+=========
+Q1: What is scalability?
+Q2: What is the difference between horizontal and vertical scaling?
+Q3: What is a load balancer?
+Q4: What is caching?
+Q5: What is a message queue?
+Q6: What is microservices?
+
+MEDIUM (6)
+===========
+Q7: Design a real-time ML prediction system.
+Q8: Design a recommendation system.
+Q9: Design a RAG platform.
+Q10: Design a fraud detection system.
+Q11: Design a streaming analytics pipeline.
+Q12: Design a multi-tenant AI platform.
+
+HARD (3)
+=========
+Q13: Design a global AI serving platform.
+Q14: Design a real-time feature store.
+Q15: Design a complete MLOps platform.
+
+================================================================================

@@ -1,0 +1,39 @@
+================================================================================
+54_ADVANCED_PYTHON - PROJECTS (3 LEVELS)
+================================================================================
+
+PROJECT 1 - LEVEL 1: Async Web Scraper
+  Use asyncio + aiohttp (or httpx) to fetch 50+ pages concurrently and save
+  a summary of each (title, status, word count) to JSON.
+  Requirements:
+  - Semaphore to limit concurrency (e.g., 10)
+  - Timeout + retry with backoff per request
+  - Progress logging with the logging module
+  - Measure wall time vs a sequential version; report the speedup
+
+PROJECT 2 - LEVEL 2: Decorator/Generator Performance Toolkit
+  Build a small library of reusable decorators and generators.
+  Requirements:
+  - @timed (reports avg/max time per call)
+  - @retry(max_attempts, backoff) for flaky functions
+  - @memoized using functools.lru_cache
+  - A chunked(iterable, n) generator for streaming batches
+  - @log_calls writing structured logs
+  Include tests demonstrating each decorator's behavior.
+
+PROJECT 3 - LEVEL 3: Concurrent Data Processing Pipeline
+  Process 1M+ numeric records through a pipeline: read -> clean -> transform
+  -> aggregate, using multiprocessing for CPU-bound stages.
+  Requirements:
+  - Producer/consumer with a bounded queue
+  - Chunked parallelism via concurrent.futures.ProcessPoolExecutor
+  - Deterministic output regardless of parallelism (careful with order)
+  - Profile with cProfile and compare single-threaded vs pooled runtime
+  Success criteria: correct identical results at both scales, documented
+  speedup, and a profiling summary showing the bottleneck.
+
+Deliverables per project: README, code with docstrings, tests where relevant,
+timing/profiling results, and notes on GIL/async/process trade-offs.
+================================================================================
+END
+================================================================================

@@ -1,0 +1,17 @@
+================================================================================
+ATTENTION MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: ATTENTION VISUALIZER (Beginner)
+============================================
+Visualize attention weights for text classification.
+
+PROJECT 2: ATTENTION-BASED TRANSLATOR (Intermediate)
+=====================================================
+Build seq2seq model with attention for translation.
+
+PROJECT 3: ATTENTION ANALYSIS FRAMEWORK (Advanced)
+====================================================
+Analyze attention patterns across models and layers.
+
+================================================================================

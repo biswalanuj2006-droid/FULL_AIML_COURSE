@@ -1,0 +1,65 @@
+================================================================================
+FAILURE LAB - 10 REGRESSION
+Deliberately broken/difficult setups. For each: reproduce, DIAGNOSE with
+evidence, fix, and report. Do not guess - run the experiment.
+================================================================================
+
+LAB 1 - THE INVISIBLE LEAK
+  House-price model with R2 = 0.97 on validation. One planted feature
+  contains the answer (e.g., "sale_price_minus_1" style, a future
+  transaction date, or the target lagged from a merged file).
+  Tasks:
+   1. Find the leak via EDA + ablation.
+   2. Explain the mechanism and why R2 hid it.
+   3. Fix and show the honest R2.
+
+LAB 2 - THE MULTICOLLINEARITY MELTDOWN
+  Two features correlate 0.999. OLS coefficients are huge, opposite
+  signs, and unstable across CV folds.
+  Tasks:
+   1. Reproduce the instability (report coefficients + fold-to-fold
+      variance).
+   2. Diagnose via condition number / VIF.
+   3. Compare fixes: drop one, Ridge, Lasso, PCA - report test RMSE and
+      coefficient stability for each.
+
+LAB 3 - THE OUTLIER TAKEOVER
+  One row is 1000x the range of the others.
+  Tasks:
+   1. Show the fitted line before and after removing the point (plot).
+   2. Distinguish leverage, residual, and influence for this point
+      (hat values, Cook's distance).
+   3. Compare fixes: robust (Huber) regression vs winsorizing vs
+      removing - which is honest when the outlier is REAL data?
+
+LAB 4 - HETEROSCEDASTICITY BLINDNESS
+  Residuals grow with the fitted value.
+  Tasks:
+   1. Detect it (residual vs fitted plot; Goldfeld-Quandt or Breusch-
+      Pagan if available).
+   2. Explain what it does to your confidence intervals (they are wrong
+      - why?).
+   3. Fix with a log transform or weighted least squares and show the
+      corrected residuals.
+
+LAB 5 - THE TIME-ORDERED TRAP
+  A demand dataset sorted by date; someone used random K-fold and got
+  RMSE 20% better than walk-forward.
+  Tasks:
+   1. Reproduce both evaluations and the gap.
+   2. Explain precisely why random CV is optimistic here.
+   3. Fix with TimeSeriesSplit and report the honest number.
+
+LAB 6 - DEGREE-15 POLYNOMIAL DISASTER
+  A degree-15 polynomial interpolates every point (train RMSE ~ 0) but
+  explodes between points.
+  Tasks:
+   1. Reproduce - plot the fitted curve and show the wild swings.
+   2. Diagnose: is it bias or variance? Use learning curves.
+   3. Fix with Ridge (show that penalty tames the curve) or lower
+      degree; report the chosen model and test RMSE.
+   4. Explain what the large coefficients were doing numerically
+      (Vandermonde conditioning).
+================================================================================
+END
+================================================================================

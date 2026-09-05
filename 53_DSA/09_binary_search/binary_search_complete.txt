@@ -1,0 +1,150 @@
+================================================================================
+DSA MODULE 9: BINARY SEARCH — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Implement standard and variations of binary search
+- Apply binary search on answer space
+- Solve 15+ binary search LeetCode problems
+
+================================================================================
+1. BINARY SEARCH FUNDAMENTALS
+================================================================================
+
+PREREQUISITE: Array must be sorted.
+
+STANDARD BINARY SEARCH
+------------------------
+def binary_search(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+
+Time: O(log n), Space: O(1)
+
+WHY O(log n)?
+Each step halves the search space:
+n → n/2 → n/4 → ... → 1
+Number of steps = log₂(n)
+
+================================================================================
+2. BINARY SEARCH VARIATIONS
+================================================================================
+
+LOWER BOUND (First position ≥ target)
+---------------------------------------
+def lower_bound(arr, target):
+    lo, hi = 0, len(arr)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if arr[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+UPPER BOUND (First position > target)
+---------------------------------------
+def upper_bound(arr, target):
+    lo, hi = 0, len(arr)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if arr[mid] <= target:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+USING BISECT MODULE
+--------------------
+import bisect
+bisect.bisect_left(arr, target)   # lower bound
+bisect.bisect_right(arr, target)  # upper bound
+
+================================================================================
+3. BINARY SEARCH ON ANSWER
+================================================================================
+
+INTUITION
+---------
+When the answer is a number and you can verify it,
+binary search on the answer space.
+
+PROBLEM: Minimum capacity to ship packages in D days
+------------------------------------------------------
+def shipWithinDays(weights, days):
+    def can_ship(capacity):
+        current_load = 0
+        days_needed = 1
+        for w in weights:
+            if current_load + w > capacity:
+                days_needed += 1
+                current_load = 0
+            current_load += w
+        return days_needed <= days
+
+    lo = max(weights)
+    hi = sum(weights)
+
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if can_ship(mid):
+            hi = mid
+        else:
+            lo = mid + 1
+
+    return lo
+
+PROBLEM: Koko Eating Bananas (LC #875)
+---------------------------------------
+def minEatingSpeed(piles, h):
+    def can_finish(speed):
+        return sum((p + speed - 1) // speed for p in piles) <= h
+
+    lo, hi = 1, max(piles)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if can_finish(mid):
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo
+
+================================================================================
+4. LEETCODE PROBLEMS
+================================================================================
+
+EASY
+----
+1. Binary Search (LC #704)
+2. First Bad Version (LC #278)
+3. Search Insert Position (LC #35)
+4. Valid Perfect Square (LC #367)
+5. Guess Number Higher or Lower (LC #374)
+
+MEDIUM
+------
+6. Search in Rotated Sorted Array (LC #33)
+7. Find Minimum in Rotated Sorted Array (LC #153)
+8. Koko Eating Bananas (LC #875)
+9. Capacity To Ship Packages (LC #1011)
+10. Time Based Key-Value Store (LC #981)
+
+HARD
+----
+11. Median of Two Sorted Arrays (LC #4)
+12. Find in Rotated Sorted Array II (LC #81)
+13. Aggressive Cows / Split Array Largest Sum (LC #410)
+
+================================================================================
+END OF MODULE 9
+================================================================================

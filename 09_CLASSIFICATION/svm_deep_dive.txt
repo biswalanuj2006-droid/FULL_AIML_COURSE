@@ -1,0 +1,193 @@
+================================================================================
+LESSON: SUPPORT VECTOR MACHINES - DEEP DIVE (primal, dual, KKT, kernels)
+================================================================================
+Why SVMs still matter in a gradient-boosting world: they are the cleanest
+bridge between linear models, convex optimization, and kernel methods,
+and the dual formulation is the conceptual ancestor of modern kernel
+machines and attention. This file goes to the math. For the applied
+overview see classification_complete.txt.
+
+--------------------------------------------------------------------------------
+1. THE GEOMETRY (hard-margin SVM)
+--------------------------------------------------------------------------------
+Binary labels y in {-1, +1}. A linear classifier is a hyperplane
+    w . x + b = 0            (w = normal vector, b = offset)
+with decision rule  sign(w . x + b).
+The MARGIN of a hyperplane w.r.t. a point x with label y is the distance
+from x to the plane, signed positive when classified correctly:
+    gamma(x, y) = y (w . x + b) / ||w||
+The margin of the hyperplane on the whole dataset is the MINIMUM over
+training points. The SVM is the hyperplane with the LARGEST minimum
+margin:
+    maximize_{w,b}  min_i  y_i (w . x_i + b) / ||w||
+
+Rescale freedom: (w, b) can be scaled without changing the decision
+boundary. Fix scale by requiring, for the closest points,
+    y_i (w . x_i + b) = 1
+(the "canonical" hyperplane). Then the margin equals 1/||w|| and the
+hard-margin problem becomes the constrained optimization:
+
+    minimize_{w,b}  1/2 ||w||^2
+    subject to      y_i (w . x_i + b) >= 1   for all i
+
+The points where the constraint is ACTIVE (equality) are the SUPPORT
+VECTORS - the entire classifier depends only on them. Move any other
+point and nothing changes; move a support vector and the plane moves.
+
+--------------------------------------------------------------------------------
+2. THE PRIMAL, THE LAGRANGIAN, AND THE DUAL
+--------------------------------------------------------------------------------
+Constraints complicate minimization. Standard trick: Lagrange
+multipliers. Attach alpha_i >= 0 to each constraint and form
+
+    L(w, b, alpha) = 1/2 ||w||^2 - sum_i alpha_i [ y_i (w . x_i + b) - 1 ]
+
+For fixed alpha, minimizing over w and b:
+    dL/dw = 0  =>  w = sum_i alpha_i y_i x_i          (w is a linear
+                                                    combination of DATA)
+    dL/db = 0  =>  sum_i alpha_i y_i = 0
+
+Substitute back into L. The terms in w and b cancel and you get the DUAL
+problem (a maximization over alpha only):
+
+    maximize_alpha  sum_i alpha_i - 1/2 sum_i sum_j alpha_i alpha_j
+                                        y_i y_j (x_i . x_j)
+    subject to      alpha_i >= 0,  sum_i alpha_i y_i = 0
+
+KEY FACTS
+  1. The data enters ONLY through inner products x_i . x_j. This single
+     fact enables the kernel trick (section 5).
+  2. The dual is a quadratic program: convex, one global optimum, solved
+     by SMO (sequential minimal optimization) in practice.
+  3. Complementary slackness (a KKT condition): alpha_i [ y_i (w . x_i
+     + b) - 1 ] = 0. So alpha_i > 0 ONLY for support vectors (points on
+     the margin or misclassified) - the solution is SPARSE in data.
+
+--------------------------------------------------------------------------------
+3. KKT CONDITIONS (the full optimality story)
+--------------------------------------------------------------------------------
+The KKT conditions are necessary (and here sufficient, since the problem
+is convex and Slater's condition holds) for (w*, b*, alpha*) to be
+optimal:
+  1. Stationarity:   dL/dw = 0, dL/db = 0   (gradients of L vanish)
+  2. Primal feas.:   y_i (w . x_i + b) - 1 >= 0
+  3. Dual feas.:     alpha_i >= 0
+  4. Complementarity: alpha_i (y_i (w . x_i + b) - 1) = 0
+Consequence for prediction: the decision function needs only support
+vectors:
+    f(x) = sign( sum_{i in SV} alpha_i y_i (x_i . x) + b )
+b is recovered from any support vector:  b = y_s - w . x_s.
+
+--------------------------------------------------------------------------------
+4. SOFT MARGIN (what real data needs)
+--------------------------------------------------------------------------------
+Hard margins fail when data is not separable. Introduce slack variables
+xi_i >= 0 measuring how far a point violates its margin, and a penalty C:
+
+    minimize_{w,b,xi}  1/2 ||w||^2 + C sum_i xi_i
+    subject to         y_i (w . x_i + b) >= 1 - xi_i,   xi_i >= 0
+
+C is the regularization knob: large C -> few violations -> narrow margin
+(low bias, high variance); small C -> wide margin, more tolerance
+(high bias, low variance).
+The dual changes only in the box constraint:
+    subject to  0 <= alpha_i <= C,   sum_i alpha_i y_i = 0
+(Points with alpha_i = C are misclassified or on the wrong side; they
+are bounded because a single outlier cannot get unbounded influence.)
+EQUIVALENT LOSS VIEW: soft-margin SVM minimizes hinge loss + ridge:
+    minimize_w  1/2 ||w||^2 + C sum_i max(0, 1 - y_i (w . x_i + b))
+Hinge loss is a convex upper bound on 0/1 loss - this loss view is what
+lets you compare SVMs with logistic loss (logistic regression) and
+explain why SVM predictions are NOT calibrated probabilities (they are
+distances to the plane).
+
+--------------------------------------------------------------------------------
+5. THE KERNEL TRICK
+--------------------------------------------------------------------------------
+The dual uses x_i . x_j. Suppose we map data to a feature space
+phi(x) first. The dual would use phi(x_i) . phi(x_j) - but if we can
+compute that inner product WITHOUT ever forming phi, we get all the
+power of the high-dimensional space at the cost of the original one.
+A KERNEL is a function k(x, z) that equals phi(x) . phi(z) for some
+(possibly implicit, even infinite-dimensional) phi. For it to be valid,
+k must be positive semi-definite (Mercer's condition): for any finite
+set of points, the Gram matrix K_ij = k(x_i, x_j) is PSD.
+STANDARD KERNELS
+  Linear   : k = x . z
+  Polynomial: k = (gamma (x . z) + r)^d          (d controls the degree)
+  RBF/Gauss: k = exp(-gamma ||x - z||^2)         (gamma = 1/(2 sigma^2))
+  Sigmoid  : k = tanh(gamma (x . z) + r)         (only PSD for some params)
+RBF intuition: it is an inner product in an INFINITE-dimensional feature
+space (each training point becomes a Gaussian bump; the decision surface
+is a weighted sum of bumps). RBF with large gamma = wiggly (overfit);
+small gamma = smooth.
+THE PRICE: kernel SVMs scale badly. Training is roughly O(n^2)-O(n^3)
+in data, prediction costs one kernel evaluation per support vector.
+For >~100k rows, linear SVM (or SGD on the primal hinge loss) or gradient
+boosting is usually the pragmatic choice.
+
+--------------------------------------------------------------------------------
+6. SVR (support vector regression)
+--------------------------------------------------------------------------------
+Regression analog: fit w . x + b within an epsilon-TUBE around y; points
+inside the tube cost nothing, points outside are penalized linearly
+(epsilon-insensitive loss):
+    loss = max(0, |y - f(x)| - epsilon)
+The solution is again sparse: only points OUTSIDE the tube are support
+vectors. epsilon sets the tolerance (larger epsilon -> sparser, flatter).
+
+--------------------------------------------------------------------------------
+7. COMPLEXITY, NUANCES, AND PRACTICE
+--------------------------------------------------------------------------------
+  - Complexity: training O(n^2)-O(n^3) typical (SMO: ~O(n^2) average);
+    prediction O(#SV) kernel evals. #SV can approach n on noisy data.
+  - Scaling: SVM is distance-based - ALWAYS standardize features before
+    fitting, or the kernel is dominated by large-scale columns.
+  - Imbalanced data: the soft-margin is class-agnostic; use class
+    weights (penalize the minority class's slack more) or resampling.
+  - Calibration: SVM outputs are distances; if you need probabilities,
+    fit Platt scaling (logistic regression on the scores) on a held-out
+    set.
+  - Kernel choice default: RBF with tuned gamma and C; compare with
+    linear on high-dimensional sparse data (text) where linear usually
+    wins.
+  - Interpretability: linear SVM coefficients are interpretable; kernel
+    SVMs are not (feature importance needs approximation).
+
+--------------------------------------------------------------------------------
+8. PRACTICE
+--------------------------------------------------------------------------------
+1. (Math) Derive the margin of hyperplane w . x + b = 0 on point
+   (x, y) and show that scaling (w, b) leaves the decision boundary but
+   not the canonical margin invariant.
+2. (Math) From the primal, take dL/dw = 0 and dL/db = 0, substitute
+   back into L, and show the dual emerges. Write every step.
+3. (Concept) Why does the dual depend on data only through inner
+   products - and why is that the entire basis of the kernel trick?
+4. (Math) State all four KKT conditions for the soft-margin SVM and
+   explain the meaning of complementarity in words.
+5. (Concept) A point has alpha_i = C. What does that imply about its
+   slack xi_i and its position relative to the margin?
+6. (Numerical) Two points x1=(1,1), y1=+1 and x2=(2,2), y2=-1. Is the
+   data linearly separable? Compute the max-margin w and b by hand.
+7. (Concept) Explain why hinge loss makes SVM predictions uncalibrated
+   compared with logistic regression, and name the standard fix.
+8. (Kernel) Show k(x,z) = (x . z)^2 corresponds to phi with features
+   x1^2, x2^2, sqrt(2) x1 x2. What is the decision surface in the
+   ORIGINAL space?
+9. (Reasoning) RBF with gamma -> infinity: what happens to the decision
+   boundary and to training accuracy? To test accuracy?
+10. (Code) Implement the dual objective and solve a small 2D problem
+    with scipy.optimize (SLSQP) or cvxopt-style QP; plot margin + SVs.
+11. (Code) Compare sklearn SVC(RBF), LinearSVC, and hinge-loss SGD on a
+    scaled dataset; report train/test time and accuracy vs C, gamma.
+12. (Design) 10M rows, 2000 sparse text features. Would you use a
+    kernel SVM? Justify with complexity, and name two better options.
+13. (Debugging) An SVM gets 100% train / 55% test. Which two
+    hyperparameters do you move, and in which direction? What does
+    standardizing first change?
+14. (Open-ended) OPEN PROBLEM: scalable exact kernel methods beyond
+    ~1M points remain impractical; approximate (random features,
+    Nystrom) trade fidelity. When is the approximation actually better
+    than just using a deep net on the same data - can you define a
+    principled criterion?

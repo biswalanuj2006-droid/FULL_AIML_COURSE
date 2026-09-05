@@ -1,0 +1,78 @@
+================================================================================
+CNN MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (15 Questions)
+================================
+Q1: What is a convolution operation?
+Q2: What is a kernel/filter in CNN?
+Q3: What is the output size formula for convolution?
+Q4: What is stride and how does it affect output size?
+Q5: What is padding and why do we use it?
+Q6: What is max pooling vs average pooling?
+Q7: What is a feature map?
+Q8: Why use CNNs instead of fully connected networks for images?
+Q9: What is the parameter count formula for a conv layer?
+Q10: What is the ReLU activation and why use it in CNNs?
+Q11: What is flattening and when is it used?
+Q12: What is a fully connected layer in CNN context?
+Q13: What is channel depth in an image?
+Q14: Name 3 famous CNN architectures.
+Q15: What is transfer learning?
+
+SECTION B — MEDIUM (15 Questions)
+==================================
+Q16: Implement a simple CNN in PyTorch for MNIST.
+Q17: Calculate output dimensions through a CNN layer by layer.
+Q18: Implement convolution from scratch using NumPy.
+Q19: Visualize feature maps from a trained CNN.
+Q20: Compare different kernel sizes (3x3, 5x5, 7x7).
+Q21: Implement data augmentation for image classification.
+Q22: Build a CNN with batch normalization.
+Q23: Compare CNN with and without pooling layers.
+Q24: Implement a CNN for binary classification.
+Q25: Analyze overfitting in CNNs with and without dropout.
+Q26: Implement a simple object detector using sliding window.
+Q27: Build a CNN that classifies CIFAR-10.
+Q28: Implement a residual connection in PyTorch.
+Q29: Compare different pooling strategies.
+Q30: Implement learning rate scheduling for CNN training.
+
+SECTION C — HARD (10 Questions)
+================================
+Q31: Implement ResNet block from scratch.
+Q32: Build a CNN for multi-class classification with 100+ classes.
+Q33: Implement transfer learning with fine-tuning strategy.
+Q34: Build a CNN that handles images of varying sizes.
+Q35: Implement feature visualization from trained CNN.
+Q36: Build a real-time image classifier with webcam input.
+Q37: Implement a CNN with attention mechanism.
+Q38: Build an image segmentation model.
+Q39: Compare CNN vs Vision Transformer on the same dataset.
+Q40: Implement a complete CV pipeline (preprocessing → model → inference → API).
+
+SECTION D — DEBUGGING (8 Problems)
+====================================
+D1: Why is my CNN accuracy stuck at random chance?
+D2: Fix: Input shape mismatch error in PyTorch.
+D3: Why does the CNN overfit immediately on small dataset?
+D4: Fix: CUDA out of memory during CNN training.
+D5: Why are feature maps all zeros after first layer?
+D6: Fix: Data loader returns wrong image dimensions.
+D7: Why is the model predictions always the same class?
+D8: Fix: Transfer learning model worse than random.
+
+SECTION E — INTERVIEW (10 Questions)
+======================================
+I1: Explain how a CNN processes an image step by step.
+I2: Why is 3x3 kernel the most common choice?
+I3: What is the difference between VGG, ResNet, and EfficientNet?
+I4: How do you handle class imbalance in image classification?
+I5: What is data augmentation and name 5 techniques.
+I6: Explain the receptive field concept.
+I7: How would you deploy a CNN model to production?
+I8: What is the difference between semantic and instance segmentation?
+I9: How does YOLO achieve real-time object detection?
+I10: What are the limitations of CNNs?
+
+================================================================================

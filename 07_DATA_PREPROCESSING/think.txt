@@ -1,0 +1,44 @@
+================================================================================
+THINK.TXT - 07 DATA PREPROCESSING
+================================================================================
+
+1. Imputation: you may use mean, median, mode, or a model. For each,
+   describe a dataset where it is the RIGHT choice and one where it is
+   catastrophically wrong (think about what "missing" means in each case).
+2. Missing Not At Random (MNAR): the missingness itself is information.
+   How would you encode "was missing" as a feature and when is that
+   legitimate rather than leakage?
+3. Outlier definition is circular: outliers are points that break your
+   assumptions, but you need assumptions to find them. Give three concrete
+   definitions (z-score, IQR, isolation forest) and what each assumes.
+4. Trace step by step how scaling BEFORE a train/test split leaks, then
+   explain why the leak is invisible in most metrics until deployment.
+5. A column has 1,000 categories with 99% in a "long tail". Compare
+   one-hot, ordinal, frequency, and target encoding for this column under
+   each of: tree models, linear models, neural networks. Which leaks and
+   under what CV setup?
+6. You discover 12% duplicate rows in training data. Argue for and against
+   removing them before you know the business context (fraud vs sensor
+   logs vs survey responses).
+7. Design a preprocessing pipeline that must run identically at training
+   and serving time, where serving receives rows one at a time and
+   training saw batches. Where do your transforms break, and how do you
+   make them streaming-safe?
+8. "The model performs great on validation, poorly in production."
+   Suppose preprocessing is the culprit. Enumerate every preprocessing
+   step that could differ between the two and how to detect each.
+9. You have time to fix exactly one of: missing values, outliers, or
+   label noise. Which, and how do you justify it with data?
+10. Target encoding a high-cardinality column inside CV folds is safe, but
+    the same encoding outside folds leaks. Derive WHY the fold boundary
+    matters using a single example with 3 folds.
+11. Synthetic data (SMOTE or generative) created before splitting: explain
+    precisely how synthetic samples end up in both train and validation
+    and why that inflates scores.
+12. OPEN PROBLEM: There is no universally best missing-value strategy - it
+    depends on the missingness mechanism, which is usually unobservable.
+    Design a decision procedure that chooses a strategy from the data
+    itself without assuming the mechanism. What are its failure modes?
+================================================================================
+END
+================================================================================

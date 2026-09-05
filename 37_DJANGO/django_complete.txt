@@ -1,0 +1,240 @@
+================================================================================
+MODULE 37: DJANGO — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Build production web applications with Django
+- Use Django ORM for database operations
+- Build REST APIs with Django REST Framework
+- Handle authentication and authorization
+- Deploy Django applications
+
+================================================================================
+1. WHAT IS DJANGO?
+================================================================================
+
+INTUITION
+---------
+Django is a "batteries-included" Python web framework.
+It provides everything out of the box: ORM, admin, auth, forms,
+security, and more.
+
+Best for: Large applications with complex data models and admin needs.
+
+================================================================================
+2. PROJECT STRUCTURE
+================================================================================
+
+myproject/
+├── manage.py
+├── myproject/
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+└── myapp/
+    ├── models.py
+    ├── views.py
+    ├── urls.py
+    ├── serializers.py
+    └── admin.py
+
+CREATION
+--------
+django-admin startproject myproject
+cd myproject
+python manage.py startapp myapp
+
+================================================================================
+3. MODELS (ORM)
+================================================================================
+
+from django.db import models
+
+class Dataset(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    file_path = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['-created_at']
+
+class MLModel(models.Model):
+    name = models.CharField(max_length=200)
+    version = models.CharField(max_length=50)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE,
+                                related_name='models')
+    accuracy = models.FloatField(null=True)
+    model_path = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+MIGRATIONS
+----------
+python manage.py makemigrations
+python manage.py migrate
+
+SHELL
+-----
+python manage.py shell
+>>> Dataset.objects.all()
+>>> Dataset.objects.create(name="My Dataset")
+
+================================================================================
+4. VIEWS
+================================================================================
+
+FUNCTION-BASED VIEWS
+---------------------
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+def predict(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        # Run ML prediction
+        result = model.predict(data['features'])
+        return JsonResponse({'prediction': result})
+
+CLASS-BASED VIEWS
+------------------
+from django.views.generic import ListView
+from .models import Dataset
+
+class DatasetListView(ListView):
+    model = Dataset
+    template_name = 'datasets/list.html'
+    context_object_name = 'datasets'
+
+================================================================================
+5. REST APIs WITH DRF
+================================================================================
+
+SERIALIZER
+----------
+from rest_framework import serializers
+
+class DatasetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dataset
+        fields = '__all__'
+
+VIEWSET
+--------
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+class MLModelViewSet(viewsets.ModelViewSet):
+    queryset = MLModel.objects.all()
+    serializer_class = MLModelSerializer
+
+    @action(detail=True, methods=['post'])
+    def predict(self, request, pk=None):
+        model_obj = self.get_object()
+        # Run prediction
+        features = request.data.get('features')
+        prediction = run_prediction(model_obj.model_path, features)
+        return Response({'prediction': prediction})
+
+URLS
+----
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'models', MLModelViewSet)
+
+urlpatterns = [
+    path('api/', include(router.urls)),
+]
+
+================================================================================
+6. AUTHENTICATION
+================================================================================
+
+# settings.py
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+
+# Create token
+from rest_framework.authtoken.models import Token
+token = Token.objects.create(user=user)
+
+# Use in request
+# Header: Authorization: Token <your-token>
+
+================================================================================
+7. DJANGO + ML PIPELINE
+================================================================================
+
+# views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+import joblib
+import numpy as np
+
+class PredictionView(APIView):
+    def post(self, request):
+        model_path = 'models/trained_model.pkl'
+        model = joblib.load(model_path)
+
+        features = np.array(request.data['features']).reshape(1, -1)
+        prediction = model.predict(features)
+
+        return Response({
+            'prediction': prediction.tolist(),
+            'model_version': '1.0'
+        })
+
+================================================================================
+8. DEPLOYMENT
+================================================================================
+
+GUNICORN + NGINX
+----------------
+# Install
+pip install gunicorn
+
+# Run
+gunicorn myproject.wsgi:application -w 4 -b 127.0.0.1:8000
+
+# Nginx config proxies to Gunicorn
+
+DOCKER
+------
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+RUN python manage.py collectstatic --noinput
+CMD ["gunicorn", "myproject.wsgi:application", "-w", "4"]
+
+================================================================================
+9. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What makes Django different from Flask?
+Q2: How do you create a REST API with Django REST Framework?
+Q3: What is a serializer in DRF?
+Q4: How do you handle authentication in Django REST APIs?
+Q5: When would you choose Django over Flask?
+
+================================================================================
+END OF MODULE 37: DJANGO
+================================================================================

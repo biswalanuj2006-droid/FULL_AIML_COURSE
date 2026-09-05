@@ -1,0 +1,244 @@
+=====================================================================
+SOLUTIONS — exercises/advanced/system_design.py
+=====================================================================
+System design has NO single correct answer. Each solution below is one
+defensible, industry-typical design. When you present your own, defend
+these points: capacity math, why each component exists, failure modes,
+and the trade-offs you accepted.
+
+=====================================================================
+EXERCISE 1: REAL-TIME RECOMMENDATION SYSTEM
+=====================================================================
+SCALE: 10M users, 100M items, p95 < 100 ms, real-time updates, cold start.
+
+ARCHITECTURE (two-stage retrieval + ranking is the industry standard):
+
+  Clients
+    |
+    v
+  API Gateway (auth, rate limit, request logging)
+    |
+    v
+  Recommendation Service (stateless, horizontally scalable)
+    |--(1) candidate generation
+    |--(2) ranking model (LightGBM / DLRM-style NN)
+    |--(3) post-processing (diversity, filters, business rules)
+    |
+    v
+  Response
+
+  Supporting stores:
+    - Feature Store (Redis / Feast): real-time + batch features keyed by user/item
+    - Candidate store: inverted index (item CF) + ANN index (FAISS/Qdrant) for
+      two-tower embeddings (user-tower / item-tower)
+    - Item catalog: PostgreSQL (source of truth) -> cache in Redis
+    - Cache layer: Redis — precomputed "top-N for this user context"
+
+  Data pipeline (offline/online):
+    User behavior events -> Kafka -> Flink/Spark Streaming -> feature store
+    Batch jobs nightly: train/refresh two-tower + ranker, rebuild ANN index,
+    precompute popular/cold-start fallback lists.
+
+  Cold start handling:
+    1. New user: popularity list + context/geo/popular-category fallback.
+    2. New item: content-based features (category embeddings) + exploration
+       (epsilon-greedy / Thompson sampling bandit).
+    3. Embedding bootstrapping: average of item content attributes.
+
+  Feedback loop: impressions & clicks logged -> Kafka -> join with labels ->
+  periodic retraining; online metrics (CTR, engagement) drive model refresh.
+
+TRADE-OFFS / ANSWERS TO EXPECT:
+- Why two-stage (retrieve 500-2000, then rank) instead of ranking 100M?
+  Full scoring is O(100M) per request; two-stage keeps p95 under 100 ms.
+- Why embeddings + ANN for retrieval? Cross-product of user x item
+  neighborhood is too large; embeddings let us precompute user interest.
+- Failure modes: ANN index stale after item churn -> shadow refresh;
+  feature store miss -> default features + cache stampede protection.
+
+=====================================================================
+EXERCISE 2: REAL-TIME FRAUD DETECTION
+=====================================================================
+SCALE: 10,000 tx/sec, p99 < 50 ms, 0.1% fraud rate, explanations, adaptation.
+
+ARCHITECTURE:
+  Payment gateway -> Kafka topic "transactions"
+     |
+     |-> Streaming feature engine (Flink): per-entity counters over sliding
+     |    windows (tx count in 1h, velocity per merchant/card, distance from
+     |    last tx, device reputation, amount percentiles)
+     |-> Feature store (Redis with TTL): low-latency lookup for online features
+     v
+  Fraud Decision Service (stateless, replicated):
+    1. Rule engine (instant kills: blocklists, velocity caps) — cheap, no model
+    2. ML model: XGBoost on tabular + optional graph model (card networks);
+       score = P(fraud). Threshold tuned by business cost matrix.
+    3. Explainability: SHAP values precomputed on rules/tree model, or LIME on
+       request; attach top-3 reasons to the response.
+  Decision -> response <50 ms; high-risk -> human review queue.
+
+  Imbalance handling: undersample/oversample + weight positive class +
+  evaluate with precision@k / PR-AUC (not accuracy), backtest on
+  transaction-time-split data (never random split — time leakage!).
+
+  Adaptation / drift: new fraud patterns -> labels arrive with delay (chargeback/
+  dispute) -> delayed-label training pipeline; daily retrain + champion/challenger
+  shadow deployment; PSI on feature distributions triggers alert.
+
+  Monitoring: decision latency, fraud rate per segment, model score drift,
+  rule hit rates, data quality (missing features), delayed-label accuracy.
+
+TRADE-OFFS:
+- Latency vs accuracy: rules catch known fraud instantly but don't generalize;
+  model catches novel fraud but costs ms + explanation budget.
+- False positive cost: blocking a legitimate tx is expensive; calibrate the
+  threshold on cost, not on F1.
+
+=====================================================================
+EXERCISE 3: RAG-BASED KNOWLEDGE ASSISTANT (ENTERPRISE)
+=====================================================================
+SCALE: 100k+ documents, p95 < 2 s, citations, doc updates, multi-tenant.
+
+INGESTION PIPELINE (asynchronous, event-driven):
+  Upload -> object storage -> queue -> workers:
+    1. Parse: per file type (pdf/docx/pptx/html); OCR where scanned.
+    2. Clean + structure: heading hierarchy, tables, code blocks, metadata
+       (tenant_id, doc_id, source, page, section, ACL tags).
+    3. Chunk: recursive splitter respecting boundaries (~400-800 tokens,
+       overlap 10-15%); keep metadata per chunk.
+    4. Embed: sentence-transformers / OpenAI embeddings (batch).
+    5. Write: chunks + embeddings + metadata -> vector DB (pgvector / Qdrant /
+       Weaviate). Also store raw docs in S3 for citation deep-links.
+  Updates: new version -> ingest new chunks -> atomically swap doc_id version.
+
+RETRIEVAL + GENERATION (request path):
+  Query -> tenant isolation filter (mandatory: tenant_id in WHERE) ->
+  hybrid retrieval:
+    - dense: ANN over embeddings
+    - sparse: BM25 / full-text (handles names, IDs, exact terms)
+  -> fusion (RRF) -> rerank top 50 -> top 5-8 by cross-encoder
+  -> prompt with retrieved chunks + instruction to answer ONLY from context
+  -> LLM -> answer + citations (chunk source/页码 pointers).
+  Guardrails: refusal when context insufficient; provenance always attached.
+
+  Multi-tenancy: tenant_id on every row + tenant-scoped ANN index or index
+  per tenant for isolation; quotas per tenant; encryption per tenant keys.
+  Doc updates: versioned docs; deletes propagate through queue; nightly
+  consistency check between vector store and source-of-truth manifest.
+
+  Evaluation: retrieval (hit rate, MRR@k on golden set), generation
+  (faithfulness/answer relevance using LLM-as-judge + human spot checks),
+  end-to-end latency budget per stage.
+
+TRADE-OFFS:
+- Chunk size: small chunks better precision but lose context -> rerank +
+  optional "parent document" retrieval.
+- Cost: rerank every query adds cost; only rerank top-N candidates.
+- Hallucination control: citations + "answer only from context" reduces but
+  does not eliminate risk; log citations for audit.
+
+=====================================================================
+EXERCISE 4: A/B TESTING PLATFORM FOR ML MODELS
+=====================================================================
+  Experiment config (YAML/DB): experiment_id, model variants, traffic %
+  -> Control Plane service
+    |-- traffic splitter: consistent hash on stable user_id (not request),
+    |-- ensures the same user stays in one arm (no interference); or
+    |-- route-level split for model-only changes.
+    v
+  Model serving: variant A (champion) and variant B (challenger) both deployed;
+  shadow traffic option before real split.
+    |
+    v
+  Events (impression, click, revenue, latency) -> Kafka -> metrics pipeline:
+    - Counters + distributions pre-aggregated per (exp, arm, day)
+    - Metrics warehouse: PostgreSQL / ClickHouse
+    v
+  Analysis service:
+    - Sequential testing with alpha/beta spending (avoid peeking p-values)
+    - Two-sample z/t or bootstrap delta-method CIs on the metric
+    - Guardrail metrics (latency p99, error rate, revenue) monitored too
+  Rollout: 1% -> 5% -> 25% -> 100% with auto-pause if guardrails violated;
+  auto-rollback on anomaly; winner promotion updates the model registry.
+
+DESIGN DECISIONS TO DEFEND:
+- Why sequential tests? Repeated peeking at a fixed-sample test inflates
+  false positives; sequential design keeps type-I error bounded.
+- Why consistent assignment? A user split across arms contaminates learning
+  models and confounds metrics; use stable bucketing.
+- Why pre-aggregation? Raw event joins at 10k+ rps are too slow/expensive
+  for dashboards; pre-aggregate and keep raw in cold storage.
+
+=====================================================================
+EXERCISE 5: MODEL MONITORING SYSTEM
+=====================================================================
+  Models report structured metrics per prediction/request into a sidecar
+  or central collector (Prometheus-style counters/histograms + event log):
+    1. Data drift: per-feature PSI / KS-test on rolling window of live inputs
+       vs training reference; embeddings drift via distance to reference centroid.
+    2. Concept drift: delayed labels (where they arrive) -> accuracy/error
+       tracked with EWMA; proxy metrics when labels are late
+       (e.g., CTR as proxy for ranking quality).
+    3. Performance: latency histograms, throughput, error rate, prediction
+       distribution, calibration (ECE) over time.
+    4. Alerting: alert on drift score thresholds, metric regressions beyond
+       X sigma, calibration shift, and data-quality drops (missing rate).
+    5. Dashboard: Grafana; per-model view: input drift, output drift,
+       business metric, version timeline overlay.
+    6. Retraining trigger: policy (drift > threshold for N hours, or scheduled
+       cadence) -> auto or human-approved pipeline run -> candidate registered.
+    7. Model versioning: registry with version, dataset hash, hyperparameters,
+       metrics, deployment stage (staging/prod); canary + rollback via registry.
+
+TRADE-OFFS:
+- Monitoring every feature is noisy: prioritize features with known business
+  impact and high drift sensitivity.
+- PSI thresholds are arbitrary without history: start conservative, tune from
+  incident post-mortems.
+- Don't retrain automatically on every drift alert (feedback loops): require
+  confirmation or a champion/challenger gate.
+
+=====================================================================
+EXERCISE 6: SCALABLE ML TRAINING PIPELINE (TERABYTE SCALE)
+=====================================================================
+  DATA PIPELINE:
+    Raw data lake (S3) -> partitioned parquet (date/tenant) -> Spark/Polars
+    ETL: cleaning, dedup, feature computation -> training dataset manifest
+    (versioned). Data versioning via DVC or lakeFS/Delta so model <-> data
+    is reproducible. Feature reuse via a shared feature store.
+
+  TRAINING INFRASTRUCTURE:
+    Orchestrator (Airflow / KubeFlow Pipelines) launches:
+      - Distributed training: PyTorch DDP / Horovod on GPU cluster (K8s),
+        elastic scaling; or Spark MLlib for tabular at scale.
+      - Hyperparameter tuning: Optuna / Ray Tune with pruning, trials tracked.
+      - Checkpointing to object storage every N steps; resume on preemption.
+
+  EXPERIMENT TRACKING:
+    MLflow (or W&B): log params, metrics per step, artifacts, code commit,
+    dataset hash, environment. Single experiment ID per run; comparisons UI.
+
+  MODEL REGISTRY:
+    MLflow Registry / custom: stage model only when it passes eval gates
+    (metric thresholds + data validation + fairness checks); store binary,
+    preprocessing pipeline, schema, and serving container image together.
+
+  DEPLOYMENT PIPELINE:
+    CI/CD: registry promotion -> build serving image -> canary deploy ->
+    traffic shift with online monitoring -> full rollout; rollback = registry
+    "previous champion" redeploy.
+
+DESIGN DECISIONS TO DEFEND:
+- Why manifest + versioning? Without data versioning you cannot reproduce a
+  model or debug a silent data bug.
+- Why separate compute for ETL vs training? Different resource profiles
+  (CPU/memory vs GPU); mixing wastes both.
+- Why eval gates before registry? Prevents regressions silently reaching
+  production; gates are the machine-checkable part of "review".
+
+=====================================================================
+GRADING RUBRIC REMINDER
+Architecture clarity 20% | Technology choices 20% | Scalability 20% |
+Error handling 15% | Monitoring & observability 15% | Documentation 10%
+Every design should name its top 3 failure modes and the trade-off made.
+=====================================================================

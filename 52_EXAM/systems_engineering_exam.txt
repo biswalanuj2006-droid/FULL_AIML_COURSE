@@ -1,0 +1,109 @@
+# PART E: SYSTEMS + ENGINEERING EXAM
+# Time: 60 minutes | Questions: 20 | Passing: 70%
+
+---
+
+## SECTION 1: BACKEND & APIs (5 Questions)
+
+### Q1. What is the difference between REST and GraphQL?
+A) REST: multiple endpoints, fixed data. GraphQL: single endpoint, client-specified data.
+
+### Q2. What is JWT (JSON Web Token)?
+A) A compact, URL-safe token format for securely transmitting information between parties as a JSON object
+
+### Q3. What is the purpose of middleware in FastAPI?
+A) Runs code before/after request processing — for auth, logging, CORS, rate limiting
+
+### Q4. What is the difference between HTTP GET and POST?
+A) GET: retrieves data, parameters in URL, idempotent. POST: sends data, parameters in body, not idempotent.
+
+### Q5. What is rate limiting?
+A) Restricting number of requests per time window — prevents abuse and ensures fair resource usage
+
+---
+
+## SECTION 2: DATABASES (5 Questions)
+
+### Q6. What is the difference between SQL and NoSQL?
+A) SQL: structured, relational, ACID. NoSQL: flexible schema, horizontal scaling, eventual consistency.
+
+### Q7. What is an index in PostgreSQL?
+A) Data structure (usually B-tree) that speeds up query performance by allowing faster lookups
+
+### Q8. What is the N+1 query problem?
+A) Executing 1 query to get N records, then N additional queries for related data — solved by JOINs or eager loading
+
+### Q9. What is a vector database used for in AI?
+A) Storing and searching high-dimensional vectors (embeddings) for semantic search and RAG systems
+
+### Q10. What is the difference between FAISS and Chroma?
+A) FAISS: low-level, fast, in-memory. Chroma: higher-level, persistent, with metadata support.
+
+---
+
+## SECTION 3: DOCKER & DEPLOYMENT (5 Questions)
+
+### Q11. What is a Docker container vs a virtual machine?
+A) Container: shares host OS kernel, lightweight, fast startup. VM: full OS, isolated, heavier.
+
+### Q12. What is a Dockerfile?
+A) A text file containing instructions to build a Docker image — defines environment, dependencies, and commands
+
+### Q13. What is docker-compose used for?
+A) Defining and running multi-container Docker applications — specifies services, networks, and volumes
+
+### Q14. What is the difference between a Docker image and a container?
+A) Image: read-only template. Container: running instance of an image with writable layer.
+
+### Q15. What is a multi-stage Docker build?
+A) Using multiple build stages to reduce final image size — build in one stage, copy only needed artifacts to final stage
+
+---
+
+## SECTION 4: MLOps & SYSTEM DESIGN (5 Questions)
+
+### Q16. What is experiment tracking in ML?
+A) Recording parameters, metrics, and artifacts of each training run — enables reproducibility and comparison
+
+### Q17. What is model drift?
+A) Degradation of model performance over time due to changes in data distribution or relationships
+
+### Q18. How would you design a real-time ML prediction system?
+```
+User → Load Balancer → API Gateway → FastAPI
+    → Redis Cache (check first)
+    → ML Model (if cache miss)
+    → PostgreSQL (log prediction)
+    → Monitoring (latency, errors)
+```
+
+### Q19. What is A/B testing for ML models?
+A) Randomly assigning users to old vs new model, comparing metrics to determine if new model is better
+
+### Q20. What are the key metrics to monitor in production ML?
+A) Latency, throughput, error rate, prediction distribution, feature drift, model accuracy (when labels available)
+
+---
+
+## SYSTEM DESIGN SCENARIOS (Bonus)
+
+### Scenario 1: Design a recommendation system
+Consider: candidate generation → ranking → re-ranking, feature store, real-time vs batch, cold start
+
+### Scenario 2: Design a real-time fraud detection system
+Consider: streaming data (Kafka), feature engineering, model serving, latency requirements, feedback loop
+
+### Scenario 3: Design a RAG-based knowledge assistant
+Consider: document ingestion, chunking, embedding, vector DB, retrieval, reranking, LLM, evaluation
+
+---
+
+## SCORING
+
+| Score | Level |
+|-------|-------|
+| 19-20 | Expert |
+| 16-18 | Advanced |
+| 14-15 | Intermediate |
+| 10-13 | Beginner |
+| <10 | Novice |

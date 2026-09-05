@@ -1,0 +1,62 @@
+================================================================================
+REAL PROBLEM - 09 CLASSIFICATION
+Format for every problem: WHAT HAPPENS -> WHY (diagnosis path) ->
+HOW TO SOLVE -> CODE/CHECK.
+================================================================================
+
+PROBLEM A: "My fraud model is 99.9% accurate but the bank still loses
+money - it never catches anything."
+WHY IT HAPPENS (diagnose in this order)
+  1. Check the confusion matrix, not accuracy: if recall of positives =
+     0, the model predicts "not fraud" for everything.
+  2. Check the positive rate: at 0.1% positives accuracy is meaningless.
+  3. Check the default 0.5 threshold vs the actual probability
+     distribution (a good model may output 0.3 for real fraud).
+HOW TO SOLVE
+  1. Evaluate with PR-AUC and precision/recall at the operating point.
+  2. Use class_weight="balanced" so the loss cares about positives.
+  3. Calibrate probabilities, then set the threshold from the COST
+     ratio: predict positive when p >= cost_FP / (cost_FP + cost_FN).
+  4. Re-check with stratified CV so 0.1% stays in validation.
+CHECK
+  print(confusion_matrix(y_val, preds))
+  # require: recall_pos > 0.5 at your operating point, not accuracy > 0.99
+
+PROBLEM B: "My model nails validation (AUC 0.98) but fails in
+production."
+WHY IT HAPPENS
+  1. Test for leakage: does any feature exist only AFTER the outcome
+     (risk_flag, future timestamp, customer_id)?
+  2. Did you scale/encode before splitting, letting test stats leak?
+  3. Is production data different (distribution shift)? Compare feature
+     distributions train vs live.
+HOW TO SOLVE
+  1. Ablate suspicious features - if AUC collapses without one, that
+     feature was carrying the leak.
+  2. Move all transforms into a Pipeline so CV refits them per fold.
+  3. Monitor drift (module 34): compare live inputs to training.
+
+PROBLEM C: "My classifier is overconfident: it says 0.98 on inputs it
+has never seen (a new class)."
+WHY: softmax probabilities are not calibrated and collapse to 0/1 far
+from training data.
+HOW TO SOLVE
+  1. Build a reliability diagram; measure ECE.
+  2. Temperature-scale logits on a held-out set.
+  3. Add an OOD signal (max softmax prob, distance to training
+     centroids) and set a "low confidence -> route to human" rule.
+CHECK: after scaling, ECE should drop below ~0.05; report both ECE and
+the OOD rejection curve.
+
+PROBLEM D: "Adding more data made my tree model WORSE."
+WHY: new data came from a different period/channel (concept drift) or
+contains duplicate/noisy rows that dominate splits.
+HOW TO SOLVE
+  1. Check the new data's label distribution and feature drift before
+     merging.
+  2. Clean duplicates and verify label quality in the new batch.
+  3. Train on old, on new, and on combined - if combined < old, don't
+     merge blindly; investigate drift first.
+================================================================================
+END
+================================================================================

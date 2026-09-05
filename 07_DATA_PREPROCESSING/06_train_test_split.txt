@@ -1,0 +1,232 @@
+================================================================================
+MODULE 07: DATA PREPROCESSING — LESSON 6: TRAIN/TEST SPLIT & CROSS-VALIDATION
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able:
+- Split data correctly to evaluate model performance
+- Apply stratified splitting for imbalanced classes
+- Use k-fold cross-validation for reliable estimates
+- Avoid data leakage during splitting
+
+================================================================================
+1. WHY SPLIT DATA?
+================================================================================
+
+INTUITION
+---------
+If a student studies with the exam answers visible, they'll ace the test
+—but that doesn't mean they understand the material.
+
+Similarly, if a model trains AND evaluates on the same data, it will look
+great but fail on new, unseen data.
+
+THE FUNDAMENTAL PROBLEM
+-----------------------
+We build models to predict on UNSEEN data.
+We only have ONE dataset.
+Solution: hide some data during training, use it to evaluate.
+
+TRAIN / VALIDATION / TEST SPLIT
+-------------------------------
+Training set (60-80%)   — model learns from this
+Validation set (10-20%) — tune hyperparameters
+Test set (10-20%)       — final evaluation (used ONCE)
+
+================================================================================
+2. RANDOM SPLIT
+================================================================================
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,      # 20% for testing
+    random_state=42,     # reproducibility
+    shuffle=True         # randomize before splitting (default)
+)
+
+PARAMETERS
+----------
+test_size: fraction of data for testing (default=0.25)
+train_size: fraction for training (default=1-test_size)
+random_state: seed for reproducibility
+shuffle: whether to shuffle before splitting (default=True)
+
+================================================================================
+3. STRATIFIED SPLIT
+================================================================================
+
+PROBLEM: Imbalanced classes
+If 95% of data is class 0 and 5% is class 1, random split might put
+all class 1 examples in test set!
+
+SOLUTION: Stratified split maintains class proportions
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    stratify=y,          # maintain class distribution
+    random_state=42
+)
+
+# Verify distributions match
+print("Full dataset:", pd.Series(y).value_counts(normalize=True))
+print("Train set:   ", pd.Series(y_train).value_counts(normalize=True))
+print("Test set:    ", pd.Series(y_test).value_counts(normalize=True))
+
+================================================================================
+4. CROSS-VALIDATION
+================================================================================
+
+PROBLEM: Single train/test split is unstable.
+Different random states give different scores!
+
+SOLUTION: Cross-validation uses multiple splits.
+
+4.1 K-FOLD CROSS-VALIDATION
+----------------------------
+Dataset is divided into k equal folds.
+Model trains on k-1 folds, tests on 1 fold.
+Repeats k times, each fold serves as test set once.
+
+from sklearn.model_selection import cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+
+model = RandomForestClassifier(random_state=42)
+scores = cross_val_score(model, X, y, cv=5, scoring='accuracy')
+
+print(f"Scores: {scores}")
+print(f"Mean: {scores.mean():.4f} ± {scores.std():.4f}")
+
+4.2 STRATIFIED K-FOLD
+----------------------
+Best for classification with imbalanced classes.
+
+from sklearn.model_selection import StratifiedKFold
+
+skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+scores = cross_val_score(model, X, y, cv=skf, scoring='accuracy')
+
+4.3 LEAVE-ONE-OUT (LOO)
+------------------------
+k = number of samples. Very expensive.
+Use only for tiny datasets.
+
+from sklearn.model_selection import LeaveOneOut
+scores = cross_val_score(model, X, y, cv=LeaveOneOut())
+
+4.4 TIME SERIES SPLIT
+---------------------
+For time-ordered data, never shuffle!
+
+from sklearn.model_selection import TimeSeriesSplit
+
+tscv = TimeSeriesSplit(n_splits=5)
+scores = cross_val_score(model, X, y, cv=tscv)
+
+================================================================================
+5. COMMON SPLITTING STRATEGIES
+================================================================================
+
+| STRATEGY             | USE WHEN                      | KEY PARAMETER    |
+|----------------------|-------------------------------|------------------|
+| Random split         | IID data, large dataset       | test_size        |
+| Stratified split     | Classification, imbalanced    | stratify=y       |
+| K-Fold CV            | Small-medium dataset          | cv=5 or cv=10    |
+| Stratified K-Fold    | Classification, imbalanced    | cv=StratifiedKFold|
+| Time Series Split    | Temporal data, no shuffle     | cv=TimeSeriesSplit|
+| Group K-Fold         | Grouped data (same patient)   | groups parameter |
+| Leave-One-Out        | Very small dataset            | cv=LeaveOneOut   |
+
+================================================================================
+6. DATA LEAKAGE IN SPLITTING
+================================================================================
+
+COMMON LEAKAGE SCENARIOS
+------------------------
+1. Scaling/encoding BEFORE splitting
+2. Feature selection BEFORE splitting
+3. Oversampling (SMOTE) BEFORE splitting
+4. Using information from test set in feature engineering
+
+SAFE PIPELINE
+-------------
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model', LogisticRegression())
+])
+
+# Cross-validation with pipeline is safe!
+scores = cross_val_score(pipeline, X, y, cv=5)
+
+THE PIPELINE ENSURES:
+- Scaler fits on each training fold only
+- Scaler transforms each test fold using training statistics
+- No data leakage between folds
+
+================================================================================
+7. HOW MUCH DATA FOR EACH SET?
+================================================================================
+
+RULES OF THUMB
+--------------
+- Dataset < 1000 samples → 80/20 split, or 10-fold CV
+- Dataset 1000-10000 → 70/15/15 or 5-fold CV
+- Dataset 10000-100000 → 80/10/10 or 5-fold CV
+- Dataset > 100000 → 90/5/5 is fine, or simple holdout
+
+SMALL DATASET STRATEGIES
+------------------------
+- Use cross-validation instead of single split
+- Use stratified splits to preserve class balance
+- Consider Leave-One-Out for < 50 samples
+
+LARGE DATASET STRATEGIES
+-------------------------
+- Simple train/test split is sufficient
+- Cross-validation is expensive, single split often works
+- Keep holdout set truly held out
+
+================================================================================
+8. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Not using stratify for imbalanced classes
+  WRONG: train_test_split(X, y, test_size=0.2)
+  RIGHT: train_test_split(X, y, test_size=0.2, stratify=y)
+
+MISTAKE 2: Data leakage through preprocessing before split
+  WRONG: X_scaled = scaler.fit_transform(X) → split
+  RIGHT: Split first, then fit scaler on training data
+
+MISTAKE 3: Shuffling time series data
+  WRONG: train_test_split(X_time, y_time, shuffle=True)
+  RIGHT: Use TimeSeriesSplit, never shuffle temporal data
+
+MISTAKE 4: Using test set for model selection
+  WRONG: Try 10 models, pick best on test set
+  RIGHT: Use validation set for selection, test set ONCE at the end
+
+MISTAKE 5: Too small test set
+  WRONG: 99/1 split on 1000 samples (10 test samples)
+  RIGHT: At minimum 20% or at least 100 samples per class in test
+
+================================================================================
+9. SKILLS CHECKPOINT
+================================================================================
+
+Q1: Why do we split data before any preprocessing?
+Q2: What is the difference between random split and stratified split?
+Q3: When would you use TimeSeriesSplit instead of random split?
+Q4: How does using a Pipeline prevent data leakage during CV?
+Q5: What happens if you evaluate on the test set multiple times?
+
+================================================================================
+END OF LESSON 6
+================================================================================

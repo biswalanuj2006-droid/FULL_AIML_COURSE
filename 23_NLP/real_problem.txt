@@ -1,0 +1,75 @@
+================================================================================
+REAL PROBLEM - 23 NLP
+================================================================================
+
+PROBLEM A: "My sentiment classifier scores 95% accuracy on the test set
+but fails badly on tweets from today."
+WHY IT HAPPENS
+  1. Distribution shift: the training data was collected 2 years ago;
+     slang, emojis, and topics changed (covariate shift on words).
+  2. The model latched onto spurious cues: e.g. brand names, hashtags,
+     or the word "movie" correlating with positive reviews in the
+     training corpus - those cues no longer predict anything.
+  3. Accuracy is misleading when classes are imbalanced: 95% may be
+     "predict positive for everything".
+HOW TO SOLVE
+  1. Report precision/recall/F1 per class, not just accuracy.
+  2. Build a small labeled sample of CURRENT text; measure the accuracy
+     drop; use it to drive re-annotation.
+  3. Check what the model actually uses: SHAP/LIME on a handful of
+     examples will expose the spurious cues (see 14_MODEL_EVALUATION).
+  4. If shift is inevitable, use a smaller vocabulary / robust features
+     (character n-grams generalize across slang better than word ids),
+     or schedule continuous re-training on new data.
+
+PROBLEM B: "Named-entity extraction misses entities in my legal
+documents even though the same model works on news text."
+WHY: domain mismatch - the model's pretraining and fine-tuning data
+(usually news/web) rarely contains legal phrasing ("the aforementioned
+Party of the First Part"), long nested clauses, or unusual entity
+types (clause numbers, statute references). Word-piece tokenization
+splits legal terms so the model never sees them whole.
+HOW TO SOLVE
+  1. Build a domain dictionary of the terms you care about; use
+     dictionary/rule-based matching as a FIRST pass and merge its hits
+     with the ML model's hits.
+  2. Label 200-500 domain sentences and fine-tune (or adapt) the NER
+     model; NER is cheap to adapt because you only retrain the tagger
+     head.
+  3. Check tokenization: if "§ 17200" becomes 4 tokens, the model
+     cannot learn it as one entity - add the phrase to the vocab or use
+     a whitespace pre-tokenizer override for identifiers.
+
+PROBLEM C: "Summarization produces fluent summaries that omit the main
+conclusion of the article."
+WHY: extractive biases of the model: it copies the LEAD paragraph
+(news-trained summarizers assume the first paragraph carries the
+answer) and the conclusion is compressed away by length limits.
+HOW TO SOLVE
+  1. Score summaries against the source with an abstractive metric
+     (factual consistency, e.g. entailment-based NLI score) in addition
+     to ROUGE - ROUGE rewards copied text, which is exactly the bias
+     you are fighting.
+  2. If the conclusion always matters, restructure the input so the
+     conclusion is not at the end (move it second, after the lead) or
+     use guided summarization with a pointer to the required section.
+  3. Raise the max output length and instruct the model to output
+     "Key conclusions" as a mandatory section.
+
+PROBLEM D (debugging): "TF-IDF vectorizer exploded: 2M features from a
+1M-document corpus; training now takes an hour."
+WHY: default settings keep every token that appears in >= 2 documents;
+with a large corpus, rare tokens dominate the vocabulary, most are
+noise for a downstream classifier.
+HOW TO SOLVE
+  1. Add max_features=50_000 (or 100k), min_df=5, max_df=0.8 (drop
+     ultra-common stop-like words), and use sublinear_tf=True.
+  2. Consider hashing (HashingVectorizer, no vocab dict, streaming).
+  3. Run a quick fit on a 10% sample to size the vocabulary before the
+     full run.
+  CODE (the fix):
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    vec = TfidfVectorizer(min_df=5, max_df=0.8, sublinear_tf=True,
+                          max_features=100_000, ngram_range=(1, 2))
+    X = vec.fit_transform(corpus)   # sparse - keep it sparse, never
+    # X.toarray()                    # densify 2M columns!

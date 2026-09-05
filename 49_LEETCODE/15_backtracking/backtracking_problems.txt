@@ -1,0 +1,464 @@
+# LEETCODE — BACKTRACKING PATTERN
+# 25 Problems: 10 Easy, 10 Medium, 5 Hard
+
+---
+
+## EASY (10 Problems)
+
+### 1. Power Set (Subsets)
+**Problem:** Given a set of distinct integers, return all possible subsets.
+**Pattern:** Backtracking — include or exclude each element
+```python
+def subsets(nums):
+    result = []
+    def backtrack(start, current):
+        result.append(current[:])
+        for i in range(start, len(nums)):
+            current.append(nums[i])
+            backtrack(i + 1, current)
+            current.pop()
+    backtrack(0, [])
+    return result
+```
+**Time:** O(2^n), **Space:** O(n) recursion depth
+
+### 2. Permutations
+**Problem:** Return all possible permutations of distinct integers.
+```python
+def permute(nums):
+    result = []
+    def backtrack(start):
+        if start == len(nums):
+            result.append(nums[:])
+        for i in range(start, len(nums)):
+            nums[start], nums[i] = nums[i], nums[start]
+            backtrack(start + 1)
+            nums[start], nums[i] = nums[i], nums[start]
+    backtrack(0)
+    return result
+```
+**Time:** O(n! × n)
+
+### 3. Fibonacci Number
+**Problem:** Calculate Fibonacci number.
+```python
+def fib(n, memo={}):
+    if n <= 1: return n
+    if n in memo: return memo[n]
+    memo[n] = fib(n-1, memo) + fib(n-2, memo)
+    return memo[n]
+```
+
+### 4. Climbing Stairs
+**Problem:** How many distinct ways to climb n stairs (1 or 2 steps)?
+```python
+def climb_stairs(n):
+    if n <= 2: return n
+    a, b = 1, 2
+    for _ in range(3, n + 1):
+        a, b = b, a + b
+    return b
+```
+
+### 5. Merge Two Sorted Lists
+**Problem:** Merge two sorted linked lists.
+```python
+def merge_two_lists(l1, l2):
+    if not l1: return l2
+    if not l2: return l1
+    if l1.val <= l2.val:
+        l1.next = merge_two_lists(l1.next, l2)
+        return l1
+    l2.next = merge_two_lists(l1, l2.next)
+    return l2
+```
+
+### 6. Same Tree
+**Problem:** Check if two binary trees are the same.
+```python
+def is_same_tree(p, q):
+    if not p and not q: return True
+    if not p or not q: return False
+    return (p.val == q.val and 
+            is_same_tree(p.left, q.left) and 
+            is_same_tree(p.right, q.right))
+```
+
+### 7. Maximum Depth of Binary Tree
+```python
+def max_depth(root):
+    if not root: return 0
+    return 1 + max(max_depth(root.left), max_depth(root.right))
+```
+
+### 8. Path Sum
+**Problem:** Does the tree have a root-to-leaf path with given sum?
+```python
+def has_path_sum(root, target):
+    if not root: return False
+    if not root.left and not root.right:
+        return root.val == target
+    return (has_path_sum(root.left, target - root.val) or 
+            has_path_sum(root.right, target - root.val))
+```
+
+### 9. Generate Parentheses (Easy version)
+**Problem:** Generate all combinations of n pairs of parentheses.
+```python
+def generate_parenthesis(n):
+    result = []
+    def backtrack(current, open_count, close_count):
+        if len(current) == 2 * n:
+            result.append(current)
+            return
+        if open_count < n:
+            backtrack(current + '(', open_count + 1, close_count)
+        if close_count < open_count:
+            backtrack(current + ')', open_count, close_count + 1)
+    backtrack('', 0, 0)
+    return result
+```
+
+### 10. Subsets II (with duplicates)
+```python
+def subsets_with_dup(nums):
+    result = []
+    nums.sort()
+    def backtrack(start, current):
+        result.append(current[:])
+        for i in range(start, len(nums)):
+            if i > start and nums[i] == nums[i-1]:
+                continue
+            current.append(nums[i])
+            backtrack(i + 1, current)
+            current.pop()
+    backtrack(0, [])
+    return result
+```
+
+---
+
+## MEDIUM (10 Problems)
+
+### 11. Combination Sum
+**Problem:** Find all combinations that sum to target (elements can repeat).
+```python
+def combination_sum(candidates, target):
+    result = []
+    def backtrack(start, current, remaining):
+        if remaining == 0:
+            result.append(current[:])
+            return
+        for i in range(start, len(candidates)):
+            if candidates[i] > remaining: break
+            current.append(candidates[i])
+            backtrack(i, current, remaining - candidates[i])
+            current.pop()
+    candidates.sort()
+    backtrack(0, [], target)
+    return result
+```
+
+### 12. Combination Sum II
+**Problem:** Find all combinations (each element used once, no duplicates).
+```python
+def combination_sum2(candidates, target):
+    result = []
+    candidates.sort()
+    def backtrack(start, current, remaining):
+        if remaining == 0:
+            result.append(current[:])
+            return
+        for i in range(start, len(candidates)):
+            if i > start and candidates[i] == candidates[i-1]:
+                continue
+            if candidates[i] > remaining: break
+            current.append(candidates[i])
+            backtrack(i + 1, current, remaining - candidates[i])
+            current.pop()
+    backtrack(0, [], target)
+    return result
+```
+
+### 13. Permutations II (with duplicates)
+```python
+def permute_unique(nums):
+    result = []
+    nums.sort()
+    def backtrack(current, used):
+        if len(current) == len(nums):
+            result.append(current[:])
+            return
+        for i in range(len(nums)):
+            if used[i]: continue
+            if i > 0 and nums[i] == nums[i-1] and not used[i-1]:
+                continue
+            used[i] = True
+            current.append(nums[i])
+            backtrack(current, used)
+            current.pop()
+            used[i] = False
+    backtrack([], [False] * len(nums))
+    return result
+```
+
+### 14. Word Search
+**Problem:** Given a grid and word, check if word exists in grid.
+```python
+def exist(board, word):
+    rows, cols = len(board), len(board[0])
+    def backtrack(r, c, k):
+        if k == len(word): return True
+        if r < 0 or r >= rows or c < 0 or c >= cols or board[r][c] != word[k]:
+            return False
+        temp = board[r][c]
+        board[r][c] = '#'
+        found = (backtrack(r+1,c,k+1) or backtrack(r-1,c,k+1) or
+                 backtrack(r,c+1,k+1) or backtrack(r,c-1,k+1))
+        board[r][c] = temp
+        return found
+    for i in range(rows):
+        for j in range(cols):
+            if backtrack(i, j, 0): return True
+    return False
+```
+
+### 15. Letter Combinations of Phone Number
+```python
+def letter_combinations(digits):
+    if not digits: return []
+    mapping = {'2': 'abc', '3': 'def', '4': 'ghi', '5': 'jkl',
+               '6': 'mno', '7': 'pqrs', '8': 'tuv', '9': 'wxyz'}
+    result = []
+    def backtrack(index, current):
+        if index == len(digits):
+            result.append(current)
+            return
+        for char in mapping[digits[index]]:
+            backtrack(index + 1, current + char)
+    backtrack(0, '')
+    return result
+```
+
+### 16. Combination Sum III
+**Problem:** Find k numbers that sum to n (1-9, each used once).
+```python
+def combination_sum3(k, n):
+    result = []
+    def backtrack(start, current, remaining):
+        if len(current) == k and remaining == 0:
+            result.append(current[:])
+            return
+        for i in range(start, 10):
+            current.append(i)
+            backtrack(i + 1, current, remaining - i)
+            current.pop()
+    backtrack(1, [], n)
+    return result
+```
+
+### 17. Restore IP Addresses
+```python
+def restore_ip_addresses(s):
+    result = []
+    def backtrack(start, parts):
+        if len(parts) == 4:
+            if start == len(s):
+                result.append('.'.join(parts))
+            return
+        for length in range(1, 4):
+            if start + length > len(s): break
+            part = s[start:start+length]
+            if len(part) > 1 and part[0] == '0': break
+            if int(part) > 255: break
+            backtrack(start + length, parts + [part])
+    backtrack(0, [])
+    return result
+```
+
+### 18. Palindrome Partitioning
+```python
+def partition(s):
+    result = []
+    def backtrack(start, current):
+        if start == len(s):
+            result.append(current[:])
+            return
+        for end in range(start + 1, len(s) + 1):
+            sub = s[start:end]
+            if sub == sub[::-1]:
+                current.append(sub)
+                backtrack(end, current)
+                current.pop()
+    backtrack(0, [])
+    return result
+```
+
+### 19. Subsets II
+Same as #10 above.
+
+### 20. Binary Watch
+**Problem:** List all possible times given turned on LEDs.
+```python
+def read_binary_watch(turned_on):
+    result = []
+    for h in range(12):
+        for m in range(60):
+            if bin(h).count('1') + bin(m).count('1') == turned_on:
+                result.append(f"{h}:{m:02d}")
+    return result
+```
+
+---
+
+## HARD (5 Problems)
+
+### 21. N-Queens
+**Problem:** Place N queens on N×N board so no two attack each other.
+```python
+def solve_n_queens(n):
+    result = []
+    def backtrack(row, cols, diag1, diag2, board):
+        if row == n:
+            result.append([''.join(r) for r in board])
+            return
+        for col in range(n):
+            if col in cols or (row-col) in diag1 or (row+col) in diag2:
+                continue
+            board[row][col] = 'Q'
+            backtrack(row+1, cols|{col}, diag1|{row-col}, diag2|{row+col}, board)
+            board[row][col] = '.'
+    backtrack(0, set(), set(), set(), [['.']*n for _ in range(n)])
+    return result
+```
+
+### 22. Sudoku Solver
+```python
+def solve_sudoku(board):
+    def is_valid(row, col, num):
+        for i in range(9):
+            if board[row][i] == num: return False
+            if board[i][col] == num: return False
+        r0, c0 = 3*(row//3), 3*(col//3)
+        for i in range(3):
+            for j in range(3):
+                if board[r0+i][c0+j] == num: return False
+        return True
+    
+    def solve():
+        for i in range(9):
+            for j in range(9):
+                if board[i][j] == '.':
+                    for num in '123456789':
+                        if is_valid(i, j, num):
+                            board[i][j] = num
+                            if solve(): return True
+                            board[i][j] = '.'
+                    return False
+        return True
+    solve()
+```
+
+### 23. Expression Add Operators
+**Problem:** Add +, -, * between digits to reach target.
+```python
+def add_operators(num, target):
+    result = []
+    def backtrack(index, prev, current, path):
+        if index == len(num):
+            if current == target:
+                result.append(path)
+            return
+        for i in range(index + 1, len(num)):
+            s = num[index:i]
+            if len(s) > 1 and s[0] == '0': break
+            n = int(s)
+            if index == 0:
+                backtrack(i, n, n, s)
+            else:
+                backtrack(i, n, current + n, f"{path}+{s}")
+                backtrack(i, -n, current - n, f"{path}-{s}")
+                backtrack(i, prev*n, current - prev + prev*n, f"{path}*{s}")
+    backtrack(0, 0, 0, '')
+    return result
+```
+
+### 24. Word Search II
+**Problem:** Find all words from dictionary that exist in the board.
+```python
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.word = None
+
+def find_words(board, words):
+    root = TrieNode()
+    for word in words:
+        node = root
+        for c in word:
+            if c not in node.children:
+                node.children[c] = TrieNode()
+            node = node.children[c]
+        node.word = word
+    
+    result = []
+    rows, cols = len(board), len(board[0])
+    
+    def backtrack(r, c, node):
+        if node.word:
+            result.append(node.word)
+            node.word = None
+        if r < 0 or r >= rows or c < 0 or c >= cols:
+            return
+        char = board[r][c]
+        if char not in node.children:
+            return
+        board[r][c] = '#'
+        for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]:
+            backtrack(r+dr, c+dc, node.children[char])
+        board[r][c] = char
+    
+    for i in range(rows):
+        for j in range(cols):
+            backtrack(i, j, root)
+    return result
+```
+
+### 25. Regular Expression Matching
+```python
+def is_match(s, p):
+    if not p: return not s
+    first_match = bool(s) and p[0] in {s[0], '.'}
+    if len(p) >= 2 and p[1] == '*':
+        return (is_match(s, p[2:]) or 
+                (first_match and is_match(s[1:], p)))
+    return first_match and is_match(s[1:], p[1:])
+```
+
+---
+
+## INTERVIEW EXPLANATIONS
+
+### How to approach backtracking problems:
+1. **Identify the choice:** What decision do you make at each step?
+2. **Identify constraints:** What limits your choices?
+3. **Identify goal:** When is a solution complete?
+4. **Build the tree:** Visualize the decision tree
+5. **Prune:** Add conditions to skip invalid branches early
+
+### Template:
+```python
+def backtrack(path, choices):
+    if goal_reached:
+        result.append(path[:])
+        return
+    for choice in choices:
+        if not valid(choice): continue  # Prune
+        path.append(choice)
+        backtrack(path, remaining_choices)
+        path.pop()  # Undo choice
+```
+
+### Complexity:
+- Time: O(branches^depth) in worst case
+- Space: O(depth) for recursion stack

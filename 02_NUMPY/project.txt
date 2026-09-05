@@ -1,0 +1,17 @@
+================================================================================
+NUMPY MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: MATRIX CALCULATOR (Beginner)
+=========================================
+Build a matrix calculator supporting: add, subtract, multiply, transpose, inverse, determinant, eigenvalues. CLI interface.
+
+PROJECT 2: DATA ANALYZER (Intermediate)
+========================================
+Given a dataset, compute: mean, median, std, correlations, PCA projections, k-means clustering. All using NumPy only.
+
+PROJECT 3: NEURAL NETWORK FROM SCRATCH (Advanced)
+====================================================
+Implement a complete neural network using only NumPy: forward pass, backpropagation, training loop, evaluation on MNIST.
+
+================================================================================

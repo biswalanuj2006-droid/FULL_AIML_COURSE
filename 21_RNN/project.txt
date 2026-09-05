@@ -1,0 +1,17 @@
+================================================================================
+RNN MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: SENTIMENT CLASSIFIER (Beginner)
+=============================================
+Classify text sentiment using RNN.
+
+PROJECT 2: NEXT WORD PREDICTOR (Intermediate)
+================================================
+Build character/word level text prediction model.
+
+PROJECT 3: SEQUENCE LABELING SYSTEM (Advanced)
+================================================
+Build NER or POS tagging system with RNN.
+
+================================================================================

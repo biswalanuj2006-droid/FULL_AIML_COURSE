@@ -1,0 +1,60 @@
+================================================================================
+REAL PROBLEM - 10 REGRESSION
+================================================================================
+
+PROBLEM A: "House-price model: R2 0.96 in validation, predictions in
+production are nonsense (negative prices, wild swings)."
+WHY IT HAPPENS
+  1. Look for target leakage: a feature like "sale_price_2" from a
+     joined table, or a future transaction date.
+  2. Check extrapolation: validation covered a normal price range but
+     production asks about mansions - linear models extrapolate
+     horribly.
+  3. Check that the SAME preprocessing (scaler fit on train) is applied
+     at serving - if serving re-fits the scaler on one row, mean/std
+     are garbage.
+HOW TO SOLVE
+  1. Ablate features; dump the whole pipeline (not the model alone) and
+     reuse it at serving.
+  2. Clip predictions to the training target range; flag out-of-range
+     inputs instead of predicting blindly.
+  3. Log input + prediction + model version; compare live feature
+     ranges against training ranges.
+
+PROBLEM B: "Two features are almost identical (correlation 0.999); my
+coefficients are huge, opposite signs, and change every retrain."
+WHY: multicollinearity - X^T X is nearly singular, so the inverse
+explodes and the fit "splits" the effect arbitrarily between the twins.
+HOW TO SOLVE
+  1. Confirm with VIF > 10.
+  2. Drop one twin, or use Ridge (shrinks both smoothly), or Lasso
+     (picks one), or PCA.
+  3. If you must keep both for business reasons, report their JOINT
+     effect, never individual coefficients.
+
+PROBLEM C: "RMSE looks great but the business complains about big
+errors on small transactions."
+WHY: RMSE is dominated by large values; errors on small transactions
+are invisible in the aggregate.
+HOW TO SOLVE
+  1. Report MAE and MAPE alongside RMSE; slice errors by transaction
+     size bucket.
+  2. If small-value accuracy matters, switch loss to MAPE or log-target
+     regression.
+  3. Show a residual-vs-predicted plot; heteroscedasticity (errors
+     growing with value) explains the complaint.
+
+PROBLEM D: "Retraining weekly makes the model WORSE over time."
+WHY: each retrain tunes against a slightly different validation sample;
+you are selecting on noise (the selection trap) or the world is
+drifting and you are chasing it with too-small windows.
+HOW TO SOLVE
+  1. Fix a single evaluation protocol (fixed walk-forward folds) and
+     only ship if the new model beats the current one on that protocol.
+  2. Keep a champion/challenger: challenger must beat champion on the
+     SAME folds by a margin before rollout.
+  3. If drift is real, retrain on a rolling window sized by the drift
+     speed - measure, don't guess.
+================================================================================
+END
+================================================================================

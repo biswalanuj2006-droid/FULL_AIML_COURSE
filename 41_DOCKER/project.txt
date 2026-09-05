@@ -1,0 +1,97 @@
+# DOCKER — PROJECTS
+
+---
+
+## PROJECT 1 — DOCKERIZE ML API (Level 1)
+
+### Problem Statement
+Containerize a machine learning API with Docker.
+
+### Requirements
+- Create Dockerfile for ML API
+- Use multi-stage build
+- Handle dependencies
+- Expose correct ports
+- Test the container
+
+### Expected Output
+- Dockerfile
+- .dockerignore
+- docker-compose.yml
+- Working container
+
+---
+
+## PROJECT 2 — MULTI-CONTAINER AI APPLICATION (Level 2)
+
+### Problem Statement
+Build a multi-container application with frontend, backend, and database.
+
+### Architecture
+```
+Frontend (React/HTML)
+    ↓
+FastAPI Backend
+    ↓
+PostgreSQL Database
+    ↓
+ML Model (separate container)
+```
+
+### Requirements
+- Frontend container (nginx + static files)
+- Backend container (FastAPI + ML model)
+- Database container (PostgreSQL)
+- Docker Compose for orchestration
+- Environment variables
+- Volume mounts for persistence
+- Health checks
+
+### Expected Output
+- docker-compose.yml with 3+ services
+- .env file for configuration
+- Network configuration
+- Volume configuration
+- README with setup instructions
+
+---
+
+## PROJECT 3 — PRODUCTION ML PLATFORM (Level 3)
+
+### Problem Statement
+Build a production-grade ML platform with Docker.
+
+### Architecture
+```
+Nginx (load balancer)
+    ↓
+FastAPI (API server)
+    ↓
+Redis (cache)
+    ↓
+PostgreSQL (database)
+    ↓
+ML Model Service (separate container)
+    ↓
+Monitoring (Prometheus + Grafana)
+```
+
+### Requirements
+- Microservices architecture
+- Service discovery
+- Load balancing
+- Caching layer
+- Database with migrations
+- Model serving container
+- Monitoring stack
+- Logging
+- CI/CD pipeline concept
+- Security best practices
+
+### Expected Output
+- Complete docker-compose.yml
+- Dockerfile for each service
+- Environment configuration
+- Monitoring dashboards
+- Deployment documentation
+- Performance testing results

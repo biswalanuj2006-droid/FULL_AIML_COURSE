@@ -1,0 +1,99 @@
+================================================================================
+PRACTICE - 61 REINFORCEMENT LEARNING FOUNDATIONS
+================================================================================
+
+PART A - CONCEPTUAL
+--------------------------------------------------------------------------------
+1. MDP components: from a chess game, a robot vacuum, and a news
+   recommender, extract S, A, p(s'|s,a), r, and gamma. Which one is
+   truly Markovian, and what do the others do about it?
+2. Exploration vs exploitation: give one epsilon-greedy and one
+   non-epsilon method (optimistic initialization, UCB, Thompson
+   sampling) and the setting where each shines.
+3. On-policy vs off-policy: define both, and explain why replay buffers
+   REQUIRE off-policy learning.
+4. Model-free vs model-based: what does "model-free" actually mean, and
+   what would a learned model buy you (planning, sample efficiency)?
+
+PART B - MATH
+--------------------------------------------------------------------------------
+5. Write V_pi(s) and Q_pi(s,a), the Bellman equations for both, and the
+   Bellman OPTIMALITY equation. Mark which terms are expectations over
+   the environment vs the policy.
+6. Contraction: show the Bellman operator T(V) = max_a [ r + gamma E V ]
+   satisfies ||T(V1) - T(V2)||_inf <= gamma ||V1 - V2||_inf and why
+   that guarantees iteration converges to V*.
+7. TD error: delta_t = r_{t+1} + gamma V(s_{t+1}) - V(s_t). Show that
+   in expectation the TD update moves V toward the true value (derive
+   E[delta | s_t] and connect it to the Bellman residual).
+8. Policy gradient theorem: state it, then derive the gradient of
+   J(theta) = E[sum gamma^t r] w.r.t. theta using the log-derivative
+   trick. Where does grad log pi come from and why is there no
+   gradient through the environment?
+9. Baseline: prove E[ grad_theta log pi_theta(a|s) * b(s) ] = 0, hence
+   the advantage form A(s,a) = Q - V is unbiased with lower variance.
+
+PART C - CODE
+--------------------------------------------------------------------------------
+10. Tabular Q-learning on a 5x5 gridworld (implement the environment
+    yourself; gymnasium optional): epsilon-greedy with decay, report
+    episode returns and the resulting policy. Verify the policy is
+    optimal (compare to value iteration).
+11. SARSA vs Q-learning on the same grid with a stochastic transition
+    (10% random slip): show which learns the safer policy and why
+    (on-policy accounts for exploration).
+12. DQN with replay + target net on CartPole-style control (gymnasium
+    if available, else your gridworld): ablate replay (off) and target
+    (sync every step) - show which ablation breaks and how.
+13. REINFORCE with a softmax policy on a simple 2-armed bandit with
+    known means; plot the policy over time; then add a baseline and
+    measure the variance reduction in gradient estimates.
+14. Actor-critic: implement a small advantage actor-critic on CartPole
+    (or gridworld): critic = MSE regression on returns, actor = policy
+    gradient with A_t = return - V(s_t).
+
+PART D - DEBUGGING
+--------------------------------------------------------------------------------
+15. Episode returns flat at the random-policy level for 10k episodes.
+    List four causes and one diagnostic each (reward scale, epsilon
+    never decaying, LR too small/large, reward signal empty/broken).
+16. DQN loss diverges to NaN. Which of the deadly triad (function
+    approximation, bootstrapping, off-policy) is implicated and what
+    two standard fixes do you apply first?
+17. The agent finds a "solution" with high reward that violates the
+    task (reward hacking): e.g. it parks in a corner farming points.
+    How do you detect it, and which fix changes the objective vs the
+    learning signal?
+18. Learning curves look great in training but the deployed policy is
+    useless. Name three causes (sim-to-real gap, eval distribution,
+    reward misspecification) and the validation you should have run.
+19. With a fixed seed the policy is great; across seeds, half the runs
+    collapse. What do you report, and which algorithmic change most
+    reduces seed variance (entropy bonus, clipping, larger replay)?
+
+PART E - REAL WORLD / INTERVIEW
+--------------------------------------------------------------------------------
+20. RLHF pipeline: given a reward model r_phi, write the PPO objective
+    for the LLM policy with the KL-to-reference penalty and say what
+    each term prevents.
+21. A self-driving lane-change planner is trained by RL in simulation.
+    What breaks at deployment and what part of the stack (reward
+    shaping, domain randomization, safety filter) addresses it?
+22. (Interview) Explain the difference between supervised learning and
+    RL using only the data available to each (i.i.d. labels vs
+    non-stationary experience).
+23. (Interview) "Why is RL hard to debug compared with supervised
+    learning?" - answer with non-stationarity, credit assignment,
+    exploration, and reward definition.
+24. (Design) Recommend the RL-vs-heuristic-vs-supervised choice for:
+    ad bidding, robot grasping, inventory restocking, chess. For each,
+    say why RL is or is not the right tool.
+
+PART F - EXPERT
+--------------------------------------------------------------------------------
+25. Implement clipped PPO on CartPole/gridworld (actor + critic +
+    GAE if you can) and compare sample efficiency vs REINFORCE with
+    baseline; report mean +/- std over 5 seeds.
+26. (Open) Sparse-reward maze: implement reward shaping vs curiosity
+    (prediction-error bonus) and measure which reaches the goal first
+    and which changes the optimal policy.

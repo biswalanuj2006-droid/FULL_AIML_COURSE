@@ -1,0 +1,50 @@
+================================================================================
+PROJECTS - 11 ANOMALY DETECTION (3 LEVELS)
+================================================================================
+
+PROJECT 1 - LEVEL 1: Univariate Anomaly Screener
+  Build a CLI tool that flags anomalies in one or more numeric columns
+  of a CSV.
+  Requirements:
+  - Robust z (MAD) and IQR methods; report flags with a reason
+  - Handle missing values and non-numeric columns gracefully
+  - Output: flagged rows + a short summary (count, % flagged)
+  - Test on a file with 3 planted outliers; verify exactly those (plus
+    any legitimately extreme points) are flagged
+  Deliverables: code, sample CSV, README, and a note on each method's
+  assumption.
+
+PROJECT 2 - LEVEL 2: Detector Bake-Off on Fraud-Style Data
+  Compare Isolation Forest, LOF, Elliptic Envelope, and one-class SVM.
+  Requirements:
+  - Synthetic 2-class data with 1-2% positives treated as anomalies OR
+    a public fraud dataset (Kaggle credit card if available)
+  - Standardize features; tune contamination via a small labeled audit
+    set (never the detector's own score)
+  - Report precision@k, PR-AUC, and runtime for each method
+  - Include the multimodal failure experiment (why EE fails on two
+    blobs)
+  - Final engineering recommendation with justification
+  Deliverables: notebook/scripts, comparison table, 1-page write-up.
+
+PROJECT 3 - LEVEL 3: Streaming Server-Metrics Anomaly Monitor
+  Simulate a stream of a server metric (latency with daily/weekly
+  seasonality, occasional spikes and a regime shift).
+  Requirements:
+  - Deseasonalize, then score with rolling stats + IF on feature
+    windows
+  - Threshold chosen on a clean reference period; alert only when N
+    consecutive points exceed it (suppress single-point noise)
+  - Detect the REGIME SHIFT as a separate alert type (change-point
+    detection) - distinguish spike vs shift
+  - Track alert rate + false-positive rate over time; auto-suppress
+    during known maintenance windows
+  - Simple dashboard or log of alerts with timestamps
+  Deliverables: streaming simulation, detector, evaluation of alert
+  quality, README describing operating decisions.
+
+Every project: state the anomaly TYPES you handle, the assumption each
+method makes, and how you evaluated without (or with minimal) labels.
+================================================================================
+END
+================================================================================

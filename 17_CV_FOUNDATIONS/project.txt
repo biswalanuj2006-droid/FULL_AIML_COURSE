@@ -1,0 +1,196 @@
+# COMPUTER VISION FOUNDATIONS — PROJECTS
+
+---
+
+## PROJECT 1 — IMAGE PREPROCESSING TOOLKIT (Level 1)
+
+### Problem Statement
+Build a comprehensive image preprocessing toolkit that can load, process, and enhance images for downstream ML tasks.
+
+### Requirements
+- Load images in multiple formats (JPG, PNG, BMP, TIFF)
+- Resize with multiple interpolation methods
+- Apply grayscale conversion
+- Apply color space conversions (RGB, HSV, LAB, Grayscale)
+- Apply smoothing filters (average, Gaussian, median, bilateral)
+- Apply edge detection (Sobel, Canny, Laplacian)
+- Apply morphological operations (erosion, dilation, opening, closing)
+- Apply histogram equalization and CLAHE
+- Save processed images
+
+### Architecture
+```
+Input Image → Preprocessing Pipeline → Processed Image
+                    ↓
+              [Resize]
+              [Color Convert]
+              [Filter]
+              [Threshold]
+              [Morphology]
+              [Equalize]
+```
+
+### Code Structure
+```
+image_preprocessor/
+├── main.py
+├── preprocessor.py
+├── filters.py
+├── morphology.py
+├── utils.py
+├── requirements.txt
+└── README.md
+```
+
+### Expected Output
+- CLI tool: `python main.py --input photo.jpg --output processed.jpg --operations blur,edge,threshold`
+- Processed images saved to output directory
+
+---
+
+## PROJECT 2 — DOCUMENT SCANNER (Level 2)
+
+### Problem Statement
+Build an automatic document scanner that detects, corrects perspective, and enhances document images.
+
+### Requirements
+- Detect document edges in photo
+- Find the four corner points
+- Apply perspective transformation
+- Apply adaptive thresholding for clean text
+- Output clean scanned document
+
+### Implementation Steps
+1. Load image → resize for faster processing
+2. Convert to grayscale → Gaussian blur
+3. Canny edge detection
+4. Find contours → select largest quadrilateral
+5. Order corner points (top-left, top-right, bottom-right, bottom-left)
+6. Compute perspective transform matrix
+7. Apply warp perspective
+8. Apply adaptive threshold
+9. Save result
+
+### Dataset
+- Use your own phone photos of documents
+- Or use DocUNet dataset samples
+
+### Expected Output
+```
+Original Photo → Edge Detection → Perspective Corrected → Clean Scan
+```
+
+---
+
+## PROJECT 3 — COLOR-BASED OBJECT TRACKER (Level 2)
+
+### Problem Statement
+Build a real-time object tracker that tracks colored objects using webcam feed.
+
+### Requirements
+- Capture webcam feed
+- Convert to HSV color space
+- Track specified color using HSV range
+- Find contours of colored object
+- Draw bounding box and centroid
+- Display tracking information
+- Support multiple color presets
+
+### Algorithm
+1. Capture frame from webcam
+2. Convert BGR → HSV
+3. Create color mask using inRange
+4. Apply morphological operations to clean mask
+5. Find contours
+6. Filter by area (ignore small noise)
+7. Draw bounding box on largest contour
+8. Compute and display centroid
+9. Repeat
+
+### Configuration
+```python
+COLOR_PRESETS = {
+    'red': {'lower': [0,100,100], 'upper': [10,255,255]},
+    'blue': {'lower': [100,50,50], 'upper': [130,255,255]},
+    'green': {'lower': [40,50,50], 'upper': [80,255,255]},
+    'yellow': {'lower': [20,100,100], 'upper': [35,255,255]},
+}
+```
+
+### Expected Output
+- Real-time video with bounding box overlay
+- Color label and centroid coordinates
+- FPS counter
+
+---
+
+## PROJECT 4 — IMAGE AUGMENTATION PIPELINE (Level 2)
+
+### Problem Statement
+Build a data augmentation pipeline for training image classification models.
+
+### Requirements
+- Load images from a directory
+- Apply random augmentations:
+  - Horizontal/Vertical flip
+  - Rotation (±30°)
+  - Random crop and resize
+  - Brightness/contrast adjustment
+  - Gaussian noise
+  - Color jitter
+  - Random erase/cutout
+- Generate N augmented versions per image
+- Save augmented dataset with labels preserved
+
+### Use Cases
+- Medical imaging (limited data)
+- Satellite imagery
+- Manufacturing defect detection
+
+### Expected Output
+```
+input/
+├── class1/
+│   ├── img1.jpg → img1_aug1.jpg, img1_aug2.jpg, ...
+└── class2/
+    ├── img2.jpg → img2_aug1.jpg, img2_aug2.jpg, ...
+```
+
+---
+
+## PROJECT 5 — CONTOUR-BASED OBJECT COUNTER (Level 3)
+
+### Problem Statement
+Build an automated object counting system for industrial or surveillance applications.
+
+### Requirements
+- Process video or image sequence
+- Background subtraction for motion detection
+- Contour detection for object identification
+- Object tracking using centroid tracking
+- Count objects entering/exiting a defined region
+- Handle overlapping objects
+- Output count and statistics
+
+### Architecture
+```
+Video Input → Background Subtractor → Foreground Mask
+    ↓
+Morphological Cleanup → Contour Detection
+    ↓
+Object Tracking → Counting Logic
+    ↓
+Output: Count + Statistics + Annotated Video
+```
+
+### Key Components
+1. Background subtractor (MOG2 or KNN)
+2. Contour detection with area filtering
+3. Centroid tracker (assign IDs, match across frames)
+4. Counting line/zone logic
+5. Visualization overlay
+
+### Expected Output
+- Annotated video with bounding boxes and IDs
+- Count display
+- Summary statistics (total count, per-class count)

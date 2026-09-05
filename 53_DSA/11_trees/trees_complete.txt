@@ -1,0 +1,206 @@
+================================================================================
+DSA MODULE 11: TREES — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Implement binary trees and BSTs
+- Perform all tree traversals (inorder, preorder, postorder, BFS)
+- Solve tree problems using DFS and BFS
+- Implement BST operations
+- Solve 20+ tree LeetCode problems
+
+================================================================================
+1. TREE FUNDAMENTALS
+================================================================================
+
+BINARY TREE NODE
+-----------------
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+TERMS
+-----
+Root: top node
+Leaf: node with no children
+Height: longest path from root to leaf
+Depth: distance from root to node
+Balanced: height difference of left/right subtrees ≤ 1 for all nodes
+
+================================================================================
+2. TREE TRAVERSALS
+================================================================================
+
+INORDER (Left → Root → Right)
+------------------------------
+def inorder(root):
+    if not root: return []
+    return inorder(root.left) + [root.val] + inorder(root.right)
+
+BINARY SEARCH TREE: returns sorted order!
+
+PREORDER (Root → Left → Right)
+--------------------------------
+def preorder(root):
+    if not root: return []
+    return [root.val] + preorder(root.left) + preorder(root.right)
+
+POSTORDER (Left → Right → Root)
+---------------------------------
+def postorder(root):
+    if not root: return []
+    return postorder(root.left) + postorder(root.right) + [root.val]
+
+ITERATIVE INORDER (Using Stack)
+--------------------------------
+def inorder_iterative(root):
+    stack = []
+    result = []
+    current = root
+    while current or stack:
+        while current:
+            stack.append(current)
+            current = current.left
+        current = stack.pop()
+        result.append(current.val)
+        current = current.right
+    return result
+
+LEVEL ORDER (BFS)
+------------------
+from collections import deque
+
+def level_order(root):
+    if not root: return []
+    result = []
+    queue = deque([root])
+    while queue:
+        level = []
+        for _ in range(len(queue)):
+            node = queue.popleft()
+            level.append(node.val)
+            if node.left: queue.append(node.left)
+            if node.right: queue.append(node.right)
+        result.append(level)
+    return result
+
+================================================================================
+3. BINARY SEARCH TREE (BST)
+================================================================================
+
+Property: left.val < root.val < right.val for all nodes
+
+SEARCH: O(log n) average, O(n) worst
+INSERT: O(log n) average
+DELETE: O(log n) average
+
+BST INSERT
+-----------
+def bst_insert(root, val):
+    if not root: return TreeNode(val)
+    if val < root.val:
+        root.left = bst_insert(root.left, val)
+    else:
+        root.right = bst_insert(root.right, val)
+    return root
+
+BST VALIDATE
+-------------
+def is_valid_bst(root, min_val=float('-inf'), max_val=float('inf')):
+    if not root: return True
+    if root.val <= min_val or root.val >= max_val:
+        return False
+    return (is_valid_bst(root.left, min_val, root.val) and
+            is_valid_bst(root.right, root.val, max_val))
+
+================================================================================
+4. TREE PROBLEMS
+================================================================================
+
+MAXIMUM DEPTH
+--------------
+def max_depth(root):
+    if not root: return 0
+    return 1 + max(max_depth(root.left), max_depth(root.right))
+
+IS BALANCED
+------------
+def is_balanced(root):
+    def check_height(node):
+        if not node: return 0
+        left = check_height(node.left)
+        right = check_height(node.right)
+        if left == -1 or right == -1: return -1
+        if abs(left - right) > 1: return -1
+        return 1 + max(left, right)
+    return check_height(root) != -1
+
+LOWEST COMMON ANCESTOR
+------------------------
+def lca(root, p, q):
+    if not root or root == p or root == q:
+        return root
+    left = lca(root.left, p, q)
+    right = lca(root.right, p, q)
+    if left and right: return root
+    return left or right
+
+PATH SUM
+---------
+def has_path_sum(root, target):
+    if not root: return False
+    if not root.left and not root.right:
+        return root.val == target
+    remaining = target - root.val
+    return (has_path_sum(root.left, remaining) or
+            has_path_sum(root.right, remaining))
+
+SERIALIZE / DESERIALIZE
+-------------------------
+def serialize(root):
+    if not root: return "null"
+    return f"{root.val},{serialize(root.left)},{serialize(root.right)}"
+
+def deserialize(data):
+    def helper(nodes):
+        val = next(nodes)
+        if val == "null": return None
+        node = TreeNode(int(val))
+        node.left = helper(nodes)
+        node.right = helper(nodes)
+        return node
+    return helper(iter(data.split(",")))
+
+================================================================================
+5. LEETCODE PROBLEMS
+================================================================================
+
+EASY
+----
+1. Maximum Depth of Binary Tree (LC #104)
+2. Same Tree (LC #100)
+3. Invert Binary Tree (LC #226)
+4. Subtree of Another Tree (LC #572)
+5. Diameter of Binary Tree (LC #543)
+
+MEDIUM
+------
+6. Binary Tree Level Order Traversal (LC #102)
+7. Validate BST (LC #98)
+8. Lowest Common Ancestor (LC #236)
+9. Binary Tree Right Side View (LC #199)
+10. Kth Smallest Element in BST (LC #230)
+
+HARD
+----
+11. Binary Tree Maximum Path Sum (LC #124)
+12. Serialize and Deserialize Binary Tree (LC #297)
+13. Vertical Order Traversal (LC #987)
+
+================================================================================
+END OF MODULE 11
+================================================================================

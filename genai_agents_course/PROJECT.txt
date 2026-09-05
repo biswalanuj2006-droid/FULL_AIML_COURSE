@@ -1,0 +1,263 @@
+================================================================================
+PROJECT.txt - PROJECT ROADMAP
+Three levels + final capstone. Each project lists: objective, prerequisites,
+concepts, technologies, architecture, folder structure, implementation
+phases, features, testing, evaluation, deployment, security, GitHub,
+resume, interview questions. Grading rubric at the end applies to all.
+================================================================================
+
+GRADING SYSTEM (every project)
+10% Architecture | 15% Code quality | 15% Functionality | 10% Testing |
+10% Evaluation | 10% Security | 10% Performance | 10% Documentation |
+10% Deployment. (Level 1 projects: drop Security/Deployment weights into
+Code + Testing.)
+
+================================================================================
+LEVEL 1 - FOUNDATION
+================================================================================
+
+PROJECT 1.1 LLM Chat Application
+Objective: stream tokens from an LLM through a typed backend into a UI.
+Prerequisites: GATE 1-2 (Python, DL, attention). Concepts: Parts 10-11.
+Tech: FastAPI, SSE streaming, Pydantic, any LLM client interface.
+Architecture: UI -> POST /chat -> LLMClient.stream -> SSE -> UI.
+Folder: chat_app/{main.py, clients/, schemas.py, tests/}.
+Phases: 1) env + provider-agnostic client 2) /chat non-streaming
+3) StreamingResponse SSE 4) chat history in memory 5) tests.
+Evaluation: first-token latency, tokens/sec, correctness on 20 canned Qs.
+Security: keys in env only, prompt length caps, basic rate limit.
+Interview: "Why SSE not WebSocket here?" "How do you make it provider-agnostic?"
+
+PROJECT 1.2 Prompt Engineering Playground
+Objective: iterate + version prompts with a live eval panel.
+Concepts: Part 10. Tech: FastAPI + React (or Streamlit).
+Features: template editor with variables, delimiters, few-shot library,
+version history, side-by-side model comparison, save/load JSON.
+Evaluation: 30-question golden set with human scores; track score by version.
+Interview: "How do you prevent prompt drift in production?"
+
+PROJECT 1.3 Semantic Search Engine
+Objective: search a personal document set by meaning, not keywords.
+Concepts: Parts 12-13. Tech: embeddings API or local model, FAISS/Chroma,
+FastAPI. Ingest: parse txt/md/pdf -> chunk -> embed -> index.
+Features: top-k search, score display, metadata filter, cosine explainer.
+Testing: known-answer queries; eval recall@10 on 50 labeled queries.
+Interview: "Why normalize embeddings?" "Brute force vs HNSW tradeoffs?"
+
+PROJECT 1.4 Document Q&A
+Objective: answer questions strictly from uploaded documents with citations.
+Concepts: Parts 14-15. Tech: RAG pipeline + chat UI.
+Features: upload -> parse -> chunk -> index; ask -> retrieve -> grounded
+prompt -> answer with chunk citations; "I don't know" when unsupported.
+Evaluation: faithfulness spot-check; 30-Q set with gold answers.
+Security: file-type allowlist, size caps.
+Interview: "How do you guarantee the answer came from the document?"
+
+PROJECT 1.5 Basic RAG System
+Objective: the full retrieval pipeline as a reusable library.
+Concepts: Parts 14-17. Tech: chunker, embedder, vector store, retriever,
+prompt builder, response parser - each a module.
+Features: recursive chunking w/ overlap, metadata, hybrid BM25+dense,
+hit-rate + MRR reports, answer evaluation harness.
+Interview: "What metrics prove retrieval improved?"
+
+PROJECT 1.6 AI Summarizer
+Objective: long-document summarization with map-reduce.
+Concepts: Parts 10, 16 (context compression). Tech: chunk -> summarize each
+-> merge summaries; optional final synthesis.
+Evaluation: faithfulness of summary to source on 20 docs.
+Interview: "Where does a naive summarizer lose facts? How does map-reduce help?"
+
+PROJECT 1.7 Structured Output Assistant
+Objective: everything returns validated JSON.
+Concepts: Part 22. Tech: Pydantic models, function/tool calling, retries.
+Features: schema registry, validate -> repair loop, invalid-output report.
+Interview: "Validation vs constrained decoding - when each?"
+
+================================================================================
+LEVEL 2 - ADVANCED
+================================================================================
+
+PROJECT 2.1 Advanced RAG System
+Objective: production-quality retrieval with reranking and query rewriting.
+Concepts: Parts 16-17. Add to 1.5: reranker (cross-encoder) over top-50,
+query rewriting for multi-turn, parent-child chunking, eval-driven tuning.
+Evaluation gates: retrieval + answer metrics on a labeled set BEFORE/AFTER
+each feature (no feature ships without a measured win).
+Interview: "Show a case where reranking hurt and why."
+
+PROJECT 2.2 Research Assistant
+Objective: answer multi-hop questions across a document corpus.
+Concepts: Parts 16, 30. Features: decomposition of the question into
+sub-questions, retrieve per sub-question, synthesize with citations,
+confidence-gated "I don't know".
+Interview: "Where does flat top-k fail and how does decomposition fix it?"
+
+PROJECT 2.3 Document Intelligence System
+Objective: 10k+ mixed documents (PDF/HTML/CSV) with incremental updates.
+Concepts: Parts 14-15, 42. Features: ingest workers, dedup by hash, update
+invalidation, table extraction, metadata pipeline, monitoring of ingest lag.
+Security: PII scanning at ingest.
+Interview: "A document updates - how do you invalidate old chunks?"
+
+PROJECT 2.4 Agentic RAG
+Objective: retrieval as a tool the agent decides to use.
+Concepts: Parts 24, 30. Agent decides: retrieve? which query? sufficient?
+Answer with citations. Tools: [search_kb, ask_web, verify].
+Evaluation: task success + retrieval-call accuracy + cost per task.
+Interview: "When does always-retrieve beat agentic retrieval?"
+
+PROJECT 2.5 AI Customer Support Agent
+Objective: production-grade support agent with policies + HITL.
+Concepts: Parts 23-26, 36-37. Tools: [kb_search, order_lookup (read-only),
+refund_request (needs human approval), escalate]. Memory: conversation +
+policy memory. Eval: 100 realistic tickets, success + CSAT proxy + cost.
+Security: least-privilege tools, approval for state-changing actions, audit
+log of every tool call.
+Interview: "Design the human-in-the-loop flow for refunds."
+
+PROJECT 2.6 Coding Assistant
+Objective: repo-aware Q&A + edit suggestions (no autonomous execution).
+Concepts: Parts 31. Tools: [search_code, read_file, git grep, explain].
+Features: index repo (chunks + symbols), answer with file:line citations.
+Security: read-only workspace.
+Interview: "What breaks if you index code like prose?"
+
+PROJECT 2.7 Multi-Tool AI Assistant
+Objective: agent with calculator, weather, search, DB lookup + planner.
+Concepts: Parts 23-26, 49. Pattern: planner -> executor -> verifier.
+Evaluation: task success across 50 tasks spanning 1-3 tool calls; failure +
+recovery rate.
+Interview: "How do you prevent a 3-tool task from becoming a 30-step loop?"
+
+PROJECT 2.8 Knowledge Graph + RAG
+Objective: entity/relation extraction over a corpus + graph retrieval.
+Concepts: Part 35. Extract triples (LLM), store graph (networkx ->
+graph DB), retrieve by traversal + vector hybrid. Eval on multi-hop Qs vs
+pure vector RAG.
+Interview: "When does graph retrieval beat vector and vice versa?"
+
+PROJECT 2.9 Multimodal Assistant
+Objective: ask questions about images + documents (screenshots, scans).
+Concepts: Part 33. OCR pass, image understanding via VLM, combine with RAG.
+Evaluation: answer accuracy on 50 visual questions.
+Security: image content policy.
+Interview: "Vision encoder + LLM: where does the connection happen?"
+
+================================================================================
+LEVEL 3 - INDUSTRY / RESEARCH
+================================================================================
+
+PROJECT 3.1 Production AI Agent Platform
+Objective: the reference architecture of COURSE Part 50, real.
+Components: gateway -> FastAPI (auth) -> orchestrator -> router -> tools
+-> memory (Postgres + Redis + vector) -> eval -> observability -> Docker.
+Requirements: authN/authZ, rate limits, budgets, retries, per-tenant
+isolation, full traces, CI eval gate, blue-green deploy, rollback.
+Interview: "Walk through a request from client to tool result and back."
+
+PROJECT 3.2 Autonomous Research Agent
+Objective: multi-hop web + KB research with verification and citations.
+Pattern: planner -> parallel researchers -> critic -> final report.
+Evaluation: report factuality (claims checked against sources), cost, time.
+Security: allowlist domains, injection-resistant prompt split, audit log.
+Interview: "How do you guarantee citations are real?"
+
+PROJECT 3.3 Multi-Agent Research System
+Objective: supervisor + specialists (retriever, coder, reviewer) with shared
+state; measure whether multi-agent beats single-agent (ablate!).
+Eval: success rate, tokens, wall time vs single-agent baseline.
+Interview: "Show the ablation that justified (or killed) your multi-agent."
+
+PROJECT 3.4 Enterprise Knowledge Agent
+Objective: 1M+ docs, RBAC-scoped retrieval (users only see chunks their
+role allows), freshness (daily ingest), auditability.
+Security is the product: document-level ACL enforced at retrieval + answer.
+Interview: "ACL in vector DB: filter before or after search? Why?"
+
+PROJECT 3.5 Coding Agent
+Objective: generate + verify patches in a sandbox.
+Loop: understand -> edit -> run tests -> iterate (bounded) -> summary.
+Security: sandboxed execution, workspace allowlist, output review gate.
+Evaluation: pass rate on a benchmark of 50 issues; tokens per fix.
+Interview: "Sandbox escape risks and your mitigations."
+
+PROJECT 3.6 AI Data Analyst Agent
+Objective: natural-language -> read-only SQL -> chart -> explanation.
+Tools: read-only DB role, query-validator, plotter, critic.
+Security: read-only role, query allowlist, injection defense, cell-level
+PII masking. Evaluation: query correctness on 50 questions + chart quality.
+Interview: "SQL injection via the agent - enumerate every layer."
+
+PROJECT 3.7 Multimodal Enterprise Agent
+Objective: tickets with screenshots/docs -> diagnose -> draft response.
+Concepts: Parts 33, 24. Eval: resolution rate + draft acceptance.
+Interview: "Fusing OCR text with image understanding - failure cases?"
+
+PROJECT 3.8 Agent Evaluation Platform
+Objective: run agent suites in CI, report metrics, block regressions.
+Concepts: Part 37. Features: task registry, golden answers, LLM-as-judge
+(validated vs human), per-version score diffs, trajectory replay.
+Interview: "Your judge disagrees with humans 15% - what do you do?"
+
+PROJECT 3.9 Secure Tool-Using Agent
+Objective: an agent deliberately engineered against prompt injection.
+Eval suite: direct/indirect injection, exfiltration attempts, tool-abuse
+attempts; report pass rates per attack class + fix log.
+Interview: "Give an injection your agent still fails and your next defense."
+
+PROJECT 3.10 End-to-End GenAI SaaS Platform
+Objective: multi-tenant product: signup, billing, per-tenant keys, usage
+metering, cost attribution, dashboards, SLAs. Everything from Parts 39-47.
+Interview: "Cost per user per month - derive the formula from your logs."
+
+================================================================================
+FINAL CAPSTONE - PRODUCTION AI AGENT PLATFORM
+================================================================================
+Combines: LLM, RAG, vector DB, PostgreSQL, Redis, tool calling, agent,
+memory, planning, evaluation, security, FastAPI, Docker, observability,
+MLOps, deployment. (Cross-file: COURSE Part 50, EXAMPLE.py sections 45-62.)
+
+Requirements: multi-user chat with an agent that answers from a private KB,
+uses tools (calculator, DB lookup), plans multi-step tasks, remembers
+conversations, and cannot be prompt-injected into leaking data or calling
+destructive tools.
+
+Architecture (ASCII):
+UI -> Gateway -> FastAPI(auth) -> Orchestrator -> Planner -> LLM Router
+ -> Tools [web search, RAG, read-only DB, calculator, sandboxed code]
+ -> Memory [PostgreSQL: conv + logs; Redis: cache + queues + rate limit;
+             vector DB: KB chunks]
+ -> Evaluation -> Observability(traces) -> MLflow -> Docker Compose -> Cloud
+
+Database schema: users, sessions, conversations, messages, tool_calls,
+usage_events, eval_runs. API design: /chat (SSE), /sessions,
+/tools/status, /healthz /readyz, /v1/metrics.
+Agent graph: plan -> [retrieve | call tool]* -> verify -> answer, with
+conditional retry edges (max 5) and human-in-the-loop interrupt on
+state-changing tools.
+RAG pipeline: chunker w/ metadata, hybrid BM25+dense, reranker, grounded
+prompt, faithfulness self-check.
+Evaluation pipeline: 100-task golden suite in CI; gates deploys.
+Security model: least privilege tools, sandboxed execution, allowlists,
+rate limits, per-tenant isolation, secrets in vault, audit log.
+Testing: unit (each tool), integration (agent loop on fixtures), injection
+attack suite, load test (50 concurrent SSE).
+Monitoring: latency, tokens, cost/user, error rate, eval score over time,
+drift of query distribution; alerting on budget breach.
+Cost strategy: routing small/big models, prefix caching, budget caps/task.
+Failure recovery: retries with backoff, fallback model, KV/DB failover,
+rollback of prompt+model versions.
+Folder structure:
+platform/{gateway,api,auth,orchestrator,agents,planner,llm_router,tools,
+rag,memory,storage,evals,observability,deploy,docker-compose.yml,
+tests/{unit,integration,security,load}}.
+Milestones: M1 chat + auth + SSE; M2 RAG + eval; M3 tools + agent loop;
+M4 memory + planning; M5 security suite; M6 observability + cost; M7 docker
++ deploy + CI.
+Acceptance criteria: task success >= target on eval suite; injection suite
+100% blocked; p95 first token < 2s; cost/user under budget; rollback < 5 min.
+
+================================================================================
+END OF PROJECT.txt
+================================================================================

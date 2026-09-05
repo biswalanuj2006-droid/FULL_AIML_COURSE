@@ -1,0 +1,72 @@
+================================================================================
+MLOPS MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (15 Questions)
+================================
+Q1: What is MLOps and why is it important?
+Q2: What is experiment tracking?
+Q3: What is model versioning?
+Q4: What is data versioning?
+Q5: What is a model registry?
+Q6: What is CI/CD?
+Q7: What is model monitoring?
+Q8: What is data drift?
+Q9: What is concept drift?
+Q10: What is model drift?
+Q11: What is MLflow and what does it track?
+Q12: What is DVC?
+Q13: What is the difference between model and data versioning?
+Q14: What is reproducibility in ML?
+Q15: What is a feature store?
+
+SECTION B — MEDIUM (15 Questions)
+==================================
+Q16: Set up MLflow experiment tracking for a model.
+Q17: Implement model versioning with MLflow model registry.
+Q18: Build a complete ML pipeline with DVC.
+Q19: Implement automated retraining pipeline.
+Q20: Set up model monitoring for prediction drift.
+Q21: Build a CI/CD pipeline for ML with GitHub Actions.
+Q22: Implement A/B testing for model comparison.
+Q23: Build a feature store for ML features.
+Q24: Implement model rollback mechanism.
+Q25: Set up logging and metrics collection.
+Q26: Build a model serving pipeline.
+Q27: Implement data validation in pipeline.
+Q28: Build automated model evaluation pipeline.
+Q29: Implement experiment comparison dashboard.
+Q30: Build a complete MLOps workflow.
+
+SECTION C — HARD (8 Questions)
+================================
+Q31: Build end-to-end MLOps platform with Docker.
+Q32: Implement model monitoring with drift detection.
+Q33: Build automated retraining with quality gates.
+Q34: Implement multi-model serving with traffic splitting.
+Q35: Build a complete ML platform with MLflow + Docker.
+Q36: Implement feature store with real-time updates.
+Q37: Build a production MLOps pipeline with Kubernetes.
+Q38: Implement model explainability in production.
+
+SECTION D — DEBUGGING (6 Problems)
+====================================
+D1: Why is MLflow not tracking experiments?
+D2: Fix: Model deployment fails in Docker container.
+D3: Why are predictions different in production vs training?
+D4: Fix: DVC pull fails for large files.
+D5: Why is model monitoring not detecting drift?
+D6: Fix: CI/CD pipeline fails at model training step.
+
+SECTION E — INTERVIEW (8 Questions)
+=====================================
+I1: Explain the MLOps lifecycle.
+I2: How do you handle model versioning in production?
+I3: What is the difference between online and batch prediction?
+I4: How do you detect model degradation?
+I5: How do you ensure reproducibility in ML experiments?
+I6: What is the role of Docker in MLOps?
+I7: How would you design a model serving architecture?
+I8: What are the key metrics for monitoring ML systems?
+
+================================================================================

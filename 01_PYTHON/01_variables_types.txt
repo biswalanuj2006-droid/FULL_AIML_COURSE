@@ -1,0 +1,539 @@
+    ================================================================================
+MODULE 01 — PYTHON FOR AI/ML
+LESSON 01: VARIABLES, TYPES, AND OPERATORS
+================================================================================
+
+## What You Will Learn
+- Python variables and naming conventions
+- All major data types used in AI/ML
+- Type conversion and type checking
+- Operators for data manipulation
+- How these concepts are used in ML
+
+## Why You Need It
+Every dataset, every model parameter, every prediction is represented
+as Python data types. Understanding types deeply prevents bugs and
+enables efficient data manipulation.
+
+================================================================================
+1. VARIABLES
+================================================================================
+
+WHAT IS A VARIABLE?
+    A variable is a named reference to a value stored in memory.
+
+    Think of it as a labeled box that holds data:
+
+    ┌─────────┐
+    │   age    │ ──→ 25
+    └─────────┘
+
+    The name "age" points to the value 25.
+
+CREATING VARIABLES:
+    age = 25                    # integer
+    name = "Alice"              # string
+    height = 5.6                # float
+    is_student = True           # boolean
+
+    No declaration needed. Python figures out the type automatically.
+
+NAMING RULES:
+    ✓ Must start with a letter or underscore
+    ✓ Can contain letters, numbers, underscores
+    ✓ Case-sensitive (age ≠ Age ≠ AGE)
+    ✓ Cannot be a Python keyword (if, for, class, etc.)
+
+    GOOD NAMES:           BAD NAMES:
+    age                   2age (starts with number)
+    student_name          student-name (contains hyphen)
+    max_iterations        class (reserved keyword)
+    x_train               _private_var (leading underscore)
+    learning_rate         learning rate (contains space)
+
+ML NAMING CONVENTIONS:
+    X_train, X_test       Feature matrices (capital X)
+    y_train, y_test       Target vectors (lowercase y)
+    model                 Trained model object
+    features              List of feature names
+    predictions           Model predictions
+
+================================================================================
+2. NUMERIC TYPES
+================================================================================
+
+INTEGERS (int):
+    x = 42
+    y = -10
+    z = 0
+
+    Python handles arbitrarily large integers:
+    big = 999999999999999999999999999999
+
+    ML USE: Counting samples, indices, iteration counters
+
+FLOATS (float):
+    pi = 3.14159
+    learning_rate = 0.001
+    accuracy = 0.95
+
+    Floats are stored as 64-bit IEEE 754 doubles.
+    They have limited precision (about 15-17 significant digits).
+
+    >>> 0.1 + 0.2
+    0.30000000000000004    # NOT exactly 0.3!
+
+    This is why: 0.1 + 0.2 ≠ 0.3 in floating-point arithmetic.
+    This matters when comparing model outputs.
+
+    ML USE: Model weights, probabilities, loss values, metrics
+
+COMPLEX NUMBERS:
+    z = 3 + 4j
+    print(z.real)    # 3.0
+    print(z.imag)    # 4.0
+
+    ML USE: Signal processing, Fourier transforms (rare in ML directly)
+
+TYPE CHECKING:
+    x = 42
+    print(type(x))          # <class 'int'>
+    print(isinstance(x, int))  # True
+
+================================================================================
+3. BOOLEAN TYPE
+================================================================================
+
+BOOLEANS:
+    is_positive = True
+    is_negative = False
+
+    They are actually integers underneath:
+    True + True = 2
+    True * 10 = 10
+    False + 1 = 1
+
+COMPARISON OPERATORS (produce booleans):
+    5 > 3       # True
+    5 < 3       # False
+    5 == 5      # True
+    5 != 3      # True
+    5 >= 5      # True
+    5 <= 4      # False
+
+LOGICAL OPERATORS:
+    True and False   # False  (both must be True)
+    True or False    # True   (at least one must be True)
+    not True         # False  (inverts)
+
+ML USE:
+    - Boolean masks for filtering data
+    - Conditionals in feature engineering
+    - Binary classification targets (True/False → 1/0)
+
+EXAMPLE — Boolean Masking:
+    import numpy as np
+    scores = np.array([85, 92, 78, 95, 88])
+    passing = scores >= 80           # [True, True, False, True, True]
+    print(scores[passing])           # [85 92 95 88]
+
+    This is the FOUNDATION of data filtering in NumPy and Pandas.
+
+================================================================================
+4. STRING TYPE
+================================================================================
+
+STRINGS:
+    name = "Alice"
+    greeting = 'Hello'
+    multi_line = """This is
+    a multi-line
+    string"""
+
+    Strings are IMMUTABLE (cannot be changed after creation).
+
+STRING OPERATIONS:
+    s = "Hello, World!"
+
+    s.upper()          # "HELLO, WORLD!"
+    s.lower()          # "hello, world!"
+    s.split(", ")      # ["Hello", "World!"]
+    s.replace("World", "Python")  # "Hello, Python!"
+    s.find("World")    # 7
+    s[0:5]             # "Hello"
+    len(s)             # 13
+
+STRING FORMATTING:
+    name = "Alice"
+    age = 25
+
+    # f-string (RECOMMENDED)
+    print(f"{name} is {age} years old")
+
+    # .format()
+    print("{} is {} years old".format(name, age))
+
+    # % formatting (old style, avoid)
+    print("%s is %d years old" % (name, age))
+
+ML USE:
+    - Feature names
+    - Column names in DataFrames
+    - File paths
+    - Logging and error messages
+    - Text data processing (NLP)
+
+EXAMPLE — Text Processing:
+    text = "  Hello, Machine Learning!  "
+    cleaned = text.strip().lower().replace("!", "")
+    print(cleaned)    # "hello, machine learning"
+
+================================================================================
+5. NONE TYPE
+================================================================================
+
+None REPRESENTS ABSENCE OF VALUE:
+
+    result = None
+    print(result is None)    # True
+    print(result == None)    # True (but use 'is' for None checks)
+
+    ML USE:
+    - Default function arguments: def f(x=None)
+    - Checking if a value exists
+    - Missing data representation
+
+    IMPORTANT: Always check None with 'is', not '==':
+    if result is None:       # ✓ CORRECT
+    if result == None:       # ✗ AVOID (works but not Pythonic)
+
+================================================================================
+6. COLLECTION TYPES
+================================================================================
+
+--- LISTS ---
+
+    LIST = ordered, mutable collection
+
+    numbers = [1, 2, 3, 4, 5]
+    mixed = [1, "hello", 3.14, True]
+    nested = [[1, 2], [3, 4], [5, 6]]
+
+    ACCESS:
+    numbers[0]      # 1 (first element)
+    numbers[-1]     # 5 (last element)
+    numbers[1:3]    # [2, 3] (slice, exclusive end)
+
+    MODIFY:
+    numbers[0] = 10     # [10, 2, 3, 4, 5]
+    numbers.append(6)   # [10, 2, 3, 4, 5, 6]
+    numbers.insert(0, 0) # [0, 10, 2, 3, 4, 5, 6]
+
+    COMMON OPERATIONS:
+    len(numbers)        # 6
+    10 in numbers       # True
+    numbers.count(10)   # 1
+    numbers.sort()      # sorts in place
+    sorted(numbers)     # returns new sorted list
+
+    ML USE:
+    - Storing feature names
+    - Collecting results
+    - Batch processing
+    - Storing model predictions
+
+--- TUPLES ---
+
+    TUPLE = ordered, IMMUTABLE collection
+
+    coordinates = (10, 20)
+    rgb = (255, 128, 0)
+
+    Cannot modify after creation:
+    coordinates[0] = 30   # ERROR!
+
+    ML USE:
+    - Shape of arrays: (n_samples, n_features)
+    - Fixed configuration
+    - Dictionary keys (lists cannot be keys)
+
+--- DICTIONARIES ---
+
+    DICT = key-value pairs, mutable
+
+    student = {
+        "name": "Alice",
+        "age": 25,
+        "grades": [90, 85, 92]
+    }
+
+    ACCESS:
+    student["name"]           # "Alice"
+    student.get("gpa", 0.0)  # 0.0 (default if key missing)
+
+    MODIFY:
+    student["age"] = 26
+    student["email"] = "alice@example.com"
+
+    ITERATE:
+    for key, value in student.items():
+        print(f"{key}: {value}")
+
+    ML USE:
+    - Model hyperparameters
+    - Configuration files
+    - JSON data parsing
+    - Feature dictionaries
+
+--- SETS ---
+
+    SET = unordered, unique elements
+
+    unique_features = {"age", "salary", "age"}  # {"age", "salary", "age"} → {"age", "salary"}
+    unique_features.add("department")
+    unique_features.remove("age")
+
+    SET OPERATIONS:
+    a = {1, 2, 3}
+    b = {2, 3, 4}
+    a | b    # {1, 2, 3, 4} (union)
+    a & b    # {2, 3} (intersection)
+    a - b    # {1} (difference)
+
+    ML USE:
+    - Finding unique categories
+    - Removing duplicates
+    - Set-based feature operations
+
+================================================================================
+7. TYPE CONVERSION (CASTING)
+================================================================================
+
+    int(3.9)          # 3 (truncates, does NOT round)
+    float(42)         # 42.0
+    str(42)           # "42"
+    list("abc")       # ['a', 'b', 'c']
+    tuple([1, 2, 3])  # (1, 2, 3)
+    set([1, 1, 2, 2]) # {1, 2}
+    bool(0)           # False
+    bool(1)           # True
+    bool("")          # False
+    bool("hello")     # True
+
+    TRUTHY AND FALSY VALUES:
+    Falsy: 0, 0.0, "", [], {}, set(), None, False
+    Truthy: Everything else
+
+    ML USE:
+    - Converting between data types
+    - Boolean indexing
+    - Data cleaning (converting string numbers to floats)
+
+================================================================================
+8. OPERATORS
+================================================================================
+
+ARITHMETIC:
+    +   Addition          5 + 3 = 8
+    -   Subtraction       5 - 3 = 2
+    *   Multiplication    5 * 3 = 15
+    /   Division          5 / 3 = 1.6667
+    //  Floor Division    5 // 3 = 1
+    %   Modulo            5 % 3 = 2
+    **  Power             5 ** 3 = 125
+
+    ML USE:
+    - Linear algebra: weights * features + bias
+    - Distance calculations
+    - Loss function computations
+
+COMPARISON:
+    ==  Equal
+    !=  Not equal
+    >   Greater than
+    <   Less than
+    >=  Greater or equal
+    <=  Less or equal
+
+    NOTE: Use == for value comparison, 'is' for identity comparison.
+    [1, 2] == [1, 2]   # True (same values)
+    [1, 2] is [1, 2]   # False (different objects)
+
+ASSIGNMENT OPERATORS:
+    x = 10
+    x += 5      # x = x + 5 = 15
+    x -= 3      # x = x - 3 = 12
+    x *= 2      # x = x * 2 = 24
+    x /= 4      # x = x / 4 = 6.0
+
+MEMBERSHIP OPERATORS:
+    "a" in "apple"       # True
+    3 in [1, 2, 3]       # True
+    "name" in {"name": "Alice"}  # True
+
+IDENTITY OPERATORS:
+    a = [1, 2, 3]
+    b = a                 # Same object
+    c = a.copy()          # Different object
+    a is b                # True
+    a is c                # False
+    a == c                # True (same values, different objects)
+
+================================================================================
+9. MUTABILITY — CRITICAL CONCEPT
+================================================================================
+
+MUTABLE (can be changed after creation):
+    - Lists: [1, 2, 3]
+    - Dictionaries: {"a": 1}
+    - Sets: {1, 2, 3}
+    - NumPy arrays
+
+IMMUTABLE (cannot be changed after creation):
+    - Integers: 42
+    - Floats: 3.14
+    - Strings: "hello"
+    - Tuples: (1, 2, 3)
+    - Booleans: True
+
+WHY THIS MATTERS:
+
+    # The mutable default argument trap
+    def add_to_list(item, lst=[]):    # DANGER!
+        lst.append(item)
+        return lst
+
+    print(add_to_list(1))    # [1]
+    print(add_to_list(2))    # [1, 2] ← NOT [2]!
+
+    # The default list is shared across all calls!
+
+    # CORRECT:
+    def add_to_list(item, lst=None):
+        if lst is None:
+            lst = []
+        lst.append(item)
+        return lst
+
+    print(add_to_list(1))    # [1]
+    print(add_to_list(2))    # [2] ← CORRECT
+
+    THIS IS THE #1 MOST COMMON PYTHON BUG IN ML CODE.
+
+================================================================================
+10. PRACTICAL ML EXAMPLES
+================================================================================
+
+EXAMPLE 1: Loading a Dataset Description
+
+    dataset_info = {
+        "name": "Customer Churn",
+        "rows": 7043,
+        "columns": 21,
+        "target": "Churn",
+        "features": ["gender", "SeniorCitizen", "tenure", "MonthlyCharges"]
+    }
+
+    print(f"Dataset: {dataset_info['name']}")
+    print(f"Shape: ({dataset_info['rows']}, {dataset_info['columns']})")
+
+EXAMPLE 2: Model Results
+
+    results = {
+        "logistic_regression": {"accuracy": 0.82, "f1": 0.79},
+        "random_forest": {"accuracy": 0.87, "f1": 0.85},
+        "xgboost": {"accuracy": 0.89, "f1": 0.87},
+    }
+
+    # Find best model by F1 score
+    best_model = max(results, key=lambda m: results[m]["f1"])
+    print(f"Best model: {best_model} (F1: {results[best_model]['f1']})")
+
+EXAMPLE 3: Feature Types
+
+    feature_types = {
+        "numerical": ["age", "income", "score"],
+        "categorical": ["gender", "city", "category"],
+        "boolean": ["is_active", "has_subscription"],
+        "text": ["review", "description"]
+    }
+
+    for ftype, features in feature_types.items():
+        print(f"{ftype}: {len(features)} features")
+
+================================================================================
+11. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Comparing floats with ==
+    # WRONG
+    if 0.1 + 0.2 == 0.3:
+        print("Equal")
+
+    # CORRECT
+    if abs(0.1 + 0.2 - 0.3) < 1e-10:
+        print("Equal")
+
+MISTAKE 2: Using mutable default arguments
+    def f(x=[]):        # WRONG — shared list!
+        x.append(1)
+        return x
+
+    def f(x=None):      # CORRECT
+        if x is None:
+            x = []
+        x.append(1)
+        return x
+
+MISTAKE 3: Modifying a list while iterating
+    lst = [1, 2, 3, 4, 5]
+    for x in lst:
+        if x % 2 == 0:
+            lst.remove(x)    # WRONG — modifies list during iteration
+
+    # CORRECT: Create new list
+    lst = [x for x in lst if x % 2 != 0]
+
+MISTAKE 4: Confusing 'is' and '=='
+    a = [1, 2, 3]
+    b = [1, 2, 3]
+    print(a == b)    # True (same values)
+    print(a is b)    # False (different objects)
+
+    Always use '==' for value comparison.
+    Use 'is' only for None, True, False checks.
+
+MISTAKE 5: Not understanding integer division
+    print(7 / 2)     # 3.5 (float division)
+    print(7 // 2)    # 3   (floor division)
+
+    In ML, you usually want regular division (/), not floor (//).
+
+================================================================================
+12. KNOWLEDGE CHECKPOINT
+================================================================================
+
+Can you answer these?
+
+1. What is the type of 3.0? (int or float?)
+2. What happens when you do [1, 2] + [3, 4]?
+3. What is the output of bool("")?
+4. Why is 0.1 + 0.2 != 0.3?
+5. What is the mutable default argument problem?
+6. What is the difference between 'is' and '=='?
+7. How do you safely get a value from a dictionary?
+8. What does range(5) produce?
+
+ANSWERS:
+1. float (3.0 is a float, 3 is an int)
+2. [1, 2, 3, 4] (lists concatenate with +)
+3. False (empty string is falsy)
+4. Floating-point precision limitation
+5. The default mutable object is shared across calls
+6. 'is' checks identity (same object), '==' checks equality (same value)
+7. dict.get(key, default_value)
+8. 0, 1, 2, 3, 4 (range is exclusive of end)
+
+================================================================================
+NEXT LESSON: 02_control_flow.txt — If/Else, Loops, Comprehensions
+================================================================================

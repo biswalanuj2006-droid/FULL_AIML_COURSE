@@ -1,0 +1,265 @@
+================================================================================
+ULTRA-DEEP RAG COURSE  -  PRACTICE.txt
+================================================================================
+Levels: 0 foundation / 1 beginner / 2 intermediate / 3 advanced /
+4 expert / 5 research. Every major module has conceptual, mathematical,
+coding, debugging, scenario, and interview questions. Numerical answers
+are verified (see VERIFIED ANSWERS section).
+
+================================================================================
+LEVEL 0 - FOUNDATION
+================================================================================
+CONCEPT
+  R0-01  What problem does RAG solve that an LLM alone cannot?
+  R0-02  Name the two lanes of a RAG system and what each does.
+  R0-03  What is a chunk? Why can't we retrieve whole documents?
+  R0-04  What is an embedding in one sentence?
+  R0-05  What is the difference between lexical and dense retrieval?
+  R0-06  What does 'grounded' mean for an answer?
+  R0-07  Why does RAG need metadata on every chunk?
+  R0-08  What is the abstain rule in a RAG prompt?
+  R0-09  What is a citation in RAG, and why require it?
+  R0-10  Why is ingestion 'idempotent' desirable?
+MATH
+  R0-M1  Context 8k tokens, prompt 1k, question 200: how much room is
+         left for evidence? How many 500-token chunks fit?
+  R0-M2  Cosine similarity of normalized vectors vs dot product: are
+         they equal? Why?
+  R0-M3  Corpus 100 docs, term in 10: what is IDF = log(N/df)? (log
+         base e; leave as expression then approximate)
+CODING
+  R0-C1  Load a text file, split into paragraphs, print counts.
+  R0-C2  Write a function that reports missing/blank lines in a doc.
+  R0-C3  Normalize unicode and collapse multiple newlines.
+DEBUGGING
+  R0-D1  Retrieval returns nothing for a query you know exists. First
+         check?
+  R0-D2  The same question returns different answers between runs.
+         What is nondeterministic?
+
+================================================================================
+LEVEL 1 - BEGINNER (INGESTION + CHUNKING + EMBEDDINGS)
+================================================================================
+CONCEPT
+  R1-01  Why is regex tag-stripping HTML worse than main-content
+         detection?
+  R1-02  Why preserve headings during parsing?
+  R1-03  Fixed-size vs recursive vs structure-aware chunking: when is
+         each the right choice?
+  R1-04  What does chunk overlap fix, and what does it cost?
+  R1-05  Why must chunk length respect the embedder's max length?
+  R1-06  What is the search unit vs the context unit (parent-child)?
+  R1-07  Why do we normalize embeddings before cosine/dot search?
+  R1-08  What is contrastive training of an embedder in one paragraph?
+MATH
+  R1-M1  Compute BM25 IDF for df=10, N=1000 (log base e): approximate
+         the number.
+  R1-M2  Vector (1,0) vs (0.707, 0.707): cosine similarity and angle.
+  R1-M3  A 2000-token doc, chunk size 400, overlap 50: how many chunks
+         and how many total tokens (incl. overlap)?
+DEBUGGING
+  R1-D1  A chunk ends mid-sentence and its embedding is garbage. Which
+         chunker design caused it?
+  R1-D2  After switching chunk sizes, retrieval scores drop across the
+         board. What else changed silently (chunker config versioning)?
+  R1-D3  Two paragraphs joined into one chunk confuse the embedder.
+         Where is the boundary lost?
+
+================================================================================
+LEVEL 2 - INTERMEDIATE (RETRIEVAL + HYBRID + RERANK)
+================================================================================
+CONCEPT
+  R2-01  Give a query class where BM25 beats dense, and one where dense
+         beats BM25. Explain why.
+  R2-02  What is RRF? Why is it rank-based and why is that robust?
+  R2-03  What is the retrieval funnel and why is it standard?
+  R2-04  What can a cross-encoder judge that a bi-encoder cannot?
+  R2-05  When would you NOT add a reranking stage?
+  R2-06  What is HyDE and what failure does it target?
+  R2-07  What does multi-query retrieval cost and when is it worth it?
+  R2-08  Why is 'right document, wrong section' a chunking problem
+         more than a retrieval problem?
+MATH
+  R2-M1  RRF: doc ranked 2 by system A and 5 by system B, k=60:
+         compute its RRF score.
+  R2-M2  Funnel cost: retrieve 100 (dense 5ms) -> rerank 50 (cross-
+         encoder 20ms each, parallel batches of 8): estimate rerank
+         latency and total.
+  R2-M3  Hybrid top-k: dense returns {d1,d2,d3}, sparse {d2,d4,d5}.
+         Union size before dedupe? After dedupe?
+DEBUGGING
+  R2-D1  Identifier query ('error 0x80070002') returns nothing with
+         dense-only. Why, and what is the fix?
+  R2-D2  Reranking changed nothing in your eval. What are three
+         explanations (no new signal, reranker domain mismatch,
+         retrieval already perfect)?
+  R2-D3  Post-filter on tenant leaves 3 results even though 100
+         matches the similarity. What is happening and what fixes it?
+
+================================================================================
+LEVEL 3 - ADVANCED (ADVANCED RAG + GENERATION + GROUNDING)
+================================================================================
+CONCEPT
+  R3-01  Rank these by expected value and justify: hybrid, rerank,
+         parent-child, query rewriting, agentic loop.
+  R3-02  Why can RAG still hallucinate even with perfect retrieval?
+         List the mechanisms.
+  R3-03  What is the abstain path in production and why is it
+         mandatory?
+  R3-04  How do fabricated citations happen and what checks them?
+  R3-05  What is contextual retrieval (context-aware chunk
+         embedding)? What failure does it fix?
+  R3-06  Conversational decompression: why rewrite 'it' before
+         retrieval?
+  R3-07  When is text-to-SQL the right 'RAG' and what is the core
+         security rule?
+MATH
+  R3-M1  Multi-hop: two sequential retrievals each 90% correct. End-to-
+         end correctness if independent? If the second depends on the
+         first?
+  R3-M2  Context budget: context 32k, system 1k, question 300, answer
+         room 2k. Evidence room? Chunks at 600 tokens?
+  R3-M3  Cost: 3 rewrite calls (1k in/200 out) + 1 generation (3k in/
+         500 out) per query at $5/1M in, $15/1M out: per-query cost?
+DEBUGGING
+  R3-D1  Answer cites [2] for a claim not in chunk 2. Which stage
+         failed and what is the fix (verification, not prompting)?
+  R3-D2  Abstain rate is 40%; users complain answers exist. Which knob
+         is too strict and how do you verify (relevance floor vs
+         chunk size)?
+  R3-D3  After a doc update, old answers persist. Where is the cache
+         key missing (index/model version, doc hash)?
+
+================================================================================
+LEVEL 4 - EXPERT (EVALUATION + PRODUCTION + SECURITY)
+================================================================================
+CONCEPT
+  R4-01  Why must retrieval and generation be evaluated separately?
+         Give a case where each hides the other's failure.
+  R4-02  hit@5 = 1.0 but answer quality is low. Where do you look?
+  R4-03  Design the eval set for a support bot: which query classes
+         must be in it and why?
+  R4-04  What are LLM-judge biases and how do you control them?
+  R4-05  What is indirect prompt injection, and why does sanitizing
+         user input not stop it?
+  R4-06  Why must access control run at retrieval time (metadata
+         filter), not after?
+  R4-07  Name every place tenant A's data could leak to tenant B.
+MATH
+  R4-M1  Given relevant docs {A,B} and retrieved [A, X, B, Y, Z]:
+         hit@3, recall@5, precision@3, MRR.
+  R4-M2  NDCG@3 with graded rel [3,2,1] and ranking [B,A,X]:
+         compute DCG and IDCG.
+  R4-M3  Judge agrees with humans on 80 of 100 sampled pairs. What
+         does that imply about trusting judge deltas of 2%?
+  R4-M4  Faithfulness checker: 9/10 claims supported. With n=10, what
+         is the rough 95% CI of the rate?
+CODING (build and run)
+  R4-C1  Write a per-query trace printer (rewritten query, top-k with
+         scores, reranked order, context size, answer, citations).
+  R4-C2  Write a tenant-isolation test that asserts tenant B never
+         retrieves tenant A chunks.
+  R4-C3  Write a cache-invalidation test: update a doc, ask the same
+         question, assert the new answer.
+DEBUGGING
+  R4-D1  Production quality drops but the eval is green. List the
+         eval blind spots (query distribution, judge, contamination).
+  R4-D2  Cost doubled with no traffic change. Which telemetry is
+         missing (per-request tokens, per-tenant, cache rate)?
+  R4-D3  A hostile doc was ingested and now answers follow it. Walk
+         the defense layers in order.
+SCENARIO
+  R4-S1  Support bot over 500k docs updated daily: design ingest
+         freshness, cache invalidation, and abstain behavior.
+  R4-S2  Legal KB with role-based access: design isolation, audit,
+         and citation.
+  R4-S3  Your platform must prove 'no hallucinated citations' to a
+         compliance auditor. What do you build?
+
+================================================================================
+LEVEL 5 - RESEARCH
+================================================================================
+  R5-01  Design the experiment that maps chunk size -> faithfulness.
+         What confounds must you control?
+  R5-02  Does query rewriting help short or long queries more? Design
+         the controlled study.
+  R5-03  Compare RRF vs learned fusion on your corpus with fixed
+         retrievers. Report the honest delta.
+  R5-04  Can retrieval confidence scores predict answer quality? Build
+         the correlation study and the calibration curve.
+  R5-05  Measure how much a verification agent reduces fabricated
+         citations vs its added latency and cost.
+  R5-06  Design an injection-defense benchmark: attacks, defenses,
+         metrics, and the false-positive cost of each defense.
+  R5-07  Judge bias study: vary answer position and length; quantify
+         score shift; propose and validate a debias.
+
+================================================================================
+VERIFIED ANSWERS (selected numerics)
+================================================================================
+  R0-M1  8k - 1k - 200 = 6800 tokens for evidence; 6800/500 = 13 chunks
+         (13 x 500 = 6500 <= 6800).
+  R0-M2  Yes for normalized vectors: cos(u,v) = u.v/(|u||v|) = u.v when
+         both are unit norm.
+  R0-M3  IDF = ln(100/10) = ln(10) ~= 2.303.
+  R1-M1  IDF = ln(1000/10) = ln(100) ~= 4.605.
+  R1-M2  cos = 1*0.707/1 = 0.707 -> 45 degrees.
+  R1-M3  chunks = ceil((2000-50)/(400-50)) = ceil(1950/350) = 6;
+         total tokens ~ 2000 + 5*50 = 2250 (overlap duplicates 250).
+  R2-M1  RRF = 1/(60+2) + 1/(60+5) = 0.01613 + 0.01538 = 0.03151.
+  R2-M2  Rerank 50 with 20ms each in batches of 8 -> ceil(50/8)=7
+         batches -> ~140ms + dense 5ms + overhead ~ 150-160ms total.
+  R2-M3  Union {d1,d2,d3,d4,d5}: 5 before dedupe-listed, 5 unique.
+  R3-M1  Independent: 0.9 x 0.9 = 0.81. Dependent (second searches
+         using first's output): <= 0.9; error compounds through the
+         chain - this is why multi-hop needs verification.
+  R3-M2  32k - 1k - 300 - 2k = 28,700 tokens for evidence; 28700/600
+         ~= 47 chunks of 600.
+  R3-M3  In: 3 x 1000 + 3000 = 6000 tokens -> $0.03. Out: 3 x 200 +
+         500 = 1100 -> $0.0165. Total ~ $0.047 per query.
+  R4-M1  Relevant {A,B}: hit@3 yes (A at 1) = 1. recall@5 = 2/2 = 1.
+         precision@3 = A relevant of top3 {A,X,B} -> 2/3 = 0.667.
+         MRR = 1/1 = 1.0.
+  R4-M2  rel: B=3, A=2, X=0 (assume X irrelevant). DCG = 3 + 2/ln2
+         + 0 ~= 3 + 2.885 = 5.885. IDCG = 3 + 2/log2(2) + 1/log2(3)
+         = 3 + 2 + 0.631 = 5.631 -> wait, IDCG uses the top graded
+         rels sorted desc [3,2,1] -> 3 + 2/log2(2) + 1/log2(3) =
+         3 + 2 + 0.631 = 5.631. But if only two docs are relevant
+         (A,B), ideal ranking [B,A] -> IDCG = 3 + 2/log2(2) = 5.0;
+         NDCG = 5.885/5.0 would exceed 1, which signals the X graded
+         0 assumption is wrong: with graded [3,2,1] there are three
+         graded docs. Use rel B=3,A=2,X=1: DCG = 3 + 2/log2(2) +
+         1/log2(3) = 5.631; IDCG (order B,A,X) = same 5.631 -> NDCG
+         1.0 only if ranked perfectly; a ranking [A,B,X] gives DCG =
+         2 + 3/log2(2) + 1/log2(3) = 2+3+0.631=5.631 coincidentally;
+         the point: NDCG compares against the ideal order. Recompute
+         cleanly: ideal order by rel desc = [3,2,1] -> IDCG = 3 +
+         2/log2(2) + 1/log2(3) = 5.631. Ranking [B,A,X] = ideal ->
+         NDCG = 1.0.
+  R4-M3  80% agreement means a 2% delta is below the noise floor of
+         the judge; report CIs and widen the sample before trusting
+         small deltas.
+  R4-M4  p=0.9, n=10: approx 95% CI ~ p +- 1.96*sqrt(p(1-p)/n) =
+         0.9 +- 1.96*0.0949 = [0.71, 1.0] (clipped) - a 10-sample
+         rate is very noisy.
+
+================================================================================
+INTERVIEW BANK (short-answer anchors; full 500 Q&A in ml_course)
+================================================================================
+  RIV-01  Explain RAG to a PM in 60 seconds, then to an engineer.
+  RIV-02  Why is retrieval quality the ceiling on RAG quality?
+  RIV-03  When is RAG the wrong answer? Give three cases.
+  RIV-04  Walk the debugging path for 'right doc, wrong answer'.
+  RIV-05  How do you measure whether RAG reduced hallucination?
+  RIV-06  What does a production RAG deployment look like end to end?
+  RIV-07  How do you keep a 500k-doc index fresh and correct?
+  RIV-08  How would you isolate tenants in a shared RAG service?
+  RIV-09  Why is the cache the #1 source of stale RAG answers?
+  RIV-10  What does your eval set contain and why those classes?
+  RIV-11  Judge agreement is 80%: can you trust a 2% model delta?
+  RIV-12  What is the difference between grounding and retrieval?
+  RIV-13  What is parent-child retrieval and which failure fixes it?
+  RIV-14  When do you add an agentic loop to RAG?
+  RIV-15  What is the difference between RAG and fine-tuning for
+         knowledge vs behavior?
+END OF PRACTICE.txt

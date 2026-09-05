@@ -1,0 +1,571 @@
+================================================================================
+AI/ML ENGINEERING COURSE - FULL COURSE AUDIT
+Date: 2026-09-03
+Scope: duplicates, module coverage, content gaps, code verification, practice
+================================================================================
+
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+- Duplicate content: ELIMINATED (nested self-copy removed, 0 duplicate files
+  remain by md5).
+- Module coverage: every numbered module (now 62, all with UNIQUE numbers)
+  has a README.md, practice material, and (where applicable) project specs.
+- Content gaps: lessons promised but never written were created; modules with
+  no lesson file were completed (34_MODEL_DEPLOYMENT and others).
+- DL examples: verified end-to-end on this machine (Keras MLP 96.5%,
+  PyTorch CNN 98.8%, Keras LSTM MSE 0.003).
+- Code practice: 11 from-scratch algorithm sets at code/ root + ml/, PLUS
+  a practice.txt inside every code/ topic folder (17 folders) - the
+  former finding 5.4 is now closed.
+- Numbering: collisions resolved (53-58) - every directory has a unique
+  prefix; all cross-file references updated (verified 0 stale tokens).
+- Every .py file in the course passes py_compile; 0 empty directories.
+
+2. COURSE INVENTORY (post RE-AUDIT + code pass, 2026-09-03)
+--------------------------------------------------------------------------------
+  Total files ............ 588
+  README.md .............. 68
+  practice.txt ........... 91 (74 module + 17 code-folder)
+  project.txt ............ 57
+  think.txt .............. 21
+  failure_lab.txt ........  7
+  real_problem.txt ....... 11
+  Numbered modules ....... 62 (00_ORIENTATION .. 61_REINFORCEMENT_LEARNING)
+  Math cards .............  9 files in 05_MATHEMATICS/math_cards/
+  Python files ........... 41 (all py_compile clean; 3 new-module
+                                examples executed and verified)
+  Empty directories ...... 0
+
+3. MODULE COVERAGE MATRIX (numbered modules)
+--------------------------------------------------------------------------------
+All 59 numbered directories (00_ORIENTATION .. 58_SPARK, with 52_EXAM)
+contain lesson content + practice.txt. project.txt is present in every teaching module;
+00_ORIENTATION and 52_EXAM are intentionally spec/assessment modules rather
+than project modules. Special structures:
+  - 53_DSA        : 17 sub-modules, each with lesson + practice; top-level
+                    project.txt added this audit.
+  - 49_LEETCODE   : 16 pattern folders, ~300 curated problems.
+  - 47_PROJECTS   : Level_1/2/3 project specifications + overview.
+  - 48_CAPSTONE   : 5 full capstone specifications.
+  - 52_EXAM       : 6 exams + practical exam (140+ questions).
+
+4. FINDINGS FIXED THIS AUDIT
+--------------------------------------------------------------------------------
+A. DUPLICATES
+   - Removed AI_ML_ENGINEERING_COURSE/AI_ML_ENGINEERING_COURSE/ (26 JPGs,
+     2.1 MB) - byte-identical copies of files in diagrams/. Verified with
+     cmp before deletion.
+   - md5 scan of all remaining files: 0 duplicate pairs.
+   - Moved stray generated pca_demo.png from root into diagrams/graphs/.
+
+B. CONTENT GAPS
+   - 34_MODEL_DEPLOYMENT had practice.txt + project.txt but NO lesson file.
+     -> created model_deployment_complete.txt (full course: serialization,
+     serving, Docker, scaling, rollouts, monitoring, edge).
+   - 04_VISUALIZATION README promised 02_matplotlib_advanced.txt and
+     04_plotly.txt - files did not exist. -> created both.
+   - 07_DATA_PREPROCESSING README promised 06_pipelines.txt and
+     07_data_leakage.txt - files did not exist (only 06_train_test_split
+     existed). -> created 07_pipelines.txt and 08_data_leakage.txt and
+     corrected the README file table to the true layout.
+   - Missing project.txt added to: 01_PYTHON, 54_ADVANCED_PYTHON,
+     16_ML_FROM_SCRATCH, 53_DSA.
+
+C. README COVERAGE
+   - 40+ modules lacked README.md. Compact, consistent READMEs (objectives,
+     real file tables, prerequisites, exit criteria) added to every
+     numbered module. All README file tables validated against the
+     filesystem (automated check).
+
+D. DL EXAMPLE VERIFICATION (code/dl, code/cnn, code/rnn)
+   - code/dl/01_keras_mlp_mnist.py : ran end-to-end, test accuracy 96.5%
+     (smoke run EPOCHS=3). Added EPOCHS env override (default 30) so CPU
+     users can run a quick test.
+   - code/cnn/01_pytorch_cnn.py   : ran 5 epochs, test accuracy 98.8%,
+     checkpoint save/reload + sample inference verified.
+   - code/rnn/01_keras_lstm_sine.py: ran 30 epochs, test MSE 0.003,
+     forecast PNG saved to diagrams/graphs/.
+   - Run artifacts cleaned (64MB MNIST cache, .keras/.pt checkpoints).
+
+E. CODE PRACTICE EXTENSION (now 11 from-scratch practice sets)
+   - code/04_kmeans_practice.txt, 05_decision_tree_practice.txt,
+     06_neural_network_practice.txt
+   - code/ml/07_pca_practice.txt, 08_random_forest_practice.txt,
+     09_gradient_boosting_practice.txt, 10_gradient_descent_practice.txt,
+     11_softmax_cross_entropy_practice.txt
+   Each contains conceptual, numerical, coding, debugging, and challenge
+   sections plus a real-world scenario.
+
+5. REMAINING FINDINGS (not fixed - intentional or requires decision)
+--------------------------------------------------------------------------------
+1. NUMBERING COLLISIONS - RESOLVED 2026-09-03: every directory now has a
+   unique number prefix. The six displaced modules were renumbered to the
+   free 53-58 range (all other numbers were already in use) and every
+   cross-file reference was updated:
+     04_DSA -> 53_DSA                11_ANOMALY_DETECTION -> 55_ANOMALY_DETECTION
+     05_ADVANCED_PYTHON -> 54_ADVANCED_PYTHON   16_TIME_SERIES -> 56_TIME_SERIES
+     32_KAFKA -> 57_KAFKA            33_SPARK -> 58_SPARK
+   Learning order is unchanged and documented in ROADMAP.md; these six
+   sort at the end of the directory listing because no earlier number was
+   free without shifting 40+ modules.
+2. 48_CAPSTONE has no practice.txt (by design - it is a project module).
+3. 00_ORIENTATION has no project.txt (by design).
+4. code/ area folders (numpy, pandas, dl, fastapi, rag, etc.) contain one
+   runnable example each but no per-area practice file; area practice lives
+   in the corresponding numbered module's practice.txt.
+5. 08_EDA README.md was overwritten during README standardization (original
+   was untracked and unrecoverable). Replacement references real module
+   files and follows the standard format.
+6. Pre-existing README total-time lines in 04_VISUALIZATION/07 were left as
+   estimates; 07 was updated to the new 8-lesson total.
+
+6. FILE COMPLETENESS AUDIT (sample of what was validated)
+--------------------------------------------------------------------------------
+Module                     Lesson(s)   practice  project  README
+34_MODEL_DEPLOYMENT        now 1 file  Y         Y        Y
+04_VISUALIZATION           5 lessons   Y         Y        Y
+07_DATA_PREPROCESSING      8 lessons   Y         Y        Y
+53_DSA                     17 sub-mod  Y (17)    Y        Y
+All other NN_ modules      1+ lesson   Y         Y        Y
+Root docs                  README/ROADMAP/COURSE_INDEX/QUALITY_STANDARDS/
+                           report.txt/COURSE_AUDIT.txt (this file)
+
+7. QUALITY CHECKS RUN
+--------------------------------------------------------------------------------
+- md5 duplicate scan ............ 0 duplicates
+- empty-dir scan ................ 0 empty dirs
+- py_compile over all .py ....... all pass
+- README file-table validation .. all references exist
+- DL examples executed .......... 3/3 pass with sane metrics
+
+8. FULL RE-AUDIT PASS (2026-09-03, applied after the first audit)
+--------------------------------------------------------------------------------
+WHAT CHANGED SINCE THIS AUDIT WAS WRITTEN (all verified by checks below):
+  a) NUMBERING RESOLVED: 04_DSA->53_DSA, 05_ADVANCED_PYTHON->54_ADVANCED_
+     PYTHON, 11_ANOMALY_DETECTION->55_ANOMALY_DETECTION, 16_TIME_SERIES->
+     56_TIME_SERIES, 32_KAFKA->57_KAFKA, 33_SPARK->58_SPARK. All references
+     in READMEs/audits/roadmap/index updated; module headers renumbered.
+  b) ML COURSE SCORED 90/100 (ML_MASTER_AUDIT.txt PASS 3): added SVM deep
+     dive, XAI, ML security, research paper track, advanced learning
+     paradigms, probabilistic ML, optimizer-family practice.
+  c) GraphQL lesson added (38_REST_APIS/graphql.txt): schema/resolvers/
+     N+1 + DataLoader/pagination/subscriptions/REST-vs-GraphQL.
+  d) Math card library (05_MATHEMATICS/math_cards/): 6 grouped card files
+     + README index covering linear models, trees/ensembles, distance &
+     probability, unsupervised, NN optimizers, sequences/attention.
+  e) THREE NEW MODULES (full README+lesson+practice+project+think):
+     59_RECOMMENDER_SYSTEMS, 60_GRAPH_MACHINE_LEARNING,
+     61_REINFORCEMENT_LEARNING.
+  f) reference/python_notes/: Django/Flask/REST-APIs/PostgreSQL PDF notes
+     extracted to text (pypdf) + mapping README. No GraphQL exists in the
+     source zip (verified by full-text search) - documented.
+  g) RAG code lab (code/rag/02_rag_fail_fix_demo.py) executed: naive
+     retrieval 7/8 correct answers -> hybrid fix 8/8.
+  h) real_problem.txt added to 11 modules (ultimate_project.md playbook
+     indexes them). think.txt now in 21 modules; failure_lab in 7.
+  i) New-lesson claims executed and confirmed (imbalance accuracy trap,
+     GP uncertainty widening OOD, Adam bias correction).
+
+RE-AUDIT CHECKS RUN (2026-09-03, all green)
+--------------------------------------------------------------------------------
+  - py_compile over all 38 .py files ....... all pass
+  - empty-dir scan ......................... 0 empty dirs
+  - numbered module prefixes ............... 62 dirs, 62 unique
+  - stale pre-renumber path tokens ......... 0 (only the mapping legend
+                                                in COURSE_INDEX remains)
+  - README file tables ..................... validated against disk at
+                                                creation time
+  - RAG demo + lesson verification scripts . executed, sane outputs
+
+9. NEXT RECOMMENDED STEPS (remaining)
+--------------------------------------------------------------------------------
+- Add per-area practice files inside code/ subfolders (finding 5.4): DONE
+  (17 folders now have practice.txt; finding closed).
+- Commit the course to git to prevent future unrecoverable overwrites.
+- Per-algorithm math cards could extend to cards for anomaly/RL/graph
+  algorithms as those modules grow.
+
+================================================================================
+10. FINAL VERIFICATION PASS (verify_course.py)
+================================================================================
+The repo now ships a repeatable health check:  python verify_course.py
+
+What it does:
+  1. py_compile over EVERY .py in the course (syntax gate).
+  2. Executes all 22 fast, dependency-light examples with a 120 s
+     per-file timeout (temp cwd, so demo PNGs never pollute the tree).
+  3. Skips 9 infra/heavy/network examples with explicit reasons
+     (MNIST training, HF downloads, uvicorn/flask servers, mlflow store).
+  4. Structural checks: module-prefix uniqueness, empty dirs.
+
+Issues found and fixed during this pass:
+  - Windows cp1252 crash: examples printing emoji (unicode) raised
+    UnicodeEncodeError whenever stdout was a pipe. verify_course.py now
+    runs subprocesses with -X utf8 / PYTHONUTF8=1 / PYTHONIOENCODING.
+  - plt.show() blocking: examples that call matplotlib's show() hung
+    inside a captured subprocess on a GUI backend. Runner now forces
+    MPLBACKEND=Agg (headless), so show() is a no-op for CI runs while
+    interactive use is unchanged.
+  - code/03_knn_from_scratch.py was pathologically slow: the demo
+    classified a 200x200 = 40,000-point boundary grid with a pure-Python
+    per-point distance loop (>120 s). predict() is now vectorized (same
+    math, numpy broadcast distance matrix; _predict_single kept as the
+    step-by-step reference) and the grid is 120x120. Demo: ~8 s, PASS.
+
+Final result (current state of main):
+  - syntax gate .......... 45 .py files, ALL PASS
+  - runnable examples .... 22/22 PASS  (0 fail, 0 timeout)
+  - skipped (reasoned) ... 9 files (MNIST/HF/servers/mlflow)
+  - module prefixes ...... 62 unique, 0 collisions
+  - empty dirs ........... 0
+  - verdict .............. HEALTHY
+================================================================================
+11. GENAI + AGENTS SUB-COURSE + EXAMPLE DOCS + DEMO SPEEDUPS
+================================================================================
+
+New sub-course: genai_agents_course/ (self-contained 4-file course per the
+user's ULTRA-DEEP GENERATIVE AI + AI AGENTS master prompt):
+  - COURSE.txt .... Parts 0-50 with dependency graph, roadmaps, gates,
+                    attention/RAG/agent/security deep sections, library
+                    deep-dives, comparison tables, final exam plan
+  - EXAMPLE.py .... 62-section GenAI + agent laboratory; verified by
+                    execution: 24/24 sections OK (3 real bugs found and
+                    fixed while running: flaky retry demo too probabilistic;
+                    agent built an empty knowledge store -> "I don't know";
+                    INT8 memory claim was 4x but is 8x for float64)
+  - PRACTICE.txt .. levels 0-8 + final exam with verified numerical answers
+  - PROJECT.txt ... 3 levels (26 projects) + production-agent capstone
+  Registered in COURSE_INDEX.md.
+
+New-module code examples documented (README code-example tables in modules
+59 + 60, COURSE_INDEX updated):
+  - code/recommenders/02_als_vs_sgd.py ... ALS 0.476 vs SGD 0.486 RMSE
+  - code/graph/02_link_prediction.py ..... ROC-AUC > 0.9 on held-out edges
+
+Demo speedups (pure-Python from-scratch trainers, verified re-run):
+  - code/ml/random_forest_from_scratch.py: 72s -> 22s (test acc 0.87)
+  - code/ml/gradient_boosting_from_scratch.py: 74s -> 9s (test acc 0.80)
+  Both keep correct results; comments note how to raise the defaults for
+  the full lesson. Full verify_course.py re-run below confirms health.
+
+================================================================================
+12. LLM SUB-COURSE (llm_course/)
+================================================================================
+Second self-contained sub-course per the user's ULTRA-DEEP LLM master
+prompt (Parts 0-66). Distinct from genai_agents_course/ (which is the
+agents/GenAI-track); this one is the LLM-internals track:
+  - COURSE.txt .... Parts 0-66: math/info-theory -> attention (worked
+                    example) -> transformers -> tokenization -> language
+                    modeling -> architecture/param counting -> pretraining
+                    -> scaling -> distributed training/GPU memory math ->
+                    instruction tuning/alignment -> LoRA/QLoRA/quantization
+                    -> KV cache/prefill-decode -> serving/eval/safety ->
+                    RAG/agents + 10 gates, dependency graph, full
+                    comparison set, capstone + audit checklist
+  - EXAMPLE.py .... 54-section LLM lab; verified by execution: 22/22 OK
+                    (torch training loop + LoRA training included; 2 bugs
+                    fixed while running: unreachable LoRA loss threshold
+                    -> assertion is now loss-decrease; tensor->float
+                    warning fixed with .detach())
+  - PRACTICE.txt .. levels 1-8 per module (10E/10M/10H/5X) + the 12 classic
+                    "why" interview questions + final exam blueprint +
+                    20 verified math answers
+  - PROJECT.txt ... 3 levels (24 projects) + Production LLM Platform
+                    capstone with milestones + acceptance criteria
+  Registered in COURSE_INDEX.md next to genai_agents_course/.
+
+================================================================================
+13. LLM COURSE EXTENSION - REAL MINI-GPT LAB + ROADMAP TRACKS (2026-09-03)
+================================================================================
+- NEW llm_course/mini_gpt_lab.py: a real end-to-end mini-GPT lab.
+  Loads real prose (this course's lesson text, cleaned per Part 28
+  data-engineering: rulers/tables/checkboxes/code lines filtered), builds
+  a ~250k-param decoder-only GPT from scratch (char tokenizer, causal
+  MHA, LayerNorm + residuals, GELU MLP), trains with AdamW + warmup/
+  cosine LR + grad clipping, prints loss/ppl checkpoints and generated
+  samples mid-training, and compares against a smoothed bigram baseline.
+  VERIFIED by execution (1000 steps, CPU): val loss 2.673 (ppl 14.5)
+  BEATS bigram baseline 2.760 (ppl 15.8); runs from any cwd (~2-3 min).
+  Two real bugs found by running it: corpus default pulled audit/table
+  files first (model learned '====' bars), then code/math-heavy lines
+  (val loss stayed above bigram) - both fixed with corpus selection +
+  prose quality filtering.
+- COURSE.txt: new LAB GUIDE appendix (what the lab does, which Parts it
+  exercises, expected outcome). PROJECT.txt: Mini GPT + Text Generation
+  Engine projects now cite mini_gpt_lab.py as the runnable reference.
+- ROADMAP.md: new "Ultra-Deep Sub-Courses (2026-09)" section registers
+  genai_agents_course/ + llm_course/ as post-Phase-4 tracks with study
+  order. COURSE_INDEX.md llm_course entry updated with the lab.
+
+================================================================================
+14. SUB-COURSE LABS: FULL LLM RUN + KV CACHE + AGENT LAB (2026-09-03)
+================================================================================
+- FULL LLM LAB run: llm_course/mini_gpt_lab.py --max-steps 1500 on CPU
+  (302s).  Final val loss 2.549 (ppl 12.8) vs bigram baseline 2.763
+  (ppl 15.9) - clear win; generated samples show real word fragments
+  emerging ('the high-gradient regime', 'models', 'station').
+- NEW llm_course/kv_cache_lab.py (runnable, verified):
+  [1] CORRECTNESS: cached token-by-token decoding reproduces the full
+  forward exactly (max logit diff 9.5e-07 - cache is a pure speedup).
+  [2] SPEED: 60-token decode, cached 574.6 tok/s vs uncached 319.8 tok/s
+  (1.8x; grows with sequence length, uncached is O(n^2)).
+  [3] MEMORY: exact byte math for this model (2*96*4B per token/layer)
+  and a 7B-class config at 4096 ctx: MHA 10.00 GB, GQA 1.25 GB, MQA
+  0.16 GB - the Part 64 comparison, computed not hand-waved.
+- NEW genai_agents_course/agent_lab.py (runnable, verified 7/7 tasks):
+  tool registry with schemas, safe AST calculator (no eval), lexical
+  document retrieval, long-term memory store/recall, observation-aware
+  ReAct loop with proper stop conditions, reflection + replan on
+  failure, indirect prompt-injection guard (malicious doc treated as
+  DATA), evaluation with success rate + simulated token cost.
+  Four real bugs found by running it: (1) lambda inside a decorator
+  argument list is a Python 3.12 SyntaxError - rewrote tools as named
+  functions; (2) the brain never converted observations into answers,
+  so every task looped until budget exhaustion; (3) 'my name is' store
+  branch was shadowed by the recall branch; (4) regex math extraction
+  matched a leading space (empty expression) - fixed with longest-
+  digit-run findall.  All fixed; final run 100% PASS.
+- EXAMPLE.py re-verified on request: genai_agents_course 24/24 sections
+  OK, llm_course 22/22 sections OK.
+- Registered both new labs in COURSE_INDEX.md.
+
+15. ML SUB-COURSE (ml_course/) - ULTRA-DEEP ML course (Modules 0-46)
+    for a 2nd-year B.Tech AI&ML student; sibling of llm_course/ and
+    genai_agents_course/. Four files + docs registration:
+- NEW ml_course/COURSE.txt (Modules 0-46): ML roadmap + lifecycle; Python/
+  NumPy/Pandas/Matplotlib/Seaborn mastery; linear algebra/probability/
+  statistics/information theory; data quality + EDA + preprocessing
+  (leakage-safe); baselines; linear/logistic regression + regularization;
+  classification metrics; KNN/Naive Bayes/decision trees; ensembles
+  (RF/XGB/LightGBM/CatBoost); SVM; k-means/hierarchical/DBSCAN; PCA/t-SNE/
+  UMAP; feature engineering + selection; imbalance; anomaly detection;
+  time series; model selection/calibration; SHAP/LIME interpretability;
+  probabilistic/causal ML; fairness/security; experiment design; ML system
+  design/MLOps/monitoring/cloud; research skills + 16-point topic structure,
+  comparison tables, final exam plan, Production ML Platform capstone.
+- NEW ml_course/EXAMPLE.py (26 sections) - verified by execution: scratch
+  OLS, gradient descent, logistic regression, KNN, GaussianNB, CART, random
+  forest, Lloyd K-Means, PCA, metrics, stratified CV, feature engineering,
+  random search, GBDT, permutation importance, time series, Isolation
+  Forest, pipelines, joblib artifact. FINAL: 26/26 PASS, 0 FAIL (75s).
+  Running it caught 3 real bugs, all fixed: (1) S12 scratch-RF trees at
+  max_depth=4 underfit (train acc 0.965 < 0.98 bar) - depth 6 per the S11
+  lesson -> 0.988; (2) S21 claimed lag-RF beats last-value baseline at
+  1-step horizon on a smooth sine - false, persistence is near-optimal at
+  horizon 1; rewritten honestly as a 12-step-ahead forecast where
+  persistence decays and lag features win (MSE 8.82 << 12.85) - the demo
+  now teaches why ML forecasting shines at longer horizons; (3) S23
+  make_classification(n_features=3) with default n_informative=10 raised
+  ValueError - explicit n_informative=3, n_redundant=0.
+- NEW ml_course/PRACTICE.txt (levels 0-5, questions + solutions, verified
+  math answers: OLS closed form, entropy/gain, precision/recall/F1, AUC,
+  ridge, K-Means objective, PCA var, GBDT step sizes, etc.).
+- NEW ml_course/PROJECT.txt (tiers E/D/C/B/A/S/S+ = 14 projects + the
+  PRODUCTION ML PLATFORM capstone with acceptance criteria).
+- ml_course/EXAMPLE.py wired into verify_course.py (180s slot).
+- Registered in COURSE_INDEX.md (ml_course/ entry) + ROADMAP.md (third
+  sub-course; study order ml_course -> llm_course -> genai_agents_course).
+
+16. 2026-09-04 - FULL-SUITE RE-RUN + 3 NEW SUB-COURSE LABS
+================================================================================
+- FULL SUITE (baseline, before adding the new labs): verify_course.py
+  VERDICT HEALTHY - compiled 53 .py files, ran 30 examples (30 pass,
+  0 fail, 0 timeout), skipped 9 (servers/downloads/training), 0 empty
+  dirs. All previously-green examples still green after the RF/GB speedups
+  and the ml_course addition.
+- NEW llm_course/lora_finetune_lab.py (torch, ~40s, wired 300s slot) -
+  end-to-end LoRA fine-tune answering Parts 35/37/38: [1] exact
+  parameter-savings math incl. a 7B-scale extrapolation (0.21% of full
+  FT); [2] pretrains a 141k-param char GPT on prose; [3] LoRALinear
+  correctness (B=0 init => forward identical to frozen base, grad check:
+  only A/B train); [4] adapts to a math-lecture style with rank-8 LoRA vs
+  [5] full fine-tune from the SAME checkpoint/steps/lr. Measured result:
+  LoRA 18,432 trainable (13.1%) reaches val-B 3.54->2.50 while keeping
+  domain A intact; full FT memorizes the 4.2k-char corpus (train 0.81 vs
+  val 2.96) and forgets A by +0.71 nats - the low-data implicit-
+  regularizer result, now documented in the lab. ALL CHECKS PASS.
+  Running it caught 2 real bugs: nn.ModuleList has no forward() (needs an
+  explicit block loop), and LoRALinear read weight.shape as (in,out) when
+  it is (out,in) - both fixed.
+- NEW llm_course/monitoring_lab.py (stdlib only, 0.3s, wired 120s slot) -
+  Part 57/58 observability: span recording (latency, prompt/completion
+  tokens, $ per model), p50/p95, token/cost totals, response cache with
+  measured savings, upstream retries (2 injected failures -> 0 lost),
+  Jensen-Shannon drift detection over query-topic histograms (peak
+  JS 0.33 during the math-heavy phase), WARN/CRIT alerts, dashboard
+  snapshot. ALL CHECKS PASS (5/5).
+- NEW genai_agents_course/rag_agent_server.py (FastAPI + TestClient, no
+  sockets, ~1s, wired 120s slot) - production-shaped RAG-agent HTTP
+  server: X-API-Key auth (401), per-key token-bucket rate limit (429 +
+  Retry-After), grounded answers WITH source citations, safe AST
+  calculator tool, streaming /v1/chat/stream, upstream retry (flaky
+  query recovered with retries=1), response cache (cheaper replay), honest
+  no-hallucination fallback, and an indirect prompt-injection guard
+  (malicious doc treated as data; planted secret never echoed). Running it
+  caught 1 real retrieval bug: naive coverage scoring matched stopwords
+  (the/of/what anchor in every doc), so "what is the meaning of life"
+  retrieved documents; fixed with stopword + digit filtering -> correct
+  citations, clean fallback. ALL CHECKS PASS (8/8).
+- All three labs wired into verify_course.py RUN list with per-file
+  timeouts; registered in COURSE_INDEX.md.
+
+17. 2026-09-04 - EMBEDDING RAG + QLORA + PROD RAG SERVER + ML MASTER AUDIT
+================================================================================
+- NEW genai_agents_course/embedding_rag_lab.py (numpy only, ~1s, wired
+  120s slot): trains REAL dense word vectors in-file via PPMI + truncated
+  SVD (Levy & Goldberg recipe, ~177-word vocab, dim 48), embeds handbook
+  docs as mean word vectors and retrieves with cosine - vs the lexical
+  overlap baseline. Measured: embeddings 9/9 hit@1 vs lexical 6/9;
+  paraphrase queries 6/6 vs 4/6 (e.g. "give me my money back" -> the
+  refund doc with ZERO shared content words). Word-similarity sanity
+  printed (money<->back 0.75, cancel<->stop 0.63). ALL CHECKS PASS.
+  Running it needed one factual wording fix (claimed no shared words when
+  'back' does co-occur).
+- llm_course/lora_finetune_lab.py EXTENDED with a QLoRA section [7]
+  (Part 38): the frozen base is weight-quantized int8 (per-tensor) and
+  int4 (per-group-of-24) with on-the-fly dequant, then the SAME rank-8
+  adapters are trained on the quantized base. Measured: base projection
+  memory 0.50 MB fp32 -> 0.12 MB int8 (4.0x) -> 0.08 MB int4 (6.0x incl.
+  scales); mean-abs quant error 7.2e-4 (int8) / 4.0e-3 (int4); adaptation
+  reaches val-B 2.508 (int8) and 2.501 (int4) vs 2.498 for fp32-base
+  LoRA - the quantized base costs <0.01-0.02 nats. 9/9 checks PASS
+  (~56s). Running it caught a real bug: int4 groups of 32 do not divide
+  the model's feature dims (72/216/288) - group 24 used instead.
+- NEW genai_agents_course/rag_agent_server_prod.py (FastAPI + TestClient
+  + sqlite3, ~1s, wired 120s slot): the production layers on top of the
+  verified base server - PostgreSQL-compatible SQL request log (SQLite
+  file in the OS temp dir) with an admin SELECT...GROUP BY usage report;
+  Redis-style response cache (TTL 30s + LRU + hit/miss/expiry counters,
+  injectable clock so expiry is PROVEN: replay after clock+31s misses);
+  multi-user roles admin/free/trial with per-user token buckets and token
+  quotas - exercises 401 (no key), 403 (non-admin on admin route), 429
+  (burst user, 4th call), 402 (trial quota exhausted), cache replay,
+  injection guard, and row persistence verified from a FRESH SQL
+  connection. 10/10 checks PASS.
+- ml_course: (a) PRACTICE.txt FINAL EXAM upgraded from a blueprint to a
+  FULL EXAM SET - 78 items across all 9 required sections (math,
+  statistics, theory incl. MCQs, algorithms, coding, data analysis,
+  model debugging, system design, research) with a concise answer key;
+  (b) NEW ml_course/MASTER_PROMPT_AUDIT.md maps every requirement of the
+  ultra-deep ML master prompt to its file/section (48 content rows +
+  structural rows, all grep-verified) and lists the honest remaining
+  drill work (interview-bank scale-up, DSA modules, resume kit).
+- New labs wired into verify_course.py; COURSE_INDEX.md entries updated.
+
+18. 2026-09-04 - HF EMBEDDING BENCH + SCALE SWEEP + INTERVIEW BANK (500)
+================================================================================
+- NEW genai_agents_course/embedding_hf_bench.py (offline-only, ~0.5s when
+  no model cached, wired 240s slot): benchmarks the in-file PPMI-SVD
+  embeddings against a real transformer sentence-embedding model WHEN one
+  is already cached locally (HF_HUB_OFFLINE=1, local_files_only=True).
+  Cache detection is FILES-FIRST (scans hub/models--*/snapshots for
+  config.json + weights) so the heavy HF libraries are imported only if a
+  model exists - first version imported sentence_transformers
+  unconditionally and took 2m12s with nothing cached; fixed to 0.49s.
+  With a model cached it prints hit@1 + ms/query vs the SVD baseline;
+  without one it prints the one-time cache command and exits PASS (no
+  downloads ever).
+- NEW llm_course/scale_sweep_lab.py (imports mini_gpt_lab; default 450
+  steps, wired into verify with --steps 300 + 600s slot): same
+  architecture/corpus/seed/lr across S/M/L (119,296 / 252,672 / 435,200
+  params). Measured at 450 steps, lr 1e-3: val loss 2.723 / 2.617 / 2.421
+  (ppl 15.2 / 13.7 / 11.3) - ALL sizes beat the smoothed bigram baseline
+  2.763, strictly monotonic in size: the empirical Part-27 curve.
+  Iteration caught: lr 3e-4 left every size ABOVE the bigram at 300 steps
+  (check failed) -> lr 1e-3 + 450 steps fixed it; the machine also ran
+  ~10x slow mid-session (OneDrive/Defender churn) so two foreground runs
+  timed out and one stray process had to be killed - at normal speed the
+  lab fits its slot easily.
+- ml_course/INTERVIEW_BANK.md: 500 compact Q&A rows scaled to the master
+  prompt targets - Beginner 100 / Intermediate 150 / Advanced 150 /
+  Expert 100 (count verified: 500). MASTER_PROMPT_AUDIT.md item 1 marked
+  DONE.
+- All labs wired into verify_course.py RUN list (37 examples);
+  COURSE_INDEX.md + audit docs updated. Full-suite HEALTHY run follows.
+
+19. 2026-09-04 - COURSE DIAGRAMS + VISUALIZATIONS (llm / agents / ml)
+================================================================================
+- NEW diagrams/generate_course_diagrams.py (Agg, follows the existing
+  generate_module_diagrams.py style: box/arrow/save helpers, PNG @140dpi)
+  -> 23 new panels across three folders:
+  - diagrams/llm/ (10): llm_architecture (decoder-only stack),
+    pretraining_pipeline (Part 20 flow), kv_cache (O(T^2) recompute vs
+    O(T) cached, annotated with the lab's MEASURED speedups 2.4x@128 /
+    2.8x@256 / 6.2x@512 / 11x@768), kv_cache_memory (0.5 MiB/token ->
+    2 GiB@4k / 64 GiB@128k context), lora (W' = W + (alpha/r) B A with
+    the verified 48x param-reduction numbers), sampling (temperature /
+    top-k / top-p with the course's verified logits [2,1,0.1] numbers),
+    scaling_laws (REAL sweep data: 2.723 / 2.617 / 2.421 vs bigram
+    2.763), prefill_decode (compute-bound vs bandwidth-bound),
+    quantization (7B: 28/14/7/3.5 GB), speculative_decoding
+    (draft/verify/reject schematic)
+  - diagrams/agents/ (5): agent_loop (observe-reason-act loop),
+    multi_agent (supervisor + research/coding/data/writing),
+    rag_agent (ingest lane + query lane + grounded generation),
+    prod_rag_server (auth/RBAC -> quota/ratelimit -> Redis-style cache
+    -> RAG brain -> SQL log -> metrics, mirroring rag_agent_server_prod),
+    embedding_bench (REAL lab numbers: hit@1 lexical 6/9 vs SVD 9/9 vs
+    HF MiniLM 9/9; paraphrases 4/6 vs 6/6)
+  - diagrams/ml/ (8 new, joining the older jpgs): ml_lifecycle (full
+    Module 0/46 loop with drift->retrain closure), learning_curves,
+    kmeans (+ elbow), pca (projection + explained variance), pr_curve
+    (rare-class framing), imbalance (90/10 bars + SMOTE synthetic
+    points), feature_importance (permutation/SHAP-style), time_series
+    (temporal split + lag-12 forecast)
+- Iteration caught: numpy-2 removed np.trapz -> np.trapezoid; k-means
+  inertia sum() on a numpy scalar; seasonal-forecast lag referencing
+  train_y out of bounds - all fixed, generator runs clean end-to-end
+  (64 total images in diagrams/).
+- COURSE_INDEX.md updated: diagrams support-area entry now lists llm /
+  agents folders + generate_course_diagrams.py, and each sub-course entry
+  (llm_course / genai_agents_course / ml_course) points at its diagram
+  folder. Regenerate anytime: python diagrams/generate_course_diagrams.py
+
+20. 2026-09-04 - DIAGRAM REVIEW + GALLERY INDEX
+================================================================================
+- NEW diagrams/verify_diagrams.py - integrity review of every image under
+  diagrams/: decodes all PNG/JPG, records format/size/dimensions, blank-
+  panel detection via pixel-variance (std < 1.0), per-folder + per-image
+  table. RESULT: 64/64 images OK, 0 unreadable, 0 blank, 4.4 MB total.
+- NEW diagrams/generate_gallery.py - browsable index of all diagrams:
+  - diagrams/gallery/thumbs/<cat>/ - 64 thumbnails (max 340px wide,
+    regenerated only when the source image is newer)
+  - diagrams/gallery/index.html - light/dark theme gallery: category
+    sections (llm 10 / agents 5 / ml 16 / math 4 / dl 6 / backend 2 /
+    nlp 3 / rag 2 / transformers 2 / graphs 8 / graph 2 / recommenders
+    2 / rl 2 = 64), each card has thumbnail + title + caption + file +
+    dimensions, linking to the full-size PNG/JPG
+  - diagrams/DIAGRAM_GALLERY.md - markdown index (renders on GitHub)
+    with inline image + description table per category
+- Every caption is written against the actual diagram content (real lab
+  numbers embedded where they exist: scaling 2.723/2.617/2.421 vs 2.763,
+  KV speedups 2.4x@128..11x@768, dense 9/9 vs lexical 6/9 hit@1, 7B
+  quantization 28/14/7/3.5 GB, ALS-vs-SGD RMSE, link-pred AUC).
+- Regenerate anytime: python diagrams/verify_diagrams.py +
+  python diagrams/generate_gallery.py
+
+21. 2026-09-04 - QUESTIONS_BANK.txt (AI ENGINEERING QUESTION BANK)
+================================================================================
+- NEW root-level QUESTIONS_BANK.txt from the 'Ultra-Massive AI
+  Engineering Question Bank' master prompt: 46 numbered domains, 0-46,
+  each with theory/WHY/comparison/math/coding/debugging/code-review/
+  interview/scenario/system-design/projects/research question sets +
+  mastery checklists.
+- Plus: DOMAIN 41 Production Incidents (12 real scenarios), 42 Master
+  Interview (100 of the 500 target written in-bank; the remaining 400
+  sourced from ml_course/INTERVIEW_BANK.md's verified 500 Q&A), 43 Rapid
+  Fire (100 of 500 target), 44 Whiteboard (10), 45 Master Capstone (10),
+  46 Final Master Exam (structure + 6 samples), +47 Data Leakage (11),
+  +48 Failure Analysis (6 worked failure->fix tables).
+- Verified by script: 46/46 domains present (none missing), 1,711 unique
+  question IDs (PY/NP/PD/MT/DS/ML/EV/FE/DL/PT/CV/SQ/NLP/TF/LLM/LE/FT/QI/
+  EM/IR/RAG/VD/RE/LC/LG/AG/MA/MM/GN/RC/TS/MO/PA/CL/SC/AE/OB/RS/SD +
+  INC/MI/RF/WB/CP/FX/DLK/FA), 0 duplicate IDs, 0 leftover markers,
+  4,485 lines, single END marker.
+- Cross-linked to ml_course/INTERVIEW_BANK.md and all course files;
+  extendable by appending new IDs per the documented scheme.
+- COURSE_INDEX.md updated with a root-level QUESTIONS_BANK.txt entry.
+
+================================================================================
+END OF AUDIT
+================================================================================

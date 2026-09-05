@@ -1,0 +1,307 @@
+================================================================================
+MODULE 22: LSTM & GRU — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Explain how LSTM solves the vanishing gradient problem
+- Understand gates and cell state in LSTM
+- Compare LSTM vs GRU vs basic RNN
+- Implement LSTM and GRU for real tasks
+- Apply LSTMs to time series forecasting and NLP
+
+================================================================================
+1. WHY LSTM?
+================================================================================
+
+PROBLEM WITH BASIC RNN
+-----------------------
+Basic RNNs have short-term memory. They forget information
+from early in the sequence.
+
+LSTM SOLUTION
+-------------
+LSTM (Long Short-Term Memory) introduces a CELL STATE — a highway
+that allows information to flow through the sequence with minimal
+modification, preserving long-range information.
+
+================================================================================
+2. LSTM ARCHITECTURE
+================================================================================
+
+LSTM has THREE gates and a CELL STATE:
+
+FORGET GATE: What information to throw away from cell state
+INPUT GATE:  What new information to store in cell state
+OUTPUT GATE: What to output based on cell state
+
+CELL STATE (C_t): The "memory highway" — carries information forward
+with only minor linear interactions (addition/multiplication)
+
+MATHEMATICS
+-----------
+Given: x_t (input), h_{t-1} (previous hidden), C_{t-1} (previous cell)
+
+1. FORGET GATE:
+   f_t = σ(W_f · [h_{t-1}, x_t] + b_f)
+   → Values between 0 and 1 (0 = completely forget, 1 = completely keep)
+
+2. INPUT GATE:
+   i_t = σ(W_i · [h_{t-1}, x_t] + b_i)
+   C̃_t = tanh(W_C · [h_{t-1}, x_t] + b_C)
+   → i_t decides which values to update
+   → C̃_t creates candidate values
+
+3. UPDATE CELL STATE:
+   C_t = f_t * C_{t-1} + i_t * C̃_t
+   → Old state × forget + new candidate × input gate
+
+4. OUTPUT GATE:
+   o_t = σ(W_o · [h_{t-1}, x_t] + b_o)
+   h_t = o_t * tanh(C_t)
+
+where σ = sigmoid, * = element-wise multiplication
+
+INTUITION FOR EACH GATE
+------------------------
+Forget gate: "Should I remember the subject from 10 words ago?"
+Input gate:  "Is this new word important to remember?"
+Output gate: "What should I output given what I remember?"
+
+================================================================================
+3. WHY LSTM SOLVES VANISHING GRADIENT
+================================================================================
+
+In basic RNN:
+  h_t = tanh(W_hh × h_{t-1} + ...)
+  Gradient = product of many W_hh × diag(tanh')
+
+In LSTM:
+  C_t = f_t * C_{t-1} + i_t * C̃_t
+  Gradient through cell state ≈ f_t (close to 1 when gate is open)
+
+The cell state creates a SHORTCUT for gradients to flow,
+similar to skip connections in ResNet!
+
+When f_t ≈ 1 (forget gate open), gradient flows unchanged
+→ No vanishing, no exploding!
+
+================================================================================
+4. GRU (Gated Recurrent Unit)
+================================================================================
+
+INTUITION
+---------
+GRU is a simplified LSTM with TWO gates instead of THREE.
+It combines forget and input gates into a single UPDATE gate.
+It also merges cell state and hidden state.
+
+MATHEMATICS
+-----------
+1. UPDATE GATE:
+   z_t = σ(W_z · [h_{t-1}, x_t] + b_z)
+   → Combines forget and input decisions
+
+2. RESET GATE:
+   r_t = σ(W_r · [h_{t-1}, x_t] + b_r)
+   → Controls how much past information to forget for candidate
+
+3. CANDIDATE HIDDEN STATE:
+   h̃_t = tanh(W · [r_t * h_{t-1}, x_t])
+
+4. FINAL HIDDEN STATE:
+   h_t = (1 - z_t) * h_{t-1} + z_t * h̃_t
+
+COMPARISON WITH LSTM
+--------------------
+| Feature           | LSTM          | GRU           |
+|-------------------|---------------|---------------|
+| Gates             | 3             | 2             |
+| Parameters        | More          | Fewer         |
+| Training speed    | Slower        | Faster        |
+| Memory            | Cell + Hidden | Hidden only   |
+| Performance       | Slightly better on long sequences | Comparable |
+
+RULE OF THUMB
+-------------
+Start with GRU (faster, simpler). Switch to LSTM if GRU
+doesn't capture enough complexity.
+
+================================================================================
+5. PYTORCH IMPLEMENTATION
+================================================================================
+
+import torch
+import torch.nn as nn
+
+# LSTM
+class LSTMModel(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers,
+                           batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
+
+        out, _ = self.lstm(x, (h0, c0))
+        out = self.fc(out[:, -1, :])  # last time step
+        return out
+
+# GRU
+class GRUModel(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.gru = nn.LSTM(input_size, hidden_size, num_layers,
+                           batch_first=True)  # Actually nn.GRU
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
+
+        out, _ = self.gru(x, h0)
+        out = self.fc(out[:, -1, :])
+        return out
+
+# Usage
+model = LSTMModel(input_size=10, hidden_size=64, num_layers=2, output_size=1)
+x = torch.randn(32, 20, 10)  # batch=32, seq_len=20, features=10
+output = model(x)  # shape: (32, 1)
+
+================================================================================
+6. TIME SERIES FORECASTING WITH LSTM
+================================================================================
+
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+
+# Create sequences
+def create_sequences(data, seq_length):
+    X, y = [], []
+    for i in range(len(data) - seq_length):
+        X.append(data[i:i+seq_length])
+        y.append(data[i+seq_length])
+    return np.array(X), np.array(y)
+
+# Prepare data
+scaler = MinMaxScaler()
+scaled_data = scaler.fit_transform(df[['sales']].values)
+
+seq_length = 30
+X, y = create_sequences(scaled_data, seq_length)
+
+# Split (NO SHUFFLE for time series!)
+split = int(0.8 * len(X))
+X_train, X_test = X[:split], X[split:]
+y_train, y_test = y[:split], y[split:]
+
+# Convert to tensors
+X_train_t = torch.FloatTensor(X_train)
+y_train_t = torch.FloatTensor(y_train)
+X_test_t = torch.FloatTensor(X_test)
+y_test_t = torch.FloatTensor(y_test)
+
+# Train LSTM
+model = LSTMModel(input_size=1, hidden_size=50, num_layers=2, output_size=1)
+criterion = nn.MSELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+for epoch in range(100):
+    model.train()
+    outputs = model(X_train_t)
+    loss = criterion(outputs, y_train_t)
+
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+    if (epoch + 1) % 10 == 0:
+        model.eval()
+        with torch.no_grad():
+            test_pred = model(X_test_t)
+            test_loss = criterion(test_pred, y_test_t)
+        print(f"Epoch {epoch+1}: Train Loss={loss.item():.4f}, Test Loss={test_loss.item():.4f}")
+
+================================================================================
+7. LSTM FOR TEXT CLASSIFICATION
+================================================================================
+
+class TextLSTM(nn.Module):
+    def __init__(self, vocab_size, embed_size, hidden_size, output_size):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embed_size)
+        self.lstm = nn.LSTM(embed_size, hidden_size, batch_first=True,
+                           bidirectional=True)
+        self.fc = nn.Linear(hidden_size * 2, output_size)  # *2 for bidirectional
+        self.dropout = nn.Dropout(0.5)
+
+    def forward(self, x):
+        embedded = self.dropout(self.embedding(x))
+        out, (h_n, c_n) = self.lstm(embedded)
+
+        # Concatenate forward and backward hidden states
+        hidden = torch.cat((h_n[-2], h_n[-1]), dim=1)
+        out = self.fc(self.dropout(hidden))
+        return out
+
+================================================================================
+8. BIDIRECTIONAL LSTM
+================================================================================
+
+INTUITION
+---------
+Processes sequence in BOTH directions (forward and backward).
+Useful when the full context is available (not streaming).
+
+torch.nn.LSTM(..., bidirectional=True)
+
+FORWARD:  h_forward_t = LSTM(x_t, h_{t-1})
+BACKWARD: h_backward_t = LSTM(x_t, h_{t+1})
+COMBINED: h_t = [h_forward_t ; h_backward_t]
+
+USE: text classification, NER, sentiment analysis
+AVOID: real-time prediction (can't see future)
+
+================================================================================
+9. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Using LSTM where simple features work
+  WRONG: LSTM for tabular data with 10 features
+  RIGHT: LSTM for sequences, trees/GBM for tabular
+
+MISTAKE 2: Not normalizing time series input
+  RIGHT: Always scale to [0,1] or standardize
+
+MISTAKE 3: Too many layers
+  WRONG: 10-layer LSTM
+  RIGHT: 1-3 layers is usually sufficient
+
+MISTAKE 4: Forgetting to handle variable-length sequences
+  RIGHT: Use pack_padded_sequence and pad_sequence
+
+MISTAKE 5: Not using bidirectional when appropriate
+  RIGHT: Use bidirectional for classification, unidirectional for generation
+
+================================================================================
+10. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What are the three gates in LSTM and what does each do?
+Q2: How does the cell state solve the vanishing gradient problem?
+Q3: What is the difference between LSTM and GRU?
+Q4: When would you use bidirectional LSTM?
+Q5: Why do we take the last hidden state for classification?
+Q6: How do you create input sequences for time series forecasting?
+
+================================================================================
+END OF MODULE 22: LSTM & GRU
+================================================================================

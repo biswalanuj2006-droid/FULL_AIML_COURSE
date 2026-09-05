@@ -1,0 +1,51 @@
+================================================================================
+THINK.TXT - 19 DEEP LEARNING
+================================================================================
+
+1. Adam works "out of the box" yet papers often report SGD+momentum
+   generalizing better after tuning. Explain the mechanism (adaptive
+   rates and generalization) and when you would deliberately choose
+   each.
+2. Batch normalization changes the loss landscape, not just the
+   activations. Argue this with the Lipschitz-smoothness intuition and
+   say why BN behaves differently at train vs eval (and the batch
+   size dependency at inference).
+3. Dropout is an ensemble of subnetworks AND a regularizer that changes
+   the effective learning rate. Give both views and predict what
+   happens when you forget to scale activations at test time.
+4. Your test loss is 0.35, your friend's identical-looking model gets
+   0.25. Name ten differences that could cause it, ranked by
+   likelihood, and the one-line experiment that tests each.
+5. Reproducibility: you set every seed and still get different results
+   across two machines. Enumerate the sources (CUDA nondeterminism,
+   data loading order, tf.data, float reduction order) and the
+   practical policy for ML teams that need comparable runs.
+6. Learning rate schedules: warmup then cosine decay helps large
+   batches. Explain why warmup matters when Adam's second moment is
+   still being estimated, and why cosine beats step decay for long
+   runs.
+7. Gradient accumulation vs larger batch: same effective batch, but
+   BatchNorm statistics differ. When does accumulation NOT reproduce a
+   big batch, and how do you compensate?
+8. Mixed precision (FP16) trains 2x faster but can diverge. Explain
+   loss scaling, why master weights are kept in FP32, and what the
+   gradient underflow failure looks like.
+9. You can only afford 10 GPU-hours. Argue whether to spend it on
+   more epochs, a bigger model, a bigger batch with a schedule, or
+   ensembling - with a decision rule that depends on your current
+   overfit/underfit diagnosis.
+10. Deep nets generalize despite memorizing training data. Construct
+    the double-descent argument and say what it implies about
+    "regularization = restraint" as a mental model.
+11. Early stopping is "free" regularization. Prove it is equivalent to
+    weight decay in a simplified setting, and explain why it is still
+    the first callbacks people reach for.
+12. Your validation curve is flat but train is still falling at epoch
+    100. Is the model overfitting, underfitting, or done? How do you
+    decide whether to continue, and what does the answer cost?
+13. OPEN PROBLEM: the generalization gap between SGD and adaptive
+    optimizers has no settled explanation. Survey the leading
+    hypotheses and design the experiment that would discriminate them.
+================================================================================
+END
+================================================================================

@@ -1,0 +1,17 @@
+================================================================================
+PANDAS MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: SALES ANALYZER (Beginner)
+======================================
+Load sales data, compute: total revenue by product, top customers, monthly trends, export summary report.
+
+PROJECT 2: CUSTOMER SEGMENTATION DATA PIPELINE (Intermediate)
+================================================================
+Clean raw customer data, engineer features, compute RFM metrics, segment customers, output clean dataset for ML.
+
+PROJECT 3: TIME-SERIES DATA PROCESSING PIPELINE (Advanced)
+============================================================
+Process 1M+ rows of time-series data: resample, aggregate, compute rolling statistics, handle gaps, generate ML-ready features.
+
+================================================================================

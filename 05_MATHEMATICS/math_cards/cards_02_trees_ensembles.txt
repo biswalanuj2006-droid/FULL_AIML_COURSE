@@ -1,0 +1,101 @@
+================================================================================
+CARD: DECISION TREE (CART)
+================================================================================
+PROBLEM   non-linear, interpretable classifier/regressor via recursive
+          axis-aligned splits.
+MODEL     binary tree; each leaf predicts a class (majority vote) or a
+          constant (mean of y).
+SPLIT RULE choose feature j + threshold t maximizing purity gain:
+          Gain(S) = H(S) - sum_v |S_v|/|S| * H(S_v)
+          H options:
+            Classification: Gini   H = 1 - sum_k p_k^2
+                            Entropy H = -sum_k p_k log p_k
+            Regression:     variance H = Var(y in S)
+          Gini vs entropy: similar trees; Gini cheaper (no log); both
+          favor pure child nodes. Don't over-tune this choice.
+STOPPING  max_depth, min_samples_leaf, min_samples_split; grow fully
+          then PRUNE (cost-complexity: minimize R(T) + alpha*|leaves|).
+KEY       greedy one-step lookahead (no backtracking) -> globally
+          suboptimal but fast; variance high (unstable to data changes)
+          -> the reason ensembles exist.
+COMPLEXITY train O(n d log n) typical; predict O(depth).
+FAILURES  overfits without limits; biased toward features with many
+          split values; cannot represent smooth additive functions
+          efficiently (needs many splits); extrapolation flat.
+CONNECTS  base learner of RF/boosting; feature_importance =
+          total gain from splits on that feature.
+
+================================================================================
+CARD: RANDOM FOREST (bagging + feature subsampling)
+================================================================================
+PROBLEM   reduce tree variance by averaging many decorrelated trees.
+MODEL     B trees, each trained on a bootstrap sample of rows and
+          (for each split) a random subset of m features.
+OBJECTIVE same as CART per tree (no global objective).
+WHY IT WORKS (the variance decomposition)
+          Var(avg of B) = rho*sigma^2 + (1-rho)*sigma^2/B
+          rho = pairwise tree correlation. Bagging alone leaves rho
+          high (trees share the dominant feature); random feature
+          subsampling LOWERS rho (trees use different features) ->
+          averaging keeps bias ~ one tree but slashes variance.
+          OOB error = error on rows NOT sampled for a tree = honest
+          CV for free (each row appears in ~1/3 of trees).
+COMPLEXITY train O(B * n log n * m_eff); parallel over trees; predict O(B*depth).
+FAILURES  underfits very smooth/large-data problems vs boosting; bias
+          of trees stays (ensemble of biased learners = biased);
+          interpretability needs approximation (permutation/SHAP).
+CONNECTS  ExtraTrees randomize thresholds too (more variance cut);
+          boosting reduces BIAS instead of variance (next card).
+
+================================================================================
+CARD: ADABOOST
+================================================================================
+PROBLEM   build a strong classifier from weak ones by reweighting.
+MODEL     H(x) = sign( sum_t alpha_t h_t(x) )
+ALGORITHM for t=1..T: fit h_t on weights D_t; error eps_t = sum over
+          misclassified of D_t; alpha_t = 1/2 ln((1-eps)/eps);
+          multiply weights of misclassified by exp(alpha_t) and
+          renormalize.
+WHY IT WORKS (Freund-Schapire bound)
+          training error <= prod_t 2 sqrt(eps_t (1-eps_t))
+          < exp(-2 sum_t gamma_t^2)   (gamma = 1/2 - eps)
+          i.e. error drops EXPONENTIALLY fast if each weak learner is
+          better than chance. View as coordinate descent on the
+          exponential loss L = sum_i exp(-y_i H(x_i)).
+COMPLEXITY O(T * (cost of weak learner)).
+FAILURES  extremely sensitive to label noise (exponential loss grows
+          unbounded on outliers - boosting concentrates on them);
+          weak learners must beat chance on reweighted data.
+CONNECTS  Gradient Boosting generalizes: any loss, any base learner.
+
+================================================================================
+CARD: GRADIENT BOOSTING (GBM / XGBoost)
+================================================================================
+PROBLEM   sequential ensemble fitting the RESIDUALS of the previous
+          ensemble, for any differentiable loss.
+MODEL     F_M(x) = sum_m eta * f_m(x)    (eta = learning rate/shrinkage)
+ALGORITHM (functional gradient descent)
+          F_0 = argmin_c sum L(y_i, c)
+          for m=1..M:
+            pseudo-residual r_i = -dL/dF at F_{m-1}(x_i)
+              regression L2:   r_i = y_i - F_{m-1}(x_i)
+              log loss:        r_i = y_i - p_i   (again the residual!)
+            fit a REGRESSION TREE f_m to the r_i
+            choose leaf values gamma_jm = argmin sum over leaf of
+              L(y_i, F_{m-1} + gamma)    (1 Newton step approx common)
+            F_m = F_{m-1} + eta * f_m
+WHY IT WORKS greedy stagewise additive modeling: each tree fits the
+          direction of steepest descent of the loss IN FUNCTION SPACE.
+          Shrinkage eta<1 trades more trees for smoother fits.
+XGBOOST EXTRAS second-order (Newton) approx with Hessian weights,
+          built-in L1/L2 on leaves, column subsampling, exact
+          histograms, and a clever sparsity-aware split finder; LightGBM
+          uses histograms + leaf-wise growth (faster, deeper);
+          CatBoost handles categoricals natively + ordered boosting
+          (avoids target leakage in the boosting loop).
+COMPLEXITY train ~O(M * n log n) with histograms; parallel across trees.
+FAILURES  overfits with too many trees/no shrinkage; imbalanced data
+          needs class weights/objective tweaks; tabular-superior but
+          loses to NNs on images/text/very high-d embeddings.
+CONNECTS  AdaBoost = GBM with exponential loss; RF reduces variance,
+          boosting reduces bias.

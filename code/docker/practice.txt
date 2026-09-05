@@ -1,0 +1,44 @@
+================================================================================
+CODE PRACTICE - code/docker (containerizing an ML API)
+Companions: Dockerfile, requirements.txt, app.py, docker-compose.yml
+================================================================================
+RUN & OBSERVE
+1. Build the image (docker build -t ml-api .) and inspect its layers
+   with docker history - which step created the largest layer?
+2. Run the container, map the port, and curl the API from the host.
+
+MODIFY
+3. Optimize the Dockerfile: install requirements BEFORE copying code
+   (layer caching) and use a python:3.x-slim base; rebuild and compare
+   build time on a no-code-change rebuild.
+4. Add a .dockerignore (venv, __pycache__, .git, data) and compare
+   build context size (docker build output shows it).
+5. Run as a non-root user inside the image (USER directive) - the
+   security habit from 46 ml_security.
+6. Add HEALTHCHECK to the Dockerfile and confirm docker ps shows
+   healthy once the app responds.
+
+DEBUG
+7. The classic: image builds locally but the app crashes in the
+   container with ModuleNotFoundError - diagnose the missing dependency
+   and the fix (declare everything; check pip freeze vs requirements).
+8. Timezone/locale issue: the container prints UTC while the app
+   expects local time - fix with TZ env or explicit tz in code.
+9. Container runs but the port is unreachable from the host: walk the
+   failure chain (EXPOSE vs -p mapping vs app binding 127.0.0.1 vs
+   0.0.0.0) and fix each.
+
+BUILD (mini)
+10. docker-compose: add a second service (e.g. a Redis or a simple
+    proxy) and verify both start and can talk on the compose network.
+11. Write a docker run command that passes a MODEL_PATH env var and
+    confirm the app reads it (the 12-factor config lesson).
+12. Reproduce "works on my laptop, fails in the cloud" (33_MLOPS real
+    problem): delete a requirements line, rebuild, and observe - then
+    add a CI-style check that pip installs cleanly from a fresh venv.
+
+RELATE
+13. Which 41_DOCKER lesson concepts does each exercise above exercise
+    (layers, caching, health, compose)?
+14. (Interview) Explain layer caching and why dependency order in a
+    Dockerfile is a performance decision.

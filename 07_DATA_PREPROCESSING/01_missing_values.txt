@@ -1,0 +1,260 @@
+================================================================================
+MODULE 07 — DATA PREPROCESSING
+LESSON 01: HANDLING MISSING VALUES
+================================================================================
+
+## What You Will Learn
+- Why data has missing values
+- Types of missingness (MCAR, MAR, MNAR)
+- Detection methods
+- Removal strategies
+- Imputation strategies (mean, median, mode, KNN, iterative)
+- Impact on ML algorithms
+- How to choose the right strategy
+
+## Why You Need It
+Missing values are the #1 data quality issue in ML. Every real-world dataset
+has them. How you handle them directly affects model performance.
+
+================================================================================
+1. WHY DATA HAS MISSING VALUES
+================================================================================
+
+COMMON CAUSES:
+    - Data entry errors
+    - Sensor failures
+    - Survey non-responses
+    - System glitches
+    - Privacy restrictions (deliberately hidden)
+    - Merging datasets with different schemas
+
+TYPES OF MISSINGNESS:
+
+    MCAR (Missing Completely At Random):
+        Missingness has NO relationship to any data.
+        Example: A sensor randomly fails.
+
+        Handling: Safe to drop rows.
+
+    MAR (Missing At Random):
+        Missingness depends on OTHER observed data.
+        Example: Men are less likely to report income (gender is observed).
+
+        Handling: Use observed data to predict missing values.
+
+    MNAR (Missing Not At Random):
+        Missingness depends on the MISSING VALUE itself.
+        Example: High-income people hide their income.
+
+        Handling: Hardest. May need domain knowledge or specialized models.
+
+    WHY IT MATTERS:
+    - MCAR: Dropping rows is safe (but loses data)
+    - MAR: Imputation using other features works well
+    - MNAR: May introduce bias — need careful analysis
+
+================================================================================
+2. DETECTING MISSING VALUES
+================================================================================
+
+import pandas as pd
+import numpy as np
+
+# Per-column missing count
+df.isnull().sum()
+
+# Per-column missing percentage
+(df.isnull().sum() / len(df)) * 100
+
+# Total missing
+df.isnull().sum().sum()
+
+# Columns with any missing
+missing_cols = df.columns[df.isnull().any()].tolist()
+
+# Rows with missing
+rows_with_missing = df[df.isnull().any(axis=1)]
+
+# Visualize missing patterns
+import seaborn as sns
+sns.heatmap(df.isnull(), cbar=True, yticklabels=False)
+
+# Missing value matrix
+import missingno as msno
+msno.matrix(df)
+msno.heatmap(df)
+
+================================================================================
+3. REMOVAL STRATEGIES
+================================================================================
+
+DROP ROWS:
+    df.dropna()                    # Drop any row with missing
+    df.dropna(subset=["age"])      # Drop only if 'age' is missing
+    df.dropna(thresh=3)            # Keep rows with at least 3 non-null
+
+    WHEN TO USE:
+    - Data is MCAR
+    - Small percentage of rows affected (< 5%)
+    - Enough data remains after dropping
+
+    WHEN NOT TO USE:
+    - Large percentage of data is missing
+    - Missingness is not random
+    - Important information would be lost
+
+DROP COLUMNS:
+    df.dropna(axis=1)              # Drop any column with missing
+    df.drop(columns=["col_with_50pct_missing"])
+
+    WHEN TO USE:
+    - A column has > 50% missing values
+    - The column is not important for prediction
+
+================================================================================
+4. IMPUTATION STRATEGIES
+================================================================================
+
+MEAN IMPUTATION:
+    from sklearn.impute import SimpleImputer
+
+    imputer = SimpleImputer(strategy='mean')
+    df[['age', 'income']] = imputer.fit_transform(df[['age', 'income']])
+
+    PROS: Simple, fast
+    CONS: Reduces variance, assumes normal distribution, affected by outliers
+
+MEDIAN IMPUTATION:
+    imputer = SimpleImputer(strategy='median')
+    df[['age', 'income']] = imputer.fit_transform(df[['age', 'income']])
+
+    PROS: Robust to outliers
+    CONS: Reduces variance, assumes data is centered
+
+MODE IMPUTATION (for categorical):
+    imputer = SimpleImputer(strategy='most_frequent')
+    df[['city', 'plan']] = imputer.fit_transform(df[['city', 'plan']])
+
+    PROS: Works for categorical data
+    CONS: May create unrealistic distributions
+
+CONSTANT IMPUTATION:
+    imputer = SimpleImputer(strategy='constant', fill_value=0)
+    df[['score']] = imputer.fit_transform(df[['score']])
+
+    PROS: Transparent, no statistical assumptions
+    CONS: Arbitrary value, may confuse model
+
+KNN IMPUTATION:
+    from sklearn.impute import KNNImputer
+
+    imputer = KNNImputer(n_neighbors=5)
+    df_imputed = pd.DataFrame(
+        imputer.fit_transform(df),
+        columns=df.columns
+    )
+
+    HOW IT WORKS:
+    For each missing value, finds K most similar rows (using
+    other features) and uses their values to impute.
+
+    PROS: Uses relationships between features
+    CONS: Computationally expensive, sensitive to scaling
+
+ITERATIVE IMPUTATION (MICE):
+    from sklearn.experimental import enable_iterative_imputer
+    from sklearn.impute import IterativeImputer
+
+    imputer = IterativeImputer(max_iter=10, random_state=42)
+    df_imputed = pd.DataFrame(
+        imputer.fit_transform(df),
+        columns=df.columns
+    )
+
+    HOW IT WORKS:
+    For each feature with missing values:
+    1. Treat it as the target variable
+    2. Use other features as predictors
+    3. Train a model to predict missing values
+    4. Repeat for all features
+
+    PROS: Most accurate, models feature relationships
+    CONS: Slowest, complex
+
+================================================================================
+5. MISSING VALUE INDICATORS
+================================================================================
+
+Sometimes the FACT that a value is missing is informative.
+
+    # Create indicator columns
+    for col in df.columns:
+        if df[col].isnull().any():
+            df[f'{col}_missing'] = df[col].isnull().astype(int)
+
+    # Then impute the original column
+    df[col] = df[col].fillna(df[col].median())
+
+    ML USE: If "income" is missing because high-income people hide it,
+    the missing indicator captures that signal.
+
+================================================================================
+6. ALGORITHM SENSITIVITY
+================================================================================
+
+┌─────────────────────┬───────────────────────────────────┐
+│ Algorithm           │ Missing Value Handling             │
+├─────────────────────┼───────────────────────────────────┤
+│ Linear Regression   │ Requires imputation               │
+│ Logistic Regression │ Requires imputation               │
+│ KNN                 │ Requires imputation (distance)    │
+│ SVM                 │ Requires imputation               │
+│ Decision Trees      │ Can handle natively (some impls)  │
+│ Random Forest       │ Can handle natively (sklearn can't│
+│ XGBoost             │ Can handle natively               │
+│ LightGBM            │ Can handle natively               │
+│ Neural Networks     │ Requires imputation               │
+└─────────────────────┴───────────────────────────────────┘
+
+RECOMMENDATION:
+    - Tree-based models: Often handle NaN natively
+    - Linear/distance models: Always impute first
+    - Neural networks: Always impute first
+    - When in doubt: Use IterativeImputer
+
+================================================================================
+7. CHOOSING THE RIGHT STRATEGY
+================================================================================
+
+DECISION FLOWCHART:
+
+    Is < 5% missing?
+    ├─ Yes → Drop rows (if MCAR)
+    └─ No → Is it categorical?
+        ├─ Yes → Mode imputation or "Missing" category
+        └─ No → Is data normal?
+            ├─ Yes → Mean imputation
+            └─ No → Median imputation
+
+    Want best accuracy?
+    └─ Use IterativeImputer or KNNImputer
+
+    Want speed?
+    └─ Use SimpleImputer (mean/median)
+
+    Want to capture missingness signal?
+    └─ Add missing indicator + impute
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between MCAR, MAR, and MNAR?
+2. Why can mean imputation be problematic?
+3. How does KNN imputation work?
+4. When should you add missing value indicators?
+5. Which algorithms can handle missing values natively?
+
+================================================================================
+NEXT LESSON: 02_duplicates.txt
+================================================================================

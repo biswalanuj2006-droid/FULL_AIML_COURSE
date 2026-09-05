@@ -1,0 +1,219 @@
+================================================================================
+DSA MODULE 17: ADVANCED DATA STRUCTURES — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Implement Segment Trees for range queries and updates
+- Implement Fenwick/Binary Indexed Trees
+- Implement Disjoint Set Union (Union-Find)
+- Solve advanced competitive programming problems
+- Apply these structures to ML/AI engineering problems
+
+================================================================================
+1. SEGMENT TREE
+================================================================================
+
+INTUITION
+---------
+A binary tree where each node represents a range of the array.
+Enables O(log n) range queries and point updates (vs O(n) brute force).
+
+USE CASES:
+- Range sum / range min / range max queries
+- Range updates
+- Counting inversions
+- Merge sort trees
+- Persistent segment trees
+
+BUILDING
+--------
+class SegmentTree:
+    def __init__(self, data):
+        self.n = len(data)
+        self.tree = [0] * (4 * self.n)
+        self.build(data, 1, 0, self.n - 1)
+
+    def build(self, data, node, start, end):
+        if start == end:
+            self.tree[node] = data[start]
+        else:
+            mid = (start + end) // 2
+            self.build(data, 2*node, start, mid)
+            self.build(data, 2*node+1, mid+1, end)
+            self.tree[node] = self.tree[2*node] + self.tree[2*node+1]
+
+    def update(self, node, start, end, idx, val):
+        if start == end:
+            self.tree[node] = val
+        else:
+            mid = (start + end) // 2
+            if idx <= mid:
+                self.update(2*node, start, mid, idx, val)
+            else:
+                self.update(2*node+1, mid+1, end, idx, val)
+            self.tree[node] = self.tree[2*node] + self.tree[2*node+1]
+
+    def query(self, node, start, end, l, r):
+        if r < start or end < l:
+            return 0
+        if l <= start and end <= r:
+            return self.tree[node]
+        mid = (start + end) // 2
+        return (self.query(2*node, start, mid, l, r) +
+                self.query(2*node+1, mid+1, end, l, r))
+
+Time: Build O(n), Query O(log n), Update O(log n), Space O(4n)
+
+ML APPLICATION:
+- Feature importance tracking over ranges
+- Online learning with range statistics
+- Time-series range queries in production systems
+
+================================================================================
+2. FENWICK TREE (Binary Indexed Tree)
+================================================================================
+
+INTUITION
+---------
+More space-efficient than segment tree for prefix sum problems.
+Uses binary representation of indices to store partial sums.
+
+USE CASES:
+- Point update + prefix sum query
+- Counting inversions
+- 2D BIT for range queries
+
+class FenwickTree:
+    def __init__(self, n):
+        self.n = n
+        self.tree = [0] * (n + 1)
+
+    def update(self, i, delta):
+        while i <= self.n:
+            self.tree[i] += delta
+            i += i & (-i)  # add lowest set bit
+
+    def query(self, i):
+        s = 0
+        while i > 0:
+            s += self.tree[i]
+            i -= i & (-i)  # remove lowest set bit
+        return s
+
+    def range_query(self, l, r):
+        return self.query(r) - self.query(l - 1)
+
+Time: Update O(log n), Query O(log n), Space O(n)
+
+WHY FENWICK > SEGMENT TREE:
+- Simpler code
+- Less memory
+- Cache-friendly
+- Same time complexity for prefix sum operations
+
+WHEN SEGMENT TREE > FENWICK:
+- Range minimum/maximum queries
+- Complex range updates
+- Need to merge different operations
+
+================================================================================
+3. DISJOINT SET UNION (Union-Find)
+================================================================================
+
+INTUITION
+---------
+Maintains a collection of disjoint sets.
+Supports: find (which set does x belong to?) and union (merge two sets).
+
+OPTIMIZATIONS:
+- Path compression: flatten tree during find
+- Union by rank: attach smaller tree under larger
+
+class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [0] * n
+        self.components = n
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])  # path compression
+        return self.parent[x]
+
+    def union(self, x, y):
+        px, py = self.find(x), self.find(y)
+        if px == py:
+            return False  # already in same set
+        if self.rank[px] < self.rank[py]:
+            px, py = py, px
+        self.parent[py] = px
+        if self.rank[px] == self.rank[py]:
+            self.rank[px] += 1
+        self.components -= 1
+        return True
+
+    def connected(self, x, y):
+        return self.find(x) == self.find(y)
+
+Time: O(α(n)) per operation ≈ O(1) amortized (α = inverse Ackermann)
+Space: O(n)
+
+USE CASES:
+- Connected components in graphs
+- Cycle detection in undirected graphs
+- Kruskal's MST algorithm
+- Dynamic connectivity problems
+- Image processing (connected component labeling)
+
+================================================================================
+4. LEETCODE PROBLEMS
+================================================================================
+
+SEGMENT TREE
+-------------
+1. Range Sum Query - Mutable (LC #307)
+2. Range Sum Query 2D - Mutable (LC #308)
+3. Count of Smaller Numbers After Self (LC #315)
+
+FENWICK TREE
+-------------
+4. Binary Indexed Tree range updates
+5. Counting inversions
+
+DSU (UNION-FIND)
+-----------------
+6. Number of Provinces (LC #547)
+7. Redundant Connection (LC #684)
+8. Accounts Merge (LC #721)
+9. Most Stones Removed (LC #947)
+10. Satisfiability of Equality Equations (LC #990)
+
+================================================================================
+5. WHEN TO USE WHAT
+================================================================================
+
+| PROBLEM TYPE              | USE               | WHY                    |
+|---------------------------|--------------------|-----------------------|
+| Range sum + point update  | Fenwick Tree       | Simpler, faster       |
+| Range min/max + update    | Segment Tree       | More flexible         |
+| Connected components      | DSU                | Near O(1) operations  |
+| Cycle detection           | DSU                | Simple and efficient  |
+| Dynamic connectivity      | DSU                | Online queries        |
+| Counting inversions       | Fenwick + sorting  | O(n log n)            |
+| 2D range queries          | 2D Segment/Fenwick | Grid data processing  |
+
+================================================================================
+6. ML APPLICATIONS
+================================================================================
+
+- Online learning: track model performance over time windows (Segment Tree)
+- Feature store: range queries on feature statistics (Fenwick Tree)
+- Graph-based ML: connected components for community detection (DSU)
+- Recommendation systems: merge user groups (DSU)
+- Real-time analytics: sliding window statistics (Segment Tree)
+
+================================================================================
+END OF MODULE 17
+================================================================================

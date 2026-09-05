@@ -1,0 +1,82 @@
+# CLASSIFICATION — PROJECTS
+
+---
+
+## PROJECT 1 — EMAIL SPAM DETECTOR (Level 1)
+
+### Problem Statement
+Build a spam/ham email classifier using traditional ML.
+
+### Requirements
+- Load email dataset (SMS Spam Collection or Enron subset)
+- Text preprocessing (tokenization, stopword removal, stemming)
+- Feature extraction (TF-IDF)
+- Train Logistic Regression, Naive Bayes, SVM
+- Compare models with accuracy, precision, recall, F1
+- Build prediction function
+
+### Dataset
+- SMS Spam Collection (UCI) — 5,574 messages
+
+### Expected Output
+- Model comparison table
+- Confusion matrix
+- Classification report
+- Top features per class
+
+---
+
+## PROJECT 2 — CREDIT CARD FRAUD DETECTOR (Level 2)
+
+### Problem Statement
+Build a fraud detection system handling extreme class imbalance.
+
+### Requirements
+- Load credit card fraud dataset
+- Handle class imbalance (SMOTE, class weights, undersampling)
+- Train multiple models (Random Forest, XGBoost, LightGBM)
+- Use appropriate metrics (PR-AUC, F1, not accuracy)
+- Feature importance analysis
+- Threshold optimization
+
+### Dataset
+- Credit Card Fraud Detection (Kaggle) — 284,807 transactions, 492 frauds
+
+### Expected Output
+- Imbalanced handling comparison
+- PR-AUC curves
+- Feature importance plot
+- Optimal threshold analysis
+
+---
+
+## PROJECT 3 — PRODUCTION CLASSIFICATION API (Level 3)
+
+### Problem Statement
+Build a complete classification system with API, database, and monitoring.
+
+### Requirements
+- Train model on tabular data
+- Build FastAPI endpoint for predictions
+- Store predictions in PostgreSQL
+- Add authentication (JWT)
+- Implement rate limiting
+- Add monitoring (prediction distribution)
+- Docker containerization
+- Unit tests + API tests
+
+### Architecture
+```
+User → FastAPI → Model → Prediction
+                    ↓
+              PostgreSQL (log)
+              Redis (cache)
+              Monitoring
+```
+
+### Expected Output
+- Working API with /predict endpoint
+- Database storing all predictions
+- Test suite passing
+- Docker image built
+- README with setup instructions

@@ -1,0 +1,154 @@
+================================================================================
+LESSON: XAI - EXPLAINABLE AI & INTERPRETABILITY (consolidated)
+================================================================================
+Why this file exists: SHAP/LIME/PDP ideas are scattered across later
+modules. This is the single, honest treatment: what each method computes,
+the math, when it is valid, and - crucially - why explanations can lie.
+
+--------------------------------------------------------------------------------
+1. THREE QUESTIONS EXPLANATIONS ANSWER (they are NOT the same)
+--------------------------------------------------------------------------------
+  1. Feature importance (global): which features does the model rely on?
+  2. Local explanation: why did THIS prediction happen?
+  3. What-if / counterfactual: what input change flips the prediction?
+Different stakeholders need different ones. A data scientist debugging
+needs 1; a customer facing a loan denial needs 3; a regulator needs a
+combination. Choosing the wrong question for the audience is the most
+common XAI failure.
+
+--------------------------------------------------------------------------------
+2. MODEL-BASED INTERPRETABILITY (no extra machinery)
+--------------------------------------------------------------------------------
+  - Linear models: coefficients ARE the explanation (ceteris paribus:
+    +1 unit of x_j changes the score by w_j) - but only after features
+    are on comparable scales, and only if you remember correlations
+    make individual w_j unstable (see 10_REGRESSION failure lab).
+  - Trees: the path taken to a leaf is a readable rule.
+  - Attention weights: INTUITIVE but NOT a faithful explanation
+    (adversarial attention exists; weights can be manipulated without
+    changing predictions). Treat attention as a hint, never evidence.
+
+--------------------------------------------------------------------------------
+3. GLOBAL METHODS
+--------------------------------------------------------------------------------
+  1. Permutation importance (the honest baseline):
+       importance(j) = score_loss - score_loss(with column j SHUFFLED)
+     Shuffling breaks the feature-target association while keeping the
+     marginal distribution. Problems: correlated features split the
+     credit between them (shuffling one twin while keeping the other
+     leaves the prediction nearly unchanged), and it measures the
+     model+data system, not the model alone.
+  2. Partial dependence plot (PDP): vary feature j over its range,
+     average the predictions over all other observations:
+       PDP_j(v) = E_{x_-j} [ f(x_j = v, x_-j) ]
+     Shows the average marginal effect. Hidden trap: if features are
+     correlated, PDP evaluates the model on IMPOSSIBLE combinations
+     (e.g., x1=x2 while they are perfectly correlated) - the curve is
+     then extrapolation, not insight.
+  3. ICE plots: the PDP averaged over many lines; ICE shows ONE line per
+     observation, exposing heterogeneity the average hides. If ICE lines
+     disagree wildly, the PDP average is misleading.
+  4. Surrogate models: fit a glass-box (tree, linear) to the black box's
+     predictions and explain the surrogate. Only valid where the
+     surrogate actually matches (check R^2 on predictions first).
+
+--------------------------------------------------------------------------------
+4. SHAP (the field standard) - what it actually computes
+--------------------------------------------------------------------------------
+Shapley values come from cooperative game theory: players = features,
+game = model prediction for one instance. The Shapley value of feature j
+is its average MARGINAL contribution over every possible coalition:
+
+  phi_j = sum_{S subset of features \ {j}}
+            [ |S|! (M - |S| - 1)! / M! ] * [ f(S union {j}) - f(S) ]
+
+where f(S) = E[f(x) | features in S set to their values]. Properties:
+  - Efficiency:   sum_j phi_j = f(x) - E[f]   (explanations add up)
+  - Symmetry, dummy, additivity (the only attribution method satisfying
+    all of these - that is why SHAP is principled).
+In practice computing exact Shapley values is exponential; the library
+uses approximations: TreeSHAP (exact for trees, polynomial), KernelSHAP
+(any model, sampling-based), DeepSHAP (neural nets, approximate).
+INTERPRETING: SHAP gives LOCAL attributions for every prediction; global
+importance = mean |phi_j|; dependence plots show phi_j vs x_j.
+READ THE SIGNS: phi_j > 0 pushes the prediction up. A "beeswarm"/summary
+plot shows the full distribution of local effects.
+
+--------------------------------------------------------------------------------
+5. LIME (local surrogate)
+--------------------------------------------------------------------------------
+LIME explains ONE prediction by fitting a simple model locally:
+  1. Sample perturbations of the instance (drop/alter features),
+  2. Get the black box's predictions on them,
+  3. Weight samples by proximity to the original,
+  4. Fit a sparse linear model; its coefficients are the explanation.
+LIMITATIONS: the "locality" and perturbation definitions are choices
+that change the answer; with high-dimensional or correlated features the
+local linear fit can be unstable. SHAP and LIME often agree on the top
+features - when they disagree, that disagreement is itself information
+(one of the methods' assumptions is violated).
+
+--------------------------------------------------------------------------------
+6. COUNTERFACTUALS (the answer people actually want)
+--------------------------------------------------------------------------------
+"Change as little as possible so the prediction flips" - the natural
+explanation for a rejection. Methods: gradient-based search on the input
+to cross the decision boundary while minimizing distance, or generative
+approaches. Formally: find delta minimizing ||delta|| such that
+f(x + delta) = desired class. Caveats: counterfactuals are not unique
+(many minimal changes exist - report a set), and there is no guarantee
+the counterfactual is actionable (the bank cannot "make you richer by
+5k tomorrow").
+
+--------------------------------------------------------------------------------
+7. WHY EXPLANATIONS CAN LIE (the honest-limitations section)
+--------------------------------------------------------------------------------
+  1. Post hoc explanations of a bad model are explanations of the bad
+     behavior, not of the world. Validate the MODEL first.
+  2. Correlated features: credit is split arbitrarily (permutation and
+     even Shapley with dependence assumptions can mislead).
+  3. Unfaithful surrogates: LIME's local linear fit can be wrong exactly
+     where the decision boundary is curved.
+  4. OOD extrapolation: PDP/SHAP on impossible feature combinations.
+  5. Adversarial explanations: small input changes can arbitrarily
+     change SHAP/LIME outputs without changing the prediction.
+  6. Human over-trust: people treat any explanation as causal truth.
+     ALWAYS test: would a domain expert have predicted the explanation?
+RULES OF THUMB
+  - Use permutation importance + PDP/ICE first (free, in sklearn).
+  - Use SHAP when you need additive local attributions with guarantees.
+  - Use LIME only when SHAP is too slow (very large/deep models) and
+    check stability across perturbation seeds.
+  - Present explanations WITH uncertainty and model-level metrics, never
+    as isolated verdicts.
+
+--------------------------------------------------------------------------------
+8. PRACTICE
+--------------------------------------------------------------------------------
+1. (Concept) Global importance vs local explanation vs counterfactual:
+   give a stakeholder who needs each.
+2. (Math) Write the Shapley value formula; explain efficiency and why it
+   matters for summing SHAP contributions into f(x) - E[f].
+3. (Code) Permutation importance on a random forest (sklearn.inspection)
+   with two perfectly correlated features - observe the split credit.
+4. (Code) PDP + ICE for a single feature on the same model; find a case
+   where the PDP hides heterogeneity.
+5. (Reasoning) Why does PDP evaluate impossible combinations when
+   features are correlated? How would you detect that?
+6. (Code) KernelSHAP on logistic regression and compare with the true
+   coefficients - when do they match and when not?
+7. (Debugging) Two explanations of the same prediction disagree wildly
+   (SHAP says feature A, LIME says feature B). List three possible
+   causes and the experiment that decides between them.
+8. (Ethics) A loan model is explained to a denied applicant with SHAP.
+   What must you add (or refuse to say) before that explanation is
+   honest? Consider correlated protected attributes.
+9. (Reasoning) Attention weights as explanation: give one concrete
+   demonstration that high attention does not imply causal importance.
+10. (Design) Regulator asks for "the reason for each automated
+    decision". Sketch the system: which methods, which checks, which
+    logging, and how you would audit the explanations themselves.
+11. (Open-ended) OPEN PROBLEM: explanations that are simultaneously
+    faithful to the model, robust to small perturbations, and
+    human-meaningful are provably in tension (faithfulness-robustness
+    trade-off). Propose an evaluation that weights all three.

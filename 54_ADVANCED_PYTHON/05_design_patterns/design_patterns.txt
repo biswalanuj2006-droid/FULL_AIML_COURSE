@@ -1,0 +1,329 @@
+================================================================================
+ADVANCED PYTHON: DESIGN PATTERNS FOR AI/ML ENGINEERING
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Apply essential design patterns in ML/AI codebases
+- Write maintainable, extensible, production-quality code
+- Recognize when patterns help vs when they add unnecessary complexity
+
+================================================================================
+1. WHY DESIGN PATTERNS?
+================================================================================
+
+INTUITION
+---------
+Design patterns are proven solutions to common software design problems.
+They make code:
+- Easier to extend (open/closed principle)
+- Easier to test (loose coupling)
+- Easier to maintain (separation of concerns)
+- Easier to reuse (abstraction)
+
+In AI/ML, patterns help manage:
+- Multiple model types
+- Multiple data sources
+- Multiple preprocessing pipelines
+- Multiple deployment targets
+
+================================================================================
+2. STRATEGY PATTERN
+================================================================================
+
+INTUITION
+---------
+Define a family of algorithms, encapsulate each one, make them interchangeable.
+
+WHEN TO USE: Multiple model types, preprocessing strategies, evaluation metrics.
+
+from abc import ABC, abstractmethod
+
+class ModelStrategy(ABC):
+    @abstractmethod
+    def train(self, X, y): pass
+
+    @abstractmethod
+    def predict(self, X): pass
+
+class SklearnModel(ModelStrategy):
+    def __init__(self, model):
+        self.model = model
+
+    def train(self, X, y):
+        self.model.fit(X, y)
+
+    def predict(self, X):
+        return self.model.predict(X)
+
+class DeepLearningModel(ModelStrategy):
+    def __init__(self, model, epochs=10):
+        self.model = model
+        self.epochs = epochs
+
+    def train(self, X, y):
+        # PyTorch training loop
+        pass
+
+    def predict(self, X):
+        return self.model(X)
+
+# Usage: swap strategies without changing pipeline
+pipeline = ModelPipeline(strategy=SklearnModel(RandomForestClassifier()))
+pipeline.train(X_train, y_train)
+
+# Switch to deep learning
+pipeline.strategy = DeepLearningModel(nn_model, epochs=20)
+
+================================================================================
+3. FACTORY PATTERN
+================================================================================
+
+INTUITION
+---------
+Create objects without specifying exact class. Centralize object creation.
+
+class ModelFactory:
+    @staticmethod
+    def create(model_type, **params):
+        models = {
+            'random_forest': lambda: RandomForestClassifier(**params),
+            'xgboost': lambda: XGBClassifier(**params),
+            'neural_net': lambda: build_nn(**params),
+        }
+        if model_type not in models:
+            raise ValueError(f"Unknown model: {model_type}")
+        return models[model_type]()
+
+# Usage
+model = ModelFactory.create('xgboost', n_estimators=100, max_depth=6)
+
+================================================================================
+4. BUILDER PATTERN
+================================================================================
+
+INTUITION
+---------
+Construct complex objects step by step. Separate construction from representation.
+
+class MLPipelineBuilder:
+    def __init__(self):
+        self.steps = []
+
+    def add_preprocessing(self, preprocessor):
+        self.steps.append(('preprocess', preprocessor))
+        return self  # method chaining
+
+    def add_feature_engineering(self, engineer):
+        self.steps.append(('features', engineer))
+        return self
+
+    def add_model(self, model):
+        self.steps.append(('model', model))
+        return self
+
+    def add_postprocessing(self, postprocessor):
+        self.steps.append(('postprocess', postprocessor))
+        return self
+
+    def build(self):
+        return Pipeline(self.steps)
+
+# Usage
+pipeline = (MLPipelineBuilder()
+    .add_preprocessing(StandardScaler())
+    .add_feature_engineering(PolynomialFeatures(degree=2))
+    .add_model(XGBClassifier())
+    .build())
+
+================================================================================
+5. OBSERVER PATTERN
+================================================================================
+
+INTUITION
+---------
+Define a one-to-many dependency so that when one object changes state,
+all dependents are notified automatically.
+
+USE CASE: Training callbacks, monitoring, logging.
+
+class EventSystem:
+    def __init__(self):
+        self.listeners = {}
+
+    def subscribe(self, event, callback):
+        self.listeners.setdefault(event, []).append(callback)
+
+    def emit(self, event, data):
+        for callback in self.listeners.get(event, []):
+            callback(data)
+
+class ModelMonitor:
+    def __init__(self, events):
+        self.events = events
+        self.events.subscribe('epoch_end', self.on_epoch_end)
+        self.events.subscribe('training_complete', self.on_training_complete)
+
+    def on_epoch_end(self, data):
+        print(f"Epoch {data['epoch']}: loss={data['loss']:.4f}")
+
+    def on_training_complete(self, data):
+        print(f"Training complete! Final accuracy: {data['accuracy']:.4f}")
+
+# Usage
+events = EventSystem()
+monitor = ModelMonitor(events)
+
+for epoch in range(10):
+    # train...
+    events.emit('epoch_end', {'epoch': epoch, 'loss': 0.5 - epoch * 0.05})
+
+events.emit('training_complete', {'accuracy': 0.95})
+
+================================================================================
+6. DECORATOR PATTERN (Object-based)
+================================================================================
+
+INTUITION
+---------
+Dynamically add responsibilities to objects. More flexible than inheritance.
+
+class BaseModel:
+    def predict(self, X):
+        raise NotImplementedError
+
+class ActualModel(BaseModel):
+    def predict(self, X):
+        return [0, 1, 0]  # actual predictions
+
+class LoggingDecorator(BaseModel):
+    def __init__(self, model):
+        self.model = model
+
+    def predict(self, X):
+        print(f"Input shape: {X.shape}")
+        result = self.model.predict(X)
+        print(f"Output: {result}")
+        return result
+
+class CachingDecorator(BaseModel):
+    def __init__(self, model):
+        self.model = model
+        self.cache = {}
+
+    def predict(self, X):
+        key = hash(X.tobytes())
+        if key not in self.cache:
+            self.cache[key] = self.model.predict(X)
+        return self.cache[key]
+
+# Stack decorators
+model = LoggingDecorator(CachingDecorator(ActualModel()))
+
+================================================================================
+7. SINGLETON PATTERN (Use Sparingly)
+================================================================================
+
+class _ModelRegistry:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.models = {}
+        return cls._instance
+
+# Usage
+registry = _ModelRegistry()
+registry.models['fraud_v1'] = fraud_model
+
+================================================================================
+8. TEMPLATE METHOD PATTERN
+================================================================================
+
+INTUITION
+---------
+Define the skeleton of an algorithm, let subclasses override specific steps.
+
+class DataPipeline:
+    def run(self):
+        data = self.load_data()
+        data = self.clean(data)
+        data = self.transform(data)
+        return self.export(data)
+
+    def load_data(self):
+        raise NotImplementedError
+
+    def clean(self, data):
+        return data.dropna()
+
+    def transform(self, data):
+        return data
+
+    def export(self, data):
+        return data
+
+class CustomerPipeline(DataPipeline):
+    def load_data(self):
+        return pd.read_csv('customers.csv')
+
+    def transform(self, data):
+        data['total'] = data['purchases'] * data['avg_price']
+        return data
+
+================================================================================
+9. ADAPTER PATTERN
+================================================================================
+
+INTUITION
+---------
+Convert one interface to another expected by the client.
+
+class OldModel:
+    def predict_old(self, features):
+        return [1, 0, 1]
+
+class NewModelAdapter:
+    def __init__(self, old_model):
+        self.old_model = old_model
+
+    def predict(self, X):
+        return self.old_model.predict_old(X.tolist())
+
+# Client code doesn't need to change
+
+================================================================================
+10. COMMON MISTAKES
+================================================================================
+
+1. Over-engineering: Adding patterns where simple code works
+2. Singleton abuse: Global state makes testing hard
+3. God objects: One class doing everything
+4. Tight coupling: Classes depending on concrete implementations
+5. Not using dependency injection
+
+RULE OF THUMB:
+Start simple. Add patterns when you have a genuine need.
+A pattern that adds no value is just noise.
+
+================================================================================
+11. ML/AI APPLICATIONS
+================================================================================
+
+| PATTERN      | ML/AI USE CASE                              |
+|-------------|----------------------------------------------|
+| Strategy    | Swappable models, preprocessing, evaluation  |
+| Factory     | Model creation, data loading                  |
+| Builder     | Pipeline construction                         |
+| Observer    | Training callbacks, monitoring, logging       |
+| Decorator   | Adding logging, caching, rate limiting        |
+| Singleton   | Model registry, configuration                 |
+| Template    | ETL pipelines, training loops                 |
+| Adapter     | Wrapping legacy APIs, third-party integrations|
+| State       | Agent state management                        |
+
+================================================================================
+END OF MODULE
+================================================================================

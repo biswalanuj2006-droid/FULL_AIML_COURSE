@@ -1,0 +1,17 @@
+================================================================================
+CLOUD — PROJECTS
+================================================================================
+
+PROJECT 1: CLOUD DEPLOYMENT (Beginner)
+=========================================
+Deploy simple app to cloud.
+
+PROJECT 2: ML ON CLOUD (Intermediate)
+=======================================
+Deploy ML model to cloud with monitoring.
+
+PROJECT 3: CLOUD ML PLATFORM (Advanced)
+==========================================
+Build complete cloud ML platform.
+
+================================================================================

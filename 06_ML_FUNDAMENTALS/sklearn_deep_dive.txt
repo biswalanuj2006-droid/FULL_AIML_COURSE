@@ -1,0 +1,423 @@
+================================================================================
+SCIKIT-LEARN DEEP DIVE — THE ML STANDARD LIBRARY
+================================================================================
+
+## What You Will Learn
+- Complete scikit-learn API reference for ML engineers
+- Preprocessing, model selection, metrics, pipelines
+- When and how to use every major class
+- Common mistakes and best practices
+
+## Why Scikit-learn?
+Scikit-learn is THE standard ML library in Python. It provides:
+- Consistent API across all algorithms
+- Production-ready implementations
+- Built-in preprocessing, evaluation, and model selection
+- Integration with the Python data science ecosystem
+
+THE SCIKIT-LEARN API PATTERN:
+    model = Algorithm(hyperparameters)    # 1. Create model
+    model.fit(X_train, y_train)           # 2. Train
+    predictions = model.predict(X_test)   # 3. Predict
+    score = model.score(X_test, y_test)   # 4. Evaluate
+
+    EVERY algorithm follows this exact pattern.
+
+================================================================================
+1. PREPROCESSING — sklearn.preprocessing
+================================================================================
+
+STANDARDSCALER — Zero mean, unit variance:
+    from sklearn.preprocessing import StandardScaler
+
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)    # Fit + transform
+    X_test_scaled = scaler.transform(X_test)          # Transform only!
+
+    CRITICAL: Never fit on test data! Only transform.
+
+    WHEN TO USE:
+    - Distance-based algorithms (KNN, SVM, K-Means)
+    - Neural networks
+    - Regularized models (Ridge, Lasso)
+    - ALWAYS when features have different scales
+
+MINMAXSCALER — Scale to [0, 1]:
+    from sklearn.preprocessing import MinMaxScaler
+
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(X_train)
+
+    WHEN TO USE:
+    - When you need bounded values
+    - Image pixel values (already 0-255, divide by 255)
+    - Neural network inputs
+
+ROBUSTSCALER — Robust to outliers:
+    from sklearn.preprocessing import RobustScaler
+
+    scaler = RobustScaler()    # Uses median and IQR
+    X_scaled = scaler.fit_transform(X_train)
+
+    WHEN TO USE:
+    - Data with many outliers
+    - Financial data
+    - When mean/std are not representative
+
+ONEHOTENCODER — Categorical to binary:
+    from sklearn.preprocessing import OneHotEncoder
+
+    encoder = OneHotEncoder(sparse_output=False, drop='first')
+    X_encoded = encoder.fit_transform(df[['color', 'size']])
+    # ['red', 'blue', 'green'] → [[0, 1], [1, 0], [0, 0]]
+
+    drop='first' avoids multicollinearity (dummy variable trap).
+
+    WHEN TO USE:
+    - Nominal categories (no order): color, city, category
+    - Tree models don't need this (they handle categoricals)
+    - Linear models, KNN, SVM NEED this
+
+ORDINALCODER — Ordered categories:
+    from sklearn.preprocessing import OrdinalEncoder
+
+    encoder = OrdinalEncoder(categories=[['low', 'medium', 'high']])
+    X_encoded = encoder.fit_transform(df[['size']])
+
+    WHEN TO USE:
+    - Ordinal categories (has order): low < medium < high
+    - Tree-based models (they can handle ordinal encoding)
+
+LABELENCODER — Target encoding:
+    from sklearn.preprocessing import LabelEncoder
+
+    le = LabelEncoder()
+    y_encoded = le.fit_transform(['cat', 'dog', 'cat', 'bird'])
+    # [0, 2, 0, 1]
+
+    NOTE: Only for TARGET variable, not features.
+
+POLYNOMIALFEATURES — Create interaction terms:
+    from sklearn.preprocessing import PolynomialFeatures
+
+    poly = PolynomialFeatures(degree=2, interaction_only=False)
+    X_poly = poly.fit_transform(X)
+    # [a, b] → [1, a, b, a², ab, b²]
+
+    WHEN TO USE:
+    - Polynomial regression
+    - When you suspect non-linear relationships
+    - Be careful: explodes feature count!
+
+SIMPLEIMPUTER — Fill missing values:
+    from sklearn.impute import SimpleImputer
+
+    imputer = SimpleImputer(strategy='mean')    # or 'median', 'most_frequent'
+    X_imputed = imputer.fit_transform(X)
+
+    STRATEGIES:
+    - 'mean': Good for normal distributions
+    - 'median': Robust to outliers
+    - 'most_frequent': For categorical data
+    - 'constant': Fill with specific value
+
+ITERATIVEIMPUTER — Smart imputation:
+    from sklearn.experimental import enable_iterative_imputer
+    from sklearn.impute import IterativeImputer
+
+    imputer = IterativeImputer(max_iter=10, random_state=42)
+    X_imputed = imputer.fit_transform(X)
+
+    Uses other features to predict missing values (like MICE).
+
+================================================================================
+2. FEATURE SELECTION — sklearn.feature_selection
+================================================================================
+
+VARIANCETHRESHOLD — Remove low-variance features:
+    from sklearn.feature_selection import VarianceThreshold
+
+    selector = VarianceThreshold(threshold=0.01)
+    X_selected = selector.fit_transform(X)
+
+    WHEN TO USE: Remove constant or near-constant features.
+
+SELECTKBEST — Select top K features:
+    from sklearn.feature_selection import SelectKBest, f_classif
+
+    selector = SelectKBest(f_classif, k=10)
+    X_selected = selector.fit_transform(X, y)
+
+    SCORING FUNCTIONS:
+    - f_classif: ANOVA F-test (classification)
+    - f_regression: F-test (regression)
+    - mutual_info_classif: Mutual information (classification)
+    - mutual_info_regression: Mutual information (regression)
+
+RFE — Recursive Feature Elimination:
+    from sklearn.feature_selection import RFE
+    from sklearn.ensemble import RandomForestClassifier
+
+    estimator = RandomForestClassifier(n_estimators=100)
+    selector = RFE(estimator, n_features_to_select=10)
+    X_selected = selector.fit_transform(X, y)
+
+    selector.support_       # Boolean mask of selected features
+    selector.ranking_       # Ranking (1 = selected)
+
+RFECV — RFE with Cross-Validation:
+    from sklearn.feature_selection import RFECV
+
+    selector = RFECV(estimator, step=1, cv=5, scoring='f1')
+    selector.fit(X, y)
+    print(f"Optimal features: {selector.n_features_}")
+
+================================================================================
+3. MODEL SELECTION — sklearn.model_selection
+================================================================================
+
+TRAIN_TEST_SPLIT:
+    from sklearn.model_selection import train_test_split
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+
+    PARAMETERS:
+    - test_size: Fraction for test (0.2 = 20%)
+    - random_state: Reproducibility
+    - stratify: Maintain class distribution (IMPORTANT for imbalanced data)
+
+CROSS-VALIDATION:
+    from sklearn.model_selection import cross_val_score
+
+    scores = cross_val_score(model, X, y, cv=5, scoring='f1')
+    print(f"F1: {scores.mean():.4f} ± {scores.std():.4f}")
+
+    SCORING METRICS:
+    - 'accuracy': Classification
+    - 'f1': Classification (imbalanced)
+    - 'f1_weighted': Multi-class
+    - 'neg_mean_squared_error': Regression
+    - 'r2': Regression
+
+STRATIFIED K-FOLD:
+    from sklearn.model_selection import StratifiedKFold
+
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    for train_idx, val_idx in skf.split(X, y):
+        X_train, X_val = X[train_idx], X[val_idx]
+        y_train, y_val = y[train_idx], y[val_idx]
+
+GRIDSEARCHCV:
+    from sklearn.model_selection import GridSearchCV
+
+    param_grid = {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [3, 5, 10, None],
+        'min_samples_split': [2, 5, 10]
+    }
+
+    grid = GridSearchCV(
+        RandomForestClassifier(),
+        param_grid,
+        cv=5,
+        scoring='f1',
+        n_jobs=-1,         # Use all CPU cores
+        verbose=1
+    )
+    grid.fit(X_train, y_train)
+
+    print(f"Best params: {grid.best_params_}")
+    print(f"Best score: {grid.best_score_:.4f}")
+    best_model = grid.best_estimator_
+
+RANDOMIZEDSEARCHCV:
+    from sklearn.model_selection import RandomizedSearchCV
+    from scipy.stats import randint, uniform
+
+    param_dist = {
+        'n_estimators': randint(50, 500),
+        'max_depth': randint(3, 20),
+        'learning_rate': uniform(0.01, 0.3)
+    }
+
+    random_search = RandomizedSearchCV(
+        XGBClassifier(), param_dist,
+        n_iter=50, cv=5, scoring='f1', random_state=42
+    )
+    random_search.fit(X_train, y_train)
+
+    WHEN TO USE:
+    - GridSearch: Small search space (< 100 combinations)
+    - RandomSearch: Large search space (> 100 combinations)
+    - RandomSearch is usually better (Bergstra & Bengio, 2012)
+
+LEARNING CURVES:
+    from sklearn.model_selection import learning_curve
+
+    train_sizes, train_scores, val_scores = learning_curve(
+        model, X, y, cv=5,
+        train_sizes=np.linspace(0.1, 1.0, 10),
+        scoring='accuracy'
+    )
+
+================================================================================
+4. METRICS — sklearn.metrics
+================================================================================
+
+CLASSIFICATION METRICS:
+    from sklearn.metrics import (
+        accuracy_score, precision_score, recall_score, f1_score,
+        confusion_matrix, classification_report, roc_auc_score,
+        roc_curve, precision_recall_curve
+    )
+
+    accuracy_score(y_test, y_pred)
+    precision_score(y_test, y_pred, average='weighted')
+    recall_score(y_test, y_pred, average='weighted')
+    f1_score(y_test, y_pred, average='weighted')
+    roc_auc_score(y_test, y_prob)
+
+    # Full report
+    print(classification_report(y_test, y_pred))
+
+    # Confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+
+REGRESSION METRICS:
+    from sklearn.metrics import (
+        mean_absolute_error, mean_squared_error, r2_score
+    )
+
+    mean_absolute_error(y_test, y_pred)
+    mean_squared_error(y_test, y_pred)
+    np.sqrt(mean_squared_error(y_test, y_pred))    # RMSE
+    r2_score(y_test, y_pred)
+
+WHEN TO USE WHICH:
+    ┌──────────────────┬──────────────────────────────────┐
+    │ Metric           │ When to Use                      │
+    ├──────────────────┼──────────────────────────────────┤
+    │ Accuracy         │ Balanced classes                 │
+    │ F1               │ Imbalanced classes               │
+    │ Precision        │ Cost of FP is high (spam)        │
+    │ Recall           │ Cost of FN is high (disease)     │
+    │ ROC-AUC          │ Ranking quality                  │
+    │ PR-AUC           │ Highly imbalanced                │
+    │ MAE              │ Robust regression                │
+    │ MSE/RMSE         │ Penalize large errors            │
+    │ R²               │ Variance explained               │
+    └──────────────────┴──────────────────────────────────┘
+
+================================================================================
+5. PIPELINES — sklearn.pipeline
+================================================================================
+
+WHY PIPELINES?
+    They prevent DATA LEAKAGE by ensuring preprocessing is fit only on
+    training data and applied consistently.
+
+    WITHOUT PIPELINE (DANGEROUS):
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)    # Fit on train
+    X_test_scaled = scaler.transform(X_test)           # Transform test
+    # This works, but is error-prone and hard to reproduce
+
+    WITH PIPELINE (SAFE):
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.linear_model import LogisticRegression
+
+    pipe = Pipeline([
+        ('scaler', StandardScaler()),
+        ('classifier', LogisticRegression())
+    ])
+
+    pipe.fit(X_train, y_train)             # Fits all steps
+    y_pred = pipe.predict(X_test)          # Transforms + predicts
+
+    # Access individual steps
+    pipe.named_steps['scaler']
+    pipe.named_steps['classifier']
+
+COLUMNTRANSFORMER — Different preprocessing per column:
+    from sklearn.compose import ColumnTransformer
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler, OneHotEncoder
+    from sklearn.impute import SimpleImputer
+
+    numeric_features = ['age', 'income', 'score']
+    categorical_features = ['gender', 'city', 'plan']
+
+    preprocessor = ColumnTransformer([
+        ('num', Pipeline([
+            ('imputer', SimpleImputer(strategy='median')),
+            ('scaler', StandardScaler())
+        ]), numeric_features),
+        ('cat', Pipeline([
+            ('imputer', SimpleImputer(strategy='most_frequent')),
+            ('encoder', OneHotEncoder(drop='first', handle_unknown='ignore'))
+        ]), categorical_features)
+    ])
+
+    full_pipeline = Pipeline([
+        ('preprocessor', preprocessor),
+        ('classifier', RandomForestClassifier())
+    ])
+
+    full_pipeline.fit(X_train, y_train)
+    score = full_pipeline.score(X_test, y_test)
+
+    NOW THE ENTIRE PIPELINE is a single object that can be:
+    - Saved with joblib
+    - Cross-validated
+    - Used in GridSearchCV
+
+================================================================================
+6. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Fitting scaler on entire dataset
+    # WRONG
+    scaler.fit(X_all)    # Leaks test information!
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    # CORRECT
+    scaler.fit(X_train)                    # Fit on train only
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
+
+MISTAKE 2: Not using stratify in train_test_split
+    # WRONG — may create unbalanced splits
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    # CORRECT — maintains class distribution
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, stratify=y
+    )
+
+MISTAKE 3: Using accuracy for imbalanced data
+    # 95% negative class → 95% accuracy by always predicting negative!
+    # Use F1 or ROC-AUC instead.
+
+MISTAKE 4: Not setting random_state
+    # Results change every run
+    # Always set random_state=42 for reproducibility
+
+MISTAKE 5: Fitting model on test data
+    # NEVER call model.fit() on test data
+    # Test data is ONLY for final evaluation
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between fit_transform and transform?
+2. Why do we use pipelines?
+3. When should you use F1 over accuracy?
+4. What is the difference between GridSearchCV and RandomizedSearchCV?
+5. Why must you only fit preprocessing on training data?
+
+================================================================================

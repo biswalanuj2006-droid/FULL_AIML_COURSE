@@ -1,0 +1,68 @@
+================================================================================
+THINK - 61 REINFORCEMENT LEARNING (hard reasoning)
+================================================================================
+Answer with derivations or arguments. Items marked OPEN PROBLEM are
+genuinely unsolved; say what evidence would settle them.
+
+1. Show that Q-learning's update is a stochastic approximation to the
+   Bellman optimality operator and derive the conditions (step sizes,
+   exploration) under which tabular Q-learning converges to Q*. Where
+   does that convergence proof break when Q is a neural net?
+
+2. The deadly triad: function approximation + bootstrapping + off-policy
+   can diverge. Explain each term's role in the divergence mechanism and
+   why target networks + replay are partial, not complete, fixes.
+
+3. Policy gradient: the score-function estimator has variance growing
+   with horizon. Derive why subtracting a state-dependent baseline does
+   not change the expectation, and derive the OPTIMAL baseline
+   b*(s) = E[||grad log pi||^2 G] / E[||grad log pi||^2]. Why is the
+   value function a practical approximation to it?
+
+4. REINFORCE with return-as-weight credits every action by the WHOLE
+   episode return. Explain credit assignment failure with a 100-step
+   episode where only step 90 was good, and how advantage/GAE fixes it
+   by discounting future credit.
+
+5. PPO clip: write the clipped surrogate and prove/argue that it is a
+   lower bound on the (unclipped) surrogate when the ratio moves away
+   from 1 - the "conservative policy iteration" guarantee. What does the
+   bound cost you (bias, sample reuse)?
+
+6. Reward hacking is the RL analog of Goodhart's law. Formalize: the
+   agent maximizes the measured reward R_hat which is a proxy for true
+   objective R*. Give conditions under which optimizing R_hat strictly
+   decreases R*, and the mitigation hierarchy (better reward, shaping,
+   constrained RL, monitoring).
+
+7. Exploration: epsilon-greedy explores uniformly; count-based bonus
+   explores by novelty. Compare their regret on a sparse-reward
+   environment and derive why intrinsic motivation can change the
+   effective objective (the "noisy TV" problem).
+
+8. RLHF: the reward model r_phi is itself learned from human
+   preferences and can be gamed. Why does the KL-to-reference penalty in
+   the PPO objective exist, and what failure would you see if it were
+   zero? What does "reward model overoptimization" look like on the
+   evaluation curves?
+
+9. Off-policy evaluation: you have logs from policy A and want to
+   estimate policy B's value. Write the importance-sampling estimator
+   and explain its variance explosion on long horizons; then argue why
+   this makes reliable offline RL evaluation an open problem.
+
+10. (OPEN PROBLEM) Sample efficiency: RL needs orders of magnitude more
+    interaction than supervised learning needs labels. State the gap
+    precisely (regret vs sample complexity bounds) and what a
+    breakthrough result would have to demonstrate to change practice.
+
+11. (OPEN PROBLEM) Reward specification: defining rewards that induce
+    the intended behavior remains unsolved - inverse RL learns rewards
+    from demonstrations but is ill-posed (many rewards explain the same
+    behavior). Propose an evaluation that would convince you a new
+    reward-learning method actually recovered the true objective.
+
+12. Design: an LLM agent with tools is trained by RL to book flights.
+    Sketch the MDP (what is a state? an action?), where the reward
+    comes from, the safety constraints you must add, and which parts of
+    the pipeline you would trust only with human oversight.

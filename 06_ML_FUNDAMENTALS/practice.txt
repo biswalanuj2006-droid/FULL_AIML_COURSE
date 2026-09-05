@@ -1,0 +1,54 @@
+================================================================================
+ML FUNDAMENTALS MODULE — PRACTICE SET (50+ Questions)
+================================================================================
+
+EASY (15)
+=========
+Q1: What is supervised vs unsupervised learning?
+Q2: What is a feature vs a label?
+Q3: What is overfitting?
+Q4: What is the bias-variance tradeoff?
+Q5: What is cross-validation?
+Q6: What is the purpose of a validation set?
+Q7: What is a hyperparameter?
+Q8: What is the difference between a parameter and hyperparameter?
+Q9: What is generalization?
+Q10: What is data leakage?
+Q11: What is the curse of dimensionality?
+Q12: What is a baseline model?
+Q13: What is an evaluation metric?
+Q14: What is stratified sampling?
+Q15: What is feature scaling?
+
+MEDIUM (15)
+============
+Q16: Implement train/test split from scratch.
+Q17: Implement k-fold cross-validation from scratch.
+Q18: Compare 5 ML algorithms on the same dataset.
+Q19: Implement pipeline with preprocessing + model.
+Q20: Build complete sklearn Pipeline with ColumnTransformer.
+Q21: Implement feature selection using correlation.
+Q22: Build model comparison framework.
+Q23: Implement stratified k-fold from scratch.
+Q24: Compare scaling methods on different algorithms.
+Q25: Build complete ML experiment tracking.
+Q26: Implement custom scoring metric.
+Q27: Build feature importance analysis pipeline.
+Q28: Implement nested cross-validation.
+Q29: Build data leakage detection tool.
+Q30: Compare random split vs time-series split.
+
+HARD (10)
+==========
+Q31: Build complete AutoML pipeline.
+Q32: Implement Bayesian hyperparameter optimization.
+Q33: Build model ensembling framework.
+Q34: Implement online learning pipeline.
+Q35: Build complete ML reproducibility framework.
+Q36: Implement concept drift detection.
+Q37: Build model interpretability pipeline.
+Q38: Implement multi-objective optimization.
+Q39: Build active learning system.
+Q40: Implement domain adaptation pipeline.
+
+================================================================================

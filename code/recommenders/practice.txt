@@ -1,0 +1,43 @@
+================================================================================
+CODE PRACTICE - code/recommenders (matrix factorization)
+Companion: 01_matrix_factorization_sgd.py (run it first)
+================================================================================
+RUN & OBSERVE
+1. Run the example; verify the PASS line and record train vs test RMSE.
+2. Note the two lessons encoded in the comments: the degenerate-clip
+   data trap and the ordered-split trap. Explain each in one sentence.
+
+MODIFY
+3. Sweep k in {2, 4, 6, 10, 20} and plot test RMSE vs k - find the
+   elbow and connect it to the true latent dims (3) and overfitting.
+4. Sweep reg (regularization) at fixed k: show too-small reg overfits
+   (test explodes) and too-large underfits (train rises).
+5. Add global + user + item bias terms: r_hat = mu + b_u + b_i + p_u.q_i
+   and measure the RMSE gain (the standard MF extension).
+6. Early stopping: track VALIDATION RMSE (split off 10%) and stop when
+   it rises for 3 epochs; compare final test RMSE vs fixed-epoch run.
+
+DEBUG
+7. Break the random-pair split on purpose (slice the ordered list) and
+   show test RMSE explodes - the exact bug fixed in this file; explain
+   WHY in terms of item factors with no training data.
+8. Set init scale to N(0, 1.0) and watch train RMSE stall or diverge;
+   explain the scale-matters lesson and the fix.
+9. Ratings are 1..5 but predictions leave that range: add clipping or a
+   sigmoid head on predictions and measure RMSE - is clipping honest?
+
+BUILD (mini)
+10. Ranking view: hold out one rating per user, score it with the
+    learned factors vs 100 random items, and report HitRate@10 (the
+    metric the 59 lesson says matters more than RMSE).
+11. Implement ALS for the same data (solve the ridge closed form per
+    user/item) and compare test RMSE + wall time vs SGD.
+12. Cold-start demo: take a user with only ONE rating and show their
+    recommendations are noisy; then fall back to global-popularity for
+    users with < 5 ratings and compare HitRate@10.
+
+RELATE
+13. Which 59_RECOMMENDER_SYSTEMS practice items (PART C) does each
+    exercise here answer with real numbers?
+14. (Interview) Derive the SGD update from the objective while pointing
+    at the code lines that implement it.

@@ -1,0 +1,200 @@
+================================================================================
+MODULE 04 — DATA VISUALIZATION
+LESSON 01: MATPLOTLIB BASICS
+================================================================================
+
+## What You Will Learn
+- Figure and Axes anatomy
+- Basic plot types (line, scatter, bar, histogram)
+- Customizing plots (titles, labels, legends)
+- Saving figures
+- Color and style basics
+
+================================================================================
+1. FIGURE AND AXES ANATOMY
+================================================================================
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    FIGURE: The entire image/canvas
+    AXES:   One plot within the figure (can have multiple)
+
+    Basic structure:
+    ┌─────────────────────────────┐
+    │  FIGURE                     │
+    │  ┌───────────────────────┐  │
+    │  │      AXES             │  │
+    │  │  ┌─────────────────┐  │  │
+    │  │  │                 │  │  │
+    │  │  │     PLOT AREA   │  │  │
+    │  │  │                 │  │  │
+    │  │  └─────────────────┘  │  │
+    │  │  x-axis               │  │
+    │  └───────────────────────┘  │
+    └─────────────────────────────┘
+
+    # Two interfaces:
+
+    # 1. pyplot (simple, quick)
+    plt.plot([1, 2, 3], [4, 5, 6])
+    plt.show()
+
+    # 2. Object-oriented (RECOMMENDED — more control)
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3], [4, 5, 6])
+    plt.show()
+
+    ALWAYS USE THE OBJECT-ORIENTED INTERFACE FOR ML.
+
+================================================================================
+2. BASIC PLOT TYPES
+================================================================================
+
+--- LINE PLOT ---
+    x = np.linspace(0, 10, 100)
+    y = np.sin(x)
+
+    fig, ax = plt.subplots()
+    ax.plot(x, y, color="blue", linewidth=2, linestyle="--", label="sin(x)")
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_title("Sine Wave")
+    ax.legend()
+    plt.show()
+
+    ML USE: Loss curves during training, time series
+
+--- SCATTER PLOT ---
+    np.random.seed(42)
+    x = np.random.randn(100)
+    y = 2 * x + np.random.randn(100) * 0.5
+
+    fig, ax = plt.subplots()
+    ax.scatter(x, y, alpha=0.6, color="steelblue", edgecolors="white")
+    ax.set_xlabel("Feature 1")
+    ax.set_ylabel("Feature 2")
+    ax.set_title("Feature Relationship")
+    plt.show()
+
+    ML USE: Feature relationships, data distribution, clustering results
+
+--- BAR PLOT ---
+    models = ["LR", "RF", "XGB", "SVM"]
+    scores = [0.82, 0.87, 0.89, 0.85]
+
+    fig, ax = plt.subplots()
+    bars = ax.bar(models, scores, color=["#3498db", "#2ecc71", "#e74c3c", "#f39c12"])
+    ax.set_ylabel("Accuracy")
+    ax.set_title("Model Comparison")
+    ax.set_ylim(0, 1)
+
+    # Add value labels on bars
+    for bar, score in zip(bars, scores):
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
+                f"{score:.2f}", ha="center", va="bottom")
+
+    plt.show()
+
+    ML USE: Model comparison, feature importance
+
+--- HISTOGRAM ---
+    data = np.random.randn(1000)
+
+    fig, ax = plt.subplots()
+    ax.hist(data, bins=30, color="steelblue", edgecolor="white", alpha=0.7)
+    ax.set_xlabel("Value")
+    ax.set_ylabel("Frequency")
+    ax.set_title("Distribution of Values")
+    plt.show()
+
+    ML USE: Feature distributions, target distribution
+
+--- BOX PLOT ---
+    data = [np.random.randn(100) * std + mean
+            for mean, std in [(0, 1), (2, 1.5), (-1, 0.8)]]
+
+    fig, ax = plt.subplots()
+    ax.boxplot(data, labels=["Group A", "Group B", "Group C"])
+    ax.set_ylabel("Value")
+    ax.set_title("Distribution Comparison")
+    plt.show()
+
+    ML USE: Outlier detection, feature comparison
+
+================================================================================
+3. CUSTOMIZING PLOTS
+================================================================================
+
+TITLES AND LABELS:
+    ax.set_title("My Plot", fontsize=14, fontweight="bold", pad=15)
+    ax.set_xlabel("X Axis", fontsize=12)
+    ax.set_ylabel("Y Axis", fontsize=12)
+
+LEGEND:
+    ax.plot(x, y1, label="Model A")
+    ax.plot(x, y2, label="Model B")
+    ax.legend(loc="upper right", fontsize=10)
+
+GRID:
+    ax.grid(True, alpha=0.3, linestyle="--")
+
+LIMITS:
+    ax.set_xlim(0, 10)
+    ax.set_ylim(-1, 1)
+
+TEXT ANNOTATIONS:
+    ax.annotate("Peak", xy=(5, 1), xytext=(7, 0.8),
+                arrowprops=dict(arrowstyle="->", color="red"))
+
+TICKS:
+    ax.set_xticks([0, 2, 4, 6, 8, 10])
+    ax.set_xticklabels(["Zero", "Two", "Four", "Six", "Eight", "Ten"],
+                        rotation=45)
+
+================================================================================
+4. SAVING FIGURES
+================================================================================
+
+    fig.savefig("my_plot.png", dpi=150, bbox_inches="tight")
+    fig.savefig("my_plot.pdf", bbox_inches="tight")    # Vector format
+
+    DPI: Dots per inch (300 for publication quality)
+    bbox_inches="tight": Removes extra whitespace
+
+================================================================================
+5. MULTIPLE SUBPLOTS
+================================================================================
+
+    # 2x2 grid
+    fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+
+    axes[0, 0].hist(data1, bins=30)
+    axes[0, 0].set_title("Histogram")
+
+    axes[0, 1].scatter(x, y)
+    axes[0, 1].set_title("Scatter")
+
+    axes[1, 0].bar(models, scores)
+    axes[1, 0].set_title("Bar Chart")
+
+    axes[1, 1].boxplot(box_data)
+    axes[1, 1].set_title("Box Plot")
+
+    plt.tight_layout()
+    plt.show()
+
+    tight_layout(): Automatically adjusts spacing between subplots
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between figure and axes?
+2. What does tight_layout() do?
+3. How do you add a legend to a plot?
+4. What does alpha do in scatter plots?
+
+================================================================================
+NEXT LESSON: 02_matplotlib_advanced.txt
+================================================================================

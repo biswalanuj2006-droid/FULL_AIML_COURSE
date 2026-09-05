@@ -1,0 +1,202 @@
+# TREES — PRACTICE SET
+# 40 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is a binary tree?
+   Answer: A tree where each node has at most 2 children (left and right)
+
+2. What is a BST (Binary Search Tree)?
+   Answer: A binary tree where left child < parent < right child, enabling O(log n) search
+
+3. What is the height of a tree?
+   Answer: The number of edges on the longest path from root to leaf
+
+4. What is the difference between depth and height?
+   Answer: Depth: distance from root to node. Height: distance from node to deepest leaf
+
+5. What is a leaf node?
+   Answer: A node with no children
+
+6. What is the time complexity of search in a balanced BST?
+   Answer: O(log n)
+
+7. What is the difference between DFS and BFS?
+   Answer: DFS: explores depth first (uses stack/recursion). BFS: explores level by level (uses queue)
+
+8. What are the three DFS traversals?
+   Answer: Inorder (Left, Root, Right), Preorder (Root, Left, Right), Postorder (Left, Right, Root)
+
+9. What is the time complexity of tree traversals?
+   Answer: O(n) — visit every node once
+
+10. What is a complete binary tree?
+    Answer: A binary tree where all levels are filled except possibly the last, which is filled left to right
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Inorder traversal (iterative using stack).
+    ```python
+    def inorder(root):
+        result, stack = [], []
+        while root or stack:
+            while root:
+                stack.append(root)
+                root = root.left
+            root = stack.pop()
+            result.append(root.val)
+            root = root.right
+        return result
+    ```
+
+12. Level order traversal (BFS).
+    ```python
+    from collections import deque
+    def level_order(root):
+        if not root: return []
+        result, queue = [], deque([root])
+        while queue:
+            level = []
+            for _ in range(len(queue)):
+                node = queue.popleft()
+                level.append(node.val)
+                if node.left: queue.append(node.left)
+                if node.right: queue.append(node.right)
+            result.append(level)
+        return result
+    ```
+
+13. Maximum depth of binary tree.
+    ```python
+    def max_depth(root):
+        if not root: return 0
+        return 1 + max(max_depth(root.left), max_depth(root.right))
+    ```
+
+14. Validate BST.
+    ```python
+    def is_valid_bst(root, lo=float('-inf'), hi=float('inf')):
+        if not root: return True
+        if root.val <= lo or root.val >= hi: return False
+        return (is_valid_bst(root.left, lo, root.val) and
+                is_valid_bst(root.right, root.val, hi))
+    ```
+
+15. Lowest common ancestor of BST.
+    ```python
+    def lca_bst(root, p, q):
+        while root:
+            if p.val < root.val and q.val < root.val:
+                root = root.left
+            elif p.val > root.val and q.val > root.val:
+                root = root.right
+            else:
+                return root
+    ```
+
+16. Convert sorted array to BST.
+
+17. Kth smallest element in BST (inorder traversal).
+
+18. Diameter of binary tree.
+
+19. Balanced binary tree check.
+
+20. Same tree / symmetric tree check.
+
+21. Path sum (root to leaf).
+
+22. Binary tree right side view.
+
+23. Construct binary tree from preorder and inorder.
+
+24. Flatten binary tree to linked list.
+
+25. Serialize and deserialize binary tree.
+
+---
+
+## HARD (10 Questions)
+
+26. Binary tree maximum path sum.
+27. Vertical order traversal.
+28. Burn the tree (time to infect all nodes).
+29. Count good nodes in binary tree.
+30. Find duplicate subtree.
+31. Morris traversal (O(1) space inorder).
+32. Recover BST (two nodes swapped).
+33. Largest BST subtree.
+34. Binary tree cameras.
+35. Serialize/deserialize N-ary tree.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Inorder doesn't handle empty tree
+def inorder(root):
+    result = []
+    stack = []
+    while root or stack:
+        while root:
+            stack.append(root)
+            root = root.left
+        root = stack.pop()
+        result.append(root.val)
+        root = root.right
+    return result  # Correct — handles empty (returns [])
+
+# Debug 2: BST validation uses wrong bounds
+def is_valid_bst(root):
+    if not root: return True
+    if root.left and root.left.val >= root.val: return False  # Bug: not sufficient
+    if root.right and root.right.val <= root.val: return False
+    return is_valid_bst(root.left) and is_valid_bst(root.right)
+# Fix: Pass min/max bounds: is_valid_bst(root, -inf, inf)
+
+# Debug 3: Level order uses wrong queue length
+def level_order(root):
+    from collections import deque
+    queue = deque([root])
+    result = []
+    while queue:
+        level = []
+        for i in range(len(queue)):  # Bug: len changes during iteration
+            node = queue.popleft()
+            level.append(node.val)
+            if node.left: queue.append(node.left)
+            if node.right: queue.append(node.right)
+        result.append(level)
+    return result
+# Fix: Use fixed length: n = len(queue) before loop
+
+# Debug 4: Tree height calculation off by one
+def height(root):
+    if not root: return 0  # Bug: empty tree should be -1 or 0 depending on convention
+    return 1 + max(height(root.left), height(root.right))
+# Common convention: height of single node = 0, empty tree = -1
+
+# Debug 5: Morris traversal modifies tree
+def morris_inorder(root):
+    curr = root
+    while curr:
+        if not curr.left:
+            visit(curr)
+            curr = curr.right
+        else:
+            predecessor = curr.left
+            while predecessor.right and predecessor.right != curr:
+                predecessor = predecessor.right
+            if not predecessor.right:
+                predecessor.right = curr  # Creates temporary link
+                curr = curr.left
+            else:
+                predecessor.right = None  # Must restore tree!
+                visit(curr)
+                curr = curr.right
+```

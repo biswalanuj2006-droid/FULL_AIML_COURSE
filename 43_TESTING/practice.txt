@@ -1,0 +1,29 @@
+================================================================================
+TESTING — PRACTICE SET (15 Questions)
+================================================================================
+
+EASY (6)
+=========
+Q1: What is unit testing?
+Q2: What is integration testing?
+Q3: What is pytest?
+Q4: What is a test fixture?
+Q5: What is mocking?
+Q6: What is test coverage?
+
+MEDIUM (6)
+===========
+Q7: Write unit tests for ML preprocessing.
+Q8: Write API tests for FastAPI.
+Q9: Implement test data fixtures.
+Q10: Write tests for database operations.
+Q11: Implement mocking for external services.
+Q12: Build test pipeline for ML project.
+
+HARD (3)
+=========
+Q13: Build comprehensive test suite for production API.
+Q14: Implement end-to-end testing pipeline.
+Q15: Build test automation framework.
+
+================================================================================

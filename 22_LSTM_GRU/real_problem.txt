@@ -1,0 +1,79 @@
+================================================================================
+REAL PROBLEM - 22 LSTM/GRU (and 21 RNN)
+================================================================================
+
+PROBLEM A: "My LSTM forecasts stock prices beautifully on the training
+set (near-zero loss) and produces garbage on the test set - it just
+repeats the last value."
+WHY IT HAPPENS
+  1. You are predicting the LEVEL, not the CHANGE. A model that always
+     predicts "same as yesterday" is very accurate on smooth series -
+     but the "forecast" is a lagged copy, useless for decisions. This
+     is the #1 time-series deep-learning mistake.
+  2. Train/test split by random shuffle (leaks future into past).
+  3. The model is copying via the identity shortcut: with one-step-ahead
+     training on levels, the easiest loss-minimizer is f(x)=x.
+HOW TO SOLVE
+  1. Model the DIFFERENCE (first-difference the series) or predict the
+     change; evaluate on direction accuracy and on a persistence
+     baseline (predict last value) - your model must BEAT persistence,
+     not just have low MSE.
+  2. Split chronologically; never shuffle time series.
+  3. Report metrics on the ORIGINAL scale, and compare against simple
+     baselines (naive, seasonal naive, ARIMA) - a deep model that
+     cannot beat ARIMA on a smooth series is overkill.
+  CODE (the fix):
+    # wrong:  model learns y(t) ~= y(t-1) identity shortcut
+    # right:  predict the increment
+    diff = np.diff(series)
+    # ... train LSTM on diff ...
+    forecast_level = last_actual + cumsum(forecast_diff)
+
+PROBLEM B: "The LSTM training loss is stuck at a constant and never
+decreases."
+WHY (check in order):
+  1. Your targets are scaled but outputs are not - or vice versa; with
+     unscaled outputs vs tiny scaled targets the loss is dominated by a
+     constant offset and gradients vanish (use a scaler fit on TRAIN
+     only, applied to inputs and inverse-applied to outputs).
+  2. LR too small, or the sequence is so long that gradients vanish
+     (use gradient clipping + shorter windows or GRU).
+  3. The loss is already at the "predict the mean" optimum because the
+     series is essentially unpredictable at your window size - check
+     the autocorrelation of your features first.
+HOW TO SOLVE
+  1. Print predictions vs targets for one batch after 3 epochs - if
+     predictions are all a constant, it is the scaling/offset issue.
+  2. Use teacher forcing only during training and autoregressive
+     decoding at test - but note the mismatch: add scheduled sampling
+     or a small amount of noise to inputs during training.
+
+PROBLEM C: "Sequence length 500 works; length 5000 makes training blow
+up (NaN / OOM)."
+WHY: BPTT through 5000 steps multiplies 5000 Jacobians - gradient
+explosion/vanishing is guaranteed for vanilla RNNs, and memory grows
+linearly with unrolled steps.
+HOW TO SOLVE
+  1. Truncated BPTT: train on windows of 100-200 steps (pass hidden
+     state forward across windows, detach between chunks).
+  2. Use gradient clipping (clip_grad_norm_) - mandatory for any RNN.
+  3. Consider a Transformer instead: self-attention handles long range
+     without the sequential gradient path (attention is O(n^2) in
+     memory but parallel; use windowed/linear attention for very long
+     series).
+  4. GRU over LSTM when data is scarce: fewer parameters, same
+     practical quality, less prone to overfit.
+
+PROBLEM D: "My LSTM text generator emits fluent nonsense - grammatically
+correct but factually wrong."
+WHY: likelihood training produces locally coherent tokens with no
+global consistency; the model has no memory beyond the context window
+and no grounding (see the RAG real_problem for the grounding fix).
+HOW TO SOLVE
+  1. This is a model-capability limit, not a bug: reduce the task to
+     what the window can hold, add retrieval/grounding, or move to a
+     pretrained LM fine-tuned with RLHF-style alignment for factual
+     adherence.
+  2. Measure with a coherence score (perplexity on a held-out corpus)
+     and a factual metric separately - fluency and factuality are
+     orthogonal and need different fixes.

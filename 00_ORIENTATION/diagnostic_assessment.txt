@@ -1,0 +1,718 @@
+================================================================================
+                     AI/ML ENGINEERING COURSE
+                     PREREQUISITE DIAGNOSTIC ASSESSMENT
+================================================================================
+
+BEFORE STARTING THE COURSE, COMPLETE THIS ASSESSMENT.
+
+This diagnostic identifies your current level and tells you where to start.
+Do NOT look up answers. Answer honestly.
+
+SCORING:
+    - Each question is worth 1 point
+    - Total: 40 points
+    - Time limit: 60 minutes (suggested, not enforced)
+
+================================================================================
+SECTION A: PYTHON BASICS (10 questions, 10 points)
+================================================================================
+
+QUESTION A1: Variables and Data Types
+--------------------------------------
+What is the output of the following code?
+
+    x = 5
+    y = "5"
+    print(type(x) == type(y))
+
+a) True
+b) False
+c) Error
+d) None
+
+---
+
+QUESTION A2: Lists and Mutability
+-----------------------------------
+What is the output?
+
+    a = [1, 2, 3]
+    b = a
+    b.append(4)
+    print(a)
+
+a) [1, 2, 3]
+b) [1, 2, 3, 4]
+c) [4, 1, 2, 3]
+d) Error
+
+---
+
+QUESTION A3: Dictionary Operations
+-------------------------------------
+What is the output?
+
+    d = {"name": "Alice", "age": 25}
+    print(d.get("email", "not found"))
+
+a) None
+b) "not found"
+c) Error
+d) "email"
+
+---
+
+QUESTION A4: List Comprehension
+---------------------------------
+What does [x**2 for x in range(5)] produce?
+
+a) [1, 4, 9, 16, 25]
+b) [0, 1, 4, 9, 16]
+c) [0, 2, 4, 6, 8]
+d) Error
+
+---
+
+QUESTION A5: Functions and Scope
+-----------------------------------
+What is the output?
+
+    x = 10
+    def change():
+        global x
+        x = 20
+    change()
+    print(x)
+
+a) 10
+b) 20
+c) Error
+d) None
+
+---
+
+QUESTION A6: String Operations
+---------------------------------
+What is the output?
+
+    s = "hello world"
+    print(s.split()[1].upper())
+
+a) "HELLO"
+b) "WORLD"
+c) "hello"
+d) Error
+
+---
+
+QUESTION A7: Classes and Objects
+----------------------------------
+What is the output?
+
+    class Dog:
+        def __init__(self, name):
+            self.name = name
+        def bark(self):
+            return f"{self.name} says Woof!"
+
+    d = Dog("Rex")
+    print(d.bark())
+
+a) "Rex says Woof!"
+b) "Dog says Woof!"
+c) Error
+d) "Rex"
+
+---
+
+QUESTION A8: Exception Handling
+---------------------------------
+What is the output?
+
+    try:
+        result = 10 / 0
+    except ZeroDivisionError:
+        result = "error"
+    finally:
+        print(result)
+
+a) 0
+b) "error"
+c) Error
+d) Prints "error" (from the print statement)
+
+---
+
+QUESTION A9: File Handling
+-----------------------------
+Which of the following correctly reads a file?
+
+a) f = open("file.txt"); data = f.read()
+b) with open("file.txt") as f: data = f.read()
+c) data = read("file.txt")
+d) Both a) and b) are correct
+
+---
+
+QUESTION A10: Lambda Functions
+--------------------------------
+What is the output?
+
+    f = lambda x, y: x * y
+    print(f(3, 4))
+
+a) 7
+b) 12
+c) 34
+d) Error
+
+================================================================================
+SECTION B: NUMPY BASICS (8 questions, 8 points)
+================================================================================
+
+QUESTION B1: Array Creation
+------------------------------
+import numpy as np
+a = np.array([1, 2, 3, 4, 5])
+print(a.shape)
+
+What is the output?
+
+a) (5,)
+b) (1, 5)
+c) (5, 1)
+d) Error
+
+---
+
+QUESTION B2: Array Operations
+--------------------------------
+import numpy as np
+a = np.array([1, 2, 3])
+b = np.array([4, 5, 6])
+print(a + b)
+
+What is the output?
+
+a) [5, 7, 9]
+b) [1, 2, 3, 4, 5, 6]
+c) [[1,4], [2,5], [3,6]]
+d) Error
+
+---
+
+QUESTION B3: Indexing
+-----------------------
+import numpy as np
+a = np.array([10, 20, 30, 40, 50])
+print(a[1:4])
+
+What is the output?
+
+a) [10, 20, 30, 40]
+b) [20, 30, 40]
+c) [20, 30, 40, 50]
+d) [10, 20, 30]
+
+---
+
+QUESTION B4: Broadcasting
+----------------------------
+import numpy as np
+a = np.array([[1, 2], [3, 4]])
+b = np.array([10, 20])
+print(a + b)
+
+What is the output?
+
+a) [[11, 22], [13, 24]]
+b) Error
+c) [[1, 2, 10, 20], [3, 4, 10, 20]]
+d) [[10, 20], [10, 20]]
+
+---
+
+QUESTION B5: Reshape
+-----------------------
+import numpy as np
+a = np.arange(12)
+b = a.reshape(3, 4)
+print(b.shape)
+
+What is the output?
+
+a) (12,)
+b) (3, 4)
+c) (4, 3)
+d) Error
+
+---
+
+QUESTION B6: Matrix Multiplication
+-------------------------------------
+import numpy as np
+a = np.array([[1, 2], [3, 4]])
+b = np.array([[5, 6], [7, 8]])
+c = a @ b
+print(c[0, 0])
+
+What is the output?
+
+a) 19
+b) 22
+c) 12
+d) 43
+
+---
+
+QUESTION B7: Statistical Functions
+--------------------------------------
+import numpy as np
+a = np.array([1, 2, 3, 4, 5])
+print(np.mean(a), np.std(a))
+
+What is the approximate output?
+
+a) 3.0, 1.414
+b) 15.0, 2.0
+c) 1.0, 3.0
+d) Error
+
+---
+
+QUESTION B8: Boolean Indexing
+--------------------------------
+import numpy as np
+a = np.array([1, 5, 3, 8, 2])
+print(a[a > 3])
+
+What is the output?
+
+a) [5, 8]
+b) [1, 3, 2]
+c) [True, False, True, False, True]
+d) Error
+
+================================================================================
+SECTION C: MATHEMATICS (12 questions, 12 points)
+================================================================================
+
+QUESTION C1: Algebra
+----------------------
+Solve for x: 2x + 5 = 13
+
+a) x = 3
+b) x = 4
+c) x = 9
+d) x = 8
+
+---
+
+QUESTION C2: Linear Algebra — Dot Product
+--------------------------------------------
+What is the dot product of vectors [1, 2, 3] and [4, 5, 6]?
+
+a) 32
+b) [4, 10, 18]
+c) 14
+d) 45
+
+---
+
+QUESTION C3: Linear Algebra — Matrix Multiplication
+-------------------------------------------------------
+Given:
+    A = [[1, 2], [3, 4]]
+    B = [[5, 6], [7, 8]]
+
+What is the element at row 1, column 0 of A × B?
+
+a) 43
+b) 50
+c) 19
+d) 22
+
+---
+
+QUESTION C4: Calculus — Derivative
+-------------------------------------
+What is the derivative of f(x) = 3x² + 2x + 1?
+
+a) 6x + 2
+b) 3x + 2
+c) 6x² + 2
+d) 6x + 1
+
+---
+
+QUESTION C5: Calculus — Chain Rule
+--------------------------------------
+What is the derivative of f(x) = (2x + 1)³?
+
+a) 3(2x + 1)²
+b) 6(2x + 1)²
+c) 6(2x + 1)³
+d) 3(2x + 1)³
+
+---
+
+QUESTION C6: Probability — Basic
+-----------------------------------
+A bag has 3 red balls and 2 blue balls.
+What is the probability of drawing a red ball?
+
+a) 3/5
+b) 2/5
+c) 1/2
+d) 3/2
+
+---
+
+QUESTION C7: Probability — Conditional
+-----------------------------------------
+If P(A) = 0.6, P(B) = 0.5, and P(A and B) = 0.3,
+what is P(A | B)?
+
+a) 0.3
+b) 0.5
+c) 0.6
+d) 0.8
+
+---
+
+QUESTION C8: Statistics — Mean and Median
+--------------------------------------------
+Dataset: [2, 5, 5, 7, 10, 15, 20]
+
+What are the mean and median?
+
+a) Mean = 9.14, Median = 7
+b) Mean = 7, Median = 9.14
+c) Mean = 9.14, Median = 10
+d) Mean = 8, Median = 7
+
+---
+
+QUESTION C9: Statistics — Standard Deviation
+-----------------------------------------------
+Dataset: [2, 4, 4, 4, 5, 5, 7, 9]
+
+What is the approximate standard deviation (population)?
+
+a) 1.5
+b) 2.0
+c) 4.0
+d) 5.0
+
+---
+
+QUESTION C10: Statistics — Correlation
+-----------------------------------------
+If two variables have a correlation coefficient of -0.9,
+what does this indicate?
+
+a) Strong positive relationship
+b) Strong negative relationship
+c) No relationship
+d) Weak negative relationship
+
+---
+
+QUESTION C11: Optimization — Gradient Descent
+------------------------------------------------
+The loss function is L(w) = (w - 3)².
+The gradient is dL/dw = 2(w - 3).
+Starting at w = 0 with learning rate 0.1,
+
+What is w after ONE step of gradient descent?
+
+a) 0.6
+b) 1.2
+c) 3.0
+d) 0.3
+
+---
+
+QUESTION C12: Sigmoid Function
+---------------------------------
+The sigmoid function is σ(z) = 1 / (1 + e^(-z)).
+
+What is σ(0)?
+
+a) 0
+b) 0.5
+c) 1
+d) e
+
+================================================================================
+SECTION D: ML CONCEPTS (10 questions, 10 points)
+================================================================================
+
+QUESTION D1: What is Machine Learning?
+-----------------------------------------
+Machine Learning is best described as:
+
+a) Programming computers with explicit rules
+b) Systems that learn patterns from data to make predictions
+c) Using if/else statements for decision making
+d) Storing data in databases
+
+---
+
+QUESTION D2: Supervised vs Unsupervised
+-------------------------------------------
+In supervised learning, the training data includes:
+
+a) Only input features
+b) Input features AND labels/targets
+c) Only labels/targets
+d) Neither features nor labels
+
+---
+
+QUESTION D3: Overfitting
+----------------------------
+A model that has OVERFIT the training data will typically show:
+
+a) High training accuracy, high test accuracy
+b) Low training accuracy, high test accuracy
+c) High training accuracy, low test accuracy
+d) Low training accuracy, low test accuracy
+
+---
+
+QUESTION D4: Bias-Variance Tradeoff
+---------------------------------------
+High bias and low variance describes a model that is:
+
+a) Overfitting
+b) Underfitting
+c) Perfectly fitted
+d) Random
+
+---
+
+QUESTION D5: Train/Test Split
+--------------------------------
+Why do we split data into training and test sets?
+
+a) To make the dataset smaller
+b) To evaluate how well the model generalizes to unseen data
+c) To speed up training
+d) To reduce memory usage
+
+---
+
+QUESTION D6: Classification vs Regression
+---------------------------------------------
+Predicting house prices is a __________ problem.
+Predicting email spam/not-spam is a __________ problem.
+
+a) Classification, Regression
+b) Regression, Classification
+c) Clustering, Classification
+d) Regression, Regression
+
+---
+
+QUESTION D7: Feature Scaling
+-------------------------------
+Why is feature scaling important for algorithms like KNN and SVM?
+
+a) It makes the data look nicer
+b) Features with larger ranges dominate distance calculations
+c) It reduces the number of features
+d) It adds more data to the training set
+
+---
+
+QUESTION D8: Cross-Validation
+--------------------------------
+5-fold cross-validation means:
+
+a) Training the model 5 times on the same data
+b) Splitting data into 5 parts, using each part as test set once
+c) Training 5 different models
+d) Using 5 features for validation
+
+---
+
+QUESTION D9: Confusion Matrix
+--------------------------------
+In a confusion matrix, what does "False Positive" mean?
+
+a) Model predicted positive, and it was actually positive
+b) Model predicted positive, but it was actually negative
+c) Model predicted negative, but it was actually positive
+d) Model predicted negative, and it was actually negative
+
+---
+
+QUESTION D10: Loss Function
+-------------------------------
+The purpose of a loss function is to:
+
+a) Maximize the difference between predictions and actual values
+b) Measure how wrong the model's predictions are
+c) Increase model complexity
+d) Reduce the number of features
+
+================================================================================
+SECTION E: PYTHON PROGRAMMING LOGIC (5 questions, 5 points)
+================================================================================
+
+QUESTION E1: What is the output?
+-----------------------------------
+def mystery(n):
+    if n <= 1:
+        return n
+    return mystery(n-1) + mystery(n-2)
+
+print(mystery(6))
+
+a) 6
+b) 8
+c) 13
+d) 21
+
+---
+
+QUESTION E2: What is the output?
+-----------------------------------
+data = [3, 1, 4, 1, 5, 9, 2, 6]
+result = sorted(set(data))[:3]
+print(result)
+
+a) [1, 2, 3]
+b) [3, 1, 4]
+c) [1, 2, 3, 4, 5, 6, 9]
+d) [9, 6, 5]
+
+---
+
+QUESTION E3: What is the output?
+-----------------------------------
+d = {}
+for i in range(5):
+    d[i] = i ** 2
+print(list(d.values()))
+
+a) [0, 1, 4, 9, 16]
+b) {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}
+c) [0, 1, 2, 3, 4]
+d) Error
+
+---
+
+QUESTION E4: What is the output?
+-----------------------------------
+import numpy as np
+a = np.array([1, 2, 3, 4, 5, 6])
+b = a.reshape(2, 3)
+print(b[:, 1])
+
+a) [2, 5]
+b) [3, 6]
+c) [1, 2, 3]
+d) [[2, 5], [3, 6]]
+
+---
+
+QUESTION E5: What is the output?
+-----------------------------------
+class Counter:
+    count = 0
+    def __init__(self):
+        Counter.count += 1
+
+c1 = Counter()
+c2 = Counter()
+c3 = Counter()
+print(Counter.count)
+
+a) 1
+b) 3
+c) 0
+d) Error
+
+================================================================================
+SCORING AND CLASSIFICATION
+================================================================================
+
+TOTAL: 45 points
+
+SECTION A (Python):         /10
+SECTION B (NumPy):          /8
+SECTION C (Mathematics):    /12
+SECTION D (ML Concepts):    /10
+SECTION E (Programming Logic): /5
+
+---
+
+LEVEL CLASSIFICATION:
+
+    0-10 points:   BEGINNER
+    You need to start from the very beginning.
+    Start with: Module 01 (Python)
+
+    11-25 points:  ELEMENTARY
+    You have some basics but need reinforcement.
+    Start with: Module 01 (Python) — focus on weak areas
+
+    26-35 points:  INTERMEDIATE
+    You have solid foundations.
+    Start with: Module 02 (NumPy) or Module 05 (Mathematics)
+    Skip basic Python sections if confident.
+
+    36-40 points:  ADVANCED
+    You have strong foundations.
+    Start with: Module 05 (Mathematics) or Module 06 (ML Fundamentals)
+    Use the diagnostic to identify and repair weak areas.
+
+    41-45 points:  EXPERT
+    You have excellent foundations.
+    Start with: Module 06 (ML Fundamentals) or skip ahead.
+
+---
+
+REPAIR PATH BY WEAK AREA:
+
+    Weak Python:
+        → Complete Module 01 fully
+        → Practice with exercises in 01_PYTHON/exercises/
+        → Re-take this diagnostic before continuing
+
+    Weak NumPy:
+        → Complete Module 02 fully
+        → Practice with exercises in 02_NUMPY/exercises/
+
+    Weak Mathematics:
+        → Complete Module 05 fully
+        → This is CRITICAL — do not skip math
+        → Focus on weak sub-topics (Algebra, Linear Algebra, etc.)
+
+    Weak ML Concepts:
+        → Complete Module 06 (ML Fundamentals)
+        → Re-read the theory carefully
+        → The ML modules assume you understand these basics
+
+================================================================================
+ANSWER KEY
+================================================================================
+
+See: diagnostic_answers.txt
+
+================================================================================
+AFTER COMPLETING THIS ASSESSMENT:
+================================================================================
+
+1. Score yourself using the answer key
+2. Identify your level (BEGINNER → EXPERT)
+3. Identify your weak areas
+4. Start the course at the appropriate point
+5. Re-take this diagnostic after completing the foundation modules
+   to verify improvement
+
+The diagnostic is not a grade — it is a ROADMAP for your learning path.
+
+================================================================================

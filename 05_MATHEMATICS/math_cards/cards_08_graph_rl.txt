@@ -1,0 +1,78 @@
+================================================================================
+CARD: GCN / MESSAGE PASSING (graph neural networks)
+================================================================================
+PROBLEM   learn node/graph representations that use both features and
+          graph structure.
+MESSAGE PASSING template (every GNN is an instance):
+          h_v^(l+1) = UPDATE( h_v^(l),  AGG({ h_u^(l) : u in N(v) }) )
+GCN LAYER H^(l+1) = sigma( A_hat H^(l) W^(l) )
+          A_hat = D^{-1/2} (A + I) D^{-1/2}
+          D = degree matrix; A + I adds self-loops (node keeps its own
+          features); the normalization makes hubs not dominate.
+          L layers -> representation depends on the L-hop neighborhood.
+GAT       alpha_uv = softmax_u( LeakyReLU( a^T [W h_u || W h_v] ) )
+          h'_v = sigma( sum_{u in N(v)} alpha_uv W h_u )
+          (learned content-based neighbor weights vs GCN's fixed ones).
+GRAPHSAGE h'_v = sigma( W CONCAT(h_v, AGG({h_u : u in sampled N(v)})) )
+          learns an AGGREGATOR -> INDUCTIVE (new nodes at inference).
+WHY SHALLOW  neighborhoods grow ~exponentially and deep stacking
+          over-smooths (all nodes converge); practical depth 2-4.
+LOSSES    node classification: CE on labeled nodes; link prediction:
+          score (u,v) from embeddings (dot), train on positives +
+          sampled negatives, evaluate AUC/Hits@k.
+COMPLEXITY layer: O(|E| d) with sparse ops (linear in edges).
+FAILURES  over-smoothing, degree bias, label-heterophily, transductive
+          cold start, 1-WL expressivity ceiling.
+CONNECTS  DeepWalk embeddings (cards not shown: walks = sentences, skip-
+          gram) are the shallow ancestor; attention (cards_06) is the
+          full-graph cousin; module 60.
+
+================================================================================
+CARD: MDP AND BELLMAN EQUATIONS (reinforcement learning)
+================================================================================
+PROBLEM   choose actions to maximize expected discounted return in an
+          environment with delayed rewards.
+MDP       (S, A, p(s'|s,a), r(s,a,s'), gamma in [0,1)).
+          Policy pi(a|s); return G_t = sum_k gamma^k r_{t+k+1}.
+VALUE     V_pi(s) = E_pi[G_t | s_t=s]     Q_pi(s,a) = E_pi[G_t | s_t=s, a]
+BELLMAN   V_pi(s) = sum_a pi(a|s) sum_{s'} p(s'|s,a) [r + gamma V_pi(s')]
+          Q_pi(s,a) = sum_{s'} p(s'|s,a)[r + gamma sum_{a'} pi(a'|s')
+                                                      Q_pi(s',a')]
+OPTIMALITY V*(s) = max_a sum_{s'} p(s'|s,a)[r + gamma V*(s')]
+          pi*(s) = argmax_a Q*(s,a)
+KEY       the Bellman operator is a contraction (factor gamma) -> value
+          iteration converges; Q* makes acting trivial; everything
+          below estimates Q* or the policy from experience.
+CONNECTS  EM's fixed-point iteration pattern (cards_04); module 61.
+
+================================================================================
+CARD: Q-LEARNING / DQN / POLICY GRADIENTS / PPO
+================================================================================
+Q-LEARNING (tabular, off-policy)
+          Q(s,a) <- Q(s,a) + lr [ r + gamma max_{a'} Q(s',a') - Q(s,a) ]
+          the max makes it learn Q* regardless of the behavior policy;
+          SARSA uses the actual next action (on-policy, safer under
+          noise). Off-policy is what makes experience replay valid.
+DQN       loss = ( r + gamma max_{a'} Q^-(s',a') - Q(s,a) )^2
+          Two tricks: (1) REPLAY buffer sampled in mini-batches
+          (breaks temporal correlation -> SGD works), (2) TARGET net
+          Q^- updated slowly (stabilizes the moving target).
+          The deadly triad (approx + bootstrap + off-policy) is why
+          both are needed.
+POLICY GRADIENT THEOREM
+          grad_theta J = E[ grad_theta log pi_theta(a|s) A_pi(s,a) ]
+          A(s,a) = Q(s,a) - V(s)   (advantage; the baseline b(s) is
+          unbiased and cuts variance: E[grad log pi * b(s)] = 0).
+          Actor = policy network, Critic = V network trained by TD
+          regression - the actor-critic architecture.
+PPO       L = E[ min( r_t A_t, clip(r_t, 1-eps, 1+eps) A_t ) ],
+              r_t = pi_theta(a|s) / pi_old(a|s)
+          clipping the importance ratio keeps updates in a trust
+          region -> stable SGD; the engine of RLHF for LLMs.
+COMPLEXITY DQN/PG: O(1) per transition + NN forward/backward; the cost
+          is SAMPLE complexity (interaction), not computation.
+FAILURES  reward hacking (proxy != objective), sparse rewards, deadly
+          triad divergence, non-stationarity of the data distribution,
+          seed variance - report mean +/- std over seeds.
+CONNECTS  module 61 rl_foundations_complete.txt; ML map: DQN ~
+          regression to Bellman targets, PG ~ weighted MLE.

@@ -1,0 +1,194 @@
+================================================================================
+DSA MODULE 8: RECURSION & BACKTRACKING — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Write recursive solutions with proper base cases
+- Convert recursion to memoization
+- Apply backtracking to permutation/combination problems
+- Solve 15+ recursion LeetCode problems
+
+================================================================================
+1. RECURSION FUNDAMENTALS
+================================================================================
+
+A function that calls itself.
+
+TWO ESSENTIAL COMPONENTS:
+1. BASE CASE: stops the recursion
+2. RECURSIVE CASE: moves toward the base case
+
+FACTORIAL
+----------
+def factorial(n):
+    if n <= 1: return 1        # base case
+    return n * factorial(n-1)   # recursive case
+
+RECURSION TREE: factorial(4)
+         4 * factorial(3)
+         4 * 3 * factorial(2)
+         4 * 3 * 2 * factorial(1)
+         4 * 3 * 2 * 1 = 24
+
+TAIL RECURSION (Optimizable)
+------------------------------
+def factorial_tail(n, acc=1):
+    if n <= 1: return acc
+    return factorial_tail(n-1, n*acc)  # tail call
+
+Python doesn't optimize tail recursion, but good to know.
+
+================================================================================
+2. MEMOIZATION
+================================================================================
+
+INTUITION
+---------
+Cache results of expensive recursive calls.
+
+FIBONACCI WITHOUT MEMO: O(2ⁿ) — exponential!
+def fib(n):
+    if n <= 1: return n
+    return fib(n-1) + fib(n-2)
+
+FIBONACCI WITH MEMO: O(n)
+def fib_memo(n, memo={}):
+    if n in memo: return memo[n]
+    if n <= 1: return n
+    memo[n] = fib_memo(n-1, memo) + fib_memo(n-2, memo)
+    return memo[n]
+
+# Or use functools
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fib(n):
+    if n <= 1: return n
+    return fib(n-1) + fib(n-2)
+
+================================================================================
+3. BACKTRACKING
+================================================================================
+
+INTUITION
+---------
+Explore all possibilities, but PRUNE branches that can't lead to a solution.
+
+TEMPLATE
+---------
+def backtrack(path, choices):
+    if满足结束条件:
+        result.append(path[:])
+        return
+
+    for choice in choices:
+        if not valid(choice): continue
+        path.append(choice)         # make choice
+        backtrack(path, new_choices) # explore
+        path.pop()                  # undo choice (backtrack)
+
+PERMUTATIONS (LC #46)
+-----------------------
+def permute(nums):
+    result = []
+
+    def backtrack(path, remaining):
+        if not remaining:
+            result.append(path[:])
+            return
+        for i in range(len(remaining)):
+            path.append(remaining[i])
+            backtrack(path, remaining[:i] + remaining[i+1:])
+            path.pop()
+
+    backtrack([], nums)
+    return result
+
+COMBINATIONS (LC #77)
+----------------------
+def combine(n, k):
+    result = []
+
+    def backtrack(start, path):
+        if len(path) == k:
+            result.append(path[:])
+            return
+        for i in range(start, n + 1):
+            path.append(i)
+            backtrack(i + 1, path)
+            path.pop()
+
+    backtrack(1, [])
+    return result
+
+SUBSETS (LC #78)
+-----------------
+def subsets(nums):
+    result = []
+
+    def backtrack(start, path):
+        result.append(path[:])
+        for i in range(start, len(nums)):
+            path.append(nums[i])
+            backtrack(i + 1, path)
+            path.pop()
+
+    backtrack(0, [])
+    return result
+
+================================================================================
+4. DIVIDE AND CONQUER
+================================================================================
+
+MERGE SORT
+-----------
+def merge_sort(arr):
+    if len(arr) <= 1: return arr
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    return merge(left, right)
+
+QUICK SORT
+-----------
+def quick_sort(arr):
+    if len(arr) <= 1: return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quick_sort(left) + middle + quick_sort(right)
+
+================================================================================
+5. LEETCODE PROBLEMS
+================================================================================
+
+EASY
+----
+1. Fibonacci Number (LC #509)
+2. Power of Two (LC #231)
+3. Merge Two Sorted Lists (LC #21)
+4. Maximum Depth of Binary Tree (LC #104)
+5. Reverse Linked List (LC #206)
+
+MEDIUM
+------
+6. Permutations (LC #46)
+7. Subsets (LC #78)
+8. Combination Sum (LC #39)
+9. Generate Parentheses (LC #22)
+10. Word Search (LC #79)
+
+HARD
+----
+11. N-Queens (LC #51)
+12. Sudoku Solver (LC #37)
+13. Palindrome Partitioning (LC #131)
+14. Restore IP Addresses (LC #93)
+15. Letter Combinations of Phone Number (LC #17)
+
+================================================================================
+END OF MODULE 8
+================================================================================

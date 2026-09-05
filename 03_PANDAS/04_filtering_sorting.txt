@@ -1,0 +1,122 @@
+================================================================================
+MODULE 03 — PANDAS
+LESSON 04: FILTERING AND SORTING
+================================================================================
+
+## What You Will Learn
+- Selecting columns
+- Filtering rows by condition
+- Sorting data
+- Query method
+- Method chaining
+
+================================================================================
+1. SELECTING COLUMNS
+================================================================================
+
+    df["age"]                    # Single column → Series
+    df[["age", "income"]]        # Multiple columns → DataFrame
+
+    # .loc — label-based
+    df.loc[:, "age"]             # All rows, 'age' column
+    df.loc[0:5, ["age", "income"]]  # Rows 0-5, specific columns
+
+    # .iloc — integer position-based
+    df.iloc[:, 0]                # All rows, first column
+    df.iloc[0:5, 0:3]           # Rows 0-4, columns 0-2
+
+    WHEN TO USE:
+    - df["col"] — Simple column selection
+    - df.loc[] — Label-based (named rows/columns)
+    - df.iloc[] — Position-based (integer indices)
+
+================================================================================
+2. FILTERING ROWS
+================================================================================
+
+    # Boolean condition
+    df[df["age"] > 30]
+
+    # Multiple conditions (AND)
+    df[(df["age"] > 25) & (df["income"] > 50000)]
+
+    # Multiple conditions (OR)
+    df[(df["age"] < 25) | (df["income"] > 100000)]
+
+    # NOT condition
+    df[~(df["churn"] == "Yes")]
+
+    # isin — filter by list
+    df[df["city"].isin(["New York", "San Francisco"])]
+
+    # notin — filter out list
+    df[~df["city"].isin(["New York"])]
+
+    # String contains
+    df[df["name"].str.contains("Ali", case=False)]
+
+    # Between
+    df[df["age"].between(25, 35)]
+
+    # query method (readable)
+    df.query("age > 25 and income > 50000")
+
+    # NaN check
+    df[df["age"].notna()]
+
+ML USE:
+    # Filter valid data
+    df_clean = df[df["age"].notna() & (df["age"] > 0)]
+
+    # Select numeric columns only
+    numeric_df = df.select_dtypes(include=[np.number])
+
+    # Select categorical columns
+    cat_df = df.select_dtypes(include=["object"])
+
+================================================================================
+3. SORTING
+================================================================================
+
+    df.sort_values("age")                    # Sort by age (ascending)
+    df.sort_values("age", ascending=False)   # Sort by age (descending)
+    df.sort_values(["age", "income"])        # Sort by multiple columns
+    df.sort_values(["age", "income"], ascending=[True, False])
+
+    # Sort by index
+    df.sort_index()
+
+    # Rank
+    df["rank"] = df["income"].rank(ascending=False)
+
+================================================================================
+4. METHOD CHAINING
+================================================================================
+
+    # Clean, readable pipeline
+    result = (df
+        .dropna(subset=["age", "income"])
+        .query("age > 25")
+        .sort_values("income", ascending=False)
+        .head(10)
+    )
+
+    # Assign new columns in chain
+    result = (df
+        .assign(age_group=pd.cut(df["age"], bins=[0, 18, 35, 60, 100],
+                                  labels=["child", "young", "middle", "senior"]))
+        .groupby("age_group")
+        .income.mean()
+    )
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between .loc and .iloc?
+2. How do you filter rows with multiple conditions?
+3. What does .query() do?
+
+================================================================================
+NEXT LESSON: 05_groupby_aggregation.txt
+================================================================================

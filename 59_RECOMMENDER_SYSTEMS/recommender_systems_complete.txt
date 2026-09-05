@@ -1,0 +1,186 @@
+================================================================================
+LESSON: RECOMMENDER SYSTEMS (complete)
+================================================================================
+Objective: learn the full stack - from the popularity baseline to
+matrix factorization to two-stage production recommenders - with the
+math for every step.
+
+--------------------------------------------------------------------------------
+1. THE PROBLEM AND THE DATA
+--------------------------------------------------------------------------------
+Input: an implicit or explicit signal of user-item interaction
+(ratings, clicks, purchases, watch time). Goal: predict which items a
+user will engage with next, and serve them.
+Two data types change everything:
+  - EXPLICIT feedback (stars 1-5): scarce, self-selected, biased
+    (people rate what they love or hate).
+  - IMPLICIT feedback (clicks/views/purchases): abundant, but absence
+    is ambiguous (never clicked = disliked OR never shown). Treat as
+    confidence-weighted positives, not negatives.
+
+--------------------------------------------------------------------------------
+2. BASELINES (never skip these)
+--------------------------------------------------------------------------------
+  Popularity: recommend the most-popular items globally.
+  Per-user mean + item popularity.
+  Item-item co-occurrence ("users who bought X also bought Y").
+Any method that cannot beat popularity on cold-start-free head items is
+not working. Baselines also define the "easy" part of the problem that
+matrix factorization should improve upon.
+
+--------------------------------------------------------------------------------
+3. COLLABORATIVE FILTERING - MATRIX FACTORIZATION (the core math)
+--------------------------------------------------------------------------------
+Build the user-item matrix R (m users x n items; sparse, most entries
+missing). Approximate it as a low-rank product:
+    R ~ P Q^T
+  P: m x k  (user factors),  Q: n x k  (item factors), k = latent dims.
+Each user and item is a k-vector in a shared "preference space"; the
+predicted rating is the DOT PRODUCT:
+    r_hat_ui = p_u . q_i = sum_f p_uf q_if
+WHY LOW RANK: it encodes the assumption that a small number of latent
+factors (genre affinity, price sensitivity, recency preference) explain
+all ratings - massive compression of the sparse matrix and
+generalization to unseen pairs.
+OBJECTIVE (with regularization):
+    min_{P,Q} sum_{(u,i) in observed} (r_ui - p_u . q_i)^2
+             + lambda (||p_u||^2 + ||q_i||^2)
+FITTING
+  - SGD (Funk SVD): for each observed (u,i):
+        e = r_ui - p_u.q_i
+        p_u += lr (e q_i - lambda p_u)
+        q_i += lr (e p_u - lambda q_i)
+  - ALS (alternating least squares): fix Q, solve each p_u as a RIDGE
+    regression (closed form); then fix P, solve each q_i; alternate.
+    ALS is parallelizable per user/item and handles implicit feedback
+    naturally (see below), which is why production systems (Spark ALS)
+    use it.
+INTERPRETING k: factors are not named (a "factor 3" is not "comedy")
+unless you inspect neighborhoods in the factor space; k too large
+overfits (validate with a held-out set of ratings).
+
+--------------------------------------------------------------------------------
+4. IMPLICIT FEEDBACK (the realistic setting)
+--------------------------------------------------------------------------------
+Observed = counts c_ui (clicks/plays). Model CONFIDENCE:
+    confidence_ui = 1 + alpha * c_ui       (alpha ~ 40 typical)
+and a binary preference p_ui = 1 if c_ui > 0 else 0.
+ALS objective (Hu-Koren):
+    min sum_ui confidence_ui (p_ui - p_u . q_i)^2 + lambda(||p_u||^2 + ||q_i||^2)
+Unobserved pairs get p=0 with confidence 1 - they are weak negatives,
+not missing. This is THE standard approach for watch/purchase data.
+
+--------------------------------------------------------------------------------
+5. EVALUATION (offline metrics that match the goal)
+--------------------------------------------------------------------------------
+The goal is ranking, not rating accuracy. Use ranking metrics:
+  - Recall@k / HitRate@k: fraction of held-out interacted items in the
+    top-k recommendations.
+  - NDCG@k: position-weighted usefulness:
+      DCG@k = sum_{i=1..k} rel_i / log2(i+1);  NDCG = DCG / ideal DCG
+    (rel_i = relevance of item at rank i; rewards correct ORDER).
+  - MAP: average precision across the recommendation list.
+  - AUC on "does the model rank a held-out positive above random items".
+Never tune on RMSE of ratings if the product shows ranked lists.
+SPLITS: split by TIME (recommend from the past, evaluate on the
+future) - random splits leak the future into training and inflate every
+metric. Use leave-one-last-out per user.
+
+--------------------------------------------------------------------------------
+6. COLD START (the failure that kills naive CF)
+--------------------------------------------------------------------------------
+New user (no history) and new item (no interactions) have no factors.
+Fixes in order of cheapness:
+  1. Popularity / trending fallback for new users.
+  2. Content-based bootstrap: represent users/items by content features
+     (item metadata, user attributes) and use a content model until
+     enough interactions exist, then blend.
+  3. Hybrid: MF on interaction + content side-information in one model
+     (e.g. add item-feature matrix F: r_hat = p_u . (q_i + V f_i)).
+  4. Embedding-based: embed users/items from attributes alone
+     (two-tower: user tower over user features, item tower over item
+     features; score = dot product) - this generalizes to new items
+     without retraining (see section 8).
+
+--------------------------------------------------------------------------------
+7. PRODUCTION ARCHITECTURE: TWO-STAGE (candidate gen + ranking)
+--------------------------------------------------------------------------------
+At 100M items you cannot score everything with a deep model per user.
+  STAGE 1 - CANDIDATE GENERATION (retrieve ~hundreds):
+    - Matrix factorization / two-tower ANN search (embed user, find
+      nearest item embeddings via approximate nearest neighbor).
+    - Rules: co-purchase, top-per-category, user's recent categories.
+  STAGE 2 - RANKING (score the few hundred with a rich model):
+    - A model with many features: user, item, context (time, device),
+      cross features, real-time signals (recent clicks). Logistic
+      regression on features or gradient boosting / a small NN.
+    - Optimize for the BUSINESS objective via the loss (CTR: BCE on
+      clicks; watch time: regression/weighted loss).
+  Between: DEDUP + diversity/MMR (maximize marginal relevance so the
+  list is not 10 near-identical items) + business rules (exclude
+  purchased, boost fresh stock).
+
+--------------------------------------------------------------------------------
+8. EMBEDDINGS AND TWO-TOWER MODELS (modern CF)
+--------------------------------------------------------------------------------
+Map users and items into the SAME d-dimensional space:
+    user_emb = f_user(user features);  item_emb = g_item(item features)
+    score(u, i) = <user_emb, item_emb>
+Train with sampled softmax / in-batch negatives: positives = pairs that
+were interacted; negatives = random items (and hard negatives = items
+the model is wrongly confident about). The dot-product scoring makes
+serving = nearest-neighbor search: precompute item embeddings, embed
+the user at request time, ANN-search the top-k. This is the standard
+modern retrieval architecture (YouTube, Pinterest, Airbnb all publish
+variants).
+
+--------------------------------------------------------------------------------
+9. FAILURE MODES AND DEBUGGING (real problems)
+--------------------------------------------------------------------------------
+  - Popularity feedback loop: the recommender only shows popular items,
+    so only popular items get interactions, so it keeps recommending
+    them (rich-get-richer). Fix: exploration (epsilon-greedy on
+    ranking), popularity debiasing (inverse propensity weighting).
+  - Position bias: item at rank 1 gets clicked because it is at rank 1.
+    Train with the position as a feature and score with position
+    neutralized, or use a correction model.
+  - Leakage: using a future interaction as a feature (e.g. "user liked
+    this item's sequel" when predicting the first interaction).
+  - Silent drift: user tastes and catalogs change; retrain on recent
+    data with decayed weights and monitor recommendation CTR vs
+    baseline.
+  - Evaluation lies: offline NDCG improves but live CTR drops because
+    offline data was generated by the OLD recommender (policy bias) -
+    the classic reason to run online A/B before declaring victory.
+
+--------------------------------------------------------------------------------
+10. PRACTICE
+--------------------------------------------------------------------------------
+1. (Math) Derive the SGD update for Funk SVD from the squared-error
+   objective including the regularization term.
+2. (Code) Build a 5x4 rating matrix, factorize with k=2 by hand-style
+   SGD in numpy, and confirm reconstruction on observed entries.
+3. (Math) ALS: write the closed-form ridge solution for p_u given fixed
+   Q. Why is ALS embarrassingly parallel per user?
+4. (Code) Implement the Hu-Koren implicit ALS objective and run it on a
+   small implicit matrix; show unobserved entries act as weak negatives.
+5. (Eval) Given relevance lists, compute HitRate@3, NDCG@3, and MAP for
+   two recommenders; say which wins and why NDCG differs from HR.
+6. (Reasoning) Why does time-split beat random-split evaluation here?
+7. (Design) A music service has 80M tracks. Sketch the two-stage
+   architecture with concrete candidate sources and the ranking
+   features, and say where cold start is handled.
+8. (Code) Two-tower with negative sampling: implement the contrastive
+   loss from the advanced-paradigms card (InfoNCE) on toy user/item
+   features; verify retrieval by ANN on the learned embeddings.
+9. (Debugging) Live CTR drops 20% after deploying a model that improved
+   offline NDCG 5%. List the top 3 causes and the experiment that
+   isolates each.
+10. (Reasoning) Explain the rich-get-richer loop with a 2-item example
+    and two concrete mitigations.
+11. (Interview) Explain matrix factorization to a product manager; then
+    explain to an engineer why k is a bias-variance knob.
+12. (Open-ended) OPEN PROBLEM: offline evaluation that reliably predicts
+    online gains is unsolved because logged data is policy-biased.
+    Design an evaluation protocol you would trust for a recommender
+    launch decision.

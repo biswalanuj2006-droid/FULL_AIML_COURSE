@@ -1,0 +1,2456 @@
+================================================================================
+ULTRA-DEEP MACHINE LEARNING COURSE  -  COURSE.txt
+================================================================================
+Track      : ml_course/  (sibling of llm_course/ and genai_agents_course/)
+Audience   : an ambitious 2nd-year B.Tech AI & ML student heading for elite
+             AI/ML engineering (university + industry + research level)
+Companion  : PRACTICE.txt (levels 0-5, 1000+ questions), PROJECT.txt
+             (tiers E -> S+ with the Production ML Platform capstone),
+             EXAMPLE.py (26-section runnable laboratory)
+Standard   : every major topic is taught at SIX levels - INTUITION, FORMAL
+             DEFINITION, MATHEMATICS, ALGORITHM/IMPLEMENTATION, ENGINEERING,
+             RESEARCH - and every algorithm gets failure modes,
+             hyperparameters, complexity, interview questions and a
+             research connection.
+
+================================================================================
+HOW THIS COURSE IS BUILT
+================================================================================
+
+Progression (the master dependency graph):
+
+  Mathematics -> Statistics -> Data Handling -> ML Fundamentals
+  -> Classical ML -> Algorithms From Scratch -> scikit-learn
+  -> Feature Engineering -> Model Selection -> Advanced ML
+  -> Ensemble Learning -> Unsupervised Learning -> Dimensionality Reduction
+  -> Time Series -> Imbalanced Learning -> Interpretability
+  -> Probabilistic ML -> Advanced Optimization -> Production ML -> MLOps
+  -> Research-Level ML
+
+The mental loop applied to EVERY topic (do not skip steps):
+
+  WHY -> WHAT -> HOW -> MATHEMATICS -> ALGORITHM -> IMPLEMENTATION
+  -> EXPERIMENT -> FAILURE MODES -> ENGINEERING -> RESEARCH
+
+Learning gates (pass the exit test before moving on):
+
+  GATE 1  Python + NumPy + Pandas + Linear Algebra + Probability + Statistics
+  GATE 2  Data: collection, quality, EDA, preprocessing, leakage, baselines
+  GATE 3  Regression + Regularization + Classification + Metrics (from scratch)
+  GATE 4  KNN + Naive Bayes + Trees + Ensembles (RF/XGB/LGBM/CatBoost) + SVM
+  GATE 5  Unsupervised: K-Means, Hierarchical, DBSCAN, PCA
+  GATE 6  Feature engineering, model selection, calibration, interpretability
+  GATE 7  Time series, imbalance, anomaly detection, probabilistic ML
+  GATE 8  Experiment design, MLOps, production ML (FastAPI/Docker/MLflow)
+  GATE 9  Monitoring, drift, security, causal ML, research skills
+
+From-scratch requirement (do NOT reach for sklearn first): Linear
+Regression, Gradient Descent, Logistic Regression, KNN, Naive Bayes,
+Decision Tree, Random Forest, K-Means, PCA, and the metric functions
+(confusion matrix, ROC/AUC).  Every from-scratch implementation must
+explain input, output, equation, internal state, training process,
+prediction process and complexity.  EXAMPLE.py does exactly this.
+
+================================================================================
+MODULE 0 - MACHINE LEARNING ROADMAP
+================================================================================
+
+### 1. INTUITION
+Machine learning = writing programs whose behavior IMPROVES with data,
+instead of being fully specified by a human.  You never hand the machine
+the rule ("if income > 50k and age > 30 -> approve"); you hand it examples
+and it discovers the rule itself.
+
+### 2. FORMAL DEFINITION
+Mitchell (1997): "A computer program is said to learn from experience E
+with respect to some class of tasks T and performance measure P, if its
+performance at tasks in T, as measured by P, improves with experience E."
+
+### 3. THE LANDSCAPE (memorize the taxonomy)
+- SUPERVISED: labels present (regression: continuous y; classification:
+  discrete y).  Map f: X -> y from (X, y) pairs.
+- UNSUPERVISED: no labels.  Find structure: clusters, manifolds, density.
+- SEMI-SUPERVISED: a few labels + lots of unlabeled (transductive or
+  inductive).  Cheaper than labeling everything.
+- SELF-SUPERVISED: labels are FREE - derived from the data itself
+  (next-token prediction, masked patches, contrastive views).  This is
+  how every modern foundation model is pretrained.
+- REINFORCEMENT: an agent learns a policy from a reward signal through
+  trial and error (delayed, non-differentiable feedback).
+- ONLINE: learns one example at a time, weights update continuously.
+- BATCH: trains on the full dataset at once.
+- TRANSFER: knowledge from task A reused for task B (pretrain -> fine-tune).
+- META: learns to learn (learning the learning algorithm itself).
+- FEDERATED: trains across devices without moving raw data to a server.
+- CONTINUAL: learns a sequence of tasks without forgetting the old ones.
+
+### 4. THE ML LIFECYCLE (this is the skeleton of the whole course)
+  DATA -> DATA COLLECTION -> DATA CLEANING -> EDA -> FEATURE ENGINEERING
+  -> TRAIN/VALIDATION/TEST -> BASELINE -> MODEL -> TRAINING
+  -> HYPERPARAMETER OPTIMIZATION -> EVALUATION -> ERROR ANALYSIS
+  -> DEPLOYMENT -> MONITORING -> RETRAINING
+
+### 5. WHY THIS ORDER
+Every later module reuses this loop.  The single most common beginner
+mistake is jumping to a model before the data work (garbage in, garbage
+out - and worse, silent leakage).
+
+### 6. FAILURE MODES OF THE ROADMAP ITSELF
+- Skipping baselines -> no idea if the fancy model beats a constant.
+- Skipping error analysis -> tuning the wrong failure.
+- No monitoring -> the model silently decays in production.
+- Data-first is only correct when the problem is data-limited; a
+  well-posed problem + bad data beats a vague problem + great data.
+
+### 7. INTERVIEW QUESTIONS
+Q: Is LLM pretraining supervised? A: No - it is SELF-supervised: labels
+(next token) are derived from the text itself, so it scales to unlimited
+data without human labeling.  Q: Online vs batch learning tradeoff?
+A: Online adapts to drift and needs no full retrain but is sensitive to
+example order and noise; batch is stable but expensive to update.
+
+### 8. RESEARCH CONNECTION
+Continual learning (the "stability-plasticity dilemma") and self-supervised
+representation learning are the two areas where the roadmap is actively
+being rewritten.
+
+================================================================================
+MODULE 1 - PYTHON FOR MACHINE LEARNING
+================================================================================
+
+### 1. INTUITION
+Python is the lingua franca of ML because the heavy math lives in compiled
+libraries (NumPy/PyTorch) and Python is the thin, readable orchestration
+layer.  You must be fluent in the LANGUAGE and in the LIBRARIES.
+
+### 2. LANGUAGE CORE (master each, know when it is used)
+- Functions, OOP (classes, inheritance, dunder methods, dataclasses).
+- Iterators vs generators (lazy pipelines for big data; a generator is a
+  function with `yield` - it produces values on demand, holding one at a
+  time in memory).
+- Comprehensions and lambdas (readability, not cleverness).
+- Exceptions (raise early, catch at boundaries; never `except:` bare).
+- Context managers (`with open(...)`) - guaranteed cleanup.
+- Type hints (`def fit(self, X: np.ndarray) -> np.ndarray`) - free docs +
+  static checking with mypy.
+- Virtual environments + pip + requirements.txt + pyproject.toml:
+  reproducibility is a feature.  Pin versions.
+- Logging (not print): levels, structured output, timestamps.
+- Testing (pytest) and debugging (pdb / debugger breakpoints).
+
+### 3. NUMPY (the tensor of classical ML)
+- ndarray: homogeneous, contiguous, vectorized.  Shape/dtype/index/slice.
+- BROADCASTING: [3,1] op [1,4] -> [3,4]; align trailing dims.  This is
+  the single most used trick in ML math.
+- Vectorization: replace Python loops with array ops (10-100x speedup
+  because the loop runs in C).
+- Linear algebra: dot, matmul, eig, svd, lstsq.
+- Random: seeds for reproducibility (np.random.seed + Generator API).
+- Memory layout: row-major; copy vs view; float32 vs float64 (2x memory).
+
+### 4. PANDAS (tabular data)
+- Series/DataFrame; loc/iloc; filter/query; groupby (split-apply-combine);
+  merge/join/concat; pivot/pivot_table; missing values (isna/dropna/fillna);
+  duplicates; categoricals; datetime (resample, rolling); apply vs
+  vectorized ops (apply calls Python per row - slow; vectorize first).
+- Performance rule: if you can express it with groupby+agg or vector ops,
+  never use a row-wise apply.
+
+### 5. VISUALIZATION
+- Matplotlib: line/scatter/hist/box/bar/heatmap/subplots; every plot needs
+  labeled axes + title + legend.
+- Seaborn: statistical plots (distplot, boxen, pairplot, heatmap of
+  correlation, lmplot).  Visualize distributions BEFORE modeling and
+  residuals AFTER.
+
+### 6. WHEN TO USE WHICH LIBRARY (a decision rule)
+NumPy: raw math.  Pandas: tables.  SciPy: stats tests, optimization,
+sparse matrices.  scikit-learn: classical ML + pipelines.  XGBoost/
+LightGBM/CatBoost: gradient boosting on tabular data (the three musketeers
+of tabular competition wins).  Statsmodels: statistical inference
+(p-values, ARIMA) where you care about coefficients, not just prediction.
+Optuna: hyperparameter search.  MLflow: experiment tracking + model
+registry.  Joblib: model serialization.  FastAPI: serving.  Docker:
+packaging.  When NOT to use each: don't use sklearn for deep learning
+(torch), don't use pandas for 1M+ row streaming workloads (polars/DuckDB
+or chunking), don't use statsmodels for prediction-only problems.
+
+### 7. COMMON MISTAKES
+- Chained indexing (`df[a][b]` - silent copies); use .loc.
+- Not seeding random generators -> irreproducible experiments.
+- Inplace=True surprises; mutating the raw data you need later.
+
+### 8. INTERVIEW
+Q: Generators vs lists for a 10GB file? A: generator - O(1) memory, one
+item at a time.  Q: Why is vectorized code faster? A: the loop executes in
+compiled C over contiguous memory instead of the Python interpreter.
+
+================================================================================
+MODULE 2 - LINEAR ALGEBRA FOR ML
+================================================================================
+
+### 1. INTUITION
+Almost every ML model is matrix arithmetic: data is a matrix X (rows =
+samples, columns = features), a linear model is y = Xw, deep learning is
+composed matrix multiplications, and PCA/SVD are matrix factorizations.
+If you can think in matrices, you can read any paper.
+
+### 2. BUILDING BLOCKS
+- Scalars, vectors (columns), matrices, tensors (n-dim arrays).
+- Vector space, linear independence, basis, span, rank.
+- Dot product <u,v> = sum u_i v_i: measures alignment; u.v = |u||v|cos(theta).
+- Norms: L2 (Euclidean), L1 (Manhattan), L-inf.
+- Matrix multiplication: (AB)_ij = sum_k A_ik B_kj; row space x column space;
+  AB exists iff cols(A) = rows(B); cost O(n^3) naive.
+- Transpose, inverse, determinant, orthogonality (A^T A = I), projection.
+- Eigenvalues/eigenvectors: Av = lambda v; symmetric matrices have real
+  eigenvalues and orthogonal eigenvectors (this powers PCA).
+- Positive definiteness: x^T A x > 0 for all x != 0 (convexity, stability).
+- SVD: A = U Sigma V^T - the general factorization (exists for ANY matrix;
+  PCA is SVD of the centered data).
+
+### 3. MATHEMATICS: THE LINEAR MODEL (derive it)
+Model:  y = X w + eps,  X: [n, d], w: [d, 1], y: [n, 1].
+Least squares objective:  J(w) = ||Xw - y||^2 = (Xw - y)^T (Xw - y).
+Gradient:  dJ/dw = 2 X^T (Xw - y).
+Set to zero:  X^T X w = X^T y   (the NORMAL EQUATIONS)
+Closed form:  w* = (X^T X)^-1 X^T y      (the least-squares solution)
+Every symbol: X = design matrix (each row one sample), y = targets,
+X^T X = [d,d] Gram matrix, (X^T X)^-1 exists iff X has full column rank.
+
+### 4. WHEN THE CLOSED FORM IS PROBLEMATIC
+- (X^T X) singular or near-singular (collinear features) -> use Ridge
+  (X^T X + lambda I)^-1 X^T y, or drop features.
+- n < d (more features than samples): X^T X is [d,d] but rank <= n -> not
+  invertible; regularization or gradient methods required.
+- Large d: inverting a [d,d] matrix is O(d^3) -> gradient descent is
+  cheaper per step.
+
+### 5. GEOMETRIC INTERPRETATION
+Least squares = orthogonal projection of y onto the column space of X;
+the residuals are perpendicular to that space.  w* is the coefficient
+vector of the projection.
+
+### 6. INTERVIEW
+Q: Why is the normal equation O(d^3) and when does that matter?
+A: matrix inversion; for d > ~10^4 prefer iterative methods.
+Q: What does rank deficiency mean for OLS? A: non-unique solution /
+infinite fits - regularization restores uniqueness.
+
+================================================================================
+MODULE 3 - PROBABILITY
+================================================================================
+
+### 1. INTUITION
+Probability is the grammar of uncertainty, and ML is the study of making
+decisions under uncertainty.  Everything - loss functions, likelihood,
+Bayes, sampling, calibration - is probability in disguise.
+
+### 2. CORE MACHINERY
+- Sample space, events, P(A) in [0,1], P(Omega)=1.
+- Conditional probability:  P(A|B) = P(A and B)/P(B).
+- Independence: P(A and B) = P(A)P(B); conditional independence
+  P(A,B|C) = P(A|C)P(B|C) is the engine of Naive Bayes.
+- BAYES THEOREM:  P(H|D) = P(D|H) P(H) / P(D).
+  Posterior = likelihood x prior / evidence.  Memorize this - it is the
+  single most important equation in ML (used in naive Bayes, Bayesian
+  inference, MAP, generative models, RLHF reward modeling).
+- Random variables: discrete (PMF) vs continuous (PDF); CDF F(x)=P(X<=x).
+- Expectation E[X] = sum x p(x) (linear: E[aX+bY]=aE[X]+bE[Y]).
+- Variance Var(X) = E[(X-mu)^2] = E[X^2] - E[X]^2; covariance Cov(X,Y);
+  correlation rho = Cov/(sd_x sd_y) in [-1,1].
+- Joint / marginal / conditional distributions; the chain rule:
+  P(A,B,C) = P(A)P(B|A)P(C|A,B).
+- Law of Large Numbers: sample mean -> expectation as n -> inf.
+- Central Limit Theorem: sums of iid variables -> Gaussian, regardless of
+  the source distribution.  This is why Gaussian assumptions are
+  everywhere and why sample means are well-behaved.
+
+### 3. THE DISTRIBUTIONS (know support, mean, variance, use-case)
+- Bernoulli(p): one coin flip.  Binomial(n,p): n flips.
+- Uniform(a,b): no information.
+- Gaussian N(mu, sigma^2): bell curve; errors, features, CLT limit.
+- Exponential(lambda): waiting times (memoryless).
+- Poisson(lambda): counts in fixed time.
+- Multinomial: dice with k faces (softmax's home).
+- Beta(alpha,beta): prior for Bernoulli (conjugate).
+- Gamma: prior for Poisson/Exponential rates.
+
+### 4. ML APPLICATIONS (map each concept to where it appears)
+- MLE = maximize likelihood (logistic regression objective).
+- Conditional probability = P(y|x) in classification.
+- Expectation = risk E[loss] we minimize.
+- Covariance = PCA input.
+- Bayes = naive Bayes, MAP, Bayesian networks.
+- KL (Module 5) = the training objective of generative models.
+
+### 5. COMMON MISTAKES
+- Confusing P(A|B) with P(B|A) (the base-rate fallacy; medical tests).
+- Treating correlation as causation (Module 35).
+- Ignoring priors when data is scarce.
+
+### 6. INTERVIEW
+Q: 1% of people have a disease, test is 99% accurate (sensitivity AND
+specificity).  You test positive - what is P(disease)?  A: ~50%.
+Compute: P(D|+) = 0.99*0.01 / (0.99*0.01 + 0.01*0.99) = 0.5.  The base
+rate dominates - this is exactly why precision differs from sensitivity.
+
+================================================================================
+MODULE 4 - STATISTICS
+================================================================================
+
+### 1. INTUITION
+Statistics is the discipline of going from a SAMPLE to statements about
+the POPULATION, with honesty about uncertainty.  ML engineers use it for
+three things: describing data, comparing models, and designing
+experiments that can actually detect differences.
+
+### 2. DESCRIPTIVE STATISTICS
+Mean (sensitive to outliers), median (robust), mode, variance (avg squared
+deviation), std, percentiles/quartiles/IQR (IQR = Q3-Q1; fence rule:
+outlier if x < Q1 - 1.5*IQR or x > Q3 + 1.5*IQR), skewness (tail
+direction), kurtosis (tail heaviness).
+
+### 3. INFERENTIAL STATISTICS
+- Sampling + sampling distribution of the mean: SE = sigma/sqrt(n).
+- CONFIDENCE INTERVAL for the mean (known sigma):
+  CI = x_bar +/- z_(alpha/2) * sigma/sqrt(n).  Interpret: "if we repeated
+  the experiment, 95% of such intervals would contain mu" - NOT "mu is in
+  this interval with 95% probability" (mu is fixed, the interval is random).
+
+### 4. HYPOTHESIS TESTING (the workflow)
+1. H0 (null, no effect) and H1 (alternative).  2. Pick test statistic and
+   significance level alpha (usually 0.05).  3. Compute the statistic
+   under H0.  4. p-value = P(statistic as extreme as observed | H0 true).
+   5. Reject H0 if p < alpha.
+- Type I error: rejecting a true H0 (false positive), probability = alpha.
+- Type II error: failing to reject a false H0 (false negative), prob = beta.
+- POWER = 1 - beta: ability to detect a real effect.  Power grows with n
+  and effect size, shrinks with noise and alpha.
+
+### 5. THE TESTS (when to use each)
+- z-test: known variance, n large.  t-test: unknown variance (student-t,
+  uses sample sd and n-1 df).  Paired t-test: same units measured twice.
+- chi-square: independence of categorical variables
+  (sum (O-E)^2/E over cells; df = (r-1)(c-1)).
+- ANOVA: compare means of 3+ groups (F = between-group var / within-group
+  var).  One-way ANOVA tests H0: all means equal.
+- Correlation tests: Pearson (linear), Spearman (monotonic, rank-based).
+
+### 6. THE STATISTICAL MISTAKES ML ENGINEERS ACTUALLY MAKE
+- p-hacking: running 50 experiments and reporting only the p<0.05 one
+  (multiple comparisons inflate false positives; correct with
+  Bonferroni/FDR).
+- Ignoring effect size: p<0.05 with a uselessly small effect.
+- Using a t-test on non-independent data (data leakage inflates power).
+- Reporting test-set performance without confidence intervals - a 0.5%
+  accuracy difference is usually noise (compute a CI or a paired test).
+
+### 7. INTERVIEW
+Q: Your A/B test shows p=0.04.  What do you conclude?  A: There is
+moderate evidence against H0, but I must know the effect size, sample
+size, number of tests run, and the business cost before acting; p alone
+does not decide.
+
+================================================================================
+MODULE 5 - INFORMATION THEORY
+================================================================================
+
+### 1. INTUITION
+Information = surprise.  A coin that always lands heads conveys zero
+information; a fair coin conveys 1 bit.  Information theory gives ML its
+loss functions (cross entropy) and its model-selection tools (mutual
+information for feature selection).
+
+### 2. MATHEMATICS (derive each)
+Self-information of event x:  I(x) = -log2 P(x)  (bits) or -ln P(x) (nats).
+ENTROPY (expected surprise):  H(X) = -sum_x P(x) log P(x).  Maximized by
+the uniform distribution (log K for K outcomes), minimized (0) by a
+deterministic event.  H(X) = expected number of bits to encode X optimally.
+
+CROSS ENTROPY between true P and predicted Q:
+  H(P, Q) = -sum_x P(x) log Q(x).
+This is EXACTLY the classification loss: P = true label distribution
+(one-hot), Q = model's softmax.  Minimizing H(P,Q) is the same as
+maximizing the likelihood of the labels.  H(P,Q) >= H(P) with equality
+iff Q = P (Gibbs/positivity of KL).
+
+KL DIVERGENCE (relative entropy):  D_KL(P || Q) = sum_x P(x) log P(x)/Q(x)
+  = H(P,Q) - H(P).
+Measures how much information is lost when Q approximates P.  D_KL >= 0
+(Gibbs inequality), NOT a metric (asymmetric, no triangle inequality).
+In ML: variational autoencoders minimize D_KL(q(z|x) || p(z)); knowledge
+distillation uses soft targets; DPO/RLHF use KL penalties against the
+reference policy.
+
+PERPLEXITY:  PPL = 2^H(P,Q) = exp(cross entropy in nats).  Intuition:
+"how many equally-likely choices does the model feel like it faces per
+token" - a perfect model has PPL 1; a uniform model over 10k vocab has
+PPL ~10k.  Language-model quality standard.
+
+MUTUAL INFORMATION:  I(X;Y) = H(X) - H(X|Y) = D_KL(P(X,Y) || P(X)P(Y)).
+Zero iff independent; the amount of information Y carries about X.
+Feature selection: pick features with high I(feature; target).
+
+### 3. CONNECTIONS
+- Decision trees: choose splits maximizing INFORMATION GAIN = H(parent) -
+  weighted H(children) (Module 17).
+- Neural nets: softmax + cross entropy (Module 13).
+- Feature selection: mutual information (Module 22).
+- Generative models: minimizing D_KL or its upper bound everywhere.
+
+### 4. INTERVIEW
+Q: Why does training with cross entropy beat MSE for classification?
+A: CE directly maximizes the likelihood of the labels and has the softmax
+gradient (p - y) that never saturates on the wrong side, while MSE with
+softmax saturates and learns slowly.
+
+================================================================================
+MODULE 6 - DATA COLLECTION AND DATA QUALITY
+================================================================================
+
+### 1. INTUITION
+Models are only as good as their data, and "bad data" is usually not
+noise - it is systematic bias that quietly destroys model quality.  Data
+work is 60-80% of real ML engineering time.
+
+### 2. SOURCES
+CSV/JSON exports, REST APIs, SQL databases, web scraping (respect robots
+and ToS), sensors/telemetry, logs, public datasets (UCI, Kaggle, HF
+Datasets, StatLib).  For every source: license, provenance, schema drift.
+
+### 3. THE DATA PROBLEMS (recognize each - this list is an interview goldmine)
+- MISSING VALUES: MCAR (random, ignorable), MAR (depends on observed),
+  MNAR (depends on the missing value itself - NOT ignorable, e.g. a
+  sensor that fails when hot).  Choose imputation accordingly.
+- DUPLICATE ROWS: inflate confidence, leak validation, skew classes.
+- WRONG TYPES: numeric stored as string -> silent errors.
+- OUTLIERS: real signal or sensor error?  Investigate, don't auto-drop.
+- INCONSISTENT CATEGORIES: "USA", "U.S.A.", "us" - one category.
+- DATA LEAKAGE (Module 9): future information in training features, or
+  target-derived info.  THE most dangerous data problem.
+- LABEL ERRORS: mislabeled training examples; fix with cleanlab-style
+  confident learning (noise transition estimation).
+- SAMPLING BIAS: training distribution != population (e.g. survey by
+  phone misses people without phones).  The model is calibrated to the
+  wrong world.
+- CLASS IMBALANCE (Module 23): minority class undetectable.
+- DISTRIBUTION SHIFT (Module 34): train vs production drift over time.
+
+### 4. THE DATA QUALITY WORKFLOW (do this, in this order)
+1. Schema check: types, ranges, constraints.  2. Completeness: missing %
+   per column + missingness patterns.  3. Uniqueness: dupes.  4. Validity:
+   categories vs known allowed values, dates parse.  5. Consistency:
+   cross-column invariants (age < years_employed + 16).  6. Leakage scan:
+   any column that would not exist at prediction time (Module 9).
+   7. Write a data validation test (great_expectations/pandera) and run
+   it in CI - data quality is a CODE problem.
+
+### 5. FAILURE MODES
+Silently dropping rows with missing values biases the sample; imputing
+with the target's summary statistics leaks; deduping by naive equality
+keeps near-duplicates.  Always quantify: "what % of rows did this step
+change, and are the survivors representative?"
+
+================================================================================
+MODULE 7 - EXPLORATORY DATA ANALYSIS (EDA)
+================================================================================
+
+### 1. INTUITION
+EDA is detective work: you cannot design features or choose models before
+you know what the data looks like.  Its output is not plots - it is a set
+of HYPOTHESES ("income is right-skewed and log transforms help"; "churn
+is concentrated in month-2 customers") that you will later test.
+
+### 2. THE EDA CHECKLIST
+1. SHAPE + TYPES + MEMORY: (n, d), dtypes, missing map.
+2. STATISTICAL SUMMARY: describe() -> mean/std/min/percentiles per column.
+3. MISSING + DUPLICATES: counts and patterns.
+4. UNIVARIATE: distribution of each feature (hist/kde) + target.
+5. BIVARIATE: feature vs target (boxplot of feature by class; scatter for
+   regression); correlation matrix heatmap.
+6. MULTIVARIATE: pairplots on a sample; grouped aggregations.
+7. OUTLIERS: boxplots, z-scores, IQR fences - then DECIDE their status.
+8. SKEW: |skew| > ~1 -> consider log/power transform.
+9. CARDINALITY: high-cardinality categoricals -> grouping strategy.
+10. TEMPORAL (if time exists): trend, seasonality, stationarity (Module 25).
+
+### 3. WHY EACH STEP MATTERS (tie to later modules)
+- Distributions -> scaling choice (Module 8) and model assumptions.
+- Correlation -> multicollinearity risk for linear models (Module 12).
+- Missingness pattern -> imputation choice (Module 8).
+- Target distribution -> metric choice (imbalanced? Module 23).
+- Feature-target relationship -> feature engineering leads (Module 22).
+
+### 4. FAILURE MODES OF EDA
+Plotting on unsampled huge data (crash + slow); only univariate analysis
+(missing interactions); treating outliers as errors without investigation
+(often they are the interesting class - fraud!); skipping the target
+analysis (no sense of what "good" means).
+
+================================================================================
+MODULE 8 - DATA PREPROCESSING
+================================================================================
+
+### 1. INTUITION
+Preprocessing makes the data compatible with the model's assumptions and
+with numerical optimization.  It must be LEARNT FROM TRAINING DATA ONLY,
+else it leaks (Module 9) - fit the scaler/imputer on train, transform
+train AND test with the same fitted object.
+
+### 2. MISSING-VALUE IMPUTATION
+- Mean/median/mode: simple, biases variance downward; median robust.
+- KNN imputation: fill from k nearest complete rows (expensive, keeps
+  local structure).
+- Iterative imputation (MICE): regress each column on the others,
+  iterate to convergence - handles complex missingness patterns.
+- Rule: MCAR/MAR with low missingness -> simple; complex patterns ->
+  iterative; NEVER impute MNAR without understanding the mechanism.
+- ALWAYS add a "was_missing" indicator feature when missingness itself
+  is informative (common in medical/finance data).
+
+### 3. SCALING
+- STANDARDIZATION (z-score): (x - mean)/std -> mean 0, std 1.  For
+  distances, gradients, linear models, PCA, SVM, KNN, neural nets.
+- NORMALIZATION (min-max): (x - min)/(max - min) -> [0,1]; when you need
+  bounded features (image pixels).
+- ROBUST SCALING: (x - median)/IQR - outlier-resistant.
+- WHY: KNN and SVM measure distances, so a feature with large units
+  dominates; gradient descent converges faster on equal scales.
+- What does NOT need scaling: tree-based models (splits are
+  scale-invariant), bagged/boosted trees.
+
+### 4. TRANSFORMATIONS
+Log/power (Box-Cox, Yeo-Johnson) to reduce skew and stabilize variance;
+feature crosses (Module 22).  Fit the transform on train only.
+
+### 5. ENCODING CATEGORICALS
+- Label/Ordinal: int codes for ORDINAL categories (small < medium < large).
+- One-hot: k columns for k categories; do NOT one-hot high-cardinality
+  columns blindly (sparse + memory blowup).
+- Target encoding: replace category with mean target (powerful BUT leaks
+  - must be computed with out-of-fold means and smoothed; add noise).
+- Frequency encoding: category count - works for skewed distributions.
+- Binary/hashing encoding: compress high cardinality.
+- NEVER label-encode nominal categories for distance-based models.
+
+### 6. PIPELINES (the non-negotiable pattern)
+ColumnTransformer (different transforms per column group) inside a
+Pipeline (fit/transform once, applied identically at train and predict
+time).  This single pattern eliminates a whole class of leakage bugs:
+  Pipeline([("prep", ColumnTransformer([...])), ("model", RandomForest())])
+Then GridSearchCV over the pipeline tunes preprocessing hyperparameters
+WITHOUT leaking (CV splits happen before fitting the preprocessor).
+
+### 7. COMMON MISTAKES
+Fitting the scaler on all data (leakage); one-hotting everything
+(memory); target-encoding without out-of-fold + smoothing (target
+leakage); dropping rows with missing values when the pattern is MAR.
+
+================================================================================
+MODULE 9 - TRAIN / VALIDATION / TEST  AND DATA LEAKAGE
+================================================================================
+
+### 1. INTUITION
+You need THREE partitions because you are making three decisions: fitting
+weights (train), choosing hyperparameters (validation), and honestly
+reporting final performance (test).  Touch the test set ONCE, at the very
+end - it exists to estimate how the model will do on NEW data, and every
+time you look at it you contaminate that estimate.
+
+### 2. THE SPLIT METHODS
+- HOLDOUT: fixed train/val/test (80/10/10).  Fast but noisy estimate.
+- K-FOLD CV: train on k-1 folds, validate on the kth, average - lower
+  variance estimate of generalization.
+- STRATIFIED K-FOLD: preserves class proportions in each fold (use for
+  classification - otherwise rare classes may vanish from a fold).
+- GROUP K-FOLD: samples from the same group (patient, session, product)
+  must stay in ONE fold - else the model "recognizes" the group member.
+- TIME-SERIES SPLIT: train on the past, validate on the future; never
+  shuffle (Module 25).
+- NESTED CV: outer loop estimates generalization of the WHOLE procedure
+  (including hyperparameter tuning); inner loop picks hyperparameters.
+  Needed when you tune - plain CV over the same data double-dips.
+
+### 3. DATA LEAKAGE - the taxonomies (interview-critical)
+- TARGET LEAKAGE: a feature that contains information about y not
+  available at prediction time (e.g. "amount refunded" as a feature for
+  predicting refunds; "days_to_churn" computed from the future).
+- TRAIN-TEST CONTAMINATION: preprocessing fit on all data (scaling,
+  imputation, target encoding, PCA) before splitting.
+- FEATURE LEAKAGE: a column computed using other rows (customer's future
+  purchases; row-normalized by global stats).
+- TEMPORAL LEAKAGE: using future records to predict the past (churn model
+  trained with features from the month AFTER the label month).
+- ID leakage: an ID column that encodes the answer (auto-incrementing ID
+  correlates with class in some datasets).
+
+### 4. HOW TO CATCH IT (your checklist)
+1. "Would this column exist at the moment I make a prediction?" - for
+   every column.  2. Cross-validate feature-engineering code inside the
+   CV loop, not before it.  3. Sanity check: a suspiciously high CV score
+   is usually leakage, not genius.  4. Test time travel: train on data
+   before t, predict data after t, and check performance doesn't implode.
+
+================================================================================
+MODULE 10 - BASELINE MODELS
+================================================================================
+
+### 1. INTUITION
+Before any sophisticated model, establish the dumbest defensible
+predictions.  If your fancy model can't beat the mean/median/majority
+class, you are chasing noise.  Baselines also calibrate your expectations:
+a fraud model with 99.9% accuracy can still be WORSE than "predict no
+fraud" if fraud is 0.1% of cases.
+
+### 2. THE BASELINES
+- DummyClassifier(strategy="most_frequent"|"stratified"|"prior"):
+  majority class / class-ratio guesses.
+- DummyRegressor(strategy="mean"|"median"): constant predictions.
+- Stronger baselines: linear model, global mean per group (for
+  recommendation-like problems), bigram LM (for language), "last value"
+  (for time series).
+
+### 3. METRICS FOR BASELINES (Module 14 deep-dives these)
+Accuracy baseline for balanced data; weighted-F1/ROC-AUC baseline for
+imbalanced; RMSE/MAE/R^2 baseline for regression; hit rate/NDCG baseline
+for ranking.  REPORT the baseline number in every experiment report -
+reviewers (and interviewers) will ask for it.
+
+================================================================================
+MODULE 11 - LINEAR REGRESSION
+================================================================================
+
+### 1. INTUITION
+Fit a hyperplane through the data that minimizes vertical squared error.
+It is the gateway model: closed form, interpretable coefficients,
+decomposable error, and the foundation of regularization (M12), logistic
+regression (M13) and neural nets (every net is a linear layer + nonlinearity).
+
+### 2. MATHEMATICS
+Model: y = w0 + sum_j wj xj + eps.  With a bias column: y = Xw + eps.
+Objective (MSE):  J(w) = (1/n) ||Xw - y||^2.
+CLOSED FORM (from Module 2):  w* = (X^T X)^-1 X^T y.
+GRADIENT (for iterative):  grad J = (2/n) X^T (Xw - y).  Update:
+  w <- w - lr * grad.
+MLE connection: with eps ~ N(0, sigma^2), maximizing likelihood is
+equivalent to minimizing MSE - the Gaussian assumption is what creates
+squared error (derive: log-likelihood of n Gaussians -> -n/2 log(2 pi
+sigma^2) - ||y-Xw||^2/(2 sigma^2); maximize -> minimize MSE).
+
+### 3. ALGORITHM + PSEUDOCODE
+  fit(X, y):
+    Xb = [1, X]                       # bias column
+    w = (Xb^T Xb)^-1 Xb^T y           # or gradient descent below
+  predict(X):  return Xb @ w
+  gradient_descent(X, y, lr, iters):
+    for i in iters: w -= lr * (2/n) Xb^T (Xb w - y)
+
+### 4. FROM SCRATCH (EXAMPLE.py Section 6/7)
+Normal equation via numpy lstsq (numerically stable - never invert
+by hand); gradient descent version for the same data must converge to
+the same w (verify by assert).
+
+### 5. LIBRARY
+  from sklearn.linear_model import LinearRegression
+  model = LinearRegression().fit(X_train, y_train)   # uses lstsq/SVD
+
+### 6. ASSUMPTIONS (what can break silently)
+- LINEARITY (misspecified -> residual pattern).  - INDEPENDENCE of errors
+  (auto-correlated -> wrong CIs).  - HOMOSCEDASTICITY (variance constant;
+  heteroscedastic -> wrong SEs, fix with weighted LS or robust SE).
+- NORMALITY of residuals (needed for p-values, less for prediction).
+- NO MULTICOLLINEARITY (inflates coefficient variance - VIF > 10
+  signals trouble; coefficients become unstable).
+
+### 7. EVALUATION METRICS
+MSE (sensitive to outliers), MAE (robust, absolute), RMSE (same units as
+y), R^2 = 1 - SSE/SST (fraction of variance explained; can be negative
+when the model is worse than the mean), Adjusted R^2 = 1 - (1-R^2)(n-1)/
+(n-d-1) (penalizes features).  NEVER report R^2 alone on a test set that
+the model hasn't seen - report RMSE/MAE too.
+
+### 8. FAILURE MODES + HYPERPARAMETERS
+Fails on: nonlinear relationships (no transforms), outliers (squared
+error is dominated by them), collinear features (unstable w), n < d
+(undetermined - needs regularization).  Hyperparameters: none in plain
+OLS (feature transforms + regularization are the knobs).
+
+### 9. COMPLEXITY
+Closed form: O(n d^2) to form X^T X + O(d^3) to invert.  Prediction: O(d)
+per sample.  Memory: O(nd) for X.
+
+### 10. INTERVIEW
+Q: Why is R^2 with one extra random feature guaranteed not to decrease?
+A: OLS can set that coefficient to ~0, SSE can only shrink; Adjusted R^2
+and CV fix this.  Q: Closed form vs GD? A: closed form exact for
+well-conditioned small d; GD for large d, streaming, or when X^T X is
+singular.
+
+### 11. RESEARCH CONNECTION
+Linear models are the testbed for uncertainty (Bayesian linear regression
+- Module 29), sparsity (Lasso - Module 12), and counterfactual estimation
+(causal ML - Module 35).
+
+================================================================================
+MODULE 12 - REGULARIZATION
+================================================================================
+
+### 1. INTUITION
+Overfitting = the model memorizes training noise.  Regularization =
+adding a penalty that prefers SIMPLER weights.  It trades a little bias
+for a lot of variance reduction (the bias-variance tradeoff).
+
+### 2. BIAS-VARIANCE DECOMPOSITION (the math that explains everything)
+For squared error, with y = f(x) + noise (variance sigma^2):
+  E[(y - f_hat(x))^2] = Bias(f_hat)^2 + Var(f_hat) + sigma^2.
+Bias: how far the average model (over datasets) is from the truth.
+Variance: how much the model changes across datasets.
+- Underfitting = high bias (too simple).  Overfitting = high variance
+  (too complex).  Regularization moves along the bias-variance curve;
+  CV finds the sweet spot.
+
+### 3. THE REGULARIZED OBJECTIVES (derive and memorize)
+RIDGE (L2):  J(w) = ||Xw - y||^2 + lambda ||w||_2^2.
+  Closed form:  w = (X^T X + lambda I)^-1 X^T y.  (Adding lambda I makes
+  the matrix invertible - fixes collinearity AND rank deficiency.)
+  Effect: shrinks all coefficients toward 0 CONTINUOUSLY but never to
+  exactly 0; large lambda -> w ~ 0 (all bias, no variance).
+
+LASSO (L1):  J(w) = ||Xw - y||^2 + lambda ||w||_1.
+  Non-differentiable at 0 -> no closed form; solve with coordinate
+  descent (soft-thresholding) or subgradient methods.
+  Soft-threshold:  w_j = sign(z_j) max(|z_j| - lambda/2, 0) where z_j is
+  the OLS gradient step.  Effect: drives coefficients EXACTLY to 0 ->
+  automatic feature selection (sparsity).  With collinear features Lasso
+  picks one arbitrarily; Elastic Net fixes this.
+
+ELASTIC NET:  J(w) = ||Xw - y||^2 + lambda1 ||w||_1 + lambda2 ||w||_2^2.
+  Best of both: sparse like Lasso, stable groups like Ridge.
+
+WHY L1 GIVES SPARSITY (intuition): the L1 ball has corners on the axes,
+and the level sets of the MSE touch the constraint region at a corner;
+L2's ball is round, so contact is generically off-axis.
+
+### 4. HYPERPARAMETERS
+lambda (alpha in sklearn): 0 -> OLS; large -> all-shrunk.  Scale matters:
+standardize features BEFORE regularizing or the penalty hits them
+unevenly.  Choose lambda by CV (GridSearch over log-spaced values).
+
+### 5. FAILURE MODES
+Regularizing the intercept (don't - it has no overfitting risk);
+standardizing after splitting (leakage); lambda too large -> model is a
+constant (underfit).  Lasso path instability: feature chosen can flip
+with small data changes.
+
+### 6. COMPLEXITY
+Ridge closed form O(d^3) (same as OLS); Lasso coordinate descent is
+O(n d) per sweep, converges linearly.  Both predict in O(d).
+
+### 7. INTERVIEW
+Q: When does Lasso beat Ridge? A: when you believe most features are
+irrelevant (sparse truth) and want interpretability/selection; Ridge when
+all features matter a little (dense).  Q: Why standardize first? A: the
+penalty is scale-sensitive - a feature in units of 10^6 gets penalized
+~10^6 more.
+
+### 8. RESEARCH CONNECTION
+The L1 idea generalizes to group sparsity (group lasso), graph sparsity,
+and deep-learning sparsity (weight pruning, lottery tickets).  The
+bias-variance view is the bridge to double descent (overparameterized
+models where variance peaks then DROPS - modern deep learning).
+
+================================================================================
+MODULE 13 - LOGISTIC REGRESSION
+================================================================================
+
+### 1. INTUITION
+Linear regression but the output must be a probability in [0,1].  Squeeze
+the linear score through the sigmoid, then choose the weights that make
+the observed labels most likely (maximum likelihood).  Despite the name,
+logistic regression is a CLASSIFIER - it is the baseline classifier for
+tabular data and the output head of every neural network.
+
+### 2. MATHEMATICS (derive the whole thing)
+Score:  z = w^T x.   Sigmoid:  sigma(z) = 1 / (1 + e^-z)  in (0,1).
+Interpretation: sigma(z) = P(y=1|x).  LOG-ODDS view:  log(P/(1-P)) = w^T x
+- a linear decision boundary in feature space.
+
+LIKELIHOOD of the dataset (labels y_i in {0,1}):
+  L(w) = prod_i sigma(w^T x_i)^{y_i} (1 - sigma(w^T x_i))^{1 - y_i}.
+NEGATIVE LOG-LIKELIHOOD (the loss we minimize):
+  J(w) = -sum_i [ y_i log(sigma_i) + (1 - y_i) log(1 - sigma_i) ]
+       = -sum_i [ y_i log(sigma_i) + (1-y_i) log(1-sigma_i) ]   (cross entropy!)
+GRADIENT (the famous one):  dJ/dw = sum_i (sigma_i - y_i) x_i = X^T (p - y).
+The residual (predicted - actual) times the features - identical in shape
+with linear regression's gradient, which is why "linear" lives in the name.
+No closed form (transcendental in w) -> iterative (GD / Newton / IRLS).
+
+### 3. ALGORITHM + PSEUDOCODE
+  fit(X, y):
+    for step in steps:
+      p = sigmoid(Xb w)
+      grad = Xb^T (p - y) / n
+      w -= lr * grad
+  predict_proba(X): return sigmoid(Xb w)
+  predict(X): return predict_proba >= 0.5
+
+### 4. MULTICLASS
+- One-vs-Rest (OvR): train k binary classifiers, pick the highest score.
+- MULTINOMIAL (softmax): p_k = exp(w_k^T x) / sum_j exp(w_j^T x) - one
+  weight vector per class; loss is softmax cross entropy; gradient is
+  X^T (p - onehot(y)).  This is the neural-net output layer in disguise.
+
+### 5. HYPERPARAMETERS
+C (inverse of lambda): regularization strength (lower C = more
+regularization); penalty l1/l2; solver (lbfgs for l2, saga for l1);
+class_weight="balanced" for imbalance (Module 23).  Standardize features.
+
+### 6. EVALUATION + FAILURE MODES
+Score with log loss, ROC-AUC, PR-AUC, calibrated probabilities (Module
+27) - NOT raw accuracy on imbalanced data.  Fails on: non-linear
+boundaries without feature engineering; extreme class imbalance;
+collinearity (unstable); outliers in features (no natural robustness).
+
+### 7. COMPLEXITY
+Training: O(iter * n * d); prediction: O(d).  Same cost class as linear
+regression - which is why it is the industrial baseline.
+
+### 8. INTERVIEW
+Q: Why softmax + cross entropy and not sigmoid for 3 classes? A: softmax
+normalizes over ALL classes -> a proper probability distribution;
+sigmoid per class treats classes independently.
+Q: Can logistic regression express "AND"/"OR"? A: Yes - linear boundaries
+can represent linearly separable Boolean functions; XOR needs features
+(e.g. x1*x2) or a nonlinear model.
+
+================================================================================
+MODULE 14 - CLASSIFICATION METRICS
+================================================================================
+
+### 1. INTUITION
+Accuracy lies.  With 1% fraud, a model that says "no fraud" forever gets
+99% - yet is useless.  Metrics must match the COST STRUCTURE of the
+problem: false alarms vs missed fraud, rare-class detection, ranking
+quality.  This module is the vocabulary you will use in every experiment
+report and interview.
+
+### 2. THE CONFUSION MATRIX
+                 predicted
+                pos    neg
+  actual pos   TP     FN
+  actual neg   FP     TN
+- ACCURACY = (TP+TN)/N.  Fine for balanced data only.
+- PRECISION = TP/(TP+FP): of those I flagged, how many were right?
+  (cost of false alarms: spam filter false positives annoy users.)
+- RECALL / SENSITIVITY = TP/(TP+FN): of the true positives, how many did
+  I catch?  (cost of misses: fraud, disease.)
+- SPECIFICITY = TN/(TN+FP): true negative rate.
+- F1 = 2*P*R/(P+R): harmonic mean - punishes extreme imbalance between
+  P and R.  F-beta weights recall (beta > 1 -> recall matters more).
+- BALANCED ACCURACY = (recall + specificity)/2: robust to class ratio.
+- MCC = correlation between predicted and actual labels in [-1,1] -
+  robust single number for imbalanced problems (use instead of F1 when
+  classes are very skewed).
+
+### 3. THRESHOLD-FREE METRICS
+- ROC: TPR vs FPR across thresholds.  AUC = probability a random positive
+  is scored above a random negative.  AUC 0.5 = random, 1.0 = perfect.
+  Robust to class imbalance, BUT optimistic when classes are extremely
+  skewed or the problem is low-prevalence (PR curve better there).
+- PR CURVE: precision vs recall; PR-AUC reflects the minority class
+  directly - use for fraud/rare-event problems.
+- LOG LOSS: penalizes confident wrong predictions - the "calibrated"
+  metric; a model with good AUC can have terrible log loss.
+
+### 4. WHEN TO USE WHICH (the decision table)
+- Balanced, equal costs: accuracy.  - False alarms expensive: precision.
+- Misses expensive: recall.  - Both matter: F1.  - Rare positive class:
+  PR-AUC + MCC.  - Ranking quality: AUC (binary), NDCG/MAP (multi-item).
+- Probabilities that will be acted on: log loss + calibration curves.
+- The golden habit: report PRECISION/RECALL at a business-chosen
+  threshold, not just the threshold-free AUC.
+
+### 5. FAILURE MODES
+Computing accuracy on imbalanced data (misleading); choosing F1 when the
+costs of FP/FN differ 10x (F1 assumes equal cost); averaging per-class
+metrics naively (macro vs micro vs weighted - know which you report);
+using test-set metrics repeatedly (leakage of the test set itself).
+
+### 6. INTERVIEW
+Q: AUC is 0.9 but precision at your threshold is 5%.  Explain. A: AUC
+sums over ALL thresholds; a high-AUC model can still have poor operating
+performance if you pick a bad threshold or the positive class is rare.
+Threshold tuning (Module 27) is a separate step from model training.
+
+================================================================================
+MODULE 15 - K-NEAREST NEIGHBORS (KNN)
+================================================================================
+
+### 1. INTUITION
+Birds of a feather: predict by looking at the k closest training examples.
+No training at all (it memorizes the data) - a NON-PARAMETRIC, lazy,
+instance-based learner.
+
+### 2. MATHEMATICS
+Prediction at x: find k nearest neighbors by distance, majority-vote the
+labels (classification) or average (regression).
+DISTANCES:  Euclidean ||a-b||_2; Manhattan |a-b|_1; Minkowski (p-norm)
+(p=2 Euclidean, p=1 Manhattan); Cosine 1 - a.b/(|a||b|) for text/embeddings.
+Choice rule: Euclidean for dense continuous features (after scaling);
+Manhattan for high-dim sparse; cosine for normalized embeddings.
+
+### 3. WHY SCALING IS MANDATORY
+Distances over raw features let big-magnitude features dominate; one
+feature in millions swamps everything.  Standardize all features or the
+neighborhood is meaningless.  (Trees don't need this; KNN does.)
+
+### 4. HYPERPARAMETERS + FAILURE MODES
+- k: too small -> noisy (high variance); too large -> smooths away
+  structure (high bias).  Odd k breaks ties.  Pick by CV.
+- WEIGHTED KNN: weight votes by 1/distance - closer neighbors count more.
+- CURSE OF DIMENSIONALITY: in high d, all points are ~equidistant and
+  neighborhoods contain no signal.  KNN degrades badly above ~20-50 dims
+  without dimensionality reduction.
+- Cost: prediction is O(n d) brute force (Ball-tree/KD-tree help in low
+  dims) - slow inference is KNN's main production problem.
+
+### 5. COMPLEXITY
+Train: O(1) (store).  Predict: O(n d) per query brute force.  Space: O(nd).
+
+### 6. INTERVIEW
+Q: KNN on 10,000-dim text vectors - problems? A: curse of dimensionality
+(distance concentration) + O(n d) inference; use cosine + ANN indices
+(Module: vector search) or a parametric model instead.
+
+================================================================================
+MODULE 16 - NAIVE BAYES
+================================================================================
+
+### 1. INTUITION
+A generative classifier: model P(class) and P(feature|class), then use
+Bayes' theorem to flip to P(class|features).  "Naive" = assumes all
+features are independent GIVEN the class - an assumption that is almost
+always false yet the model still works surprisingly well (and is the
+fastest classifier you will ever train).
+
+### 2. MATHEMATICS (derive it)
+Bayes:  P(y|x) = P(x|y) P(y) / P(x).  For classification we only need the
+argmax over y, so P(x) (the same for every class) is dropped:
+  y* = argmax_y P(y) * prod_j P(x_j | y).     (naive = product over j)
+Take logs to avoid underflow:  y* = argmax_y [ log P(y) + sum_j log P(x_j|y) ].
+
+VARIANTS (differ only in the form of P(x_j|y)):
+- GAUSSIAN NB: P(x_j|y) = N(x_j; mu_jy, sigma_jy^2) - continuous features
+  (fit per class mean/var; sigma per class per feature).
+- MULTINOMIAL NB: P(x_j|y) from frequency counts (word counts in text -
+  classic spam filtering).
+- BERNOULLI NB: binary presence/absence features (word presence).
+
+### 3. ALGORITHM + PSEUDOCODE
+  fit: for each class y: prior P(y)=count_y/n;
+       for each feature j: mu_jy, sigma^2_jy from class-y rows (Gaussian)
+  predict(x): scores[y] = log P(y) + sum_j logpdf(x_j; mu_jy, sigma_jy)
+              return argmax_y scores[y]
+
+### 4. WHY IT WORKS DESPITE THE LIE
+Even with dependent features, the argmax over classes is often preserved
+(ties broken in the same direction) - the ranking is more robust than the
+probabilities.  It also needs very little data (each conditional has few
+parameters) and is immune to irrelevant features in expectation.
+
+### 5. HYPERPARAMETERS + FAILURE MODES
+- Smoothing (alpha in sklearn) prevents zero probabilities for unseen
+  feature values (Laplace smoothing: add alpha to counts).
+- Fails on: highly correlated features (double-counts evidence), zero
+  variance features (Gaussian logpdf -> inf), continuous features far
+  from Gaussian, and when you need calibrated probabilities (Module 27 -
+  NB probabilities are notoriously overconfident).
+
+### 6. COMPLEXITY
+Fit: O(n d).  Predict: O(d) per sample.  The cheapest classifier - scales
+linearly with n; used as a baseline and in online settings (incremental
+updates are trivial).
+
+### 7. INTERVIEW
+Q: Why does NB keep working with correlated features? A: the independence
+assumption biases the PROBABILITIES, but the relative ordering of classes
+(log-sum) is often preserved; calibration fixes the probabilities.
+
+================================================================================
+MODULE 17 - DECISION TREES
+================================================================================
+
+### 1. INTUITION
+A tree is a set of nested if-else questions ("income > 50k?") that
+recursively split the data until each leaf is (nearly) pure.  Human
+readable, no feature scaling, and the building block of random forests
+and gradient boosting.
+
+### 2. THE SPLIT CRITERIA (with a worked example)
+At a node with dataset S, the question is: WHICH feature and threshold
+best separates the classes?  Best = maximizes INFORMATION GAIN
+  Gain(S, split) = H(S) - sum_v (|S_v|/|S|) H(S_v)
+where H is entropy (Module 5) or Gini impurity.
+
+ENTROPY:   H(S) = -sum_k p_k log2 p_k.
+GINI:      G(S) = 1 - sum_k p_k^2.   (probability two random items
+           from S differ - 0 if pure, max 1 - 1/K if uniform.)
+Gain ratio (C4.5) divides gain by split information to avoid preferring
+high-cardinality features.
+
+WORKED EXAMPLE (binary target, feature "income>50k"):
+  Parent: 100 rows, 40 pos 60 neg.
+    H = -(0.4 log2 0.4 + 0.6 log2 0.6) = 0.971 bits.
+  Split on income>50k: left 30 rows (25 pos 5 neg), right 70 (15 pos 55 neg).
+    H_left  = -(25/30 log2(25/30) + 5/30 log2(5/30)) = 0.650
+    H_right = -(15/70 log2(15/70) + 55/70 log2(55/70)) = 0.748
+    Weighted = (30/100)*0.650 + (70/100)*0.748 = 0.719
+    Gain = 0.971 - 0.719 = 0.252.
+  Compare against every candidate split; take the best, recurse.
+
+REGRESSION TREES: at a leaf, predict the MEAN of targets; split by
+minimizing weighted variance reduction (MSE gain).
+
+### 3. ALGORITHM (CART, from scratch - EXAMPLE.py Section 11)
+  build(node):
+    if stopping (max_depth / min_samples / pure / no gain): return leaf
+    for each feature f, for each candidate threshold t:
+        score = Gain(S, split(f, t))
+    pick best (f*, t*); split; recurse on children
+  predict(x): walk from root to leaf by the stored tests; return
+              majority class / mean of the leaf.
+Threshold candidates: usually the midpoints between sorted unique values
+(O(n log n) per feature per node).
+
+### 4. WHY TREES OVERFIT AND HOW TO PRUNE
+A tree grown to full depth has one leaf per training point (100% train
+accuracy, terrible test).  Controls: max_depth, min_samples_split,
+min_samples_leaf, max_features, min_impurity_decrease, and POST-PRUNING
+(remove subtrees that don't improve validation - cost-complexity pruning:
+minimize SSE + alpha * #leaves).
+
+### 5. HYPERPARAMETERS (the full list)
+max_depth (depth cap; 5-15 typical), min_samples_split (2-20),
+min_samples_leaf (1-10 - raising it smooths), max_features (sqrt(n) for
+classification, n for regression - randomness source for forests),
+class_weight (imbalance), ccp_alpha (cost-complexity pruning),
+min_impurity_decrease (split gate).  Tune with CV, not intuition.
+
+### 6. COMPLEXITY
+Build: O(n log n * d) per level (sorting thresholds).  Predict: O(depth)
+~ O(log n) balanced.  Trees are fast to predict - a big production
+advantage over KNN.
+
+### 7. FAILURE MODES
+Overfitting deep trees; instability (a small data change reorders splits);
+high variance across datasets (fixed by forests); greedy splits can miss
+combinations (XOR-like features) that forests/boosting partially recover;
+biased splits toward high-cardinality features (information gain bias);
+difficulty extrapolating beyond training range in regression (predictions
+are piecewise-constant).
+
+### 8. INTERVIEW
+Q: Why is a single deep tree unstable? A: high variance: split choices
+are greedy and data-dependent; small perturbations cascade.  Forests
+average over bootstrap trees -> variance shrinks.
+Q: What does max_features do in a forest? A: decorrelates the trees so
+the average has lower variance than averaging near-identical trees.
+
+================================================================================
+MODULE 18 - ENSEMBLE LEARNING
+================================================================================
+
+### 1. INTUITION
+One model is noisy; many diverse models averaged are stable.  Ensembles
+are the difference between "good model" and "winning tabular model":
+bagging reduces VARIANCE, boosting reduces BIAS, stacking mixes both.
+
+### 2. VOTING (the simplest ensemble)
+- HARD VOTING: majority class among models (classification).
+- SOFT VOTING: average predicted probabilities, then argmax (better when
+  models are calibrated).
+
+### 3. BAGGING (Bootstrap AGgregatING)
+Train B models on B bootstrap samples (sample n rows WITH replacement;
+~63% of rows appear per bag); average predictions (regression) or vote
+(classification).
+WHY IT WORKS: for B iid estimators with variance sigma^2, the average has
+variance sigma^2/B.  Trees are high-variance -> bagging helps a lot.
+
+RANDOM FOREST = bagged trees + random feature subsets at each split
+(max_features).  The feature sampling DECORRELATES the trees, so the
+variance reduction beats plain bagging.  Out-of-bag (OOB) score: each
+bag leaves ~37% of rows untouched - evaluate on them for free CV.
+Feature importance (mean decrease in impurity) is built-in (but biased
+toward high-cardinality features - prefer permutation importance,
+Module 28).
+
+EXTRA TREES: random thresholds too -> even more decorrelated, faster.
+
+### 4. BOOSTING (sequential error correction)
+AdaBoost: reweight misclassified samples each round; the new weak learner
+focuses on hard cases; final = weighted vote.  AdaBoost's edge
+interpretation: each weak learner must be slightly better than random.
+
+GRADIENT BOOSTING (the framework behind XGB/LGBM/CatBoost):
+At step m we have F_m(x).  We want to reduce loss L = sum_i l(y_i, F(x_i)).
+Fit the next tree to the NEGATIVE GRADIENT (pseudo-residuals):
+  r_i = -dL/dF(x_i)   (for squared error: r_i = y_i - F_m(x_i))
+Fit tree h_m to (x_i, r_i), then  F_{m+1} = F_m + lr * h_m.
+The learning rate (shrinkage, ~0.01-0.1) scales each tree's contribution -
+small lr + many trees beats large lr + few trees (needs more trees, less
+overfit).  This is gradient descent in FUNCTION space.
+
+### 5. THE THREE MODERN BOOSTERS (memorize the differences)
+- XGBOOST: second-order (Newton) boosting - uses the Hessian of the loss;
+  built-in regularization on leaf weights and tree complexity; column
+  subsampling; native missing-value handling; historically the tabular
+  winner.
+- LIGHTGBM: histogram-based splits (discretize features -> bins) - much
+  faster on large data; leaf-wise growth (can overfit on small data);
+  GOSS (gradient-based one-side sampling) and EFB for speed.
+- CATBOOST: ordered target statistics (avoids target-encoding leakage on
+  categoricals) and symmetric (oblivious) trees; best out-of-the-box for
+  categorical-heavy data; strong regularization, less tuning needed.
+
+### 6. COMPARISON TABLE (interview staple)
+              RF          XGBoost     LightGBM    CatBoost
+  idea        bagged     Newton      histogram   ordered target
+              trees      boosting    boosting    stats + oblivious
+  categorical no          one-hot/    native      native (best)
+  speed       slow train  medium      fastest     fast
+  small data  good        overfits    overfits    good
+  tuning      light       medium      sensitive   low
+  use when    robust,     tabular     big tabular categorical
+              interpret   competition datasets    heavy data
+
+### 7. FAILURE MODES + HYPERPARAMETERS
+- Boosting on NOISY labels overfits the noise (bagging is more robust).
+- LightGBM leaf-wise growth overfits small datasets (limit num_leaves).
+- n_estimators too high without lr/early stopping -> overfit.
+- Hyperparameters to always tune: n_estimators + lr (or early stopping),
+  max_depth / num_leaves, min_child_samples, subsample + colsample_bytree,
+  reg_alpha/reg_lambda.  RF: n_estimators (raise until stable), max_depth,
+  max_features, min_samples_leaf.
+
+### 8. COMPLEXITY
+RF: O(B * n log n * d) train, O(B * depth) predict.  Boosters: similar
+per tree, LightGBM scales to 100M rows via histograms.  Memory: B models
+(RF) vs sequential (boosting - same memory as one model).
+
+### 9. INTERVIEW
+Q: Bagging vs boosting in one sentence? A: Bagging averages independent
+high-variance models (reduce variance); boosting sequentially fits new
+models to the residual errors (reduce bias) - boosting can overfit noise,
+bagging rarely does.
+Q: Why does LightGBM's leaf-wise growth overfit small data? A: it always
+splits the leaf with the best gain, growing deep unbalanced trees on
+noise; depth-wise growth (XGB) is more conservative.
+
+### 10. RESEARCH CONNECTION
+Boosting's gradient-in-function-space view is the ancestor of modern
+scalable GBDT systems; forests remain the baseline that deep tabular
+models (TabNet, FT-Transformer) struggle to beat on medium data.
+
+================================================================================
+MODULE 19 - SUPPORT VECTOR MACHINES
+================================================================================
+
+### 1. INTUITION
+Find the hyperplane that separates classes with the WIDEST margin.  The
+boundary is defined only by the few closest points - the SUPPORT VECTORS.
+Maximum margin = best worst-case generalization (structural risk
+minimization).
+
+### 2. MATHEMATICS (hard margin)
+Hyperplane:  w^T x + b = 0,  label rule  sign(w^T x + b).
+Geometric margin of point i:  y_i (w^T x_i + b) / ||w||.
+Objective: maximize the minimum margin.  Scale so that the closest points
+satisfy y_i(w^T x_i + b) >= 1 (canonical form); then margin = 2/||w||.
+MAXIMIZE 2/||w||  ==  MINIMIZE (1/2)||w||^2  s.t.  y_i(w^T x_i + b) >= 1.
+This is a convex quadratic program - solvable exactly.
+
+SOFT MARGIN (real data has noise): allow violations with slack xi_i:
+  min (1/2)||w||^2 + C sum_i xi_i   s.t.  y_i(w^T x_i+b) >= 1 - xi_i, xi_i >= 0.
+C: penalty for margin violations - small C = wide margin, more
+misclassifications tolerated (high bias); large C = tight margin, fit the
+noise (high variance).
+HINGE LOSS view:  L = sum_i max(0, 1 - y_i f(x_i)) + (1/2)||w||^2 - a
+convex surrogate for 0/1 loss; gradient: -y_i x_i when y_i f(x_i) < 1 else 0.
+
+### 3. THE KERNEL TRICK (conceptually - enough to use it)
+The dual formulation makes the optimization depend on data only through
+DOT PRODUCTS <x_i, x_j>.  Replace the dot product with a kernel
+K(x_i, x_j) = <phi(x_i), phi(x_j)> that computes the dot product in a
+HIGHER-DIMENSIONAL feature space WITHOUT materializing phi - so the
+model implicitly learns NON-LINEAR boundaries at the cost of a kernel
+matrix of size n x n.
+KERNELS: linear (w^T x), polynomial (gamma <x,x'> + r)^d, RBF (Gaussian)
+exp(-gamma ||x-x'||^2) - the default, sigmoid.  RBF intuition: each point
+is a Gaussian bump; the boundary is where bump sums cross.
+
+### 4. HYPERPARAMETERS + FAILURE MODES
+- C (margin slack penalty) and, for RBF, gamma (kernel width: small =
+smooth, large = wiggly).  Tune both on log scale with CV.  Scale
+features or the kernel is meaningless.
+- SVR = SVM for regression (epsilon-insensitive loss: ignore errors below
+  epsilon - a tube around the fit).
+- Fails on: large n (kernel matrix O(n^2) memory, O(n^2)-O(n^3) time -
+  use LinearSVC/SGD or a tree model); many classes (OvO/OvR explode);
+  uncalibrated probabilities (Platt scaling is an extra step - Module 27).
+  No native multiclass, no native missing values.
+
+### 5. COMPLEXITY
+Hard/soft margin: O(n^2)-O(n^3) training typical (SMO ~O(n^2)); linear
+SVM via SGD: O(n d) per pass.  Predict: O(n_sv * d) - slow when many
+support vectors.
+
+### 6. INTERVIEW
+Q: Why do support vectors define the model? A: the dual solution has
+w = sum_i alpha_i y_i x_i with alpha_i = 0 for non-support vectors - only
+points ON the margin matter; the rest are redundant.
+Q: Kernel trick in one line? A: compute dot products in a high-dim space
+implicitly via a kernel function, gaining nonlinearity at O(n^2) memory
+cost.
+
+================================================================================
+MODULE 20 - UNSUPERVISED LEARNING (CLUSTERING)
+================================================================================
+
+### 1. INTUITION
+No labels: group similar rows.  Clustering is used for customer
+segmentation, anomaly flags, compression, and as a preprocessing step.
+
+### 2. K-MEANS
+OBJECTIVE: partition n points into k sets minimizing the within-cluster
+sum of squares (inertia):  J = sum_k sum_{i in C_k} ||x_i - mu_k||^2.
+LLOYD ALGORITHM: 1) init k centroids; 2) ASSIGN each point to nearest
+centroid; 3) UPDATE each centroid to the mean of its points; repeat
+until assignments stabilize.  Each step decreases J; converges to a LOCAL
+optimum (k-means++ init mitigates; run multiple seeds).
+CHOOSING k: elbow (inertia vs k - look for the bend), silhouette score
+(average (b - a)/max(a, b) over points: how much closer a point is to its
+own cluster than the next best - range [-1, 1], higher better), or the
+business cost of k.
+LIMITATIONS: assumes spherical, equal-variance clusters; sensitive to
+scale (ALWAYS standardize first); sensitive to outliers (they drag
+centroids); k must be known; fails on elongated/crescent shapes (use
+DBSCAN).  K-means is equivalent to EM on a Gaussian mixture with fixed
+variance (Module 29's link).
+
+### 3. HIERARCHICAL CLUSTERING
+- AGGLOMERATIVE (bottom-up): start with each point its own cluster; merge
+  the two closest; repeat until one cluster.  Output: a DENDOGRAM (merge
+  tree); cut at a height to get k clusters.
+- LINKAGE: single (min pairwise distance - chaining), complete (max -
+  compact clusters), average (UPGMA), ward (minimize variance increase -
+  default, gives compact spherical clusters).
+- Complexity O(n^2 log n) (n^2 distance matrix) - not for big n.
+
+### 4. DBSCAN
+- CORE POINT: >= minPts neighbors within radius eps.  BORDER POINT:
+  within eps of a core point but < minPts neighbors.  NOISE: everything
+  else.
+- Cluster = connected component of core points + their borders.  eps and
+  minPts define density; choose eps via the k-distance plot (sorted
+  distance to kth nearest neighbor - look for the elbow).
+- STRENGTHS: arbitrary shapes, automatic noise points, k not required.
+- WEAKNESSES: sensitivity to eps (density must be uniform-ish), struggles
+  with varying-density data (OPTICS fixes this), high dimensions.
+
+### 5. COMPARISON TABLE (memorize)
+              K-Means       Hierarchical   DBSCAN
+  shape       spherical     any (linkage)  any dense
+  k required  yes           cut height    no
+  outliers    distort       distort       labeled noise
+  n scale     10^6+          ~10^4         10^5ish
+  speed       O(n k d iter) O(n^2 log n)  O(n log n) with index
+  use when    known k,      small data,   arbitrary shapes,
+              clean         dendrogram    noise, unknown k
+
+### 6. EVALUATION (be honest - this is hard)
+WITHOUT labels: silhouette, inertia, gap statistic, stability across
+subsamples.  WITH labels: adjusted Rand index, NMI, purity - but
+measuring clustering quality is fundamentally assumption-laden; always
+examine the clusters qualitatively too.
+
+### 7. INTERVIEW
+Q: K-means vs DBSCAN on a dataset with two dense blobs and scattered
+noise? A: K-means will force the noise into clusters (distorting
+centroids); DBSCAN labels the noise - better.
+Q: Why standardize before K-means? A: inertia is Euclidean - a feature
+with large units dominates the assignment.
+
+================================================================================
+MODULE 21 - DIMENSIONALITY REDUCTION (PCA and friends)
+================================================================================
+
+### 1. INTUITION
+High-dimensional data is slow, noisy and hard to visualize.  PCA finds
+the DIRECTIONS OF MAXIMUM VARIANCE and projects the data onto them -
+compressing the data with minimal information loss (in the squared-error
+sense).
+
+### 2. MATHEMATICS (derive PCA from scratch - EXAMPLE.py Section 14)
+1. CENTER the data:  X_c = X - mean(X)  (each column).
+2. COVARIANCE MATRIX:  Sigma = (1/n) X_c^T X_c   [d, d].
+3. EIGENDECOMPOSITION:  Sigma v = lambda v.  Because Sigma is symmetric
+   positive semi-definite, it has orthonormal eigenvectors v_1..v_d and
+   real non-negative eigenvalues lambda_1 >= lambda_2 >= ...
+4. PROJECT:  z_i = X_c v_k.  The kth principal component is the projection
+   onto the kth eigenvector (the direction of the kth-largest variance).
+EXPLAINED VARIANCE of component k:  lambda_k / sum_j lambda_j.  Keep the
+first k components covering e.g. 95% of variance.
+WHY EIGENVECTORS: maximizing variance of a unit vector u is
+max u^T Sigma u s.t. ||u||=1; Lagrange -> Sigma u = lambda u - the
+constraint's solution IS the eigenproblem.  (Equivalently: PCA = SVD of
+the centered data, X_c = U S V^T; principal components = U S, loadings = V.)
+
+### 3. ALGORITHM + PSEUDOCODE
+  pca(X, k):
+    X_c = X - mean(X, axis=0)
+    Sigma = X_c.T @ X_c / n
+    vals, vecs = eigh(Sigma)            # sorted desc
+    return X_c @ vecs[:, :k], vals      # (projected, explained variance)
+
+### 4. VISUALIZATION
+Scree plot (eigenvalues vs component index - elbow), cumulative explained
+variance curve, 2D/3D projection colored by label/cluster.  t-SNE/UMAP
+for LOOKING at structure; PCA for compression and de-noising.
+
+### 5. t-SNE vs UMAP vs PCA (the comparison they ask in interviews)
+- PCA: linear, global, fast, invertible-ish - use for compression and
+  preprocessing.  - t-SNE: nonlinear, preserves LOCAL neighborhoods,
+  expensive, stochastic - use ONLY for visualization (never as input to
+  downstream models: distances in t-SNE are not meaningful).
+- UMAP: nonlinear, faster than t-SNE, better global structure -
+  visualization + feature preprocessing, less reliable for exact
+topology claims.
+
+### 6. FAILURE MODES + HYPERPARAMETERS
+- PCA assumes LINEAR structure - nonlinear manifolds need kernel PCA or
+  autoencoders.  - Standardize BEFORE PCA when features have different
+  units (else big-magnitude features dominate).  - Explained variance
+  counts squared spread, not class separability: the top PCs can be
+  useless for classification (invertible-transform proof: PCA does not
+  guarantee class separation - Fisher's LDA maximizes separation).
+- Hyperparameters: n_components (by explained-variance threshold),
+  whiten (unit variance components - good for downstream models).
+
+### 7. COMPLEXITY
+Eigendecomposition O(d^3) (or O(n d^2) via SVD on tall data); the
+incremental/randomized variants (sklearn IncrementalPCA / PCA
+svd_solver="randomized") scale to big n/d.
+
+### 8. INTERVIEW
+Q: PCA before a classifier - always good? A: No.  It can discard
+discriminative low-variance directions; it is unsupervised.  Validate by
+CV whether it actually helps.
+
+================================================================================
+MODULE 22 - FEATURE ENGINEERING + FEATURE SELECTION
+================================================================================
+
+### 1. INTUITION
+Features are where most of the predictive signal lives.  The model can
+only learn what it is shown - engineering the RIGHT representations is
+often worth more than switching algorithms.
+
+### 2. THE FEATURE PLAYBOOK
+- NUMERICAL: clipping (winsorize outliers), scaling, log/power for skew,
+  bins (age bands) with caution (loses detail; try both),
+  missingness indicator.
+- CATEGORICAL: one-hot, target encoding (out-of-fold!), frequency,
+  embeddings for high cardinality (module: deep tabular).
+- DATE/TIME: day of week, month, hour, holiday flags, days since last
+  event, rolling stats (mean/std over window), lag features (Module 25).
+- TEXT: length, word count, TF-IDF, topic scores, embeddings.
+- INTERACTION/POLYNOMIAL: x1*x2 (allows "AND"), x1/x2 (ratios),
+  degree-2 polynomial features for linear models - the manual feature
+  crosses that trees do implicitly.
+- AGGREGATIONS: groupby-target means (customer's average order value).
+- DOMAIN: the highest-value features come from domain knowledge
+  (physics, finance ratios, medical indices).
+
+### 3. FEATURE SELECTION (three families)
+- FILTER (fast, model-agnostic): correlation with target, mutual
+  information (Module 5), chi-square (categorical), ANOVA F (numeric
+  target).  Cheap screening; ignores interactions.
+- WRAPPER (slow, interaction-aware): recursive feature elimination
+  (RFE - train, drop weakest, repeat) - O(features) trainings.
+- EMBEDDED (best balance): Lasso coefficients (sparse selection),
+  tree importances, SHAP-based selection.
+
+### 4. THE RULES
+1. All feature engineering must happen INSIDE the CV pipeline (leakage
+   otherwise).  2. High cardinality -> group or embed, don't one-hot.
+3. Duplicate/near-duplicate features add nothing but noise and
+   collinearity.  4. Validate every engineered feature: does CV improve?
+   If not, drop it (feature engineering is an experiment, not an act of
+   faith).
+
+================================================================================
+MODULE 23 - IMBALANCED DATA
+================================================================================
+
+### 1. INTUITION
+When one class is rare (fraud 0.1%, disease 1%), standard training
+ignores it - the model finds the cheap solution of predicting the
+majority forever.  Accuracy becomes meaningless (Module 14).
+
+### 2. THE TOOLKIT (in order of preference)
+1. METRICS FIRST: switch to PR-AUC, MCC, balanced accuracy, or
+tradeoff-based F-beta; stop reading accuracy. 2. CLASS WEIGHTS:
+weight the loss by 1/class_frequency (n_samples / (n_classes *
+count_k)) - free, no data changes; works with trees, linear, NN.
+3. THRESHOLD TUNING (Module 27): train normally, then move the decision
+threshold to where precision/recall meet the business cost - often the
+single biggest win. 4. RESAMPLING: undersample the majority (loses
+information; do it with care), oversample the minority (duplicates -
+risk of overfit), or SMOTE.
+
+### 3. SMOTE (and friends) - the math
+Synthetic Minority Oversampling: for a minority point x, pick a random
+neighbor x' among its k nearest minority neighbors, and create
+  x_new = x + rand(0,1) * (x' - x)
+on the segment between them.  BORDERLINE-SMOTE: only synthesize near
+the decision boundary.  ADASYN: generate more where the local density of
+minority is low (hard regions).  CRITICAL: resample INSIDE the CV loop
+only on the training folds - resampling before the split leaks synthetic
+examples into validation.
+
+### 4. FAILURE MODES
+SMOTE on high-dimensional sparse data (text) creates nonsense;
+oversampling the minority to balance can overfit duplicates; heavy
+undersampling destroys signal; class weights + resampling double-count;
+test distribution must match the REAL world prevalence - do not balance
+the test set to make numbers look good.
+
+### 5. INTERVIEW
+Q: Fraud is 0.1%; accuracy is 99.9% but useless.  Walk me through your
+approach. A: PR-AUC/MCC as metrics; class weights or SMOTE (inside CV);
+tune threshold on validation to the FP/FN cost ratio; calibrate; monitor
+prevalence drift in production (Module 42).
+
+================================================================================
+MODULE 24 - OUTLIERS AND ANOMALY DETECTION
+================================================================================
+
+### 1. INTUITION
+Anomaly detection = finding the RARE and DIFFERENT, where "rare" is
+often the event you care about (fraud, intrusion, machine failure,
+manufacturing defect).  Two flavors: supervised (labeled anomalies -
+Module 23 territory) and UNSUPERVISED (assume anomalies are rare and
+weird).
+
+### 2. STATISTICAL METHODS
+- Z-SCORE: flag |z| > 3 (or another threshold).  Assumes Gaussian.
+- IQR FENCE: flag x < Q1 - 1.5*IQR or x > Q3 + 1.5*IQR (Module 4).
+- Robust stats: median/MAD (median absolute deviation) - resilient to the
+  very outliers you are hunting.
+
+### 3. MACHINE LEARNING METHODS
+- ISOLATION FOREST: anomalies are few AND different -> easy to isolate
+  with few random splits.  Score: s(x) = 2^(-E[h(x)]/c(n)), where h(x) is
+the depth of x in a random split tree, c(n) the average tree depth for n
+points (normalizer).  s -> 1 means anomaly (shallow), s -> 0 normal.
+  O(n) train per tree, no distance matrix - scales to big data.
+- ONE-CLASS SVM: find a boundary that encloses the normal region in
+  feature space (nu controls the fraction of outliers).  Works on
+  moderate data; sensitive to kernel/gamma.
+- LOCAL OUTLIER FACTOR (LOF): compare a point's local density with its
+  neighbors' - points with much LOWER density than neighbors are
+  anomalous.  Good for LOCAL anomalies in varying-density data.
+
+### 4. THE PRODUCTION TRAP
+You rarely have labels for anomalies -> tune on a hand-curated
+validation set of KNOWN anomalies, not on the unsupervised score alone.
+Measure precision@k ("did the flagged items include the known bad
+ones").  And remember: novelty (new-but-normal) is not the same as
+anomaly - retrain/monitor (Module 42).
+
+================================================================================
+MODULE 25 - TIME SERIES MACHINE LEARNING
+================================================================================
+
+### 1. INTUITION
+Time series data is ORDERED - rows are not exchangeable, so random
+shuffling silently destroys the problem.  Forecasting needs temporal
+transformations (lags, rolling stats) and temporal validation (train on
+the past only).
+
+### 2. THE VOCABULARY
+- TREND: long-term direction.  SEASONALITY: fixed-period pattern (daily,
+  weekly, yearly).  CYCLES: non-fixed-period swings (business cycle).
+- STATIONARITY: mean and variance constant over time (roughly).  Most
+  classical methods require it; differencing removes trends:
+  y'_t = y_t - y_{t-1}.  ADF test checks it.
+- AUTOCORRELATION (ACF): correlation of the series with its lags.
+  PARTIAL ACF (PACF): correlation with lag k removing intermediate lags.
+
+### 3. CLASSICAL STATISTICAL MODELS (know the family)
+- AR(p): y_t = c + phi_1 y_{t-1} + ... + phi_p y_{t-p} + e_t (regress on
+  own past).  - MA(q): y_t = c + e_t + theta_1 e_{t-1} + ... + theta_q
+  e_{t-q} (regress on past errors).  - ARIMA(p,d,q): AR + differencing
+  (d) + MA.  - SARIMA adds seasonal (P,D,Q,m).  - BOX-JENKINS workflow:
+  1) identify (ACF/PACF -> p,q,d), 2) estimate, 3) diagnose residuals
+  (should be white noise), 4) forecast.
+STRENGTHS: interpretable, principled uncertainty (prediction intervals),
+works well on smooth, stationary-ish series with enough history.
+WEAKNESSES: linear, no external features (exogenous ARIMAX helps),
+fragile with irregular/missing data.
+
+### 4. ML FORECASTING (what the course's real work is)
+ML treats forecasting as SUPERVISED regression on engineered features:
+- LAG FEATURES: y_{t-1}, y_{t-2}, ... (the AR memory).
+- ROLLING FEATURES: rolling mean/std/min/max over windows.
+- EXPANDING WINDOWS: cumulative stats.  - CALENDAR: day-of-week, month,
+  holiday.  - EXTERNAL: price, weather, marketing spend.
+- HORIZON: predict h steps ahead; for multi-step use recursive (feed
+  predictions back), direct (train h models), or seq2seq (deep).
+- TEMPORAL VALIDATION: expanding-window split (train [0,t], validate
+  (t,t+h], repeat with t growing) - NEVER K-fold shuffle on time.
+- MODELS: linear/Ridge on lags, RF/GBDT (LightGBM is the tabular-time-
+  series workhorse), and the classic hybrid: ML on residuals after
+  removing trend+seasonality (STL decomposition -> forecast components).
+
+### 5. EVALUATION
+MAE, RMSE, MAPE (percent - beware division by near-zero y), MASE
+(compared against naive "last value" - scale-free).  ALWAYS compare
+against the naive baselines: last-value, seasonal-last-value, mean.  A
+forecast that can't beat "predict last week's value" is noise.
+
+### 6. FAILURE MODES
+Shuffling time data (leakage); using future info in features (leakage);
+testing on overlapping horizons without purging (inflated confidence);
+modeling non-stationary series with ML without differencing/detrending
+(extrapolation garbage); ignoring the prediction horizon in validation.
+
+### 7. INTERVIEW
+Q: K-fold CV on a time series - why not? A: folds would train on FUTURE
+data to predict the past, which is exactly the leakage the deployment
+will not have; expanding-window validation simulates reality.
+
+================================================================================
+MODULE 26 - MODEL SELECTION AND HYPERPARAMETER OPTIMIZATION
+================================================================================
+
+### 1. INTUITION
+Model selection = choosing the algorithm AND its hyperparameters by
+HONEST out-of-sample performance.  The test set must never be consulted
+while searching; that is what CV is for.
+
+### 2. THE SEARCH METHODS
+- GRID SEARCH: try all combinations of a small grid - thorough but
+  exponential in the number of hyperparameters (a 6-param grid with 5
+  values each = 15,625 fits).  Use on 1-3 params only.
+- RANDOM SEARCH: sample random combinations from the ranges.  For many
+  params, random search finds near-optimal regions with the SAME budget
+  as grid (because most params matter little - the "low-dimensional
+  effective search space" result).  Always log-scale continuous params
+  (learning rate, C, gamma).
+- BAYESIAN OPTIMIZATION (Optuna/TPE, GP-based SMBO): build a surrogate
+  model of CV-score(params), pick the next trial where the surrogate is
+  uncertain AND promising (acquisition function - expected improvement),
+  run it, update.  Converges in far fewer trials than random; supports
+  early stopping of unpromising trials (Optuna pruners).
+
+### 3. THE SEARCH SPACES (what to tune and how)
+- Trees: max_depth, min_samples_leaf, max_features (log-uniform).
+- Boosters: lr + n_estimators (or early stopping), num_leaves, subsample,
+  colsample, reg_lambda/alpha.
+- Linear/SVM: C, penalty, gamma (log-uniform).
+- KNN: k, weights, metric.
+- Preprocessing params TOO (imputation strategy, scaling choice, encode
+  method) - put them in the same pipeline so CV searches them together.
+
+### 4. THE TRAPS
+- OVERFITTING THE VALIDATION SET: search long enough and you tune to CV
+  noise; nested CV (Module 9) or a large enough validation set fixes this.
+- DATA LEAKAGE during search: preprocessing inside the CV loop, always.
+- SEARCH + TEST LEAKAGE: never let the search see the test set, and
+  report the test result of the FINAL chosen model once.
+- EARLY STOPPING in CV: if you early-stop on the validation fold, the
+  final "best iteration" needs its own validation run (nested)
+
+================================================================================
+MODULE 27 - PROBABILITY CALIBRATION AND THRESHOLDING
+================================================================================
+
+### 1. INTUITION
+A model that says "80%" should be right 80% of the time.  Most models
+are miscalibrated: neural nets are overconfident, naive Bayes is wildly
+overconfident, boosted trees sit in between.  When probabilities feed
+decisions (risk thresholds, ranking, expected cost), calibration is
+business-critical:  MODEL PROBABILITY != TRUE PROBABILITY until you fix it.
+
+### 2. DETECTION
+CALIBRATION CURVE (reliability diagram): bin predictions, plot mean
+predicted vs actual positive fraction per bin.  Perfect = diagonal.
+BRIER SCORE:  (1/n) sum_i (p_i - y_i)^2 - MSE of probabilities; lower is
+better; decomposes into reliability (calibration) + resolution +
+uncertainty.
+
+### 3. FIXES
+- PLATT SCALING: fit logistic regression on the model's scores (logits)
+  with the true labels on a VALIDATION set - 2 parameters, fixes
+global miscalibration.  - ISOTONIC REGRESSION: fit a monotone
+step function to (score, label) pairs - nonparametric, fixes LOCAL
+miscalibration, needs more data, can overfit.  - TEMPERATURE SCALING
+(deep learning): divide logits by T (one scalar, calibrated on val).
+- ALWAYS calibrate on a set the model never trained on.
+
+### 4. THRESHOLDING (the step people skip)
+Classification needs a threshold; 0.5 is rarely right.  Choose the
+threshold that optimizes the business objective on VALIDATION:  minimize
+FP*cost_FP + FN*cost_FN, or target a precision/recall point.  A model can
+have AUC 0.9 and still lose money at threshold 0.5 - thresholding is
+the bridge between probabilities and decisions.
+
+### 5. INTERVIEW
+Q: AUC unchanged after calibration - why? A: calibration is a monotone
+remapping of scores, and AUC only depends on RANKING, not absolute
+probabilities.  Log loss / Brier improve; AUC doesn't - which is why you
+report both.
+
+================================================================================
+MODULE 28 - MODEL INTERPRETABILITY
+================================================================================
+
+### 1. INTUITION
+Interpretability answers: WHY did the model say this (local), and WHAT
+drives it overall (global).  Needed for debugging, trust, regulation
+(GDPR explanations), fairness auditing, and finding leakage.
+
+### 2. GLOBAL METHODS
+- COEFFICIENTS (linear/logistic): sign + magnitude; standardized
+  coefficients are comparable (beta = w_j * sd(x_j)).  - TREE/FOREST
+  IMPORTANCE: mean decrease in impurity - built-in but biased toward
+  high-cardinality features.  - PERMUTATION IMPORTANCE: shuffle feature j
+  and measure the drop in score - model-agnostic, honest, but correlated
+  features get misleadingly low/high importances (shuffling one while
+  keeping its twin breaks the pair).  - PARTIAL DEPENDENCE PLOT (PDP):
+  E[f(x) | x_j = v] vs v - the average effect of feature j.
+  - ICE PLOTS: one PDP line PER sample - reveals heterogeneity the
+  average hides.
+
+### 3. LOCAL METHODS
+- LIME: fit a linear surrogate around one prediction by perturbing the
+  input and weighting by proximity; explains local behavior, but is
+  unstable to perturbation (solutions vary run to run).
+- SHAP: SHapley Additive exPlanations - the only feature-attribution
+  method satisfying three axioms (local accuracy, missingness,
+  consistency).  For a model f and a coalition game over features, the
+  SHAP value of feature j is its average marginal contribution over ALL
+  feature subsets:
+    phi_j = sum_{S subset of features \ {j}} |S|!(d-|S|-1)!/d! *
+           [f(S U {j}) - f(S)]
+  (exponential in d - hence approximations: TreeSHAP exact for trees in
+  O(T L D^2); KernelSHAP approximates for arbitrary models).  SHAP also
+  yields global view: mean |phi_j| = global importance; beeswarm plots
+  show direction + interaction.
+
+### 4. THE LIMITATIONS (interview-critical)
+- Feature importance is NOT causation (Module 35).  - Permutation/SHAP on
+  correlated features mis-attributes credit (the game-theoretic
+  assumptions fail).  - A perfect surrogate explanation can be wrong
+  (LIME instability).  - "Explainable" does not mean safe - explanations
+  can be fooled by adversarial attacks on the explainer.
+
+================================================================================
+MODULE 29 - PROBABILISTIC MACHINE LEARNING
+================================================================================
+
+### 1. INTUITION
+Point predictions hide uncertainty.  Probabilistic ML outputs a
+DISTRIBUTION over the answer: "the price will be 100 with sd 5" - the
+sd is often as valuable as the mean (medical, finance, safety).
+
+### 2. THE THREE ESTIMATORS (know the ladder)
+- MLE: w* = argmax P(data|w).  Only the likelihood.  - MAP: w* = argmax
+  P(w|data) = argmax P(data|w) P(w): adds a PRIOR - the Bayesian story of
+  regularization (Ridge = MAP with Gaussian prior on w; Lasso = MAP with
+  Laplace prior).  - FULL BAYESIAN: compute the POSTERIOR P(w|data) =
+  P(data|w)P(w)/P(data) and the PREDICTIVE DISTRIBUTION P(y*|x*, data) =
+  integral P(y*|x*, w) P(w|data) dw - uncertainty in w propagates to
+  uncertainty in predictions.
+
+### 3. BAYESIAN LINEAR REGRESSION (the canonical example)
+Prior w ~ N(0, sigma_p^2 I), likelihood as Module 11.  The posterior is
+Gaussian with  mean = (X^T X + (sigma^2/sigma_p^2) I)^-1 X^T y  - exactly
+Ridge with lambda = sigma^2/sigma_p^2 - and a covariance that gives you
+uncertainty per coefficient and prediction intervals per input.
+
+### 4. GAUSSIAN PROCESSES (conceptually - enough to know when to reach for them)
+A GP is a distribution over FUNCTIONS: any finite set of points has a
+joint Gaussian, with covariance given by a KERNEL (RBF: k(x,x') =
+exp(-||x-x'||^2/(2 l^2)) - nearby inputs have highly correlated
+function values).  Conditioning on data gives a posterior mean and
+variance at ANY input: smooth, nonparametric regression WITH principled
+uncertainty.  Cost O(n^3) - the reason sparse/approximate GPs exist;
+used in Bayesian optimization (Module 26) and small-n experiments.
+
+### 5. ALEATORIC vs EPISTEMIC (memorize this distinction)
+- ALEATORIC: irreducible noise in the data itself (sensor noise, human
+  variability) - more data cannot remove it, but the model can LEARN it
+  (predict variance as a function of x).  - EPISTEMIC: uncertainty from
+  LACK OF DATA (model ignorance) - shrinks as n grows.  Deep ensembles,
+  MC-dropout, and Bayesian NNs estimate epistemic; variance heads
+  estimate aleatoric.
+
+### 6. FAILURE MODES
+Posteriors are intractable in general -> approximation error (variational
+inference, MCMC); Gaussian assumptions are wrong for heavy-tailed data;
+overconfident uncertainty under distribution shift (Module 34) is the
+classic failure of deployed uncertainty systems.
+
+================================================================================
+MODULE 30 - ADVANCED OPTIMIZATION
+================================================================================
+
+### 1. INTUITION
+Training = minimizing a loss by following gradients.  Everything that
+matters in practice - speed, stability, final quality - is decided by
+THE OPTIMIZER and its learning-rate schedule, not by the loss alone.
+
+### 2. THE FAMILY TREE (equations - memorize the Adam pair)
+Gradient descent:  w <- w - lr * g, where g = grad L(w).
+
+SGD: one example (or mini-batch) at a time - noisy gradient is actually
+regularization (escapes sharp minima); mini-batch is the standard.
+
+MOMENTUM:  v <- beta v + g;  w <- w - lr * v.  (beta ~0.9; velocity
+smooths the path, speeds up consistent directions, damps zig-zag.)
+NESTEROV: look ahead:  v <- beta v + grad(w - lr*beta*v); ... - the
+"peek" gives faster convergence on some problems.
+
+AdaGrad:  w <- w - lr * g / sqrt(G)  (G = sum of squared gradients) -
+per-parameter decay; dies on long training.
+RMSProp:  E[g^2] <- beta E[g^2] + (1-beta) g^2;  w <- w - lr g/sqrt(E[g^2]+eps)
+
+ADAM (Adaptive Moments) - first and second moment estimates:
+  m <- beta1 m + (1-beta1) g            (first moment: mean gradient)
+  v <- beta2 v + (1-beta2) g^2          (second moment: mean squared grad)
+  m_hat = m / (1 - beta1^t)             (BIAS CORRECTION - crucial early
+  v_hat = v / (1 - beta2^t)              because m,v start at 0)
+  w <- w - lr * m_hat / (sqrt(v_hat) + eps)
+Defaults: lr 1e-3, beta1 .9, beta2 .999, eps 1e-8.  Each parameter gets
+its own adaptive step size - works across problems with little tuning.
+
+ADAMW: weight decay is DECOUPLED from the gradient:
+  w <- w - lr * m_hat/(sqrt(v_hat)+eps) - lr * lambda * w
+(L2 in Adam muddles the adaptive scaling; AdamW subtracts decay directly
+- the standard for Transformers, Module: llm_course.)
+
+### 3. LEARNING-RATE SCHEDULES
+- CONSTANT: simplest; pick by trials.  - STEP DECAY: lr /= 2 every k
+  epochs.  - COSINE: lr = lr_min + 0.5*(lr_max-lr_min)*(1+cos(pi*t/T)) -
+  smooth decay to a floor.  - WARMUP: ramp lr linearly for the first
+  few hundred steps - necessary for large-batch/Transformer training
+  (large updates on untrained layers destabilize).
+- GRADIENT CLIPPING: g <- g * threshold/||g|| if ||g|| > threshold -
+  prevents exploding gradients (RNNs, Transformers).
+
+### 4. FAILURE MODES
+LR too high -> divergence/NaN; too low -> stuck.  Adam's adaptive steps
+need warmup or early steps overshoot (the m/v bias correction helps).
+Batch size changes the effective LR (double batch -> roughly double LR
+or the noise profile changes).  Zero-betas or epsilon misuse causes
+instability.  Always log the LR and the loss - optimizer bugs are silent.
+
+### 5. INTERVIEW
+Q: Why does Adam need bias correction? A: m and v start at zero, so
+early estimates are biased toward 0 - division by 1-beta^t rescales them
+so the first steps aren't artificially small.
+Q: Adam vs SGD final accuracy? A: Adam converges fast but often to
+slightly worse minima than well-tuned SGD+momentum; in practice use AdamW
+for Transformers and tune SGD for CV models where it matters.
+
+================================================================================
+MODULE 31 - SELF-SUPERVISED AND REPRESENTATION LEARNING
+================================================================================
+
+### 1. INTUITION
+Labels are the most expensive ingredient in ML.  Self-supervised
+learning manufactures labels from the data itself, learns rich
+representations on unlabeled data, and only needs a tiny labeled set at
+the end (or none).  Every foundation model - BERT, GPT, CLIP, wav2vec
+2.0 - is trained this way.
+
+### 2. THE MAIN RECIPES
+- AUTOENCODERS: x -> encoder -> z -> decoder -> x-hat; minimize
+  ||x - x_hat||^2.  z is a compressed representation (bottleneck);
+  variational autoencoders add a KL term to make z a sample from a prior
+  (Module 5 + 29: D_KL(q(z|x)||p(z))), turning the encoder into a
+  generative model.
+- CONTRASTIVE LEARNING (SimCLR, MoCo, BYOL): create TWO augmented views
+  of the same sample (crops, color jitter, masks) and learn embeddings
+  where POSITIVE pairs (same sample, different views) are close and
+  NEGATIVE pairs (different samples) are far - typically with the
+  InfoNCE loss:  -log[ exp(sim(z_i, z_j)/tau) / sum_k exp(sim(z_i, z_k)/tau) ]
+  (a softmax over one positive vs many negatives - cross entropy over
+  pairs).  BYOL removes the negatives entirely (predictive asymmetric
+  branch).  Embeddings from contrastive heads transfer remarkably well.
+- MASKED/MODELING: predict the masked patch (MAE, BERT) or the next
+  token (GPT) - Module 31 in llm_course covers the LM side.
+
+### 3. WHY REPRESENTATIONS TRANSFER
+Pretraining learns features that capture generic structure (edges,
+objects, syntax, semantics).  Downstream, a small labeled set suffices
+because the heavy lifting is done - the labeled head is linear on top of
+a frozen embedding.  This is the engine of transfer learning (Module 33)
+and of the entire modern GenAI stack.
+
+### 4. FAILURE MODES + PRACTICAL NOTES
+Augmentation must be label-preserving (a color-jittered tiger is still a
+tiger; an inverted face is not a face); contrastive methods are sensitive
+to batch size (negatives come from the batch) and temperature tau;
+embedding evaluation is only as good as the downstream probe you run.
+
+================================================================================
+MODULE 32 - SEMI-SUPERVISED LEARNING
+================================================================================
+
+### 1. INTUITION
+A few labeled + many unlabeled examples.  Unlabeled data tells you about
+the INPUT distribution (clusters, manifold, density); labels anchor the
+mapping to y.  Worth it when labeling is expensive but unlabeled data is
+easy (medical scans, web text, sensor logs).
+
+### 2. THE METHODS
+- SELF-TRAINING / PSEUDO-LABELING: train on labeled, predict the
+  unlabeled with high confidence, add those pseudo-labels (with their
+  model confidence) to the training set, iterate.  Simple and effective;
+  danger: confirmation bias - early confident errors reinforce
+  themselves.
+- LABEL PROPAGATION (transductive): build a similarity graph over ALL
+  points; propagate label information along the graph edges (iterated
+  averaging).  Labels flow through the unlabeled structure - good when
+  the graph reflects the true classes.
+- CONSISTENCY REGULARIZATION (FixMatch, MixMatch): the model must give
+  the same prediction for two augmented views of an unlabeled example -
+  a smoothness prior on the decision boundary.  Pseudo-label the
+  confident view, enforce agreement on the weak/strong views.
+- TEACHER-STUDENT / co-training: two models disagree on unlabeled data ->
+  teach each other (bootstrapping diverse views).
+
+### 3. FAILURE MODES
+Distribution mismatch between labeled and unlabeled pools breaks the
+assumptions; confirmation bias in pseudo-labeling (curate: confidence
+threshold + class balance); consistency methods need careful augmentation
+policies; the gains shrink as the labeled set grows (label efficiency is
+the selling point, not a free lunch).
+
+================================================================================
+MODULE 33 - TRANSFER LEARNING
+================================================================================
+
+### 1. INTUITION
+Don't learn everything from scratch: reuse a model trained on a huge
+related task and ADAPT it to your small task.  This is how every
+practical deep-learning project starts (ImageNet nets, pretrained LMs,
+CLIP embeddings).
+
+### 2. THE TWO MODES
+- FEATURE EXTRACTION: freeze the pretrained backbone, train only the new
+  head (linear probe).  Cheapest, needs the pretrained features to be
+  relevant.
+- FINE-TUNING: continue training the whole model (or the last layers)
+  with a small learning rate.  More expressive, more risk of
+  catastrophic forgetting (the model overwrites its pretrained
+  knowledge).
+- GRADUAL UNFREEZING: unfreeze from the top down, one block at a time -
+  the controlled middle ground; standard for BERT-style fine-tuning.
+- Progressive fine-tuning trick: freeze backbone + train head first,
+  then unfreeze with lr/10.
+
+### 3. WHEN IT WORKS / FAILS
+WORKS: the pretraining distribution covers the target domain (image
+semantics transfer across datasets; English text transfers to other
+English tasks).  FAILS: domain mismatch (medical images from a natural-
+image net still help a bit, but not much for e.g. X-ray-specific
+artifacts; a chat model fine-tuned for legal QA still needs legal data);
+tiny target datasets overfit even fine-tuning (use feature extraction);
+catastrophic forgetting when the new task is far from pretraining.
+
+### 4. INTERVIEW
+Q: Small dataset, pretrained model available - feature extraction or
+fine-tuning? A: Start with feature extraction (cheap, robust); if the
+features are insufficient, fine-tune the top blocks with a small lr and
+evaluate on validation; only full fine-tune if that helps.
+
+================================================================================
+MODULE 34 - DISTRIBUTION SHIFT AND CONCEPT DRIFT
+================================================================================
+
+### 1. INTUITION
+A model trained on yesterday's world is asked to predict today's.  When
+the world changes, performance decays - silently.  This module is about
+noticing and surviving that.
+
+### 2. THE TAXONOMY (know the difference - interview favorite)
+- COVARIATE SHIFT: P(X) changes, P(y|X) stays (new users differ from
+  training users; image domain changes).  Fix by reweighting training
+  (importance weighting) or retraining on new data.
+- LABEL SHIFT: P(y) changes, P(X|y) stays (disease prevalence rises).
+  Fix by re-estimating class priors.
+- CONCEPT DRIFT: P(y|X) itself changes (customers' behavior changes;
+  fraud patterns evolve) - the true mapping moved.  Retraining needed;
+  detect by monitoring performance on labeled samples.
+- DATASET SHIFT (broad term) and TRAIN-PRODUCTION MISMATCH (the
+  engineering phrase for all of the above in deployment).
+
+### 3. DETECTION (Module 42 operationalizes this)
+- Compare feature distributions (train vs production): PSI (population
+  stability index), KS test, drift detectors (Evidently, whylogs).
+- Monitor prediction distributions: if the model suddenly predicts 90%
+  class A when it used to predict 50%, something changed.
+- Monitor performance on labeled production samples (delayed labels:
+  e.g. default labels arrive 60 days late).
+
+### 4. MITIGATION
+Retraining schedules (time-based, drift-triggered); incremental learning;
+domain adaptation (align feature distributions - adversarial domain
+adversarial training); robust features (domain-invariant); calibration
+recomputation under shift.  There is no universal fix - the honest
+answer in interviews: detect early, keep the retraining loop fast,
+log everything.
+
+================================================================================
+MODULE 35 - CAUSAL MACHINE LEARNING
+================================================================================
+
+### 1. INTUITION
+Predictive ML answers "what will happen?".  Causal ML answers "what
+WOULD happen if I intervened?" - and the two are NOT the same.  "Ice
+cream sales predict drowning deaths" (correlation) says nothing about
+whether banning ice cream saves swimmers (causation).  Causal questions
+drive every decision: does this drug work, does this ad cause purchases,
+will this price increase cause churn?
+
+### 2. THE LANGUAGE (memorize)
+- TREATMENT T: the intervention (drug, ad, discount).  OUTCOME Y: what we
+  measure.  CONFOUNDER Z: a variable that affects BOTH T and Y - the
+  reason correlation != causation (wealth affects both ad exposure and
+  purchase).  - COUNTERFACTUAL Y(T=t): what WOULD Y have been if T were
+  t.  - DAG: directed acyclic graph of causal assumptions - arrows are
+  causal claims; every analysis starts by drawing one.
+- ATE (average treatment effect): E[Y(1) - Y(0)].  CATE: E[Y(1)-Y(0)|X=x]
+  - the effect for a specific profile (the basis of uplift modeling).
+
+### 3. WHY PREDICTION != CAUSATION (derive the intuition)
+The regression of Y on T is confounded:  E[Y|T=t] mixes the causal
+path T->Y with the spurious path T<-Z->Y.  The backdoor criterion: the
+causal effect is identified by adjusting for a set S that BLOCKS all
+non-causal paths from T to Y and does not open others - the classic
+choice is S = the confounders.  Then:
+  ATE = E[ E[Y | T=1, S] - E[Y | T=0, S] ]   (adjustment formula)
+
+### 4. METHODS (know the names + when)
+- RANDOMIZED EXPERIMENTS (A/B tests): randomization breaks confounding
+  by construction - the gold standard, often expensive or impossible.
+- ADJUSTMENT / REGRESSION: control for S (only works if you MEASURED
+  the right S - unobserved confounders kill it).
+- PROPENSITY SCORE: p(T=1|Z); match/weight/inverse-probability-weight so
+  treated and control become comparable on Z - fixes measured
+  confounding.
+- INSTRUMENTAL VARIABLES: a variable Z that affects T but not Y except
+  through T (used when confounders are unmeasured; e.g. distance to
+  hospital as an instrument for treatment).
+- DIFFERENCE-IN-DIFFERENCES: compare the change in Y across time for
+  treated vs control groups - controls for fixed group differences.
+- DO-CALCULUS/GRAPHICAL CRITERIA: the formal machinery for when an
+  effect is IDENTIFIABLE from the DAG + data.
+
+### 5. THE ENGINEERING TAKEAWAY
+In industry, most "ML insights" are correlational; product decisions need
+causal estimates.  Building an experimentation platform (A/B tests,
+counterfactual logging, CATE models for targeting) is a core ML
+engineering competency - and the interview question "correlation vs
+causation" should never be answered with a shrug.
+
+================================================================================
+MODULE 36 - FAIRNESS AND RESPONSIBLE ML
+================================================================================
+
+### 1. INTUITION
+Models learn the biases in their training data - including society's.
+A hiring model trained on past hiring decisions reproduces (and
+magnifies) past discrimination.  Fairness is a TECHNICAL problem with
+moral and legal consequences; there is no single "fair" definition -
+which makes the tradeoffs the real content.
+
+### 2. BIAS SOURCES (where it enters)
+- DATASET BIAS: the data reflects historic discrimination.  - SELECTION
+  BIAS: who appears in the data at all (loan applicants, not all
+  people).  - MEASUREMENT BIAS: proxies are biased (zip code as a proxy
+  for income; biased labels).  - ALGORITHMIC: the objective itself
+  encodes values (accuracy-maximizing can be discriminatory).
+
+### 3. FAIRNESS METRICS (the impossibility result is the lesson)
+- DEMOGRAPHIC PARITY: P(hat_y=1 | group A) = P(hat_y=1 | group B) -
+  equal acceptance rates.  - EQUAL OPPORTUNITY: equal TPR across groups
+  (equal recall for the positive class).  - EQUALIZED ODDS: equal TPR
+  AND FPR across groups.  THEOREM (Kleinberg et al.): demographic
+  parity and equalized odds are simultaneously achievable only in
+trivial cases unless base rates are equal - you must choose which
+injustice to prioritize per application.
+
+### 4. THE WORKFLOW
+1. Define the sensitive attribute and the fairness definition with
+   stakeholders.  2. Audit the DATA (label balance, group representation,
+   measurement issues).  3. Measure the chosen metric across groups on
+   validation.  4. Mitigate: pre-processing (reweight/resample),
+   in-processing (constraints/adversarial debiasing), post-processing
+   (threshold adjustments per group).  5. Document with model cards
+   (performance + limitations + intended use).
+
+### 5. INTERVIEW
+Q: Demographic parity or equal opportunity? A: Depends on the cost of
+false positives vs false negatives per group and on what the law/
+stakeholders define; no free lunch - state the tradeoff explicitly.
+
+================================================================================
+MODULE 37 - ML SECURITY
+================================================================================
+
+### 1. INTUITION
+ML models are software with an attack surface of their own: attackers
+can poison the training data, craft inputs that flip predictions, steal
+the model, or infer the training data.  Deployed ML is a security
+boundary and must be threat-modeled like one.
+
+### 2. THE ATTACKS (know each)
+- ADVERSARIAL EXAMPLES: tiny imperceptible perturbations that flip
+  predictions (x + delta where ||delta|| tiny but f(x+delta) = wrong
+  class).  Caused by models fitting high-dimensional linear-ish
+  boundaries; PGD/FGSM construct them.  Defense: adversarial training
+  (train on attacked examples - makes the boundary robust), input
+  preprocessing, certified defenses (provable robustness - still
+  limited).
+- DATA POISONING: attacker injects malicious training samples (label
+  flipping, backdoor triggers: a model that works normally but
+  misbehaves on inputs with a secret pattern).  Defense: data
+  provenance, outlier filtering, robust aggregation (trimmed mean in
+  federated settings).
+- MODEL STEALING: query the API and train a copy (distillation attacks);
+  defense: rate limits, output noise, watermarking.
+- MEMBERSHIP INFERENCE: "was this record in the training set?" -
+  models memorize; defense: differential privacy (add calibrated noise -
+  the only principled answer).
+- EVASION (adversarial at inference) and BACKDOORS (triggered
+  misbehavior) are the two most cited in production threat models.
+
+### 3. THE DEFENSIVE MINDSET
+Attack surface analysis before deployment: what can an attacker control
+(inputs? labels? API access?)?  Then: input validation and sanitization,
+adversarial training where inputs are untrusted (email, web content),
+monitoring for anomalous queries, keeping training data private (DP),
+and red-teaming the deployed model.
+
+================================================================================
+MODULE 38 - EXPERIMENT DESIGN
+================================================================================
+
+### 1. INTUITION
+ML results are only as trustworthy as the experiments behind them.
+Experiment design is what separates a paper/report you believe from one
+you shrug at.  It is the METHODOLOGY layer: hypotheses, baselines,
+controls, ablations, seeds, significance.
+
+### 2. THE CHECKLIST
+1. HYPOTHESIS FIRST: "adding feature X improves churn AUC by >1 point" -
+   pre-register the metric and the decision rule.  2. BASELINES: always
+   run the Module 10 baselines + your best known model.  3. CONTROLLED
+   VARIABLES: change ONE thing at a time (ablation).  4. MULTIPLE SEEDS:
+   report mean +/- std over >=3 seeds for stochastic models - a single
+   seed's 1% gain is noise.  5. STATISTICAL SIGNIFICANCE: paired test
+   (same CV folds for both models - that's what paired means) or
+   confidence intervals; see Module 4.  6. ERROR ANALYSIS: after seeing
+   the numbers, investigate WHAT fails (per class, per segment) - this
+   is where the learning happens.  7. REPRODUCIBILITY: pin seeds,
+   versions, data hash, config - someone must be able to rerun your
+   experiment exactly.
+
+### 3. THE EXPERIMENT REPORT (structure)
+Problem -> hypothesis -> data (source, split, leakage check) ->
+baselines -> methods + hyperparameters + compute -> results table
+(mean+-std, significance) -> ablations -> error analysis -> limitations
+-> conclusion.  This is ALSO the skeleton of a good model card and a
+good interview answer to "walk me through a model you built".
+
+================================================================================
+MODULE 39 - ML SYSTEM DESIGN
+================================================================================
+
+### 1. INTUITION
+A model is a component, not a product.  ML system design is about the
+pipeline around it: data in, predictions out, monitored forever.
+Interviewers love this module because it exposes whether you think like
+an engineer, not just a notebook jockey.
+
+### 2. THE ARCHITECTURE (the skeleton of every answer)
+DATA INGESTION (batch jobs / streaming events) -> DATA VALIDATION
+(schema + drift checks) -> FEATURE PIPELINE (offline for training,
+online for serving - the SAME code, or you get train/serve skew) ->
+TRAINING PIPELINE (reproducible: code + data + config versioned) ->
+MODEL REGISTRY (versioned artifacts + metadata) -> SERVING (online API
+or batch scoring) -> MONITORING (predictions, latency, drift) ->
+RETRAINING (scheduled or drift-triggered).
+
+### 3. THE KEY DISTINCTIONS
+- BATCH vs ONLINE INFERENCE: batch scores a table on a schedule
+  (recommendations nightly, churn scoring); online scores one request in
+  <100ms (fraud, search).  Batch is simpler and cheaper; online needs a
+  model server with low latency.
+- OFFLINE vs ONLINE FEATURES: offline features computed at training time
+  must be computable AT REQUEST TIME with the same semantics - otherwise
+  train/serve skew (the #1 silent production bug).  Use a feature store
+  so both use the same values.
+- LATENCY vs THROUGHPUT vs COST: a serving system optimizes all three
+  with tradeoffs: smaller/quantized model (Module: llm_course) for
+  latency, batching for throughput, caching for repeats.
+- SCALABILITY (handle more load: horizontal scaling, queues) vs
+  RELIABILITY (no silent failures: timeouts, retries, circuit breakers,
+  fallback predictions) vs AVAILABILITY (no downtime: redundancy).
+
+### 4. THE DESIGN INTERVIEW TEMPLATE (for "design a churn model")
+1. Requirements: batch or real-time? latency? who consumes it? cost?
+2. Data: sources, labels (delayed?), features, leakage.  3. Model:
+  baseline -> simple model -> tuned; retraining cadence.  4. Serving:
+  API/feature store/caching/fallbacks.  5. Monitoring + retraining:
+  drift, delayed-label evaluation, alerting.  6. Risks: leakage, skew,
+  cost, failure modes.  Answer in this order and you will not forget the
+  engineering half.
+
+================================================================================
+MODULE 40 - PRODUCTION ML (FastAPI + Docker + data stores)
+================================================================================
+
+### 1. INTUITION
+A model in a notebook predicts; a model in production serves thousands
+of requests with errors handled, retries, auth, and observability.  This
+module turns a fitted model into a service.
+
+### 2. MODEL SERIALIZATION
+- joblib (scikit-learn's pickle format: dumps the object graph) -
+  version your models and data, never trust unpickling untrusted files
+  (pickle RCE!).  - ONNX: portable, framework-neutral graph format -
+  export once, run anywhere (onnxruntime, faster, opset versioning).
+- Always ship the PREPROCESSOR inside the same artifact/pipeline as the
+  model (scaler + model = one artifact).
+
+### 3. FASTAPI (the standard Python serving framework)
+- Pydantic request/response models (typed validation for free) - define
+  the API contract in code.
+- Sync endpoints -> run in a threadpool; async endpoints (async def) for
+  IO-bound work (calls to DBs, vector stores, LLMs).
+- Model loaded ONCE at startup (module-level or lifespan), never per
+  request.  - Streaming responses for long generations (LLMs).
+- Error handling: HTTPException with proper status codes; validation
+  errors -> 422; global exception handler for the model's own errors.
+- Auth: API keys / OAuth / JWT; rate limiting (slowapi/redis);
+  dependency injection for shared services.
+
+### 4. DOCKER (the packaging standard)
+- IMAGE: read-only snapshot (base image + code + dependencies).
+  CONTAINER: a running image (isolated process + namespace).
+- Dockerfile: FROM python:3.12-slim -> copy requirements -> pip install
+  -> copy app -> CMD uvicorn app:app.  Multi-stage builds shrink images
+  (build deps in one stage, runtime in another).  Layers = cache;
+  order matters (dependencies before code).  - VOLUMES: persistent data
+  outside the container.  - NETWORKS: containers talk via service names.
+  - ENV VARS: config (never bake secrets into images).
+- DOCKER COMPOSE: declare app + postgres + redis + vector DB in one
+  YAML - one command starts the whole stack.  This is how the course's
+  production projects run.
+
+### 5. POSTGRESQL + REDIS (the two workhorses)
+- PostgreSQL: the source of truth - relational schema, transactions
+  (ACID), indexes (B-tree, GIN for JSONB), connection pooling (pgbouncer).
+  ML uses: storing features, labels, predictions, experiment metadata.
+- Redis: in-memory key-value - CACHE (hot predictions), SESSION state,
+  QUEUES (rate limiting, background jobs), feature cache for online
+  serving.  Fast but volatile - never the source of truth.
+
+### 6. FAILURE MODES
+Loading the model per request (latency death); pickle version skew after
+upgrades (retrain/redump); no health endpoint (orchestrators can't
+recover); unbounded request queues (backpressure); logging PII into
+plaintext logs.
+
+================================================================================
+MODULE 41 - MLOPS
+================================================================================
+
+### 1. INTUITION
+MLOps = DevOps for ML: versioning, testing, automation and monitoring
+applied to data, models, and pipelines.  The goal: reproducible
+experiments, safe deploys, and models that can be retrained on a
+schedule without heroics.
+
+### 2. THE STACK (what each piece versions/tracks)
+- GIT: code.  - DATA VERSIONING (DVC): data + data transformations -
+  train on the exact data version; reproduce any experiment.  - MLFLOW:
+  experiment tracking (params, metrics, artifacts per run), MODEL
+  REGISTRY (staged artifacts: staging -> production with lineage),
+  model serving.  - PIPELINES (Airflow/Prefect/argo): scheduled, retried,
+  dependency-managed training/eval workflows.  - CI/CD: lint + unit
+  tests + data validation + a smoke train on every PR; deploy the model
+  artifact (not the notebook).
+
+### 3. MLFLOW IN PRACTICE (the required hands-on)
+- autolog: mlflow.autolog() captures params/metrics/artifacts from
+  sklearn/lightgbm automatically.  - mlflow.set_experiment(name) groups
+  runs.  - The registry lets you promote a run to Production and serve
+  it: mlflow.pyfunc.load_model.  - Model registry + Docker = reproducible
+  serving image per model version.
+
+### 4. TESTING ML (beyond unit tests)
+- DATA tests: schema, ranges, drift (pandera/great_expectations).
+- MODEL tests: slice metrics (performance per segment), invariance tests
+  (prediction shouldn't change with the sensitive attribute),
+  leakage tests (time-travel check), calibration check.
+- PIPELINE tests: golden datasets (known input -> expected output).
+- ALWAYS: train/val/test pipeline on a small sample in CI so a broken
+  data step fails fast.
+
+================================================================================
+MODULE 42 - MODEL MONITORING
+================================================================================
+
+### 1. INTUITION
+The model that leaves training is not the model that serves in 6 months.
+Monitoring detects when the world moved on - before the business does.
+
+### 2. WHAT TO MONITOR (the full dashboard)
+- DATA DRIFT: feature distributions vs training (PSI, KS, Evidently
+  reports; Module 34 taxonomy).  - CONCEPT DRIFT: P(y|X) changed -
+  detect via performance on delayed labels.  - PREDICTION DRIFT:
+  prediction distribution changed (class balance, score histogram).
+- PERFORMANCE: live metrics when labels are available; proxy metrics
+  when not (conversion after delay).  - SYSTEM: latency percentiles
+  (p50/p95/p99), throughput, error rate, cache hit rate.
+
+### 3. THE DRIFT WORKFLOW (memorize this loop)
+  TRAINING DISTRIBUTION -> PRODUCTION DISTRIBUTION -> DRIFT DETECTION
+  (alert) -> MODEL EVALUATION (is it hurting?) -> RETRAINING DECISION
+  (trigger or wait) -> BACK TO MONITORING.
+Key engineering choices: alert thresholds (avoid alert storms), delayed-
+label evaluation windows, champion/challenger (shadow-deploy the new
+model alongside the old one), and rollback (versioned artifacts make it
+a config flip).
+
+### 4. INTERVIEW
+Q: How do you know when to retrain? A: Not on a calendar alone -
+monitor drift + delayed-label performance + business KPIs; retrain when
+the cost of staleness exceeds the cost of retraining, and always
+experiment: champion/challenger with canary deployment.
+
+================================================================================
+MODULE 43 - CLOUD ML (conceptual)
+================================================================================
+
+### 1. INTUITION
+Production ML runs on cloud infrastructure: managed compute, storage,
+and ML services.  You should know the SERVICE CATEGORIES and be able to
+map any ML architecture onto them, without being a cloud-certified
+specialist.
+
+### 2. THE SERVICE MAP (AWS names; Azure/GCP have equivalents)
+- STORAGE: S3 (object storage - datasets, model artifacts, logs).
+- COMPUTE: EC2 (VMs, GPU instances for training/serving).
+- CONTAINERS: ECR (image registry) + ECS/EKS (run containers).
+- MANAGED ML: SageMaker (train/deploy/tune), Vertex AI (GCP), Azure ML.
+- SERVERLESS: Lambda (lightweight scoring jobs, triggers).
+- NETWORKING: VPC, load balancers, API Gateway (auth + routing).
+- SECRETS: Secrets Manager / env-managed config.  - MONITORING:
+  CloudWatch (logs, metrics, alarms).  - AUTOSCALING: scale replicas by
+  CPU/queue depth; GPU nodes are slow to provision - plan ahead.
+
+### 3. DEPLOYMENT STRATEGIES
+Canary (route 5% of traffic to the new model), blue/green (swap
+environments), shadow (run new model in parallel, log, decide) -
+combined with the model registry (Module 41), every deploy is
+reversible.  COST: GPU hours are the dominant spend - spot instances,
+batching, and quantization are the levers.
+
+================================================================================
+MODULE 44 - ADVANCED ML RESEARCH TOPICS (conceptual tour)
+================================================================================
+
+### 1. THE MENU (know what each is and WHY it exists)
+- MIXTURE OF EXPERTS: many specialized subnetworks + a router; only a
+  few experts activate per input - more capacity at lower inference cost
+  (see llm_course Part 51 for the LLM treatment).
+- META-LEARNING: learn the LEARNING ALGORITHM - train on many tasks so a
+  new task needs a few examples (MAML: optimize the INITIAL weights so
+  one gradient step adapts; reptile; learned optimizers).
+- FEW-SHOT / ZERO-SHOT: generalize from a handful (or zero) of labeled
+  examples - the promise of foundation models (in-context learning).
+- CONTINUAL LEARNING: learn task sequences without catastrophic
+  forgetting - replay buffers, elastic weight consolidation (protect
+  important weights via Fisher information), progressive networks.
+- FEDERATED LEARNING: train across devices, share gradient updates not
+  data - privacy; bottlenecks: communication, non-iid data, poisoned
+  clients.
+- NEURAL ARCHITECTURE SEARCH: search the architecture space
+  (reinforcement/evolution/gradient) - expensive; one-shot/NAS
+  supernets make it tractable.
+- KNOWLEDGE DISTILLATION: student learns from teacher's SOFT outputs
+  (tempered probabilities) - see llm_course Part 52.
+- SYNTHETIC DATA: generate training data (LLMs, diffusion) - quality
+  control and contamination risks (llm_course Part 53).
+- ACTIVE LEARNING: the model picks which unlabeled points to label -
+  label efficiency (uncertainty sampling, BALD).
+- CURRICULUM LEARNING: train on easy examples first, hard later -
+  faster convergence, better final.
+- TEST-TIME ADAPTATION: adapt at inference to distribution shift without
+  labels (self-training on the test batch) - Module 34's frontier.
+
+### 2. HOW TO THINK ABOUT THEM (the research mindset)
+Every topic exists because a constraint binds: labels (self-supervised,
+active, few-shot), compute (MoE, distillation, NAS), privacy (federated,
+DP), time (continual), or distribution shift (TTA).  In interviews,
+frame any "what about X?" answer around which constraint it relaxes.
+
+================================================================================
+MODULE 45 - ML RESEARCH SKILLS
+================================================================================
+
+### 1. INTUITION
+Reading and producing research is a skill like any other.  For a
+2nd-year student aiming at elite engineering, the ability to read a
+paper, reproduce it, and ablate it is what separates candidates.
+
+### 2. HOW TO READ A PAPER (the three-pass method)
+PASS 1 (5 min): title, abstract, figures, conclusions - what did they
+claim, what's the headline result?  PASS 2 (30 min): method + equations
++ experimental setup - could you reimplement it?  Note assumptions and
+gaps.  PASS 3 (deep): derivations, ablations, limitations - what would
+you challenge?  Always ask: (a) what is the contribution, (b) what
+assumptions does it make, (c) what would falsify it, (d) what's the next
+step.
+
+### 3. REPRODUCING PAPERS (the honest route to learning)
+- Start with datasets and metrics EXACTLY as specified.  - Build a
+  simple baseline first (a paper is only interesting if you can beat
+  the same baselines).  - Ablate: remove one component at a time and
+  measure - papers often overstate component value.  - Statistical
+  validation (Module 38): multiple seeds, paired tests.  - Write the
+  reproduction report: what reproduced, what didn't, and your
+  hypothesis why.  This report IS your research portfolio.
+
+### 4. FINDING RESEARCH GAPS
+Compare claimed vs actual assumptions; stress-test on new domains;
+apply an existing method to an unsolved dataset; ask what the method's
+failure modes imply for its successors.  A good first research project
+is: reproduce + ablate + one novel extension with a clear hypothesis.
+
+================================================================================
+MODULE 46 - THE COMPLETE ML WORKFLOW (putting it together)
+================================================================================
+
+  PROBLEM DEFINITION (metric + business cost) -> DATA COLLECTION ->
+  DATA VALIDATION (schema, leakage scan) -> EDA (hypotheses) ->
+  PREPROCESSING (inside pipeline) -> FEATURE ENGINEERING (inside CV) ->
+  BASELINES (Module 10) -> MODEL TRAINING (from scratch, then
+  libraries) -> CROSS-VALIDATION (Module 9) -> HYPERPARAMETER
+  OPTIMIZATION (Module 26) -> ERROR ANALYSIS (where does it fail) ->
+  INTERPRETABILITY (Module 28) -> MODEL SELECTION (metrics + cost) ->
+  SERIALIZATION (joblib/ONNX) -> API (FastAPI) -> DOCKER (container) ->
+  DEPLOYMENT (canary/shadow) -> MONITORING (drift + performance,
+  Module 42) -> RETRAINING (loop).
+
+Every module in this course plugs into exactly one slot of this loop.
+The capstone in PROJECT.txt makes you run the whole loop on a real
+system.
+
+================================================================================
+THE COMPARISON TABLES (interview gold - memorize the cells)
+================================================================================
+
+TABLE 1 - LINEAR FAMILY
+  Linear        Ridge         Lasso         Elastic Net
+  no penalty    L2 shrink     L1 sparse    L1+L2
+  no selection  no selection  selects      selects (grouped)
+  unstable if   stable (I)    unstable     stable + sparse
+  collinear                                   
+
+TABLE 2 - CLASSIFIERS
+              Logistic     KNN          Naive Bayes   SVM
+  boundary    linear       piecewise    quadratic    linear/kernel
+  parametric  yes          no (lazy)    yes          yes (dual)
+  n scaling   10^6+        predict O(nd) linear fit   n<10^5 (kernel)
+  prob output calibrated    distance-    overconfident Platt needed
+              naturally    based        (fix M27)
+  text?       no           no           YES          no
+  use when    baseline,    low-dim      fast, text,  small clean
+              calibrated   small n      online       datasets
+
+TABLE 3 - TREES/ENSEMBLES
+  Decision Tree   Random Forest     XGBoost      LightGBM     CatBoost
+  variance high   bagged trees      Newton boost histogram    ordered
+                                    2nd order    boosting     stats
+  small data      robust           overfits     overfits     robust
+  big data        slow train       fast         fastest      fast
+  categorical     needs encoding   native-ish   native       native best
+  tuning          min_samples*     medium       careful      low
+
+TABLE 4 - CLUSTERING + DR
+  K-Means     Hierarchical  DBSCAN       PCA          t-SNE/UMAP
+  spherical   dendrogram   shapes+noise linear,      nonlinear,
+  k required  cut height   no k         invertible   visualize only
+
+TABLE 5 - PARADIGMS
+  Parametric (few params, fast, biased) vs Non-parametric (flexible,
+  needs data: KNN, trees).  Generative (model P(x,y) - NB, GMM, GANs)
+  vs Discriminative (model P(y|x) - LR, SVM, NNs).  Online (SGD,
+  streaming) vs Batch (full data).  Bagging (variance) vs Boosting
+  (bias).  Inductive (learn f from data) vs Transductive (predict on
+  the given unlabeled set directly).
+
+================================================================================
+FINAL EXAM BLUEPRINT (full exam in PRACTICE.txt)
+================================================================================
+Sections: Mathematics (20), Statistics (20), Theory (40), Algorithms
+(30), Coding (20), Data analysis (15), Model debugging (15), System
+design (15), Research (10) - 185 questions.  Scoring: 90-100% Expert
+readiness; 80-89 Advanced; 70-79 Strong intermediate; 60-69
+Intermediate; <60 revise prerequisites (Gates 1-2).
+
+================================================================================
+FINAL CAPSTONE (full spec in PROJECT.txt - Tier S+)
+================================================================================
+PRODUCTION MACHINE LEARNING PLATFORM: data ingestion + validation +
+EDA + feature engineering + baselines + multiple algorithms + nested
+CV + Optuna tuning + MLflow tracking/registry + model comparison with
+statistical justification + SHAP explainability + FastAPI inference
+service + PostgreSQL + Redis + Docker Compose + logging + monitoring +
+drift detection + retraining pipeline + dashboard + documentation +
+tests + GitHub structure.  Acceptance criteria and milestones in
+PROJECT.txt.
+
+================================================================================
+FINAL AUDIT (the master checklist - all covered above)
+================================================================================
+[OK] Mathematics, Statistics, Probability, Information theory
+[OK] NumPy, Pandas, Matplotlib, Seaborn, SciPy, sklearn, Statsmodels,
+     XGBoost, LightGBM, CatBoost, Optuna, MLflow, Joblib, FastAPI,
+     Docker (Modules 1, 18, 26, 40, 41)
+[OK] EDA, Preprocessing, Leakage, Baselines (Modules 6-10)
+[OK] Regression, Regularization, Classification, Metrics (11-14)
+[OK] KNN, Naive Bayes, Trees, Ensembles, SVM (15-19)
+[OK] Clustering, PCA, Feature engineering/selection (20-22)
+[OK] Imbalance, Anomaly, Time series, Tuning, Calibration (23-27)
+[OK] Interpretability, Probabilistic ML, Optimization, SSL (28-31)
+[OK] Semi-supervised, Transfer, Shift, Causal, Fairness (32-36)
+[OK] Security, Experiment design, Systems, Production, MLOps,
+     Monitoring, Cloud, Research, Workflow (37-46)
+[OK] From-scratch algorithms (EXAMPLE.py Sections 6-15)
+[OK] Practice aligned (PRACTICE.txt levels 0-5)
+[OK] Projects aligned (PROJECT.txt tiers E-S+)
+[OK] Final capstone + exam included
+
+End of COURSE.txt - continue with PRACTICE.txt, PROJECT.txt, EXAMPLE.py.

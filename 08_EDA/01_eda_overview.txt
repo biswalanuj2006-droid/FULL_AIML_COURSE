@@ -1,0 +1,182 @@
+================================================================================
+MODULE 08: EDA — LESSON 1: OVERVIEW & FOUNDATIONS
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able to:
+- Define EDA and explain its purpose in ML workflows
+- Perform initial dataset inspection
+- Understand the EDA pipeline
+- Know when EDA is complete
+
+================================================================================
+1. WHAT IS EDA?
+================================================================================
+
+INTUITION
+---------
+Before building a house, you inspect the land: soil type, slope,
+underground pipes, neighboring structures. EDA is the land inspection
+for data science.
+
+DEFINITION
+----------
+Exploratory Data Analysis is the process of summarizing the main
+characteristics of a dataset using statistics and visualizations,
+WITHOUT making assumptions before looking at the data.
+
+EDA vs CONFIRMATORY ANALYSIS
+-----------------------------
+EDA: "Let me see what's in this data" (open-ended)
+Confirmatory: "Let me test this specific hypothesis" (targeted)
+
+In ML, EDA comes BEFORE modeling.
+
+================================================================================
+2. WHY EDA MATTERS FOR ML
+================================================================================
+
+1. DATA QUALITY CHECK
+   - Missing values, duplicates, wrong types
+   - Without this, your model trains on garbage
+
+2. FEATURE UNDERSTANDING
+   - Which features are useful?
+   - Which are redundant?
+   - What are their distributions?
+
+3. RELATIONSHIP DISCOVERY
+   - Which features correlate with the target?
+   - Which features correlate with each other? (multicollinearity)
+
+4. ANOMALY DETECTION
+   - Outliers that may skew results
+   - Data entry errors
+
+5. MODEL SELECTION GUIDANCE
+   - Linear relationships → linear models
+   - Complex patterns → tree-based or neural networks
+
+================================================================================
+3. THE EDA PIPELINE
+================================================================================
+
+STEP 1: DATA OVERVIEW
+  → Shape, types, memory usage
+  → First/last rows
+  → Info and describe
+
+STEP 2: DATA QUALITY
+  → Missing values
+  → Duplicates
+  → Data types (correct vs incorrect)
+  → Unique values
+
+STEP 3: UNIVARIATE ANALYSIS
+  → Distribution of each feature
+  → Central tendency and spread
+  → Skewness and kurtosis
+  → Outliers
+
+STEP 4: BIVARIATE ANALYSIS
+  → Feature vs target relationships
+  → Feature vs feature correlations
+  → Categorical vs numerical interactions
+
+STEP 5: MULTIVARIATE ANALYSIS
+  → Pair plots
+  → Correlation matrices
+  → Feature interactions
+
+STEP 6: INSIGHTS & ACTION ITEMS
+  → Which features to keep/drop
+  → Which preprocessing is needed
+  → Which models might work best
+
+================================================================================
+4. FIRST LOOK AT ANY DATASET
+================================================================================
+
+import pandas as pd
+
+# Load data
+df = pd.read_csv('data.csv')
+
+# === SHAPE ===
+print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
+
+# === DATA TYPES ===
+print(df.dtypes)
+
+# === FIRST LOOK ===
+print(df.head())
+print(df.tail())
+
+# === INFO ===
+print(df.info())
+
+# === STATISTICS ===
+print(df.describe())          # numerical features
+print(df.describe(include='object'))  # categorical features
+
+# === MISSING VALUES ===
+print(df.isnull().sum())
+print(df.isnull().mean() * 100)  # percentage
+
+# === DUPLICATES ===
+print(f"Duplicates: {df.duplicated().sum()}")
+
+# === UNIQUE VALUES ===
+for col in df.columns:
+    print(f"{col}: {df[col].nunique()} unique values")
+
+================================================================================
+5. DATASET DOCUMENTATION CHECKLIST
+================================================================================
+
+After first look, document:
+- [ ] Number of rows and columns
+- [ ] Feature names and descriptions
+- [ ] Target variable identification
+- [ ] Data types (correct?)
+- [ ] Missing value counts and percentages
+- [ ] Duplicate counts
+- [ ] Value ranges for numerical features
+- [ ] Categories for categorical features
+- [ ] Data source and collection method
+- [ ] Any domain knowledge notes
+
+================================================================================
+6. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Skipping EDA to jump to modeling
+  WRONG: Load data → train model → check accuracy
+  RIGHT: Load data → EDA → preprocess → model → evaluate
+
+MISTAKE 2: Only looking at summary statistics
+  WRONG: df.describe() → done
+  RIGHT: Statistics + visualizations + domain knowledge
+
+MISTAKE 3: Ignoring categorical features in EDA
+  WRONG: df.describe() (only numerical)
+  RIGHT: df.describe(include='all') for comprehensive view
+
+MISTAKE 4: Not documenting findings
+  WRONG: Look at data once, remember everything
+  RIGHT: Write down findings, create EDA report
+
+================================================================================
+7. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between EDA and confirmatory analysis?
+Q2: Name 5 things you should check in the first 5 minutes with a dataset.
+Q3: Why is EDA especially important before building ML models?
+Q4: What pandas function gives you both numerical and categorical summaries?
+Q5: At what point in the ML workflow should EDA be performed?
+
+================================================================================
+END OF LESSON 1
+================================================================================

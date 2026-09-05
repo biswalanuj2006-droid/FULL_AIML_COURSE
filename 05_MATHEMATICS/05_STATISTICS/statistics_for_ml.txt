@@ -1,0 +1,277 @@
+================================================================================
+MODULE 05 — MATHEMATICS FOR ML
+LESSON 05: STATISTICS FOR MACHINE LEARNING
+================================================================================
+
+## What You Will Learn
+- Descriptive statistics (mean, median, mode, variance)
+- Correlation and covariance
+- Sampling and distributions
+- Confidence intervals
+- Hypothesis testing
+- How statistics powers ML
+
+## Why You Need It
+Statistics is HOW you understand data. EDA uses statistics to find patterns.
+Feature engineering uses statistics to create new features. Model evaluation
+uses statistics to compare models. Statistical thinking prevents common ML mistakes.
+
+================================================================================
+1. DESCRIPTIVE STATISTICS
+================================================================================
+
+MEAN (Average):
+    μ = (1/n) Σxᵢ
+
+    Data: [2, 4, 4, 4, 5, 5, 7, 9]
+    Mean = (2+4+4+4+5+5+7+9)/8 = 40/8 = 5.0
+
+    ML USE: Feature centering (subtract mean → mean = 0)
+
+MEDIAN (Middle value):
+    Sort data, take middle value.
+
+    [2, 4, 4, 4, 5, 5, 7, 9] → median = (4+5)/2 = 4.5
+
+    Robust to outliers (unlike mean).
+
+    ML USE: Robust imputation for features with outliers
+
+MODE (Most frequent):
+    Data: [1, 2, 2, 3, 3, 3] → mode = 3
+
+    ML USE: Categorical feature imputation
+
+RANGE:
+    max - min = 9 - 2 = 7
+
+INTERQUARTILE RANGE (IQR):
+    Q1 (25th percentile) = 4
+    Q3 (75th percentile) = 6.5
+    IQR = Q3 - Q1 = 2.5
+
+    ML USE: Outlier detection (values outside Q1 - 1.5×IQR or Q3 + 1.5×IQR)
+
+================================================================================
+2. VARIANCE AND STANDARD DEVIATION
+================================================================================
+
+VARIANCE:
+    σ² = (1/n) Σ(xᵢ - μ)²
+
+    "Average squared distance from the mean"
+
+    Data: [2, 4, 4, 4, 5, 5, 7, 9], mean = 5
+    σ² = ((2-5)² + (4-5)² + (4-5)² + (4-5)² + (5-5)² + (5-5)² + (7-5)² + (9-5)²) / 8
+       = (9 + 1 + 1 + 1 + 0 + 0 + 4 + 16) / 8
+       = 32 / 8 = 4.0
+
+STANDARD DEVIATION:
+    σ = √σ² = √4.0 = 2.0
+
+    Same units as original data.
+
+    68% of data within ±1σ of mean
+    95% of data within ±2σ of mean
+    99.7% of data within ±3σ of mean
+
+ML USE:
+    - Feature scaling: (x - μ) / σ → mean=0, std=1
+    - Outlier detection: values beyond ±3σ are suspicious
+    - Model uncertainty: std of predictions across folds
+
+POPULATION vs SAMPLE:
+    Population variance: σ² = (1/N) Σ(xᵢ - μ)²
+    Sample variance: s² = (1/(n-1)) Σ(xᵢ - x̄)²
+
+    Python: np.std(data, ddof=0) for population, ddof=1 for sample
+    Pandas: df.std() uses ddof=1 by default
+
+================================================================================
+3. CORRELATION
+================================================================================
+
+PEARSON CORRELATION:
+    r = Cov(X,Y) / (σₓ × σᵧ)
+
+    Range: -1 to +1
+    +1: Perfect positive linear relationship
+     0: No linear relationship
+    -1: Perfect negative linear relationship
+
+EXAMPLE:
+    X = [1, 2, 3, 4, 5]
+    Y = [2, 4, 5, 4, 5]
+
+    r ≈ 0.87 (strong positive)
+
+ML USE:
+    - Feature selection: Remove highly correlated features (redundancy)
+    - Multicollinearity detection: High correlation between features hurts
+      linear models
+    - Feature-target correlation: Identify useful features
+
+SPEARMAN CORrelation:
+    Rank-based correlation (robust to outliers and non-linear monotonic
+    relationships).
+
+    ML USE: Non-linear feature relationships
+
+================================================================================
+4. SAMPLING
+================================================================================
+
+RANDOM SAMPLING:
+    Each observation has equal probability of being selected.
+
+STRATIFIED SAMPLING:
+    Sample proportional to subgroups.
+    If 30% of data is class 1, sample 30% class 1.
+
+    ML USE: Stratified train/test split preserves class distribution.
+
+SAMPLING DISTRIBUTION:
+    Distribution of a statistic (e.g., mean) computed from many samples.
+
+    If we take many samples and compute the mean of each,
+    the distribution of means approaches a normal distribution
+    (Central Limit Theorem).
+
+================================================================================
+5. CENTRAL LIMIT THEOREM (CLT)
+================================================================================
+
+The CLT states:
+    The distribution of sample means approaches a normal distribution
+    as sample size increases, regardless of the population distribution.
+
+    X̄ ~ N(μ, σ²/n)
+
+    The larger the sample, the closer to normal.
+
+    ML USE:
+    - Justifies using normal-distribution-based tests
+    - Confidence intervals for model performance
+    - Bootstrap estimation of uncertainty
+
+================================================================================
+6. CONFIDENCE INTERVALS
+================================================================================
+
+A range of values likely to contain the true parameter.
+
+    95% CI for mean: x̄ ± 1.96 × (σ/√n)
+
+EXAMPLE:
+    Sample mean accuracy: 0.85
+    Standard error: 0.02
+    95% CI: 0.85 ± 1.96 × 0.02 = [0.81, 0.89]
+
+    We are 95% confident the true accuracy is between 81% and 89%.
+
+ML USE:
+    - Report model performance with uncertainty
+    - Compare models: If CIs overlap, difference may not be significant
+    - Cross-validation produces confidence intervals for metrics
+
+================================================================================
+7. HYPOTHESIS TESTING
+================================================================================
+
+FRAMEWORK:
+    H₀ (null hypothesis): No effect/difference
+    H₁ (alternative hypothesis): There is an effect/difference
+
+    Collect data → Compute test statistic → Calculate p-value → Decide
+
+P-VALUE:
+    Probability of observing data as extreme as (or more extreme than)
+    what we observed, assuming H₀ is true.
+
+    Small p-value (< 0.05): Evidence against H₀ → Reject H₀
+    Large p-value (> 0.05): Insufficient evidence → Fail to reject H₀
+
+EXAMPLE — Model Comparison:
+    Model A accuracy: 0.87
+    Model B accuracy: 0.85
+    Is the difference significant?
+
+    H₀: μ_A = μ_B (no difference)
+    H₁: μ_A > μ_B (A is better)
+
+    Paired t-test on cross-validation scores:
+    p-value = 0.03
+
+    Since p < 0.05, we reject H₀. Model A is significantly better.
+
+COMMON TESTS:
+    t-test: Compare means of two groups
+    Chi-square: Test independence of categorical variables
+    ANOVA: Compare means of multiple groups
+
+ML USE:
+    - Model comparison: Is model A significantly better than B?
+    - Feature significance: Does this feature matter?
+    - A/B testing: Does the new model perform better in production?
+
+================================================================================
+8. OUTLIER DETECTION
+================================================================================
+
+METHODS:
+
+1. Z-SCORE:
+   z = (x - μ) / σ
+   |z| > 3 → outlier
+
+2. IQR METHOD:
+   Lower bound: Q1 - 1.5 × IQR
+   Upper bound: Q3 + 1.5 × IQR
+   Values outside → outlier
+
+3. MODIFIED Z-SCORE:
+   Uses median instead of mean (more robust)
+
+ML USE:
+    - Data cleaning: Remove or cap outliers
+    - Anomaly detection: Identify unusual patterns
+    - Robust models: Use algorithms resistant to outliers
+
+================================================================================
+9. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Correlation ≠ Causation
+    Ice cream sales and drowning rates are correlated.
+    But ice cream doesn't cause drowning. (Both increase in summer.)
+
+MISTAKE 2: Over-relying on mean
+    Income data: [30k, 35k, 40k, 1000000]
+    Mean = 266,250 (misleading!)
+    Median = 37,500 (more representative)
+
+MISTAKE 3: Ignoring p-value context
+    p < 0.05 doesn't mean the effect is LARGE or IMPORTANT.
+    With large samples, even tiny differences can be "significant."
+
+MISTAKE 4: Multiple testing problem
+    Testing 20 hypotheses at α=0.05 → expect 1 false positive.
+    Use Bonferroni correction: α / number_of_tests.
+
+MISTAKE 5: Using test data for statistics
+    Computing statistics on the test set leaks information.
+    Always use training data for EDA and statistics.
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between mean and median?
+2. What does a correlation coefficient of -0.8 mean?
+3. What is the Central Limit Theorem?
+4. What does a p-value of 0.03 mean?
+5. When should you use stratified sampling?
+
+================================================================================
+NEXT LESSON: 06_OPTIMIZATION/optimization_for_ml.txt
+================================================================================

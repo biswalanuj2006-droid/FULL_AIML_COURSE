@@ -1,0 +1,17 @@
+================================================================================
+TESTING — PROJECTS
+================================================================================
+
+PROJECT 1: UNIT TESTS (Beginner)
+===================================
+Write unit tests for ML functions.
+
+PROJECT 2: API TEST SUITE (Intermediate)
+==========================================
+Build comprehensive API test suite.
+
+PROJECT 3: TEST AUTOMATION (Advanced)
+=======================================
+Build automated testing pipeline for ML system.
+
+================================================================================

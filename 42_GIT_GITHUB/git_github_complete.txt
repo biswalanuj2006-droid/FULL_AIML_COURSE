@@ -1,0 +1,131 @@
+================================================================================
+MODULE 42: GIT & GITHUB — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Use Git for version control
+- Collaborate using branches and pull requests
+- Manage code history effectively
+- Protect secrets and sensitive data
+- Set up GitHub Actions for CI/CD
+
+================================================================================
+1. GIT BASICS
+================================================================================
+
+INIT & CLONE
+-------------
+git init                    # Initialize new repo
+git clone <url>             # Clone existing repo
+
+BASIC WORKFLOW
+--------------
+git status                  # Check status
+git add .                   # Stage all changes
+git commit -m "message"     # Commit
+git push origin main        # Push to remote
+git pull origin main        # Pull from remote
+
+HISTORY
+-------
+git log                     # View commits
+git log --oneline           # Compact log
+git diff                    # View changes
+git diff --staged           # View staged changes
+
+================================================================================
+2. BRANCHING
+================================================================================
+
+git branch feature-1        # Create branch
+git checkout feature-1      # Switch to branch
+git checkout -b feature-1   # Create and switch
+git branch -d feature-1     # Delete branch
+git branch -a               # List all branches
+
+MERGE
+-----
+git checkout main
+git merge feature-1         # Merge feature into main
+
+REBASE (linear history)
+------------------------
+git checkout feature-1
+git rebase main             # Rebase onto main
+
+PULL REQUESTS
+--------------
+1. Push feature branch
+2. Create PR on GitHub
+3. Review code
+4. Merge after approval
+
+================================================================================
+3. .GITIGNORE
+================================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.env
+venv/
+
+# Data
+*.csv
+*.parquet
+data/
+
+# Models
+*.pkl
+*.h5
+*.pt
+models/
+
+# IDE
+.vscode/
+.idea/
+
+# Secrets — NEVER commit these!
+.env
+*.pem
+api_keys.txt
+
+================================================================================
+4. GIT FOR ML PROJECTS
+================================================================================
+
+BEST PRACTICES
+--------------
+- Commit code, not data (use .gitignore for large files)
+- Use DVC for dataset versioning
+- Tag model versions: git tag -a v1.0 -m "Model v1.0"
+- Write meaningful commit messages
+- Use branches for experiments
+
+COMMIT MESSAGE CONVENTION
+--------------------------
+feat: add new feature
+fix: fix a bug
+docs: update documentation
+experiment: try new approach
+data: update dataset
+model: retrain model
+
+================================================================================
+5. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between git merge and git rebase?
+Q2: Why should you never commit API keys?
+Q3: What goes in a .gitignore for ML projects?
+Q4: What is a pull request?
+Q5: How do you revert a bad commit?
+
+================================================================================
+END OF MODULE 42: GIT & GITHUB
+================================================================================

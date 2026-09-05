@@ -1,0 +1,62 @@
+================================================================================
+PRACTICE - SOFTMAX + CROSS-ENTROPY (code/ml/softmax_cross_entropy_from_scratch.py)
+================================================================================
+
+CONCEPTUAL
+ 1. Write softmax and cross-entropy formulas and name every symbol.
+ 2. Why does softmax need the max-subtraction trick for numerical
+    stability? Demonstrate with logits like [1000, 1001, 999].
+ 3. Why do we use log-softmax + NLL in practice instead of softmax then
+    log then CE?
+ 4. What is the gradient of cross-entropy w.r.t. logits for the correct
+    class and for incorrect classes? (Simplify: dCE/dz = softmax(z) - y)
+ 5. What happens to the loss when the model is confident and WRONG
+    (p(correct) = 1e-6)? Why does that make CE sensitive to label noise?
+ 6. Why is CE preferred over MSE for classification?
+
+NUMERICAL (by hand)
+ 7. z = [1, 2, 3]. Compute softmax values (leave as fractions, then
+    decimals).
+ 8. True label class 2 (index 2). Compute CE = -log(softmax(z)[2]).
+ 9. Compute dCE/dz for every element of z (should sum to 0 - check).
+10. Label smoothing: replace one-hot [0,0,1] with [eps/2, eps/2, 1-eps]
+    for eps=0.1. Recompute CE for z=[1,2,3] and explain the change.
+
+CODE (write and run)
+11. Implement naive softmax (exp(z)/sum) and stable softmax
+    (max-subtract); verify equality and compare on logits scaled by
+    1000.
+12. Implement cross_entropy(logits, labels) both ways (one-hot vs
+    integer labels).
+13. Implement the combined softmax+CE forward and its analytic backward
+    in ONE pass (no intermediate exp of large values).
+14. Verify with finite differences: max |numeric_grad - analytic_grad|
+    < 1e-5 on random logits (see the shipped gradient-check code).
+15. Train a tiny linear classifier on 3 synthetic Gaussian classes with
+    your softmax-CE; report accuracy and final loss.
+
+DEBUGGING
+16. Loss printed as NaN from epoch 1. Name three causes specific to
+    softmax-CE (large logits, wrong label encoding, inf in data).
+17. Predictions are all class 0 even on balanced data - what does that
+    suggest about the last layer's bias init or the loss reduction?
+18. The gradient check fails at exactly one logit component - what
+    indexing bug does that point to?
+19. Softmax outputs sum to 0.98 instead of 1.0 - what coding error?
+
+CHALLENGES
+20. Derive and implement label smoothing as part of the loss; show
+    accuracy vs confidence calibration effect on a small net.
+21. Implement temperature-scaled softmax (divide logits by T) and show
+    how T affects prediction confidence on a trained model.
+22. Compare training 3-class MNIST-subset with your CE vs MSE at the
+    output - which converges and why?
+
+REAL-WORLD SCENARIO
+23. Your multi-class classifier is deployed and returns confidences.
+    Users complain it is overconfident on unseen classes. Explain the
+    cause and two mitigations (calibration, threshold, OOD detection).
+
+================================================================================
+END
+================================================================================

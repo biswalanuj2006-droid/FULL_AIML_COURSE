@@ -1,0 +1,64 @@
+================================================================================
+THINK - 60 GRAPH MACHINE LEARNING (hard reasoning)
+================================================================================
+Answer with derivations or arguments. Items marked OPEN PROBLEM are
+genuinely unsolved; say what evidence would settle them.
+
+1. Prove/argue that one GCN layer computes a normalized weighted
+   average of neighbor features, and that stacking L layers is a
+   polynomial filter of the adjacency. What does this say about what
+   the model CANNOT represent without node features?
+
+2. Weisfeiler-Lehman: two graphs that are 1-WL indistinguishable cannot
+   be told apart by any message-passing GNN with injective aggregation.
+   State the limit precisely and name one architecture family that
+   escapes it (higher-order / substructure counting) and its cost.
+
+3. Over-smoothing: show that repeated application of the normalized
+   adjacency drives node features toward the dominant eigenvector
+   (all nodes ~equal). Derive why residual/skip connections and
+   normalization delay but do not remove this, and what practical depth
+   budget that implies.
+
+4. Degree bias: a node of degree 1 aggregates one neighbor; a hub
+   averages 10,000. Analyze how this skews learned representations and
+   propose a normalization or sampling scheme that provably reduces the
+   skew.
+
+5. Heterophily: message passing assumes neighbors are informative
+   (often same-class). For fraud (fraudsters mimic normal users' edges)
+   this assumption inverts. Formalize when neighbor averaging HELPS and
+   when it HURTS in terms of label correlation along edges.
+
+6. Link prediction leakage: derive exactly why random row splits leak
+   when the model's message passing uses edges whose targets are in the
+   test set. Give the split that provably avoids it and its cost.
+
+7. Scalability: full-batch GCN is memory-bound by the adjacency
+   product. Compare neighbor sampling (variance: how many neighbors?),
+   Cluster-GCN, and decoupled propagation (precompute A^k X) in bias /
+   variance / wall-clock terms.
+
+8. Transduction vs induction: DeepWalk needs re-training for a new node;
+   GraphSAGE does not. Explain what "learning an aggregator" buys and
+   the assumption it makes about how new nodes attach to the graph.
+
+9. Graph RAG: retrieval by relationship vs by text. Give a question
+   class where vector search cannot win regardless of embedding quality,
+   and sketch the entity-linking failure modes that make graph
+   retrieval silently wrong.
+
+10. (OPEN PROBLEM) Expressive power vs scalability vs inductive
+    generalization: no message-passing architecture simultaneously
+    reaches high-order expressivity, billion-edge scale, and robust
+    inductive performance. Choose the two you would optimize and
+    defend the trade.
+
+11. (OPEN PROBLEM) Robustness: an adversary adds/deletes a small number
+    of edges to flip a node's classification. Why is this easy against
+    GNNs (message passing amplifies perturbations)? Propose a defense
+    and the attack model you would evaluate it against.
+
+12. Design GNNs for a temporal graph (edges have timestamps, structure
+    evolves). Which parts of the static stack transfer, and how do you
+    keep evaluation honest when neighborhoods change over time?

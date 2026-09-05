@@ -1,0 +1,215 @@
+================================================================================
+INTERVIEW PREPARATION — COMPLETE GUIDE
+================================================================================
+
+This module covers interview preparation across all AI/ML topics.
+
+================================================================================
+1. PYTHON INTERVIEW QUESTIONS (50+)
+================================================================================
+
+BASIC
+-----
+Q1: What is the difference between a list and a tuple?
+A: Lists are mutable (can change), tuples are immutable (cannot change).
+   Tuples are faster and can be used as dictionary keys.
+
+Q2: What is a dictionary? What is its time complexity?
+A: Key-value pairs. Average O(1) for lookup, insert, delete.
+   Uses hash table internally.
+
+Q3: What is the difference between 'is' and '=='?
+A: '==' compares values, 'is' compares identity (same object in memory).
+
+Q4: Explain list comprehension vs generator expression.
+A: List comp creates entire list in memory: [x for x in range(1000000)]
+   Generator yields one at a time: (x for x in range(1000000))
+   Generator is memory efficient for large datasets.
+
+Q5: What are *args and **kwargs?
+A: *args: tuple of positional arguments
+   **kwargs: dictionary of keyword arguments
+   def f(*args, **kwargs): print(args, kwargs)
+
+ADVANCED
+--------
+Q6: Explain Python's GIL.
+A: Global Interpreter Lock — only one thread executes Python bytecode at a time.
+   Use multiprocessing for CPU-bound, asyncio for I/O-bound.
+
+Q7: What is a decorator? Write one from scratch.
+A: A function that takes a function and returns a new function.
+   def timer(func):
+       def wrapper(*args, **kwargs):
+           import time; start = time.time()
+           result = func(*args, **kwargs)
+           print(f"{func.__name__}: {time.time()-start:.4f}s")
+           return result
+       return wrapper
+
+Q8: What is the difference between shallow and deep copy?
+A: Shallow copy: copies outer object, references inner objects
+   Deep copy: recursively copies everything
+   import copy; copy.copy() vs copy.deepcopy()
+
+Q9: Explain generators and yield.
+A: A generator is a function that uses 'yield' to produce values lazily.
+   It doesn't compute all values at once — produces them on demand.
+
+Q10: What are Python's magic/dunder methods?
+A: Special methods like __init__, __repr__, __add__, __len__
+   that define object behavior for built-in operations.
+
+================================================================================
+2. ML INTERVIEW QUESTIONS (50+)
+================================================================================
+
+FUNDAMENTALS
+------------
+Q1: What is the difference between supervised and unsupervised learning?
+A: Supervised: learns from labeled data (input → known output)
+   Unsupervised: finds patterns in unlabeled data (no output given)
+
+Q2: Explain bias-variance tradeoff.
+A: High bias = underfitting (model too simple)
+   High variance = overfitting (model too complex)
+   Goal: find the sweet spot between them.
+
+Q3: What is overfitting and how do you prevent it?
+A: Model learns training data too well, including noise.
+   Prevention: regularization, dropout, cross-validation,
+   more data, simpler model, early stopping.
+
+Q4: What is cross-validation and why use it?
+A: Split data into K folds, train on K-1, test on 1, rotate.
+   More reliable estimate than single train/test split.
+
+Q5: Explain precision vs recall.
+A: Precision = TP / (TP + FP) — "Of predicted positives, how many correct?"
+   Recall = TP / (TP + FN) — "Of actual positives, how many caught?"
+   F1 = harmonic mean of both.
+
+ALGORITHMS
+----------
+Q6: When would you use Random Forest vs XGBoost?
+A: RF: robust, less tuning, parallelizable
+   XGBoost: typically higher accuracy, sequential, needs more tuning
+
+Q7: Explain how SVM works.
+A: Finds the maximum margin hyperplane separating classes.
+   Uses kernel trick for non-linear boundaries.
+   Support vectors are the closest points to the boundary.
+
+Q8: What is regularization? L1 vs L2?
+A: Adds penalty to loss function to prevent overfitting.
+   L1 (Lasso): adds |w|, can zero out features (feature selection)
+   L2 (Ridge): adds w², shrinks weights toward zero
+
+Q9: Explain gradient descent.
+A: Optimization algorithm that updates parameters in the direction
+   of steepest descent of the loss function.
+   w = w - learning_rate * gradient
+
+Q10: What is the curse of dimensionality?
+A: As dimensions increase, data becomes sparse, distances become
+   less meaningful, and models need exponentially more data.
+
+================================================================================
+3. DEEP LEARNING INTERVIEW QUESTIONS (30+)
+================================================================================
+
+Q1: Explain backpropagation.
+A: Algorithm to compute gradients in neural networks.
+   Forward pass: compute predictions
+   Compute loss
+   Backward pass: use chain rule to compute gradients w.r.t. each weight
+   Update weights using gradient descent
+
+Q2: Why use ReLU over sigmoid in hidden layers?
+A: ReLU avoids vanishing gradient problem, is computationally cheaper,
+   and leads to faster convergence. Sigmoid squashes to (0,1) which
+   causes gradients to vanish in deep networks.
+
+Q3: What is batch normalization?
+A: Normalizes layer inputs to have mean 0, variance 1.
+   Benefits: faster training, allows higher learning rates,
+   acts as regularization.
+
+Q4: Explain the transformer architecture.
+A: Uses self-attention mechanism to process all positions in parallel.
+   Key components: multi-head attention, positional encoding,
+   feed-forward network, residual connections, layer normalization.
+
+Q5: What is transfer learning?
+A: Using a pretrained model as starting point for a new task.
+   Early layers capture general features (edges, textures).
+   Fine-tune later layers for task-specific features.
+
+================================================================================
+4. SYSTEM DESIGN INTERVIEW (20+)
+================================================================================
+
+Q1: Design a real-time ML prediction system.
+A: Components:
+   - API Gateway (rate limiting, auth)
+   - Feature Store (Redis for real-time features)
+   - Model Serving (FastAPI + model)
+   - Monitoring (latency, accuracy, drift)
+   - Database (PostgreSQL for predictions)
+   - Cache (Redis for frequent predictions)
+
+Q2: Design a recommendation system.
+A: Two-stage:
+   - Candidate generation (collaborative filtering, embeddings)
+   - Ranking (gradient boosting, neural networks)
+   - Features: user history, item features, context
+   - Cold start: content-based for new users
+
+Q3: Design a RAG system.
+A: Document Pipeline → Embedding → Vector DB → Retrieval
+   → Context Construction → LLM → Response → Evaluation
+
+================================================================================
+5. CODING INTERVIEW (30+ problems)
+================================================================================
+
+Implement from scratch during interview:
+1. train/test split
+2. standardization
+3. linear regression
+4. logistic regression
+5. KNN
+6. K-Means
+7. confusion matrix
+8. precision, recall, F1
+9. softmax
+10. cross-entropy loss
+11. neural network forward pass
+12. attention mechanism
+13. gradient descent
+
+================================================================================
+6. INTERVIEW TIPS
+================================================================================
+
+BEFORE THE INTERVIEW:
+- Study the company's AI/ML stack
+- Review recent papers they've published
+- Prepare questions about their challenges
+
+DURING THE INTERVIEW:
+- Clarify the problem before coding
+- Think out loud
+- Start with brute force, then optimize
+- Test your solution with examples
+- Discuss time/space complexity
+- Handle edge cases
+
+AFTER THE INTERVIEW:
+- Send thank you email
+- Follow up on timeline
+- Review what you could improve
+
+================================================================================
+END OF INTERVIEW PREPARATION
+================================================================================

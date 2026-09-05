@@ -1,0 +1,417 @@
+================================================================================
+PRACTICE.txt - LLM COURSE PRACTICE SYSTEM
+Levels: 1 Conceptual | 2 Mathematical | 3 Implementation | 4 Debugging |
+5 Architecture | 6 System Design | 7 Research | 8 Interview.
+Every numeric answer is independently verified in "VERIFIED ANSWERS".
+================================================================================
+
+================================================================================
+ATTENTION + TRANSFORMERS (Parts 6-11) - 10E/10M/10H/5X
+================================================================================
+EASY
+1. Write Attention(Q,K,V) and name every symbol.
+2. Why divide scores by sqrt(dk)?
+3. What is the causal mask and where is it applied?
+4. Why does an LLM need position information at all?
+5. Sketch a decoder-only block (layers + residuals).
+6. MHA vs single head: what does each head compute?
+7. Why residual connections?
+8. Why LayerNorm/RMSNorm and pre-norm placement?
+9. What does the LM head produce - logits or probabilities?
+10. Encoder vs decoder attention pattern - one sentence each.
+
+MEDIUM
+11. X is [T=4,D=8]; write every tensor shape through one MHA head (H=2).
+12. Derive attention FLOPs O(T^2 d) and memory O(T^2).
+13. Why is softmax invariant to adding a constant - and why is that the
+    stability trick?
+14. Show the softmax row result for scores [0.707,0,0.707] (dk=2 worked
+    example in COURSE Part 6).
+15. Why does GPT use causal masking during TRAINING (not only generation)?
+16. Pre-norm vs post-norm: which enables deep stacks and why?
+17. SwiGLU vs ReLU MLP at equal compute - why gating wins.
+18. RoPE: why does rotating pairs make scores depend on relative distance?
+19. What limits encoder-decoder models vs decoder-only at scale?
+20. If heads share V but not Q/K, is that still MHA? What breaks?
+
+HARD
+21. Prove softmax(qk^T/sqrt(d)) with q,k ~ N(0,1) keeps score variance ~1.
+22. Estimate params of a GPT-2-124M-style config (V=50257,D=768,N=12) by
+    hand: embeddings, attention, FFN, norms; compare to 124M total.
+23. Attention without scaling at dk=1024: show softmax saturates (compute
+    exp of a large score) and gradients -> 0.
+24. Why are KV-cache reads the decode bottleneck - connect bandwidth to
+    tokens/s for a 7B fp16 model (14GB, ~1TB/s) -> min ms/token.
+25. Design position encoding that extrapolates to 2x trained length.
+
+EXPERT
+26. Derive GQA KV memory vs MHA for L=32,H=32,Dh=128,G=8 at 4096 tokens.
+27. Explain why pre-norm + residuals keep gradient norm bounded across N.
+28. FlashAttention: show how online softmax (running max) reproduces
+    exact softmax without materializing [T,T].
+29. Speculative decoding acceptance: why does verifying k drafts in one
+    pass preserve the target distribution?
+30. Research: where does MHA still beat GQA - and what does that imply
+    for architecture search?
+
+================================================================================
+LANGUAGE MODELING + LLM ARCHITECTURE (Parts 12-19) - 10E/10M/10H/5X
+================================================================================
+EASY
+1. Write the autoregressive factorization of P(x1..xn).
+2. In training "The cat is", what are the targets?
+3. What is a logit? Why is it not a probability?
+4. Define perplexity and give its formula from loss.
+5. How does BPE build a vocabulary?
+6. Name 4 special tokens and their jobs.
+7. What does "tied embeddings" mean?
+8. What hyperparameters define an LLM's size?
+9. Temperature: what does T<1 do to the distribution?
+10. What is teacher forcing?
+
+MEDIUM
+11. A model outputs logits [2,1,0.1]; give softmax probs and ppl of a
+    single token with prob 0.659 (verify: -ln(0.659)=0.417 -> ppl 1.518).
+12. Why does ppl only compare models on the same tokenizer?
+13. Char LM on 40 chars: vocab 40; word-level would be ~1k tokens - what
+    changes in cost and capability?
+14. Compute parameters for V=32k, D=4096, N=32 tied + untied embeddings.
+15. KV cache: without it, why is decoding O(t^2)?
+16. Why does low ppl not imply factual correctness?
+17. top-p vs top-k: when does each fail?
+18. Loss masking in SFT: which tokens contribute to the loss and why?
+19. What is the residual stream view of a Transformer block?
+20. Why do LLMs add position BEFORE the first block (or via RoPE inside)?
+
+HARD
+21. Derive that next-token CE = mean -log P - and that minimizing CE =
+    minimizing KL(data||model) up to H(data).
+22. Compute total params of a real-ish 7B-class config: V=32k, D=4096,
+    N=32, FFN 4D, GQA G=8 - estimate embeddings, per-block, LM head.
+23. Greedy decoding a 100-token story: why does it degenerate, and how do
+    top-k/top-p/repetition penalty each attack the cause?
+24. ppl vs loss: show ppl = exp(loss) from definitions.
+25. Given batch of 2 sequences, lengths 12 and 300: packing with padding
+    wastes ~?; document the efficiency argument for packing.
+
+EXPERT
+26. Explain the shifted-labels bug: off-by-one in target construction and
+    how to unit-test it (assert logits[t] predicts token t+1).
+27. Calibration: why are LLM probabilities overconfident, and does ppl
+    measure calibration?
+28. Which parts of the vocabulary dominate embedding memory and how do
+    models share/compress embeddings?
+29. Design a loss that down-weights common tokens (like infrequent-aware
+    CE) - trade-offs?
+30. Research: does the residual stream "entropy collapse" explain why
+    deeper models need more data?
+
+================================================================================
+TRAINING / OPTIMIZATION / MEMORY (Parts 20-32) - 10E/10M/10H/5X
+================================================================================
+EASY
+1. Why is pretraining self-supervised?
+2. What is gradient accumulation for?
+3. Adam vs AdamW difference in one sentence.
+4. Why gradient clipping?
+5. What lives in a checkpoint beyond weights?
+6. BF16 vs FP16: why BF16 for LLMs?
+7. What is data deduplication and why does it matter?
+8. Why warmup before high LR?
+9. What is an optimizer state (Adam m,v)?
+10. Name 4 data sources and one quality filter each.
+
+MEDIUM
+11. 7B model BF16 training: params/grads/AdamW-state bytes (fp32 moments) -
+    show ~84GB before activations.
+12. Compute FLOPs for 6*N*D with N=7e9, D=1e12 tokens.
+13. Effective batch = bs*seq*accum; target 2M tokens with seq 2048 on 8
+    GPUs bs 8: how many accumulation steps?
+14. Why does ZeRO-3 shard weights AND grads AND states - what breaks if
+    you only shard states?
+15. Cosine LR: why decay to ~10% not 0?
+16. Loss spikes to NaN mid-run: enumerate top 5 causes + fixes.
+17. Contamination: why does a benchmark in pretraining invalidate it?
+18. Why does overtraining on duplicates increase memorization?
+19. Resume training: what breaks if optimizer state is missing?
+20. Compute KV cache for a GQA model (L=32,H=32,G=8,Dh=128) at 128k tokens.
+
+HARD
+21. Memory budget a 70B BF16 training step on 8x80GB GPUs with ZeRO-3 -
+    show the math and where it fails.
+22. Why does AdamW decoupling matter: write both update rules and show the
+    weight-decay difference.
+23. Micro-batch + pipeline bubbles: estimate bubble fraction with P stages
+    and M micro-batches (bubble ~ (P-1)/(M+P-1)).
+24. Explain why FSDP all-gathers weights per layer: memory vs comms.
+25. Loss scaling: FP16 underflow at what magnitude, and how does scaling
+    fix it?
+
+EXPERT
+26. Derive why weight decay + Adam needs decoupling for good generalization
+    (scale invariance argument).
+27. Curriculum: order data easy->hard - does it beat shuffled on
+    converged loss? What do scaling-law papers say?
+28. Design a checkpointing scheme for a 30-day pretraining run with 2
+    GPU-node crashes/week - storage budget included.
+29. Sequence parallelism: which activations are split and why only
+    attention/FFN?
+30. Research: constant-LR + cooldown vs cosine on huge runs - trade-offs.
+
+================================================================================
+FINE-TUNING / LoRA / QUANTIZATION (Parts 33-39) - 10E/10M/10H/5X
+================================================================================
+EASY
+1. W' = W + (alpha/r) BA: what are the shapes of B and A?
+2. Why is B initialized to zero?
+3. LoRA params for D=768, r=8 vs full 768x768 (answer: 12,288 vs 589,824).
+4. What does QLoRA add on top of LoRA?
+5. INT8 vs INT4 bytes per param.
+6. Why loss-mask prompts in SFT?
+7. SFT vs RLHF vs DPO - one line each.
+8. When should you NOT fine-tune?
+9. What is NF4?
+10. What is GPTQ/AWQ in one sentence each?
+
+MEDIUM
+11. 7B QLoRA on a 24GB GPU: account for 4-bit weights (~4GB) + adapter +
+    activations - why does it fit where full FT does not?
+12. Compute memory savings: FP16 7B base vs 4-bit base.
+13. Why does DPO need no reward model: derive the DPO loss from the
+    Bradley-Terry optimal policy.
+14. Loss masking bug: what happens if prompt tokens are unmasked?
+15. Rank selection: r=64 vs r=8 - params and quality trade-off.
+16. Merge LoRA into base: what is the merged weight?
+17. Quantization error: why per-channel scales beat per-tensor?
+18. Why eval the quantized model, not the fp16 one?
+19. Adapter storage: 100 LoRA adapters vs 100 full fine-tunes - disk
+    comparison for a 7B model.
+20. Double quantization: what is being quantized a second time?
+
+HARD
+21. Calibrate AWQ: which channels to keep in FP16 and why (activation
+    magnitude).
+22. Derive why 4-bit GPTQ can beat round-to-nearest: Hessian-based
+    compensation (write the second-order objective).
+23. QLoRA backward: why must the 4-bit base be dequantized to compute
+    gradients through the adapter, and what is the memory trick?
+24. DPO on preference pairs: what makes a preference dataset bad
+    (answer: ties, biased judges, length artifacts)?
+25. LoRA on which layers matters most: Q/K/V/O/FFN - design the
+    experiment to find out.
+
+EXPERT
+26. When does LoRA underperform full FT - and the current evidence on
+    rank vs task difficulty.
+27. Show how weight quantization affects the attention softmax variance,
+    and why activations are harder to quantize than weights.
+28. QLoRA NF4 grid: why 4-bit normal floats beat uniform int4 for weights
+    (weight distribution argument).
+29. Research: PEFT + continual learning - do adapters forget less, and
+    how would you test it?
+30. Design an eval that catches quantization regressions on long-context
+    tasks specifically.
+
+================================================================================
+INFERENCE / SERVING / EVAL / SAFETY (Parts 40-47) - 10E/10M/10H/5X
+================================================================================
+EASY
+1. Prefill vs decode: what changes between them?
+2. Why is decode bandwidth-bound?
+3. KV cache: what is stored and why?
+4. Streaming: why SSE for chat?
+5. Perplexity vs exact match: when each?
+6. Name 3 hallucination mitigations.
+7. What is LLM-as-judge and its risk?
+8. Continuous batching in one sentence.
+9. Why does a longer prompt cost more than its token count suggests?
+10. Name 3 things to log per request.
+
+MEDIUM
+11. 7B fp16 decode floor: 14GB weights at ~1TB/s -> min ms/token.
+12. KV cache 128k context GQA-8: compute GiB (Part 30 formula).
+13. Batching: why does batch B amortize weight reads, and what latency
+    price do you pay?
+14. Speculative decoding: why can a draft+verify pair beat direct
+    decoding in throughput while preserving the distribution?
+15. Prefix caching: two users share a 4k system prompt - how much prefill
+    do you save?
+16. Judge calibration: LLM judge says 90% of answers are good; humans say
+    70% - what do you do?
+17. Why can low-prompt-entropy tasks use small models (routing)?
+18. Design /chat streaming endpoint error handling (mid-stream model
+    failure).
+19. Eval contamination: your RAG eval questions were written by the same
+    model you eval - risk?
+20. Model router quality regression: cheap model silently worse on math -
+    how do you catch it?
+
+HARD
+21. Throughput vs latency math for continuous batching with Poisson
+    arrivals - sketch the scheduler trade-off.
+22. Memory-bound decode: derive tokens/s = bandwidth / bytes-per-token for
+    INT4 vs FP16 at 7B and 70B.
+23. Speculative decoding acceptance rate p: speedup ~ 1/(1-p+p/k) -
+    derive and sanity-check p=0.7, k=4.
+24. Why do LLMs hallucinate more on long outputs? (self-reinforcement,
+    calibration, context dilution).
+25. Design a faithfulness checker for RAG that does not use the generator.
+
+EXPERT
+26. Design a serving fleet: 3 model sizes, cost caps, canary rollout -
+    with the metrics that gate a model swap.
+27. Why is BLEU/ROUGE weak for open-ended generation and what replaces it?
+28. Research: does quantization hurt long-context attention more than
+    short? Design the experiment.
+29. Eval leakage through few-shot examples in benchmarks - detect it.
+30. Build the eval harness that blocks a prompt regression in CI
+    (unit-test the harness itself).
+
+================================================================================
+SYSTEM DESIGN + RESEARCH (Parts 48-65) - 10E/10M/10H/5X
+================================================================================
+EASY
+1. Why is attention O(T^2)?
+2. Long context: 3 ways to beat quadratic attention.
+3. MoE: params vs active params.
+4. What is distillation and what does the student learn from soft targets?
+5. Model merging: what is a task vector?
+6. Name 3 LLM API security controls.
+7. What is an agent vs a workflow?
+8. Cost formula: total = ?
+9. Name 3 observability signals per request.
+10. FlashAttention: why faster if the math is the same?
+
+MEDIUM
+11. Design RAG for 5M docs with daily updates: ingest + retrieval +
+    freshness + evals.
+12. MoE load balancing: why does the router collapse to few experts and
+    what loss fixes it?
+13. Synthetic data: 3 contamination risks + mitigations.
+14. Distillation temperature: why soft targets carry "dark knowledge"?
+15. Merge two fine-tunes (code + chat): why can averaging fail?
+16. Design an agent that cannot be tricked into sending files to an
+    attacker URL - enumerate layers.
+17. Cost: 20-step agent loop, 4k prompt each step - derive cost vs single
+    answer (COURSE Part 58 numbers).
+18. Long context via retrieval vs 1M-token model: pick criteria.
+19. What breaks if you serve a merged LoRA without testing the merge?
+20. Design eval drift monitoring for a production RAG.
+
+HARD
+21. MoE routing: derive the auxiliary load-balancing loss and its scale.
+22. Distillation: when does the student beat the teacher? (data coverage,
+    label noise arguments).
+23. Test-time compute: self-consistency vs CoT - when does more compute
+    NOT help?
+24. Design an enterprise LLM platform with tenant isolation, RBAC-scoped
+    RAG, audit, and cost attribution - full architecture.
+25. FlashAttention tiling: show the online-softmax rescaling equations.
+
+EXPERT
+26. Research: what would make you choose SSM over Transformer for your
+    product? Define the experiment.
+27. Multi-agent: prove (or falsify) with an ablation that 3 agents beat 1.
+28. Continual learning for LLMs: adapter + replay - propose + evaluate.
+29. Model collapse: show the math of recursive synthetic training
+    narrowing variance.
+30. Frontier question: what is missing for agents to be production-safe
+    at scale?
+
+================================================================================
+INTERVIEW (Part 8) - THE 12 CLASSIC "WHY" QUESTIONS
+================================================================================
+1. Why does attention scale quadratically?
+2. Why divide by sqrt(dk)?
+3. Why causal masking?
+4. Why residual connections?
+5. Why LayerNorm (not BatchNorm)?
+6. Why does KV cache reduce computation?
+7. Why does KV cache increase memory usage?
+8. Why does GQA reduce KV cache memory?
+9. Why is LoRA parameter-efficient?
+10. Why does QLoRA require less memory?
+11. Why is BF16 useful for LLM training?
+12. Why does increasing context length increase cost?
+Full answers are inside COURSE.txt parts 6, 10, 24, 25, 30, 37-38, 41, 64.
+
+================================================================================
+FINAL EXAM (per COURSE.txt plan)
+================================================================================
+50 conceptual + 20 mathematical + 20 coding + 10 debugging + 10 Transformer
++ 10 LLM-training + 10 fine-tuning + 10 inference + 10 system-design + 10
+research. Sample blueprint: take one Easy/Medium per module above for
+conceptual; the 20 math questions below; coding = re-implement each
+EXAMPLE.py section without looking; debugging = the section below; the
+counted topic sets reuse the HARD questions per module. Scoring: 90-100
+Expert | 80-89 Advanced | 70-79 Strong intermediate | 60-69 Intermediate |
+<60 revise prerequisites.
+
+20 MATHEMATICAL QUESTIONS (answers in VERIFIED ANSWERS)
+1. softmax([2,1,0.1]) at T=1,0.5,2.
+2. cross entropy p=[.5,.5], q=[.9,.1]; then KL.
+3. ppl for avg token prob 0.5 and 0.9.
+4. -ln(0.659) and ppl of that token.
+5. Params V=32k,D=4096,N=32,tied: embeddings + per-block + head.
+6. LoRA params D=768,r=8 vs full; ratio.
+7. KV bytes/token L=32,H=32,Dh=128 fp16; GiB at 4096 and 128k.
+8. KV bytes/token GQA-8 same config.
+9. 7B BF16 training: params+grads+AdamW bytes.
+10. FLOPs 6*N*D for 7B x 1T tokens.
+11. Decode floor ms/token: 14GB @ 1TB/s.
+12. Agent cost: 20 steps x (4k in + 200 out) at $3/M in, $6/M out.
+13. FlashAttention saved writes: T=4096, one head fp16, [T,T] matrix bytes.
+14. Softmax row from COURSE Part 6 example.
+15. Perplexity from loss 1.204 (ppl=exp(1.204)=3.33).
+16. attention memory fp16 T=1000 single head.
+17. INT8 vs INT4 bytes for 7B weights (7GB vs 3.5GB).
+18. top-p: keep set for probs [0.659,0.242,0.099], p=0.9.
+19. Speculative decoding speedup 1/(1-p+p/k) with p=0.7,k=4.
+20. MoE: 8 experts, top-2, 7B/exp - total vs active params.
+
+DEBUGGING PRACTICE (10)
+1. Mask applied after softmax -> leak. Fix + test.
+2. Shape error Q@K instead of Q@K.T.
+3. NaN after 100 steps: logits un-scaled, grad explosion, lr spike.
+4. Shifted labels off by one: logits[t] vs target[t] mismatch.
+5. Tokenizer mismatch train/serve -> garbage output.
+6. Trainer resumes but loss jumps: optimizer state not loaded.
+7. LoRA not learning: B initialized nonzero, or base not frozen, or
+   alpha/r = 0.
+8. INT4 model much worse on your task: check scale calibration on YOUR
+   data.
+9. Streaming endpoint dies mid-token: no error handling in generator.
+10. RAG answers hallucinate: retrieval hit-rate 0.9 yet answers wrong -
+    instrument context faithfulness (never trust the answer alone).
+
+================================================================================
+VERIFIED ANSWERS
+================================================================================
+1. softmax([2,1,0.1]) T=1 -> [0.659,0.242,0.099]; T=0.5 -> [0.845,0.114,
+   0.041]; T=2 -> [0.508,0.307,0.185]. (EXAMPLE.py 05-07, 27-31)
+2. H(p,q)=1.204 nats; H(p)=0.693; KL=0.511.
+3. ppl(0.5)=2.0; ppl(0.9)=1.111.
+4. -ln(0.659)=0.417; ppl=exp(0.417)=1.518.
+5. emb 32k*4096=134,217,728 (~134M); block attn 4*4096^2=67,108,864 +
+   ffn 8*4096^2=134,217,728 + norm 4*4096=16,384 -> block ~201.3M; x32 =
+   6.44B; tied total ~6.58B (head free).
+6. 12,288 vs 589,824 -> 48x.
+7. 0.5 MiB/token; 4096 -> 2 GiB; 128k -> 64 GiB. (EXAMPLE.py 40-42)
+8. GQA-8: 0.0625 MiB/token (H/G=4 heads' worth of KV) -> 128k -> 8 GiB.
+9. params 14GB + grads 14GB + m,v fp32 56GB = 84GB.
+10. 6*7e9*1e12 = 4.2e22 FLOPs.
+11. 14GB / 1TB/s = 14 ms/token floor.
+12. in: 20*4k*$3/M = $0.24; out: 20*200*$6/M = $0.024; total $0.264.
+13. T^2 * 2B = 4096^2*2 = 33.6 MB saved per head per layer.
+14. [0.401,0.198,0.401] (row 0 of the COURSE Part 6 example).
+15. exp(1.204) = 3.333.
+16. 1000^2 * 2B = 2 MB per head.
+17. 7B fp16 = 14GB -> INT8 7GB -> INT4 3.5GB.
+18. cum [0.659,0.901,1.0]: p=0.9 keeps tokens 1-2 (2 tokens).
+19. 1/(1-0.7+0.7/4) = 1/0.475 = 2.11x.
+20. 8*7B total = 56B params; active = 2*7B + shared ~ 14B.
+Corrected-answer note: recall denominators and ppl/tokenizer comparability
+are the two most commonly botched numbers - both covered above.
+
+END OF PRACTICE.txt
+================================================================================

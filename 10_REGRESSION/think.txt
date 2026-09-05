@@ -1,0 +1,45 @@
+================================================================================
+THINK.TXT - 10 REGRESSION
+================================================================================
+
+1. Derive the OLS solution (X^T X)^-1 X^T y. When does X^T X fail to be
+   invertible, and what do Ridge/Lasso do about it differently?
+2. R-squared = 0.99 yet predictions are useless. Construct a scenario
+   (think: extrapolation, heteroscedasticity, outliers, leakage) and
+   explain which diagnostic catches it.
+3. Multicollinearity: two features correlate 0.99. OLS coefficients
+   explode in magnitude and flip sign. Explain why, then compare how
+   Ridge, Lasso, and dropping a feature handle it.
+4. The Gauss-Markov assumptions: state them, then for each give a real
+   dataset where it fails and the consequence.
+5. Outliers with high leverage vs high residual: distinguish them and
+   explain why influence = leverage x discrepancy. What does each do to
+   the fitted line?
+6. Lasso drives coefficients exactly to zero; Ridge never does. Explain
+   geometrically (constraint regions) and say which you would use for
+   feature selection and why.
+7. Prediction intervals vs confidence intervals: what does each promise
+   and which one would a business actually want? How do you build a
+   prediction interval for a tree-based model?
+8. You regress house price on area. Residuals grow with area. What
+   assumption fails, what transformation fixes it, and what does the
+   log-log coefficient now mean?
+9. Quantile regression at tau=0.9: what exactly does it estimate and when
+   would you choose it over OLS with a 10% trimmed mean?
+10. Regularization strength: as lambda -> inf, Ridge coefficients go to 0.
+    Derive the bias-variance path and find where test error is minimized
+    without looking at the test set (how?).
+11. A linear model with polynomial degree 15 interpolates every training
+    point yet fails on validation. Show the mechanism (Vandermonde,
+    condition number) and the fix.
+12. Time-ordered data and a random split give optimistic R2. Construct the
+    exact mechanism and the correct evaluation.
+13. Comparing models: Model A: MAE 3.1, Model B: MAE 3.0. Is B better?
+    Design the experiment that answers this with confidence.
+14. OPEN PROBLEM: model selection for regression under heteroscedastic
+    noise remains partly heuristic. Propose a criterion that handles
+    non-constant variance better than RMSE/R2 and discuss its
+    limitations.
+================================================================================
+END
+================================================================================

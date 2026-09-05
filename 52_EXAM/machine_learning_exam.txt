@@ -1,0 +1,175 @@
+# PART C: MACHINE LEARNING EXAM
+# Time: 60 minutes | Questions: 30 | Passing: 70%
+
+---
+
+## SECTION 1: ML FUNDAMENTALS (5 Questions)
+
+### Q1. What is the difference between supervised and unsupervised learning?
+A) Supervised uses labels, unsupervised doesn't  B) Supervised is faster  C) Unsupervised needs more data D) No difference
+
+<details><summary>Answer</summary>A) Supervised: input → known output mapping. Unsupervised: find patterns without labels</details>
+
+### Q2. What is overfitting?
+A) Model performs well on both train and test  B) Model memorizes training data, performs poorly on unseen data  C) Model is too simple  D) Model doesn't learn
+
+<details><summary>Answer</summary>B) Low training error but high test error — model captures noise instead of signal</details>
+
+### Q3. What is cross-validation?
+A) Training multiple models  B) Splitting data into K folds, training on K-1, testing on 1, rotating  C) Using two datasets  D) A type of regularization
+
+<details><summary>Answer</summary>B) K-fold CV gives more reliable performance estimates than a single train/test split</details>
+
+### Q4. What is the bias-variance tradeoff?
+A) High bias = underfitting, High variance = overfitting  B) No tradeoff  C) Always minimize bias  D) Always minimize variance
+
+<details><summary>Answer</summary>A) Total error = bias² + variance + noise. Simple models: high bias, low variance. Complex models: low bias, high variance</details>
+
+### Q5. What is data leakage?
+A) Data is too large  B) Test information accidentally used during training  C) Missing values  D) Feature scaling
+
+<details><summary>Answer</summary>B) e.g., scaling before split, using target-derived features — inflates performance estimates</details>
+
+---
+
+## SECTION 2: CLASSIFICATION (10 Questions)
+
+### Q6. What is the sigmoid function used for in logistic regression?
+A) Activation function that maps z to (0,1) probability
+
+### Q7. What is the decision boundary of a linear classifier?
+A) A hyperplane that separates classes  B) A circle  C) A curve D) Random
+
+<details><summary>Answer</summary>A) wᵀx + b = 0 — the boundary is a (d-1)-dimensional hyperplane in d dimensions</details>
+
+### Q8. What is the confusion matrix?
+A) A table showing TP, TN, FP, FN counts  B) A plot  C) A function  D) An algorithm
+
+### Q9. What is precision?
+A) TP/(TP+FP) — of predicted positives, how many are actually positive  B) TP/(TP+FN)  C) (TP+TN)/total  D) TP/total
+
+<details><summary>Answer</summary>A) Precision = TP/(TP+FP) — "quality of positive predictions"</details>
+
+### Q10. When is recall more important than precision?
+A) Spam detection  B) Cancer detection (missing a cancer case is worse than false alarm)  C) Both are always equal  D) Never
+
+<details><summary>Answer</summary>B) In medical diagnosis, we want to catch all positive cases (high recall) even at cost of more false positives</details>
+
+### Q11. What is the F1 score?
+A) Average of precision and recall  B) Harmonic mean of precision and recall  C) Sum of precision and recall D) Product
+
+<details><summary>Answer</summary>B) F1 = 2×P×R/(P+R) — harmonic mean balances precision and recall</details>
+
+### Q12. What is ROC-AUC?
+A) Area Under the ROC Curve — measures model's ability to rank positives higher than negatives
+
+### Q13. What is a Naive Bayes classifier?
+A) A simple probabilistic classifier based on Bayes' theorem with independence assumption between features
+
+### Q14. What is the Gini impurity?
+A) 1 - Σpᵢ² — used in decision trees to measure node impurity
+
+### Q15. What is the difference between L1 and L2 regularization in classification?
+A) L1 produces sparse solutions (feature selection), L2 produces small weights (no feature selection)
+
+---
+
+## SECTION 3: REGRESSION (5 Questions)
+
+### Q16. What is the difference between R² and adjusted R²?
+A) Adjusted R² penalizes for adding irrelevant features
+
+### Q17. What is the assumption of homoscedasticity?
+A) Constant variance of residuals across all predicted values
+
+### Q18. When should you use Ridge vs Lasso regression?
+A) Ridge: many small effects. Lasso: few large effects (sparse model with feature selection)
+
+### Q19. What is polynomial regression?
+A) Fitting a polynomial curve to data — extends linear regression with polynomial features
+
+### Q20. What is the difference between R² and MSE?
+A) R² is relative (0-1), MSE is absolute (depends on target scale)
+
+---
+
+## SECTION 4: ENSEMBLE & ADVANCED (5 Questions)
+
+### Q21. What is the difference between bagging and boosting?
+A) Bagging: parallel independent models, reduce variance. Boosting: sequential models, reduce bias.
+
+### Q22. What makes Random Forest different from a single Decision Tree?
+A) Random Forest uses bagging + random feature subset → reduces overfitting
+
+### Q23. What is XGBoost?
+A) Extreme Gradient Boosting — regularized gradient boosting with efficient implementation
+
+### Q24. What is the key difference between Random Forest and Gradient Boosting?
+A) RF: bagging (parallel, reduce variance). GB: boosting (sequential, reduce bias)
+
+### Q25. What is feature importance in tree-based models?
+A) Measures how much each feature contributes to reducing impurity across all trees
+
+---
+
+## SECTION 5: MODEL EVALUATION (5 Questions)
+
+### Q26. What is stratified K-fold cross-validation?
+A) Each fold preserves the percentage of samples for each class — important for imbalanced datasets
+
+### Q27. What is the difference between train/test split and cross-validation?
+A) Single split: faster but higher variance. CV: more reliable but slower.
+
+### Q28. What is the purpose of a validation set?
+A) Tune hyperparameters without touching the test set — prevents overfitting to test data
+
+### Q29. What is early stopping?
+A) Stopping training when validation loss stops improving — prevents overfitting
+
+### Q30. What is the difference between precision-recall curve and ROC curve?
+A) PR curve better for imbalanced datasets; ROC curve better for balanced datasets
+
+---
+
+## CODING CHALLENGES (Bonus)
+
+### Bonus Q1: Implement confusion matrix from scratch.
+```python
+def confusion_matrix(y_true, y_pred):
+    tp = sum((t == 1) and (p == 1) for t, p in zip(y_true, y_pred))
+    tn = sum((t == 0) and (p == 0) for t, p in zip(y_true, y_pred))
+    fp = sum((t == 0) and (p == 1) for t, p in zip(y_true, y_pred))
+    fn = sum((t == 1) and (p == 0) for t, p in zip(y_true, y_pred))
+    return [[tn, fp], [fn, tp]]
+```
+
+### Bonus Q2: Implement k-fold cross-validation from scratch.
+```python
+import numpy as np
+def k_fold_cv(X, y, model_class, k=5):
+    n = len(X)
+    indices = np.arange(n)
+    np.random.shuffle(indices)
+    fold_size = n // k
+    scores = []
+    for i in range(k):
+        test_idx = indices[i*fold_size:(i+1)*fold_size]
+        train_idx = np.concatenate([indices[:i*fold_size], indices[(i+1)*fold_size:]])
+        model = model_class()
+        model.fit(X[train_idx], y[train_idx])
+        score = model.accuracy(X[test_idx], y[test_idx])
+        scores.append(score)
+    return np.mean(scores), np.std(scores)
+```
+
+---
+
+## SCORING
+
+| Score | Level |
+|-------|-------|
+| 28-30 | Expert |
+| 24-27 | Advanced |
+| 20-23 | Intermediate |
+| 15-19 | Beginner |
+| <15 | Novice |

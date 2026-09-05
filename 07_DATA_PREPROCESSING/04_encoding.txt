@@ -1,0 +1,250 @@
+================================================================================
+MODULE 07 — DATA PREPROCESSING
+LESSON 04: ENCODING CATEGORICAL VARIABLES
+================================================================================
+
+## What You Will Learn
+- Why encoding is necessary
+- One-Hot Encoding
+- Ordinal Encoding
+- Label Encoding
+- Target Encoding
+- Frequency Encoding
+- When to use each method
+- Encoding with sklearn Pipeline
+
+================================================================================
+1. WHY ENCODE?
+================================================================================
+
+ML models work with NUMBERS, not text.
+Categorical variables (text) must be converted to numbers.
+
+Examples of categorical variables:
+    - color: "red", "blue", "green" (nominal — no order)
+    - size: "small", "medium", "large" (ordinal — has order)
+    - city: "NYC", "LA", "Chicago" (nominal, high cardinality)
+
+================================================================================
+2. ONE-HOT ENCODING
+================================================================================
+
+Creates a binary column for each category.
+
+    color: "red", "blue", "green"
+    → color_red: [1, 0, 0]
+    → color_blue: [0, 1, 0]
+    → color_green: [0, 0, 1]
+
+from sklearn.preprocessing import OneHotEncoder
+
+encoder = OneHotEncoder(sparse_output=False, drop='first', handle_unknown='ignore')
+X_encoded = encoder.fit_transform(df[['color']])
+
+PARAMETERS:
+    - drop='first': Avoids multicollinearity (dummy variable trap)
+    - handle_unknown='ignore': Handles unseen categories during transform
+    - sparse_output=False: Returns numpy array (not sparse matrix)
+
+WHEN TO USE:
+    - Nominal categories (no order)
+    - Low cardinality (< 15 categories)
+    - Linear models, KNN, SVM, Neural Networks
+
+WHEN NOT TO USE:
+    - High cardinality (city with 500 cities → 500 columns!)
+    - Tree-based models (they handle categoricals differently)
+
+PANDAS ONE-HOT:
+    pd.get_dummies(df, columns=['color'], drop_first=True)
+
+THE DUMMY VARIABLE TRAP:
+    If you have color_red, color_blue, color_green (all three),
+    they are perfectly correlated (knowing two determines the third).
+
+    SOLUTION: Use drop='first' to remove one column.
+    Or use drop='first' in OneHotEncoder.
+
+================================================================================
+3. ORDINAL ENCODING
+================================================================================
+
+Maps categories to ordered integers.
+
+    size: "small" → 0, "medium" → 1, "large" → 2
+
+from sklearn.preprocessing import OrdinalEncoder
+
+encoder = OrdinalEncoder(categories=[['small', 'medium', 'large']])
+df['size_encoded'] = encoder.fit_transform(df[['size']])
+
+WHEN TO USE:
+    - Ordinal categories (has meaningful order)
+    - Tree-based models (they can use ordinal encoding well)
+
+WHEN NOT TO USE:
+    - Nominal categories (no order)
+    - Linear models (they'll assume equal spacing between categories)
+
+================================================================================
+4. LABEL ENCODING
+================================================================================
+
+Maps each unique category to an integer (for TARGET variable).
+
+from sklearn.preprocessing import LabelEncoder
+
+le = LabelEncoder()
+y_encoded = le.fit_transform(['cat', 'dog', 'cat', 'bird'])
+# [0, 2, 0, 1]
+
+# Inverse transform
+y_original = le.inverse_transform([0, 2, 0, 1])
+# ['cat', 'dog', 'cat', 'bird']
+
+WHEN TO USE:
+    - Only for the TARGET variable (y)
+    - Classification targets
+
+WHEN NOT TO USE:
+    - For features (use OneHot or Ordinal instead)
+
+================================================================================
+5. TARGET ENCODING
+================================================================================
+
+Replaces each category with the mean of the target for that category.
+
+    color    → mean(target)
+    red      → 0.3  (30% are positive)
+    blue     → 0.7  (70% are positive)
+    green    → 0.5  (50% are positive)
+
+from category_encoders import TargetEncoder
+
+encoder = TargetEncoder(cols=['color'])
+df['color_encoded'] = encoder.fit_transform(df['color'], df['target'])
+
+PROS:
+    - Handles high cardinality well
+    - Captures target information
+    - Only one column per feature
+
+CONS:
+    - Can overfit (categories with few samples)
+    - Causes data leakage if not done carefully
+
+PREVENTING LEAKAGE:
+    - Use cross-validation (fit on train, transform on test)
+    - Add smoothing (blend with global mean)
+    - Use leave-one-out encoding
+
+================================================================================
+6. FREQUENCY ENCODING
+================================================================================
+
+Replaces each category with its frequency.
+
+    color    → frequency
+    red      → 0.4  (40% of data)
+    blue     → 0.35 (35% of data)
+    green    → 0.25 (25% of data)
+
+freq = df['color'].value_counts(normalize=True)
+df['color_freq'] = df['color'].map(freq)
+
+WHEN TO USE:
+    - High cardinality features
+    - When frequency itself is informative
+    - Quick and simple approach
+
+================================================================================
+7. BINARY ENCODING
+================================================================================
+
+Each category is converted to a binary number, then each bit becomes a column.
+
+    color: red=1, blue=2, green=3
+    Binary: red=01, blue=10, green=11
+    → color_bit1: [0, 1, 1]
+    → color_bit2: [1, 0, 1]
+
+from category_encoders import BinaryEncoder
+
+encoder = BinaryEncoder(cols=['color'])
+df_encoded = encoder.fit_transform(df)
+
+WHEN TO USE:
+    - High cardinality (fewer columns than one-hot)
+    - When you want a compromise between one-hot and label
+
+================================================================================
+8. ENCODING COMPARISON
+================================================================================
+
+┌──────────────────┬────────────┬────────────┬───────────────────┐
+│ Method           │ Columns    │ Best For   │ Algorithms        │
+├──────────────────┼────────────┼────────────┼───────────────────┤
+│ One-Hot          │ n categories│ Low card. │ Linear, KNN, SVM  │
+│ Ordinal          │ 1 column   │ Ordinal    │ Tree-based        │
+│ Label            │ 1 column   │ Target only│ Classification    │
+│ Target           │ 1 column   │ High card. │ Any (careful)     │
+│ Frequency        │ 1 column   │ High card. │ Tree-based        │
+│ Binary           │ log2(n)    │ High card. │ Any               │
+└──────────────────┴────────────┴────────────┴───────────────────┘
+
+DECISION GUIDE:
+    - Low cardinality (< 15): One-Hot Encoding
+    - Ordinal data: Ordinal Encoding
+    - High cardinality (> 15): Target or Frequency Encoding
+    - Tree-based models: Ordinal or Label is fine
+    - Linear models: One-Hot (with drop='first')
+
+================================================================================
+9. PIPELINE ENCODING
+================================================================================
+
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
+
+# Define column types
+numeric_features = ['age', 'income', 'tenure']
+categorical_features = ['gender', 'contract', 'payment_method']
+
+preprocessor = ColumnTransformer([
+    ('num', Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler())
+    ]), numeric_features),
+    ('cat', Pipeline([
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('encoder', OneHotEncoder(drop='first', handle_unknown='ignore'))
+    ]), categorical_features)
+])
+
+# Use in full pipeline
+from sklearn.ensemble import RandomForestClassifier
+
+full_pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('classifier', RandomForestClassifier())
+])
+
+full_pipeline.fit(X_train, y_train)
+score = full_pipeline.score(X_test, y_test)
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. When should you use One-Hot vs Ordinal encoding?
+2. What is the dummy variable trap?
+3. How does Target Encoding work?
+4. Why must encoding be fit on training data only?
+5. How do you handle unseen categories during inference?
+
+================================================================================
+NEXT LESSON: 05_scaling.txt
+================================================================================

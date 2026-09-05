@@ -1,0 +1,17 @@
+================================================================================
+GENAI FOUNDATIONS — PROJECTS
+================================================================================
+
+PROJECT 1: TEXT GENERATION APP (Beginner)
+===========================================
+Build simple text generation app with OpenAI API.
+
+PROJECT 2: CONTENT CREATION TOOL (Intermediate)
+=================================================
+Build content generation system with templates and evaluation.
+
+PROJECT 3: MULTIMODAL GENAI APP (Advanced)
+============================================
+Build app that generates text and images.
+
+================================================================================

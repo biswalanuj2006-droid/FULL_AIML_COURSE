@@ -1,0 +1,305 @@
+================================================================================
+MODULE 34 - MODEL DEPLOYMENT (COMPLETE COURSE)
+Putting trained models into production so real users can call them.
+================================================================================
+
+CONTENTS
+  1. What deployment means and why it is hard
+  2. The deployment landscape: batch vs online vs edge
+  3. Model serialization: pickle, joblib, ONNX, TorchScript, SavedModel
+  4. Inference servers: TensorFlow Serving, TorchServe, Triton (concepts)
+  5. Serving patterns: in-process, sidecar, dedicated service
+  6. REST/GRPC API serving for ML models
+  7. Dockerizing a model service
+  8. Scaling, load, and latency engineering
+  9. Versioning, blue/green, canary, and rollback
+ 10. Monitoring deployed models: drift, latency, errors
+ 11. Deployment of DL/NLP/RAG systems
+ 12. Edge/on-device deployment concepts
+ 13. Common deployment failures and debugging
+ 14. Practice, projects, and further reading
+
+================================================================================
+1. WHAT DEPLOYMENT MEANS AND WHY IT IS HARD
+================================================================================
+
+A trained model is a liability until it predicts in production. Deployment is
+the engineering of taking a trained artifact and making it:
+
+  - Available   (responds when called)
+  - Fast        (meets latency budgets)
+  - Reliable    (fails rarely, degrades gracefully)
+  - Observable  (you can see how it behaves)
+  - Updateable  (new versions ship without downtime)
+
+Why it is hard:
+  - Training code != serving code. Libraries, versions, and hardware differ.
+  - The model is one component in a system (auth, DB, queues, frontend).
+  - Traffic is uneven; inference cost is real money.
+  - Data shifts after deployment; a model that was good on Friday rots by Tuesday.
+
+Key principle: deployment is a SOFTWARE problem first and an ML problem second.
+The same engineering discipline that ships any service ships an ML service.
+
+================================================================================
+2. THE DEPLOYMENT LANDSCAPE
+================================================================================
+
+A. Batch/offline inference
+   - Predictions computed periodically over many records (nightly churn scores).
+   - Tools: cron, Airflow, Spark, pandas pipelines.
+   - Latency: hours/minutes. Throughput matters, not response time.
+
+B. Online/real-time inference
+   - One request in, one prediction out, in milliseconds.
+   - Tools: FastAPI/Flask service, TensorFlow Serving, TorchServe, Triton.
+   - Requirements: low p99 latency, high availability, horizontal scaling.
+
+C. Embedded/edge inference
+   - Model runs on the device: mobile, browser, IoT, car.
+   - Tools: TensorFlow Lite, ONNX Runtime, CoreML, OpenVINO.
+   - Constraints: memory, power, no network dependency, privacy.
+
+D. Streaming inference
+   - Predictions on events flowing through Kafka/queues (fraud on each
+     transaction). Consumer group loads model, scores event, writes result.
+
+Choosing between them is driven by the product's latency and cost needs,
+not by what is fashionable.
+
+================================================================================
+3. MODEL SERIALIZATION (SAVING + LOADING)
+================================================================================
+
+The model must become a file that a serving process can load without the
+original training code.
+
+sklearn / classical ML
+  - pickle:            general Python objects; NOT safe on untrusted files.
+  - joblib:            preferred for large NumPy arrays inside estimators.
+  - ONNX:              portable format, runs on CPU/GPU via ONNX Runtime.
+  - open_format:       PMML (legacy), Pkl is common.
+
+PyTorch
+  - state_dict:        recommended (weights only + code that rebuilds arch).
+  - full model:        torch.save(model) (fragile across refactors).
+  - TorchScript:       torch.jit.trace/script -> graph portable to C++/mobile.
+  - ONNX export:       torch.onnx.export -> serve with ONNX Runtime/Triton.
+
+TensorFlow/Keras
+  - SavedModel:        canonical TF format, loaded by TF Serving.
+  - .keras / .h5:      for Keras models.
+  - TFLite:            quantized/optimized for mobile/edge.
+  - TF.js:             browser deployment.
+
+Golden rules:
+  - Save with the exact library version used at training.
+  - Record model metadata: version, metrics, training date, schema.
+  - Never trust pickles from untrusted sources (arbitrary code execution).
+  - Test that load_model == train_model predictions on the same input.
+
+================================================================================
+4. INFERENCE SERVERS (CONCEPTS)
+================================================================================
+
+TensorFlow Serving
+  - Serves SavedModel versions with gRPC/REST.
+  - Handles versioning + model reload automatically.
+
+TorchServe
+  - Serves PyTorch models, supports custom handlers (pre/post-processing).
+
+NVIDIA Triton Inference Server
+  - Multi-framework (TF, PyTorch, ONNX), GPU batching, dynamic batching,
+    model ensembles, model analyzer for perf tuning.
+
+ONNX Runtime
+  - Runs ONNX models on CPU/GPU with heavy optimization (quantization, graph
+    fusion). Often 2-5x faster than naive PyTorch CPU inference.
+
+Why dedicated servers?
+  - They handle batching, GPU sharing, model reloads, and monitoring.
+  - Your app code stays small: it calls the server, it does not import torch.
+
+================================================================================
+5. SERVING PATTERNS
+================================================================================
+
+A. In-process (library inside the web app)
+   + Simplest, zero extra infra, low latency (no network hop).
+   - Blocks the web process during inference; no independent scaling;
+     couples model version to app version.
+   Use for: small models, prototypes, internal tools.
+
+B. Dedicated inference service (model as microservice)
+   + Scales independently, hot-swaps versions, protects app memory.
+   - Extra network hop; needs its own deployment/monitoring.
+   Use for: production systems, GPU-backed models, multiple models.
+
+C. Serverless inference (AWS Lambda, Cloud Run, Modal, etc.)
+   + No servers to manage, scales to zero.
+   - Cold starts hurt latency; timeouts limit long inferences.
+   Use for: spiky, low-volume traffic.
+
+Choose B for serious systems; A for MVPs; C for spiky internal tools.
+
+================================================================================
+6. REST/GRPC API SERVING FOR ML MODELS
+================================================================================
+
+A minimal online inference API contract:
+
+  POST /v1/predict
+  headers: Authorization: Bearer <token>
+  body:    {"features": [0.1, 2.3, ...]}
+  response: {"prediction": 1, "probability": 0.87, "model_version": "v3.2"}
+
+Engineering checklist:
+  - Validate input with Pydantic BEFORE the model (reject garbage fast).
+  - Return a 422 for schema errors, 400 for bad values, 200 for success.
+  - Log request id, latency, and model version on every call.
+  - Never return internal stack traces to clients.
+  - Set timeouts and rate limits on the model path.
+  - Batch: if traffic is high, buffer requests and predict in batches on GPU.
+
+See code/fastapi/01_fastapi_ml_api.py and code/flask/01_flask_ml_api.py in this
+repo for runnable minimal examples.
+
+================================================================================
+7. DOCKERIZING A MODEL SERVICE
+================================================================================
+
+Multi-stage build keeps the image small (only runtime deps, not build tools):
+
+  FROM python:3.12-slim AS runtime
+  WORKDIR /app
+  COPY requirements.txt .
+  RUN pip install --no-cache-dir -r requirements.txt
+  COPY app.py model.pkl .
+  EXPOSE 8000
+  CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+
+Gotchas:
+  - Keep model files inside the image or on mounted storage, not baked into
+    rebuilds you do not want (a 500MB model makes deploys slow; often better
+    to pull the model from object storage at container start).
+  - Set memory limits so the model does not OOM the host.
+  - Multi-worker caution: each worker loads the model into RAM (n_workers x
+    model_size memory). Sometimes one process + async batching beats 4 workers.
+  - Use health endpoints (/healthz, /readyz) for orchestrators.
+
+See code/docker/ in this repo for a complete FastAPI + model Docker setup.
+
+================================================================================
+8. SCALING, LOAD, LATENCY
+================================================================================
+
+Metrics that matter:
+  - p50/p95/p99 latency, throughput (req/s), error rate, queue depth,
+    GPU utilization, model load time, cold-start time.
+
+Scaling levers (in order of effort):
+  1. Optimize the model: quantization, distillation, ONNX.
+  2. Cache repeated predictions (same input -> same output) in Redis.
+  3. Dynamic batching on GPU.
+  4. Horizontal scaling behind a load balancer (stateless services scale).
+  5. Vertical scaling / better instance type.
+
+Load-test before launch: Locust, k6, or wrk. Find the latency cliff (the
+request rate where p99 explodes) and set autoscaling below it.
+
+================================================================================
+9. VERSIONING, BLUE/GREEN, CANARY, ROLLBACK
+================================================================================
+
+Model versions are data, not just code:
+  - Every prediction should be traceable to a model version.
+  - Keep the registry entry (MLflow model registry or equivalent) as source
+    of truth: artifact URI, metrics, git commit, training data version.
+
+Release strategies:
+  - Blue/green: two identical environments; flip traffic on the new version.
+  - Canary: send 5% -> 25% -> 100%; watch error rate + drift metrics.
+  - Shadow: run new model on copied traffic, compare offline before any
+    user-visible traffic.
+
+Rollback plan must be rehearsed: you need the previous artifact reachable and
+the ability to flip back in minutes, not days.
+
+================================================================================
+10. MONITORING DEPLOYED MODELS
+================================================================================
+
+Three monitoring layers:
+  1. System: CPU, RAM, latency, error rate, disk (standard SRE metrics).
+  2. Input: data drift - feature distributions changing (compare incoming
+     requests to training distribution).
+  3. Output: prediction drift, and when labels arrive late, actual quality.
+
+Tools/concepts: Prometheus + Grafana for metrics; Evidently, WhyLabs or
+custom drift checks; alerting on p99 latency, error rate, and drift scores.
+
+IMPORTANT: a model that silently degrades after deployment is the classic
+production failure. Drift detection + scheduled retraining is the answer.
+
+================================================================================
+11. DEPLOYING DL / NLP / RAG SYSTEMS
+================================================================================
+
+Deep learning:
+  - GPU serving: Triton/TorchServe with dynamic batching; mind VRAM.
+  - Quantize (int8/float16) for 2-4x speedup with small accuracy loss.
+  - Warm up the model after load (first inference is slow - JIT/allocations).
+
+LLM/RAG systems:
+  - Deploy the retriever and the LLM as separate services.
+  - Embedding model + vector DB scale independently of the generator.
+  - Cache embeddings and common queries; stream responses for long outputs.
+  - LLM APIs: streaming, token budgets, retries, rate limits, cost tracking.
+
+================================================================================
+12. EDGE / ON-DEVICE DEPLOYMENT (CONCEPTS)
+================================================================================
+
+  - TFLite / ONNX Runtime Mobile / CoreML: convert, quantize, measure size.
+  - Trade-offs: latency ~0 and privacy, but model size and accuracy constraints.
+  - Over-the-air model updates need versioning + staged rollout.
+
+================================================================================
+13. COMMON DEPLOYMENT FAILURES AND DEBUGGING
+================================================================================
+
+Failure                          Diagnosis                              Fix
+-------------------------------  -------------------------------------  --------
+Model works locally, fails prod   env/version mismatch                  freeze deps; containerize; test in prod-like image
+Slow first request                lazy imports / warmup                 warm-up request on startup
+p99 spikes under load             GC, no batching, thread contention     preallocate, batch, profile with cProfile
+OOM at runtime                    workers x model size > RAM            fewer workers or smaller model
+Silent accuracy drop              data/concept drift                    drift monitoring + retraining
+Wrong predictions after update    schema/order change                   schema validation; feature store; canary
+500s after deploy                 missing env vars/secrets              env validation in /readyz
+Stale model serving               old artifact cached                   version endpoint + registry audit
+
+Debugging approach: reproduce with the exact serving image, check /healthz,
+read structured logs, load-test, and A/B against the previous version.
+
+================================================================================
+14. PRACTICE, PROJECTS, FURTHER READING
+================================================================================
+
+Practice: 34_MODEL_DEPLOYMENT/practice.txt
+Projects: 34_MODEL_DEPLOYMENT/project.txt
+Runnable code: code/fastapi/, code/flask/, code/docker/, code/mlops/
+
+Suggested path:
+  pickle -> joblib -> FastAPI service -> Docker -> docker-compose ->
+  monitoring -> versioned rollout -> (GPU) TorchServe/Triton -> edge/ONNX
+
+Further reading:
+  - MLflow docs (model registry)       - TensorFlow Serving docs
+  - NVIDIA Triton docs                 - ONNX Runtime docs
+  - "Designing Machine Learning Systems" (Chip Huyen)
+  - Evidently / WhyLabs drift docs
+================================================================================
+END OF MODULE 34
+================================================================================

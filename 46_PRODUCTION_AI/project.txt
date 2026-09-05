@@ -1,0 +1,17 @@
+================================================================================
+PRODUCTION AI — PROJECTS
+================================================================================
+
+PROJECT 1: MONITORING SETUP (Beginner)
+=========================================
+Add monitoring to existing ML service.
+
+PROJECT 2: DRIFT DETECTION (Intermediate)
+============================================
+Build data drift and model drift detection.
+
+PROJECT 3: PRODUCTION AI PLATFORM (Advanced)
+===============================================
+Build complete production AI monitoring system.
+
+================================================================================

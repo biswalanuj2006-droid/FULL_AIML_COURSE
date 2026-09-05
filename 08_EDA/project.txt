@@ -1,0 +1,17 @@
+================================================================================
+EDA MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: COMPREHENSIVE EDA REPORT (Beginner)
+================================================
+Perform complete EDA on Kaggle dataset with 10+ visualizations.
+
+PROJECT 2: AUTOMATED EDA PIPELINE (Intermediate)
+==================================================
+Build Python script that automatically generates EDA report for any CSV file.
+
+PROJECT 3: EDA COMPARISON TOOL (Advanced)
+==========================================
+Build tool that compares EDA between train/test sets to detect data leakage.
+
+================================================================================

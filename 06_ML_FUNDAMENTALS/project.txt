@@ -1,0 +1,17 @@
+================================================================================
+ML FUNDAMENTALS MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: ML MODEL COMPARISON STUDY (Beginner)
+=================================================
+Compare 5+ ML algorithms on 3+ datasets, create comparison tables and visualizations.
+
+PROJECT 2: COMPLETE ML PIPELINE (Intermediate)
+================================================
+Build end-to-end pipeline: data loading → preprocessing → feature engineering → model selection → evaluation → deployment.
+
+PROJECT 3: AUTOML SYSTEM (Advanced)
+=====================================
+Build automated ML system that tries multiple algorithms, hyperparameters, preprocessing — reports best configuration.
+
+================================================================================

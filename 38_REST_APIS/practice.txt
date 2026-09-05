@@ -1,0 +1,34 @@
+================================================================================
+REST APIS — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is REST?
+Q2: What is the difference between GET and POST?
+Q3: What are HTTP status codes?
+Q4: What is JSON?
+Q5: What is a request header?
+Q6: What is API versioning?
+Q7: What is pagination?
+Q8: What is rate limiting?
+
+MEDIUM (8)
+===========
+Q9: Design a REST API for a blog.
+Q10: Implement pagination for list endpoints.
+Q11: Build API with filtering and sorting.
+Q12: Implement API versioning.
+Q13: Build API documentation with OpenAPI.
+Q14: Implement error handling patterns.
+Q15: Build API with HATEOAS.
+Q16: Implement API rate limiting.
+
+HARD (4)
+=========
+Q17: Design complete API architecture.
+Q18: Implement API gateway pattern.
+Q19: Build API with GraphQL comparison.
+Q20: Implement API testing framework.
+
+================================================================================

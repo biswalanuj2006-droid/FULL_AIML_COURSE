@@ -1,0 +1,164 @@
+================================================================================
+MODULE 01 — PYTHON FOR AI/ML
+INTERMEDIATE EXERCISES
+================================================================================
+
+These exercises apply Python skills in ML-relevant scenarios.
+
+================================================================================
+EXERCISE 1: Data Manipulation
+================================================================================
+
+1.1: You have a list of dictionaries representing dataset rows:
+     data = [
+         {"age": 25, "income": 50000, "churn": "Yes"},
+         {"age": 35, "income": 75000, "churn": "No"},
+         {"age": 28, "income": None, "churn": "Yes"},
+         {"age": 45, "income": 120000, "churn": "No"},
+         {"age": None, "income": 45000, "churn": "Yes"},
+     ]
+
+     a) Count rows with missing values
+     b) Filter rows where income > 50000
+     c) Calculate average age (excluding None)
+     d) Create a new list of dictionaries with age income_ratio
+
+1.2: Given two lists of features and their importance scores:
+     features = ["age", "income", "tenure", "contract", "monthly_charges"]
+     importances = [0.15, 0.25, 0.20, 0.10, 0.30]
+
+     a) Sort by importance (descending)
+     b) Get top 3 features
+     c) Create a dictionary mapping feature to importance
+
+================================================================================
+EXERCISE 2: Functions and Decorators
+================================================================================
+
+2.1: Write a function that takes a dictionary of model results and
+     returns a formatted table (string) showing model name, accuracy,
+     precision, recall, and F1 score.
+
+2.2: Write a decorator @retry(max_attempts=3) that retries a function
+     call if it raises an exception, with exponential backoff.
+
+2.3: Write a higher-order function that takes a list of functions
+     and applies them sequentially to an input value (pipeline pattern).
+
+================================================================================
+EXERCISE 3: Classes
+================================================================================
+
+3.1: Create a class DataSplitter that:
+     - Takes X and y arrays
+     - Has a split(test_size=0.2, random_state=42) method
+     - Returns X_train, X_test, y_train, y_test
+     - Validates inputs (same length, not empty)
+
+3.2: Create a class ExperimentTracker that:
+     - Has a log(name, model, metrics) method
+     - Has a best(metric) method
+     - Has a summary() method
+     - Has a to_csv(filepath) method
+
+================================================================================
+EXERCISE 4: File Handling + ML
+================================================================================
+
+4.1: Write a function that:
+     - Reads a CSV file
+     - Returns a dictionary with:
+       - "columns": list of column names
+       - "dtypes": dictionary of column name → dtype
+       - "shape": (rows, cols)
+       - "missing": dictionary of column name → count of missing values
+
+4.2: Write a function that saves model results to a JSON file
+     and can load them back. Include timestamp.
+
+================================================================================
+EXERCISE 5: Debugging
+================================================================================
+
+The following code has bugs. Find and fix them:
+
+5.1:
+    def get_best_model(models, X_test, y_test):
+        best_score = 0
+        best_model = None
+        for name, model in models:
+            score = model.score(X_test, y_test)
+            if score > best_score:
+                best_score = score
+                best_model = name
+        return best_model
+
+    Bug: models.items() needed, not models
+
+5.2:
+    def process_data(data):
+        result = []
+        for row in data:
+            if row["age"] > 18:
+                result.append(row)
+                data.remove(row)    # Modifying list during iteration!
+        return result
+
+    Bug: Don't modify a list while iterating. Use list comprehension.
+
+5.3:
+    def average(values):
+        total = 0
+        for v in values:
+            total += v
+        return total / len(values)
+
+    Bug: Division by zero when values is empty. Add check.
+
+================================================================================
+INTERMEDIATE EXERCISE ANSWERS (selected)
+================================================================================
+
+EXERCISE 1.1a:
+    missing_rows = [row for row in data if any(v is None for v in row.values())]
+
+EXERCISE 1.1c:
+    ages = [row["age"] for row in data if row["age"] is not None]
+    avg_age = sum(ages) / len(ages)
+
+EXERCISE 2.3:
+    def pipeline(value, functions):
+        result = value
+        for f in functions:
+            result = f(result)
+        return result
+
+    # Usage
+    steps = [lambda x: x.strip(), lambda x: x.lower(), lambda x: x.replace(" ", "_")]
+    result = pipeline("  Hello World  ", steps)
+
+EXERCISE 3.1:
+    class DataSplitter:
+        def __init__(self, X, y):
+            if len(X) != len(y):
+                raise ValueError("X and y must have same length")
+            if len(X) == 0:
+                raise ValueError("Dataset cannot be empty")
+            self.X = X
+            self.y = y
+
+        def split(self, test_size=0.2, random_state=42):
+            import random
+            random.seed(random_state)
+            n = len(self.X)
+            indices = list(range(n))
+            random.shuffle(indices)
+            split_idx = int(n * (1 - test_size))
+            train_idx = indices[:split_idx]
+            test_idx = indices[split_idx:]
+            return (
+                self.X[train_idx], self.X[test_idx],
+                self.y[train_idx], self.y[test_idx]
+            )
+
+================================================================================

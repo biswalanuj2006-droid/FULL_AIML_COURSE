@@ -1,0 +1,71 @@
+================================================================================
+REAL PROBLEM - 34 MODEL DEPLOYMENT
+================================================================================
+
+PROBLEM A: "The model scored 94% in notebooks but 60% against the live
+API traffic. Same model, same weights."
+WHY IT HAPPENS (in order of likelihood)
+  1. Preprocessing drift: the notebook scales/fills/imputes with
+     functions, but the serving code re-implements them slightly
+     differently (or re-fits the scaler per request!).
+  2. Feature-name mismatch: the notebook passes a DataFrame with
+     columns in one order; the API receives JSON that maps to a
+     different order or missing columns -> silently wrong values.
+  3. The API input is RAW user data (missing values, new categories)
+     that never appeared in training - the model extrapolates.
+  4. The 94% was measured on a clean, pre-split test set that was
+     filtered the same way the training data was filtered; live data
+     is unfiltered.
+HOW TO SOLVE
+  1. Deploy THE PIPELINE (fit scaler + model as one pickle), never the
+     bare model. sklearn Pipeline or joblib the whole object.
+  2. At the API boundary, validate schema: expected columns, dtypes,
+     ranges; reject or explicitly handle unknown categories.
+  3. Log every request's feature vector; compare live distributions to
+     training distributions weekly (drift detection - see 33_MLOPS).
+  4. Score the live stream against delayed ground truth (e.g. 7-day-
+     delayed labels) and alert when it drops.
+
+PROBLEM B: "Model returns predictions 2 seconds slower in production
+than in the notebook."
+WHY: the notebook held the model in memory with warm caches; the
+service loads the model per request, or does per-request preprocessing
+on the CPU, or uses a different (slower) library version. Most common:
+the notebook used GPU/float32 and the service is float64 CPU, or the
+model file is huge and re-deserialized each call.
+HOW TO SOLVE
+  1. Load the model ONCE at startup (module-level), not per request.
+  2. Preprocess in bulk/batch inside the service; use the same dtype as
+     training.
+  3. Measure with a profiler: time(feature transform), time(predict),
+     time(serialize) separately - fix the slowest.
+  4. For latency SLA < 10ms, use ONNX Runtime / quantization / a
+     smaller model as a fast path with the big model as fallback.
+
+PROBLEM C: "The model worked for 3 months, then silently started
+returning nonsense (all one class, or NaN)."
+WHY: silent failure - the input distribution shifted, a new category
+arrived that maps to an unseen token, or a dependency was upgraded and
+changed preprocessing behavior without anyone noticing.
+HOW TO SOLVE
+  1. Never return NaN to callers: validate outputs (finite, in range)
+     and return an explicit error + fallback prediction.
+  2. Version EVERYTHING and log it per prediction: model version,
+     preprocessing version, library versions, input hash. You cannot
+     debug "started 3 months ago" without this.
+  3. Health check: a canary set of known input->expected-output pairs
+     run against the live endpoint every minute - the cheapest
+     regression detector there is.
+
+PROBLEM D: "We deployed a new model; it is better offline; online
+metrics are worse - and we cannot roll back fast."
+WHY: no shadow/canary/rollback infrastructure, so you discover the
+regression from user impact instead of from your own pipeline.
+HOW TO SOLVE
+  1. Shadow deploy: run the new model alongside the old one on live
+     traffic, compare predictions offline before switching.
+  2. Canary: route 5% of traffic to the new model, watch metrics,
+     ramp up. Keep the previous model artifact loadable for instant
+     rollback.
+  3. This is exactly what 33_MLOPS (registry + monitoring) exists for -
+     deployment without a registry is how models die silently.

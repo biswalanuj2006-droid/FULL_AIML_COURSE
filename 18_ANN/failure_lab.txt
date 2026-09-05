@@ -1,0 +1,48 @@
+================================================================================
+FAILURE LAB - 18 ANN
+For each lab: reproduce, DIAGNOSE with evidence (curves/prints), fix, report.
+================================================================================
+
+LAB 1 - THE ALL-ZERO NET
+  A 2-layer net on XOR converges to 50% forever.
+  Planted cause candidates: zero init, sigmoid + MSE output, lr=10,
+  labels not one-hot.
+  Tasks: (1) reproduce 50%; (2) isolate which cause by checking init
+  symmetry and gradient magnitudes; (3) fix init/activation/loss and
+  show the loss curve reaching ~0.
+
+LAB 2 - THE VANISHING NET
+  10 hidden layers, sigmoid activations, lr tuned "properly": training
+  loss barely moves.
+  Tasks: (1) print gradient norm per layer (first vs last layer) -
+  expect orders of magnitude gap; (2) explain the mechanism; (3) fix
+  with ReLU + sane init (He) and show gradients flowing to all layers.
+
+LAB 3 - THE EXPLODING LOSS
+  Loss goes from 1.0 to NaN in 3 epochs on a small tabular task.
+  Tasks: (1) reproduce; (2) check lr, unscaled features, and gradient
+  norm right before NaN; (3) fix with scaling + lower lr + gradient
+  clipping; (4) report which fix actually mattered.
+
+LAB 4 - THE OVERCONFIDENT LEARNER
+  100% train accuracy, 55% test, 10k samples, 5k features.
+  Tasks: (1) plot train vs val curves; (2) diagnose capacity vs data
+  vs optimization (double descent intuition); (3) apply dropout +
+  weight decay + early stopping and report the gap after.
+
+LAB 5 - THE BROKEN GRADIENT CHECK
+  Numerical gradient check passes at 1e-6 on layer 1 but fails at 1e-1
+  on layer 2.
+  Tasks: (1) find the layer-2 backward bug (transpose? wrong local
+  gradient?); (2) fix and re-check ALL layers; (3) add the check as a
+  reusable function in your training loop.
+
+LAB 6 - THE SEED MYTH
+  Same seed, same data, two machines: train loss diverges after epoch 2.
+  Tasks: (1) list nondeterminism sources (float reduction order, data
+  loader threads); (2) make the run reproducible on one machine; (3)
+  decide what reproducibility actually means for your project and set a
+  policy (seed + pinned deps + recorded metrics).
+================================================================================
+END
+================================================================================

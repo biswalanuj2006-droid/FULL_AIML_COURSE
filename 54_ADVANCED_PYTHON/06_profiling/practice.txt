@@ -1,0 +1,71 @@
+=====================================================================
+PRACTICE — 54_ADVANCED_PYTHON / 06_PROFILING
+=====================================================================
+LEVEL 1 — CONCEPTUAL (answer in 1-2 sentences each)
+1. Why must you profile before optimizing? Give the failure mode of guessing.
+2. What does tottime mean in cProfile output? What does cumtime mean?
+3. When should you use timeit instead of time.perf_counter?
+4. What is the GIL and why does it affect threading for CPU-bound work?
+5. Name three data-structure changes that can remove O(n^2) behavior.
+6. Why is list.pop(0) slow while deque.popleft() is fast?
+7. What does lru_cache do and when is it safe to use?
+8. Why is a Python for-loop over a NumPy array slower than the vectorized op?
+9. What is a hot spot? How do you find it reliably?
+10. Name three common memory leaks/over-allocations in pandas workflows.
+
+LEVEL 2 — APPLICATION (code needed)
+11. Write a timeit command/script comparing list comprehension vs NumPy for
+    x**2 over 1 million values. Which wins and why?
+12. Given the cProfile output in the module (1M calls to dist()), write the
+    vectorized replacement and state the expected complexity change.
+13. Benchmark membership testing: 10k elements in a list vs a set. Report min-of-5 timings.
+14. Rewrite this to avoid recomputation:
+       for x in big:
+           w = expensive(x)      # same result for equal x
+           total += w * x
+15. Find the accidental O(n^2): two nested loops computing pairwise L2
+    distances for n=500. Replace with broadcasting or cdist. Show both.
+16. A pandas pipeline uses df.apply(func, axis=1). When is this justified,
+    and what do you try first to remove it?
+17. Write a before/after bench() helper and demonstrate it on two sorting
+    implementations (list.sort vs sorted with key=...).
+18. Use cProfile on any script you wrote this week; report the top 3
+    cumulative-time functions and one optimization you applied.
+19. Use tracemalloc to find which function allocates the most memory in a
+    script that builds many intermediate lists.
+20. Measure: loading one 200 MB CSV at once vs reading it with
+    chunksize=50_000 and aggregating. Compare peak memory if you can
+    (memory_profiler / mprof).
+
+LEVEL 3 — REASONING
+21. Threads made an API-batching job 4x faster, but a CPU-bound NumPy job
+    0.05x slower. Explain both results precisely.
+22. A model inference loop creates X.cpu().numpy() per batch; profiling shows
+    60% of time in allocator. What is happening and what are three fixes?
+23. You must choose between optimizing a function used once at startup and
+    one used in a 10M-row loop. Which do you profile first? Justify.
+24. Vectorized NumPy code is still slower than expected on a 1 GB array.
+    List the likely causes in order of likelihood (memory bandwidth, cache,
+    dtype, copy-on-write, page faults).
+25. When does multiprocessing NOT help even for CPU-bound work? Give two cases.
+
+DEBUGGING — fix each broken program and explain the root cause
+D1. for i in range(len(a)): out[i] = math.sqrt(a[i])      # what's the fix + why
+D2. items = list(data); while items: x = items.pop(0)     # O(n^2) — fix
+D3. df.apply(lambda r: r.a * 2 + r.b, axis=1) on 5M rows  # vectorize
+D4. results = [slow(i) for i in range(1_000_000)] when slow(i)
+    depends only on i % 7 (cache it)                       # memoize
+D5. A "memory leak" grows 10 MB/min in a loop that keeps
+    df_list.append(copy) then pd.concat(df_list) forever   # fix pattern
+
+CHALLENGES
+C1. Profile and speed up a text-cleaner on 1M documents by >=10x
+    (loop -> re/nltk compiled patterns or vectorized ops). Document
+    before/after with cProfile.
+C2. Find an accidental O(n^2) or quadratic-memory pattern in code you
+    wrote earlier in this course; fix it, benchmark, and write up the
+    speedup in one paragraph.
+
+SOLUTIONS NOTE: answers are discussed in the module text above;
+for D1-D5 see profiling_complete.txt section 7 (common mistakes).
+=====================================================================

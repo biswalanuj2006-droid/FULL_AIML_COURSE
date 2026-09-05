@@ -1,0 +1,166 @@
+================================================================================
+DSA MODULE 7: HASHING — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Use hash maps and hash sets effectively
+- Solve frequency counting and two-sum pattern problems
+- Understand hash collision concepts
+- Solve 15+ hashing LeetCode problems
+
+================================================================================
+1. HASHING FUNDAMENTALS
+================================================================================
+
+HASH MAP (Dictionary in Python)
+--------------------------------
+d = {}
+d[key] = value        # O(1) average insert
+d[key]                # O(1) average lookup
+key in d              # O(1) average membership
+del d[key]            # O(1) average delete
+
+HASH SET
+---------
+s = set()
+s.add(x)              # O(1) average
+x in s                # O(1) average
+s.remove(x)           # O(1) average
+
+COLLISION HANDLING
+-------------------
+When two keys hash to same index:
+- Chaining: linked list at each slot
+- Open addressing: find next empty slot
+Python uses chaining by default.
+
+WORST CASE: O(n) — all keys collide
+AVERAGE CASE: O(1) — good hash function
+
+================================================================================
+2. FREQUENCY COUNTING
+================================================================================
+
+from collections import Counter
+
+# Count frequencies
+freq = Counter([1, 1, 2, 3, 3, 3])
+# Counter({3: 3, 1: 2, 2: 1})
+
+# Most common
+freq.most_common(2)  # [(3, 3), (1, 2)]
+
+# Character frequency
+def char_freq(s):
+    return Counter(s)
+
+================================================================================
+3. TWO-SUM PATTERN
+================================================================================
+
+TWO SUM (LC #1)
+----------------
+def twoSum(nums, target):
+    seen = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+
+THREE SUM → Sort + Two Pointer (see Arrays module)
+FOUR SUM → Sort + Two Pointer with two loops
+
+================================================================================
+4. GROUPING PATTERN
+================================================================================
+
+GROUP ANAGRAMS (LC #49)
+------------------------
+def groupAnagrams(strs):
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for s in strs:
+        key = tuple(sorted(s))
+        groups[key].append(s)
+    return list(groups.values())
+
+# Or use character count as key for O(n*m) instead of O(n*m*log(m))
+def groupAnagrams(strs):
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for s in strs:
+        count = [0] * 26
+        for c in s:
+            count[ord(c) - ord('a')] += 1
+        groups[tuple(count)].append(s)
+    return list(groups.values())
+
+================================================================================
+5. SUBARRAY SUM PATTERN
+================================================================================
+
+SUBARRAY SUM EQUALS K (LC #560)
+---------------------------------
+def subarraySum(nums, k):
+    count = 0
+    prefix_sum = 0
+    seen = {0: 1}
+
+    for num in nums:
+        prefix_sum += num
+        if prefix_sum - k in seen:
+            count += seen[prefix_sum - k]
+        seen[prefix_sum] = seen.get(prefix_sum, 0) + 1
+
+    return count
+
+CONTINOUS SUBARRAY SUM (LC #523)
+----------------------------------
+def checkSubarraySum(nums, k):
+    seen = {0: -1}
+    prefix_sum = 0
+    for i, num in enumerate(nums):
+        prefix_sum += num
+        if k != 0:
+            remainder = prefix_sum % k
+        else:
+            remainder = prefix_sum
+        if remainder in seen:
+            if i - seen[remainder] >= 2:
+                return True
+        else:
+            seen[remainder] = i
+    return False
+
+================================================================================
+6. LEETCODE PROBLEMS
+================================================================================
+
+EASY
+----
+1. Two Sum (LC #1)
+2. Contains Duplicate (LC #217)
+3. Valid Anagram (LC #242)
+4. Intersection of Two Arrays (LC #349)
+5. Happy Number (LC #202)
+
+MEDIUM
+------
+6. Group Anagrams (LC #49)
+7. Subarray Sum Equals K (LC #560)
+8. Longest Consecutive Sequence (LC #128)
+9. Sort Characters By Frequency (LC #451)
+10. Top K Frequent Elements (LC #347)
+
+HARD
+----
+11. Longest Substring with At Most K Distinct Characters (LC #340)
+12. Minimum Window Substring (LC #76)
+13. Subarray Sum Divisible by K (LC #974)
+
+================================================================================
+END OF MODULE 7
+================================================================================

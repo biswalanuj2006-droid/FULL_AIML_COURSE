@@ -1,0 +1,299 @@
+================================================================================
+MODULE 33: APACHE SPARK / PYSPARK — COMPLETE DATA ENGINEERING COURSE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Process large datasets with PySpark
+- Build distributed data pipelines
+- Use Spark SQL for analytics
+- Implement Spark ML for distributed ML
+- Understand Spark architecture
+
+================================================================================
+1. WHY SPARK?
+================================================================================
+
+PROBLEM: Pandas loads everything into memory.
+- 10GB CSV → pandas cannot handle
+- 100GB dataset → impossible with single machine
+
+SPARK SOLUTION:
+- Distributed processing across cluster
+- Lazy evaluation (optimizes execution plan)
+- In-memory computation (100x faster than MapReduce)
+- Unified engine: SQL + Streaming + ML + Graphs
+
+WHEN TO USE:
+- Dataset > memory (10GB+)
+- Need distributed processing
+- Real-time streaming analytics
+- Distributed ML training
+
+================================================================================
+2. SPARK ARCHITECTURE
+================================================================================
+
+┌─────────────────────────────────────────┐
+│              DRIVER PROGRAM             │
+│         (PySpark application)           │
+└──────────────────┬──────────────────────┘
+                   │
+         ┌─────────▼─────────┐
+         │  SPARK CONTEXT     │
+         │  (Connection to    │
+         │   cluster)         │
+         └─────────┬─────────┘
+                   │
+    ┌──────────────┼──────────────┐
+    ▼              ▼              ▼
+┌────────┐   ┌────────┐   ┌────────┐
+│EXECUTOR│   │EXECUTOR│   │EXECUTOR│
+│Worker 1│   │Worker 2│   │Worker 3│
+└────────┘   └────────┘   └────────┘
+
+KEY CONCEPTS:
+- DRIVER: Master process, coordinates work
+- EXECUTOR: Worker processes, execute tasks
+- RDD: Resilient Distributed Dataset (basic abstraction)
+- DataFrame: Distributed table (high-level API)
+- DAG: Directed Acyclic Graph (execution plan)
+
+================================================================================
+3. PYSPARK BASICS
+================================================================================
+
+from pyspark.sql import SparkSession
+
+# Create session
+spark = SparkSession.builder \
+    .appName("MLPipeline") \
+    .config("spark.sql.shuffle.partitions", "200") \
+    .getOrCreate()
+
+# Create DataFrame
+data = [("Alice", 25), ("Bob", 30), ("Charlie", 35)]
+df = spark.createDataFrame(data, ["name", "age"])
+
+# Show data
+df.show()
+df.printSchema()
+df.describe().show()
+
+# SQL operations
+df.createOrReplaceTempView("people")
+result = spark.sql("SELECT * FROM people WHERE age > 28")
+result.show()
+
+================================================================================
+4. DATAFRAME OPERATIONS
+================================================================================
+
+from pyspark.sql import functions as F
+
+# SELECT
+df.select("name", "age").show()
+df.select(F.col("age") + 1).show()
+
+# FILTER
+df.filter(F.col("age") > 25).show()
+df.where("age > 25").show()
+
+# GROUP BY
+df.groupBy("department").agg(
+    F.avg("salary").alias("avg_salary"),
+    F.count("*").alias("count")
+).show()
+
+# JOIN
+df1.join(df2, df1.id == df2.id, "inner").show()
+
+# WINDOW FUNCTIONS
+from pyspark.sql.window import Window
+
+window = Window.partitionBy("department").orderBy("salary")
+df.withColumn("rank", F.rank().over(window)).show()
+
+# ADD/MODIFY COLUMNS
+df = df.withColumn("age_group", 
+    F.when(F.col("age") < 30, "young")
+     .when(F.col("age") < 50, "middle")
+     .otherwise("senior"))
+
+================================================================================
+5. SPARK SQL
+================================================================================
+
+# Register temp view
+df.createOrReplaceTempView("sales")
+
+# SQL queries
+result = spark.sql("""
+    SELECT 
+        product,
+        SUM(amount) as total_sales,
+        COUNT(*) as num_transactions
+    FROM sales
+    WHERE date >= '2024-01-01'
+    GROUP BY product
+    ORDER BY total_sales DESC
+""")
+
+# Window functions in SQL
+result = spark.sql("""
+    SELECT *,
+        RANK() OVER (PARTITION BY department ORDER BY salary DESC) as rank
+    FROM employees
+""")
+
+================================================================================
+6. SPARK ML (MLlib)
+================================================================================
+
+from pyspark.ml.feature import VectorAssembler, StandardScaler
+from pyspark.ml.classification import RandomForestClassifier
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+
+# Feature assembly
+assembler = VectorAssembler(
+    inputCols=["feature1", "feature2", "feature3"],
+    outputCol="features"
+)
+df = assembler.transform(raw_data)
+
+# Scaling
+scaler = StandardScaler(inputCol="features", outputCol="scaled_features")
+scaler_model = scaler.fit(df)
+df = scaler_model.transform(df)
+
+# Train model
+rf = RandomForestClassifier(
+    featuresCol="scaled_features",
+    labelCol="label",
+    numTrees=100
+)
+model = rf.fit(train_data)
+
+# Evaluate
+predictions = model.transform(test_data)
+evaluator = MulticlassClassificationEvaluator(
+    labelCol="label", metricName="accuracy"
+)
+accuracy = evaluator.evaluate(predictions)
+print(f"Accuracy: {accuracy:.4f}")
+
+# Pipeline
+from pyspark.ml import Pipeline
+
+pipeline = Pipeline(stages=[assembler, scaler, rf])
+model = pipeline.fit(train_data)
+
+================================================================================
+7. SPARK STRUCTURED STREAMING
+================================================================================
+
+# Read from Kafka
+stream_df = spark.readStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", "localhost:9092") \
+    .option("subscribe", "transactions") \
+    .load()
+
+# Process stream
+from pyspark.sql.functions import from_json, col
+from pyspark.sql.types import StructType, StringType, DoubleType
+
+schema = StructType([
+    StructField("user_id", StringType()),
+    StructField("amount", DoubleType())
+])
+
+parsed = stream_df.select(
+    from_json(col("value").cast("string"), schema).alias("data")
+).select("data.*")
+
+# Write stream
+query = parsed.writeStream \
+    .outputMode("append") \
+    .format("console") \
+    .start()
+
+query.awaitTermination()
+
+================================================================================
+8. PERFORMANCE OPTIMIZATION
+================================================================================
+
+KEY OPTIMIZATIONS:
+1. Partition data properly
+   df = df.repartition(200, "key_column")
+
+2. Cache frequently used DataFrames
+   df.cache()  # or df.persist()
+   
+3. Avoid shuffles
+   df.join(df2, "key")  # better than df.join(df2, df1.key == df2.key)
+
+4. Use broadcast joins for small tables
+   from pyspark.sql.functions import broadcast
+   df_large.join(broadcast(df_small), "key")
+
+5. Tune shuffle partitions
+   spark.conf.set("spark.sql.shuffle.partitions", "200")
+
+6. Use Parquet format (columnar, compressed)
+   df.write.parquet("output.parquet")
+
+7. Avoid UDFs when possible (use built-in functions)
+   # BAD: udf(lambda x: x.upper())
+   # GOOD: F.upper(F.col("name"))
+
+================================================================================
+9. COMMON MISTAKES
+================================================================================
+
+1. Collecting large DataFrames to driver (df.collect())
+   RIGHT: Use df.show() or write to storage
+
+2. Not caching DataFrames used multiple times
+   RIGHT: df.cache() before multiple operations
+
+3. Too many shuffle partitions
+   RIGHT: Tune based on data size
+
+4. Using Python UDFs instead of Spark SQL functions
+   RIGHT: Prefer built-in functions
+
+5. Not using broadcast joins for small tables
+   RIGHT: broadcast(small_df)
+
+================================================================================
+10. SPARK vs PANDAS vs DASK
+================================================================================
+
+| FEATURE     | Pandas     | Spark         | Dask          |
+|-------------|------------|---------------|---------------|
+| Scale       | Single     | Distributed   | Distributed   |
+| Memory      | In-memory  | In-memory     | Out-of-core   |
+| Speed       | Fast       | Very fast     | Fast          |
+| Ease        | Easy       | Moderate      | Moderate      |
+| Ecosystem   | Rich       | Very rich     | Pandas-like   |
+| Use when    | < 10GB     | > 10GB, cluster| > 10GB, single|
+
+================================================================================
+11. PROJECTS
+================================================================================
+
+PROJECT 1: ETL PIPELINE (Beginner)
+Build PySpark ETL: extract from CSV, transform, load to Parquet.
+
+PROJECT 2: SALES ANALYTICS (Intermediate)
+Analyze large sales dataset with Spark SQL and MLlib.
+
+PROJECT 3: REAL-TIME STREAMING (Advanced)
+Build real-time analytics pipeline with Structured Streaming.
+
+================================================================================
+END OF SPARK MODULE
+================================================================================

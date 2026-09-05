@@ -1,0 +1,342 @@
+================================================================================
+FASTAPI DEEP DIVE — THE MODERN ML API FRAMEWORK
+================================================================================
+
+## What You Will Learn
+- FastAPI core: routing, request/response, validation
+- Pydantic models for data validation
+- Dependency injection
+- Authentication and security
+- File uploads
+- Background tasks
+- Database integration
+- ML model serving
+
+## Why FastAPI?
+FastAPI is the BEST framework for ML APIs because:
+- Automatic API documentation (Swagger/OpenAPI)
+- Type-based validation with Pydantic
+- Native async support (high performance)
+- Easy to learn (similar to Flask)
+- Built-in data validation (prevents bad inputs)
+
+pip install fastapi uvicorn pydantic python-multipart
+
+================================================================================
+1. BASIC API
+================================================================================
+
+from fastapi import FastAPI
+import uvicorn
+
+app = FastAPI(title="ML Prediction API")
+
+@app.get("/")
+def root():
+    return {"message": "ML API is running"}
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
+
+# Run: uvicorn main:app --reload
+
+================================================================================
+2. REQUEST AND RESPONSE MODELS
+================================================================================
+
+from fastapi import FastAPI
+from pydantic import BaseModel, Field
+from typing import List, Optional
+import numpy as np
+
+# Request model (input validation)
+class PredictionRequest(BaseModel):
+    features: List[float] = Field(..., description="Input features")
+    model_name: str = Field(default="random_forest", description="Model to use")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "features": [25.0, 50000.0, 12.0],
+                "model_name": "random_forest"
+            }
+        }
+
+# Response model (output structure)
+class PredictionResponse(BaseModel):
+    prediction: int
+    probability: float
+    model_used: str
+
+class BatchPredictionRequest(BaseModel):
+    instances: List[List[float]]
+
+class BatchPredictionResponse(BaseModel):
+    predictions: List[int]
+    probabilities: List[float]
+
+@app.post("/predict", response_model=PredictionResponse)
+def predict(request: PredictionRequest):
+    # Convert to numpy array
+    features = np.array(request.features).reshape(1, -1)
+
+    # Get prediction (using a loaded model)
+    prediction = model.predict(features)[0]
+    probability = model.predict_proba(features).max()
+
+    return PredictionResponse(
+        prediction=int(prediction),
+        probability=float(probability),
+        model_used=request.model_name
+    )
+
+@app.post("/predict/batch", response_model=BatchPredictionResponse)
+def predict_batch(request: BatchPredictionRequest):
+    features = np.array(request.instances)
+    predictions = model.predict(features).tolist()
+    probabilities = model.predict_proba(features).max(axis=1).tolist()
+
+    return BatchPredictionResponse(
+        predictions=predictions,
+        probabilities=probabilities
+    )
+
+================================================================================
+3. DEPENDENCY INJECTION
+================================================================================
+
+from fastapi import Depends, HTTPException
+
+# Load model as dependency
+def get_model():
+    return joblib.load("models/model.joblib")
+
+# Get current user
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    user = verify_token(token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return user
+
+@app.get("/predict/{model_id}")
+def predict_with_model(
+    model_id: int,
+    features: str,
+    model = Depends(get_model),
+    user = Depends(get_current_user)
+):
+    return {"prediction": model.predict(parse_features(features))}
+
+================================================================================
+4. ERROR HANDLING
+================================================================================
+
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(ValueError)
+async def value_error_handler(request, exc):
+    return JSONResponse(
+        status_code=400,
+        content={"error": str(exc), "detail": "Invalid input data"}
+    )
+
+@app.post("/predict/safe")
+def predict_safe(request: PredictionRequest):
+    try:
+        features = np.array(request.features).reshape(1, -1)
+
+        if features.shape[1] != expected_features:
+            raise ValueError(f"Expected {expected_features} features, got {features.shape[1]}")
+
+        prediction = model.predict(features)[0]
+        return {"prediction": int(prediction)}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+================================================================================
+5. FILE UPLOADS
+================================================================================
+
+from fastapi import UploadFile, File
+import pandas as pd
+from io import StringIO
+
+@app.post("/upload/data")
+async def upload_data(file: UploadFile = File(...)):
+    content = await file.read()
+    df = pd.read_csv(StringIO(content.decode("utf-8")))
+    return {
+        "filename": file.filename,
+        "rows": len(df),
+        "columns": list(df.columns)
+    }
+
+@app.post("/predict/file")
+async def predict_from_file(file: UploadFile = File(...)):
+    content = await file.read()
+    df = pd.read_csv(StringIO(content.decode("utf-8")))
+    predictions = model.predict(df[feature_columns]).tolist()
+    return {"predictions": predictions}
+
+================================================================================
+6. MIDDLEWARE AND CORS
+================================================================================
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # Allow all origins (restrict in production!)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Request logging middleware
+@app.middleware("http")
+async def log_requests(request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    logger.info(f"{request.method} {request.url.path} - {process_time:.4f}s")
+    return response
+
+================================================================================
+7. BACKGROUND TASKS
+================================================================================
+
+from fastapi import BackgroundTasks
+
+def log_prediction(features, prediction, user_id):
+    """Log prediction to database (runs in background)."""
+    db.log_prediction(features, prediction, user_id)
+
+@app.post("/predict/async")
+def predict_async(
+    request: PredictionRequest,
+    background_tasks: BackgroundTasks
+):
+    features = np.array(request.features).reshape(1, -1)
+    prediction = model.predict(features)[0]
+
+    # Log in background (don't block response)
+    background_tasks.add_task(log_prediction, features, prediction, user_id)
+
+    return {"prediction": int(prediction)}
+
+================================================================================
+8. FULL ML API EXAMPLE
+================================================================================
+
+from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel, Field
+from typing import List
+import joblib
+import numpy as np
+import logging
+
+# Setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="Churn Prediction API", version="1.0")
+
+# Load model at startup
+model = None
+
+@app.on_event("startup")
+def load_model():
+    global model
+    model = joblib.load("models/churn_model.joblib")
+    logger.info("Model loaded successfully")
+
+# Request/Response models
+class ChurnRequest(BaseModel):
+    tenure: float = Field(..., ge=0)
+    monthly_charges: float = Field(..., gt=0)
+    total_charges: float = Field(..., ge=0)
+    contract: str = Field(..., pattern="^(Month-to-month|One year|Two year)$")
+    payment_method: str
+
+class ChurnResponse(BaseModel):
+    will_churn: bool
+    probability: float
+    risk_level: str
+
+@app.post("/predict/churn", response_model=ChurnResponse)
+def predict_churn(request: ChurnRequest):
+    try:
+        # Preprocess
+        features = preprocess(request)
+
+        # Predict
+        probability = model.predict_proba(features)[0][1]
+        will_churn = probability > 0.5
+
+        # Risk level
+        if probability > 0.8:
+            risk = "high"
+        elif probability > 0.5:
+            risk = "medium"
+        else:
+            risk = "low"
+
+        return ChurnResponse(
+            will_churn=will_churn,
+            probability=round(probability, 4),
+            risk_level=risk
+        )
+
+    except Exception as e:
+        logger.error(f"Prediction error: {e}")
+        raise HTTPException(status_code=500, detail="Prediction failed")
+
+@app.get("/model/info")
+def model_info():
+    return {
+        "model_type": type(model).__name__,
+        "features": feature_names,
+        "version": "1.0"
+    }
+
+================================================================================
+9. TESTING
+================================================================================
+
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
+
+def test_root():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json()["message"] == "ML API is running"
+
+def test_predict():
+    response = client.post("/predict", json={
+        "features": [25.0, 50000.0, 12.0],
+        "model_name": "random_forest"
+    })
+    assert response.status_code == 200
+    assert "prediction" in response.json()
+
+def test_predict_invalid():
+    response = client.post("/predict", json={
+        "features": "not a list"
+    })
+    assert response.status_code == 422    # Validation error
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is Pydantic and why is it important for ML APIs?
+2. How do you serve a trained model with FastAPI?
+3. What does Depends() do?
+4. How do you handle CORS in production?
+5. What is the difference between @app.get and @app.post?
+
+================================================================================

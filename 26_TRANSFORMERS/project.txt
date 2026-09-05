@@ -1,0 +1,68 @@
+# TRANSFORMERS — PROJECTS
+
+---
+
+## PROJECT 1 — TEXT CLASSIFICATION WITH BERT (Level 2)
+
+### Problem Statement
+Fine-tune BERT for sentiment classification.
+
+### Requirements
+- Load pre-trained BERT model
+- Tokenize text data
+- Fine-tune for classification
+- Evaluate on test set
+- Compare with baseline (TF-IDF + Logistic Regression)
+- Export model for inference
+
+### Dataset
+- IMDB Reviews or SST-2
+
+### Expected Output
+- Fine-tuned BERT model
+- Accuracy > 90%
+- Comparison with baseline
+- Inference script
+
+---
+
+## PROJECT 2 — NAMED ENTITY RECOGNITION (Level 2)
+
+### Problem Statement
+Build an NER system using transformers.
+
+### Requirements
+- Load NER dataset (CoNLL-2003 or WNUT)
+- Fine-tune BERT for token classification
+- Evaluate with entity-level F1
+- Build prediction function
+- Visualize entities
+
+### Expected Output
+- Fine-tuned NER model
+- Entity-level metrics
+- Prediction visualization
+- Inference script
+
+---
+
+## PROJECT 3 — CUSTOM TRANSFORMER IMPLEMENTATION (Level 3)
+
+### Problem Statement
+Implement a simplified transformer from scratch.
+
+### Requirements
+- Implement self-attention from scratch (NumPy/PyTorch)
+- Implement multi-head attention
+- Implement positional encoding
+- Build encoder block
+- Build decoder block
+- Train on simple sequence task
+- Compare with PyTorch transformer
+
+### Expected Output
+- Self-attention implementation
+- Multi-head attention implementation
+- Full transformer model
+- Training on toy task
+- Comparison with standard implementation

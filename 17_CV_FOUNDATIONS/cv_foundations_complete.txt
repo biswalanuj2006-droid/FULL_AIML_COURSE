@@ -1,0 +1,513 @@
+# COMPUTER VISION FOUNDATIONS — COMPLETE MODULE
+# Module 17: Computer Vision Foundations
+
+## WHAT IS COMPUTER VISION?
+
+Computer Vision (CV) is a field of AI that enables machines to interpret and understand visual information from the world — images, videos, and 3D scenes.
+
+### Why It Matters
+
+Every day, humans process enormous amounts of visual data effortlessly. We recognize faces, read text, navigate roads, and detect anomalies — all through vision. Computer Vision aims to replicate this ability in machines.
+
+### The Three Stages of Vision
+
+```
+Perception → Understanding → Action
+  (seeing)    (interpreting)  (deciding)
+```
+
+---
+
+## PART 1: IMAGE FUNDAMENTALS
+
+### 1.1 How Computers Represent Images
+
+An image is a matrix of numbers (pixels).
+
+```python
+import numpy as np
+
+# Grayscale image: 2D array (height × width)
+gray_image = np.random.randint(0, 256, size=(480, 640))  # H × W
+print(gray_image.shape)  # (480, 640)
+
+# Color image: 3D array (height × width × channels)
+color_image = np.random.randint(0, 256, size=(480, 640, 3))  # H × W × C
+print(color_image.shape)  # (480, 640, 3)
+```
+
+### 1.2 Pixel Values
+
+- Grayscale: 0 (black) to 255 (white)
+- Color: Three channels (R, G, B), each 0–255
+
+```python
+# Pixel at row 100, column 200
+pixel = color_image[100, 200, :]  # [R, G, B]
+print(pixel)  # e.g., [234, 12, 67]
+```
+
+### 1.3 Color Spaces
+
+| Color Space | Components | Use Case |
+|-------------|------------|----------|
+| RGB | Red, Green, Blue | Display, deep learning |
+| BGR | Blue, Green, Red | OpenCV default |
+| HSV | Hue, Saturation, Value | Color-based segmentation |
+| Grayscale | Intensity only | Edge detection, preprocessing |
+| LAB | Lightness, A-channel, B-channel | Color constancy |
+| YCbCr | Luminance, Chrominance | Video compression |
+
+```python
+import cv2
+import numpy as np
+
+# Load image
+img = cv2.imread('photo.jpg')  # BGR format
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+```
+
+---
+
+## PART 2: IMAGE PROCESSING OPERATIONS
+
+### 2.1 Resizing
+
+```python
+# Resize to specific dimensions
+resized = cv2.resize(img, (224, 224))  # W × H
+
+# Resize by scale factor
+scaled = cv2.resize(img, None, fx=0.5, fy=0.5)
+
+# Maintain aspect ratio
+h, w = img.shape[:2]
+new_w = 224
+new_h = int(h * (224 / w))
+resized_aspect = cv2.resize(img, (new_w, new_h))
+```
+
+### 2.2 Cropping
+
+```python
+# Crop: image[row_start:row_end, col_start:col_end]
+cropped = img[100:400, 50:350]  # 300 × 300 region
+```
+
+### 2.3 Flipping
+
+```python
+# Horizontal flip
+horizontal = cv2.flip(img, 1)
+
+# Vertical flip
+vertical = cv2.flip(img, 0)
+
+# Both
+both = cv2.flip(img, -1)
+```
+
+### 2.4 Rotation
+
+```python
+h, w = img.shape[:2]
+center = (w // 2, h // 2)
+M = cv2.getRotationMatrix2D(center, angle=45, scale=1.0)
+rotated = cv2.warpAffine(img, M, (w, h))
+```
+
+---
+
+## PART 3: FILTERING AND CONVOLUTION
+
+### 3.1 What is a Filter/Kernel?
+
+A filter (kernel) is a small matrix that slides across the image and computes a new value at each position.
+
+```
+Image:               Kernel:
+┌─────────────────┐  ┌─────┐
+│ 1 2 3 4 5 6 7 8│  │ 1 0 │
+│ 9 10 11 12 13  │  │ 0-1 │
+│ ...             │  └─────┘
+└─────────────────┘
+```
+
+### 3.2 Smoothing (Blur)
+
+```python
+# Average blur (box filter)
+blur_avg = cv2.blur(img, (5, 5))
+
+# Gaussian blur (weighted average)
+blur_gauss = cv2.GaussianBlur(img, (5, 5), sigmaX=1.5)
+
+# Median blur (good for salt-and-pepper noise)
+blur_median = cv2.medianBlur(img, 5)
+
+# Bilateral filter (preserves edges)
+blur_bilateral = cv2.bilateralFilter(img, 9, 75, 75)
+```
+
+### 3.3 Edge Detection
+
+```python
+# Sobel edges
+sobel_x = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+sobel_y = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+sobel_mag = np.sqrt(sobel_x**2 + sobel_y**2)
+
+# Canny edge detection (most popular)
+edges = cv2.Canny(gray, threshold1=50, threshold2=150)
+
+# Laplacian
+laplacian = cv2.Laplacian(gray, cv2.CV_64F)
+```
+
+### 3.4 Morphological Operations
+
+```python
+kernel = np.ones((5, 5), np.uint8)
+
+# Erosion: shrinks bright regions
+eroded = cv2.erode(img_binary, kernel, iterations=1)
+
+# Dilation: expands bright regions
+dilated = cv2.dilate(img_binary, kernel, iterations=1)
+
+# Opening: erosion → dilation (removes small noise)
+opening = cv2.morphologyEx(img_binary, cv2.MORPH_OPEN, kernel)
+
+# Closing: dilation → erosion (fills small holes)
+closing = cv2.morphologyEx(img_binary, cv2.MORPH_CLOSE, kernel)
+```
+
+---
+
+## PART 4: THRESHOLDING
+
+### 4.1 Types
+
+```python
+# Simple threshold
+_, thresh_simple = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+
+# Otsu's auto-threshold
+_, thresh_otsu = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+# Adaptive threshold (good for varying lighting)
+thresh_adaptive = cv2.adaptiveThreshold(
+    gray, 255,
+    cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+    cv2.THRESH_BINARY, 11, 2
+)
+```
+
+### 4.2 When to Use Each
+
+| Method | Best For |
+|--------|----------|
+| Simple | Uniform lighting |
+| Otsu | Bimodal histogram |
+| Adaptive | Uneven lighting |
+
+---
+
+## PART 5: FEATURE DETECTION
+
+### 5.1 Corners (Harris, Shi-Tomasi)
+
+```python
+# Harris corner detection
+gray_f = np.float32(gray)
+harris = cv2.cornerHarris(gray_f, blockSize=2, ksize=3, k=0.04)
+harris_dilated = cv2.dilate(harris, None)
+
+# Shi-Tomasi (better corners)
+corners = cv2.goodFeaturesToTrack(gray, maxCorners=100, qualityLevel=0.01, minDistance=10)
+```
+
+### 5.2 SIFT (Scale-Invariant Feature Transform)
+
+```python
+sift = cv2.SIFT_create()
+keypoints, descriptors = sift.detectAndCompute(gray, None)
+```
+
+### 5.3 ORB (Oriented FAST and Rotated BRIEF)
+
+```python
+orb = cv2.ORB_create(nfeatures=500)
+keypoints, descriptors = orb.detectAndCompute(gray, None)
+```
+
+### 5.4 Feature Matching
+
+```python
+# BFMatcher for SIFT/ORB
+bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+matches = bf.match(desc1, desc2)
+matches = sorted(matches, key=lambda x: x.distance)
+
+# FLANN-based matcher (faster for large datasets)
+FLANN_INDEX_KDTREE = 1
+index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+search_params = dict(checks=50)
+flann = cv2.FlannBasedMatcher(index_params, search_params)
+matches = flann.knnMatch(desc1, desc2, k=2)
+```
+
+---
+
+## PART 6: CONTOUR DETECTION
+
+```python
+# Find contours
+contours, hierarchy = cv2.findContours(
+    thresh_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+)
+
+# Draw contours
+cv2.drawContours(img_copy, contours, -1, (0, 255, 0), 2)
+
+# Area, perimeter, bounding box
+for c in contours:
+    area = cv2.contourArea(c)
+    perimeter = cv2.arcLength(c, closed=True)
+    x, y, w, h = cv2.boundingRect(c)
+    aspect_ratio = w / h
+```
+
+---
+
+## PART 7: COLOR-BASED SEGMENTATION
+
+```python
+# HSV-based segmentation
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+# Detect red objects
+lower_red = np.array([0, 100, 100])
+upper_red = np.array([10, 255, 255])
+mask1 = cv2.inRange(hsv, lower_red, upper_red)
+
+lower_red2 = np.array([170, 100, 100])
+upper_red2 = np.array([180, 255, 255])
+mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+
+mask = mask1 | mask2
+red_objects = cv2.bitwise_and(img, img, mask=mask)
+```
+
+---
+
+## PART 8: HISTOGRAMS
+
+```python
+import matplotlib.pyplot as plt
+
+# Grayscale histogram
+hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
+plt.plot(hist)
+plt.title('Grayscale Histogram')
+
+# Color histogram (per channel)
+colors = ('b', 'g', 'r')
+for i, col in enumerate(colors):
+    hist = cv2.calcHist([img], [i], None, [256], [0, 256])
+    plt.plot(hist, color=col)
+
+# Histogram equalization (improve contrast)
+equalized = cv2.equalizeHist(gray)
+
+# CLAHE (adaptive equalization)
+clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+clahe_img = clahe.apply(gray)
+```
+
+---
+
+## PART 9: GEOMETRIC TRANSFORMATIONS
+
+### 9.1 Affine Transform
+
+```python
+# Three-point transform
+pts1 = np.float32([[50, 50], [200, 50], [50, 200]])
+pts2 = np.float32([[10, 100], [200, 50], [100, 250]])
+M = cv2.getAffineTransform(pts1, pts2)
+affine = cv2.warpAffine(img, M, (w, h))
+```
+
+### 9.2 Perspective Transform
+
+```python
+# Four-point transform
+pts1 = np.float32([[56, 65], [368, 52], [28, 387], [389, 390]])
+pts2 = np.float32([[0, 0], [300, 0], [0, 300], [300, 300]])
+M = cv2.getPerspectiveTransform(pts1, pts2)
+warped = cv2.warpPerspective(img, M, (300, 300))
+```
+
+---
+
+## PART 10: IMAGE AUGMENTATION (FOR ML)
+
+```python
+import albumentations as A
+
+transform = A.Compose([
+    A.RandomCrop(224, 224),
+    A.HorizontalFlip(p=0.5),
+    A.VerticalFlip(p=0.2),
+    A.RandomBrightnessContrast(p=0.3),
+    A.Rotate(limit=30, p=0.5),
+    A.GaussNoise(p=0.2),
+    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+])
+
+augmented = transform(image=img)
+result = augmented['image']
+```
+
+---
+
+## PRACTICE QUESTIONS
+
+### Easy (10)
+
+1. What is the shape of a color image with dimensions 1920×1080?
+2. What does pixel value 0 represent in grayscale?
+3. What color space does OpenCV use by default?
+4. What is the difference between blur and sharpening?
+5. What does Canny edge detection output?
+6. What is a kernel/filter in image processing?
+7. What is the purpose of histogram equalization?
+8. What is the difference between erosion and dilation?
+9. Why do we resize images before feeding to a CNN?
+10. What is the difference between RGB and HSV?
+
+### Medium (10)
+
+1. Explain the difference between Gaussian blur and median blur. When would you use each?
+2. Write code to detect red objects in an image using HSV color space.
+3. What is the difference between Harris and Shi-Tomasi corner detection?
+4. Explain CLAHE and why it is better than standard histogram equalization.
+5. What is perspective transformation? Give a real-world use case.
+6. Compare SIFT and ORB feature detectors in terms of speed and accuracy.
+7. What morphological operation would you use to remove small white noise?
+8. How does bilateral filtering differ from Gaussian filtering?
+9. Write code to find and draw the largest contour in a binary image.
+10. Explain the difference between RETR_TREE and RETR_EXTERNAL contour retrieval modes.
+
+### Hard (5)
+
+1. Implement a custom 2D convolution function using only NumPy.
+2. Build a lane detection pipeline using Canny + Hough Transform.
+3. Implement a feature matching pipeline using ORB + FLANN matcher.
+4. Create a document scanner using perspective transform and thresholding.
+5. Build a color-based object tracker using HSV segmentation and contour analysis.
+
+### Debugging (5)
+
+```python
+# Fix 1: Why does this produce an error?
+img = cv2.imread('photo.jpg')
+gray = img[:, :, 0]  # Trying to get grayscale
+
+# Fix 2: Why are edges not detected properly?
+edges = cv2.Canny(img, 100, 200)  # img is BGR, not grayscale
+
+# Fix 3: Why does this contour detection fail?
+contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+# img is a color image, not binary
+
+# Fix 4: Why is the rotation not centered?
+M = cv2.getRotationMatrix2D((0, 0), 45, 1.0)
+
+# Fix 5: Why does adaptive threshold produce noise?
+thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+                                cv2.THRESH_BINARY, 3, 2)  # block size too small
+```
+
+### Interview Questions (10)
+
+1. What is the computational complexity of applying a k×k filter to an n×n image?
+2. How would you implement real-time object tracking with minimal latency?
+3. Explain the difference between semantic segmentation and instance segmentation.
+4. What are the challenges of computer vision in autonomous driving?
+5. How does data augmentation help prevent overfitting in image classification?
+6. What is the receptive field in a CNN and why does it matter?
+7. Explain the difference between images in HWC vs CHW format.
+8. Why do we normalize images before feeding them to a neural network?
+9. What is the vanishing gradient problem in deep CNNs and how does ResNet solve it?
+10. How would you handle class imbalance in an image classification task?
+
+---
+
+## PROJECTS
+
+### Level 1 — Basic Image Processing
+Build an image preprocessing pipeline:
+- Load images in different formats
+- Resize, crop, rotate
+- Apply filters (blur, sharpen, edge detect)
+- Save processed images
+
+### Level 2 — Document Scanner
+Build a document scanner:
+- Detect document edges using Canny + contours
+- Apply perspective transform
+- Apply thresholding for clean output
+- Output scanned document image
+
+### Level 3 — Object Counter
+Build an object counting system:
+- Background subtraction
+- Contour detection
+- Object tracking
+- Count objects entering/leaving a region
+
+---
+
+## CV FOUNDATIONS — ALGORITHM LIBRARY
+
+### Sobel Operator
+
+**Purpose:** Edge detection by computing image gradients
+
+**Kernel X:**
+```
+-1  0  1
+-2  0  2
+-1  0  1
+```
+
+**Kernel Y:**
+```
+-1 -2 -1
+ 0  0  0
+ 1  2  1
+```
+
+**Formula:** G = √(Gx² + Gy²)
+
+**Edge magnitude:** High values indicate edges
+
+### Canny Edge Detection
+
+**Steps:**
+1. Gaussian smoothing
+2. Compute gradients (Sobel)
+3. Non-maximum suppression
+4. Double thresholding
+5. Edge tracking by hysteresis
+
+### Hough Transform (Lines)
+
+**Purpose:** Detect lines in edge images
+
+**Parameter space:** (ρ, θ) where ρ = x·cos(θ) + y·sin(θ)
+
+**Voting:** Each edge point votes for all possible lines. Peaks in accumulator = detected lines.

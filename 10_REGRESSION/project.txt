@@ -1,0 +1,17 @@
+================================================================================
+REGRESSION MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: HOUSE PRICE PREDICTOR (Beginner)
+=============================================
+Predict house prices with multiple regression models, compare performance.
+
+PROJECT 2: SALES FORECASTING SYSTEM (Intermediate)
+====================================================
+Build forecasting system with feature engineering, multiple models, evaluation.
+
+PROJECT 3: PRODUCTION REGRESSION API (Advanced)
+=================================================
+End-to-end: data → model → API → Docker → monitoring.
+
+================================================================================

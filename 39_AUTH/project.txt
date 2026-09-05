@@ -1,0 +1,17 @@
+================================================================================
+AUTHENTICATION — PROJECTS
+================================================================================
+
+PROJECT 1: JWT AUTH SYSTEM (Beginner)
+========================================
+Build JWT authentication with FastAPI.
+
+PROJECT 2: MULTI-ROLE AUTH (Intermediate)
+============================================
+Build RBAC system with different user roles.
+
+PROJECT 3: PRODUCTION AUTH PLATFORM (Advanced)
+================================================
+Complete auth system with all security features.
+
+================================================================================

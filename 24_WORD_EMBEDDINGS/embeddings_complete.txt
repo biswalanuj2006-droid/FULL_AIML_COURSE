@@ -1,0 +1,280 @@
+================================================================================
+MODULE 24: WORD EMBEDDINGS — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand what word embeddings are and why they matter
+- Use Word2Vec, GloVe, and FastText
+- Visualize embeddings in 2D
+- Apply embeddings for downstream NLP tasks
+- Compare different embedding approaches
+
+================================================================================
+1. WHAT ARE WORD EMBEDDINGS?
+================================================================================
+
+INTUITION
+---------
+Word embeddings map words to dense numerical vectors where
+semantically similar words are close together.
+
+"king" → [0.2, 0.5, -0.1, 0.8, ...]  (100-300 dimensions)
+"queen" → [0.2, 0.6, -0.1, 0.7, ...]  (close to "king!")
+"banana" → [-0.3, 0.1, 0.4, -0.2, ...] (far from "king")
+
+THE FAMOUS EXAMPLE
+------------------
+vector("king") - vector("man") + vector("woman") ≈ vector("queen")
+
+This means embeddings capture semantic relationships!
+
+WHY EMBEDDINGS > ONE-HOT ENCODING
+----------------------------------
+One-hot encoding:
+- 50,000 word vocabulary → 50,000-dimensional vectors
+- All words are equidistant (no semantic similarity)
+- Sparse (mostly zeros)
+
+Word embeddings:
+- 100-300 dimensional vectors
+- Similar words are close together
+- Dense (meaningful values)
+
+================================================================================
+2. WORD2VEC
+================================================================================
+
+CREATED BY: Google (2013)
+KEY IDEA: Words that appear in similar contexts have similar meanings.
+
+TWO ARCHITECTURES:
+
+2.1 CBOW (Continuous Bag of Words)
+-----------------------------------
+Predict a word from its surrounding context.
+
+"The cat ___ on the mat"
+→ Predict "sat" from ["The", "cat", "on", "the", "mat"]
+
+INPUT: context words → HIDDEN: embedding → OUTPUT: target word
+
+2.2 SKIP-GRAM
+--------------
+Predict context words from a given word.
+
+Input: "cat"
+→ Predict: "The", "sat", "on", "the", "mat"
+
+INPUT: target word → HIDDEN: embedding → OUTPUT: context words
+
+IMPLEMENTATION
+--------------
+from gensim.models import Word2Vec
+
+# Training data: list of sentences (list of words)
+sentences = [
+    ['I', 'love', 'machine', 'learning'],
+    ['I', 'love', 'deep', 'learning'],
+    ['natural', 'language', 'processing', 'is', 'fun'],
+    ['deep', 'learning', 'uses', 'neural', 'networks']
+]
+
+# Train Word2Vec
+model = Word2Vec(
+    sentences,
+    vector_size=100,   # embedding dimension
+    window=5,          # context window size
+    min_count=1,       # minimum word frequency
+    sg=1,              # 1=Skip-gram, 0=CBOW
+    epochs=100         # training epochs
+)
+
+# Get embedding
+vector = model.wv['learning']
+print(vector.shape)  # (100,)
+
+# Find similar words
+similar = model.wv.most_similar('learning', topn=5)
+print(similar)
+
+# Analogy: king - man + woman = queen
+result = model.wv.most_similar(positive=['king', 'woman'],
+                               negative=['man'], topn=1)
+print(result)
+
+================================================================================
+3. GLOVE (Global Vectors)
+================================================================================
+
+CREATED BY: Stanford (2014)
+KEY IDEA: Uses global word co-occurrence statistics across entire corpus.
+
+While Word2Vec uses local context windows, GloVe builds a
+co-occurrence matrix and factorizes it.
+
+IMPLEMENTATION
+--------------
+import numpy as np
+
+# Load pretrained GloVe
+def load_glove_embeddings(path):
+    embeddings = {}
+    with open(path, 'r', encoding='utf-8') as f:
+        for line in f:
+            values = line.split()
+            word = values[0]
+            vector = np.asarray(values[1:], dtype='float32')
+            embeddings[word] = vector
+    return embeddings
+
+glove = load_glove_embeddings('glove.6B.100d.txt')
+vector = glove['king']
+
+# Similar words
+def find_similar(word, embeddings, topn=5):
+    word_vec = embeddings[word]
+    similarities = {}
+    for w, vec in embeddings.items():
+        if w != word:
+            sim = np.dot(word_vec, vec) / (np.linalg.norm(word_vec) * np.linalg.norm(vec))
+            similarities[w] = sim
+    return sorted(similarities.items(), key=lambda x: x[1], reverse=True)[:topn]
+
+================================================================================
+4. FASTTEXT
+================================================================================
+
+CREATED BY: Facebook (2016)
+KEY IDEA: Uses subword information (character n-grams).
+
+ADVANTAGE: Can handle out-of-vocabulary words!
+"unhappiness" → "un", "hap", "happ", "happi", "iness", "ness"
+
+Even if "unhappiness" wasn't in training data, FastText can create
+its embedding from subword parts.
+
+from gensim.models import FastText
+
+model = FastText(sentences, vector_size=100, window=5, min_count=1)
+vector = model.wv['unhappiest']  # works even if not in vocab!
+
+================================================================================
+5. PRETRAINED EMBEDDINGS
+================================================================================
+
+USING GENSIM DOWNLOADER
+------------------------
+import gensim.downloader as api
+
+# Download pretrained Word2Vec
+model = api.load('word2vec-google-news-300')
+
+# Use
+vector = model['computer']
+similar = model.most_similar('computer', topn=5)
+analogy = model.most_similar(positive=['king', 'woman'], negative=['man'])
+
+USING HUGGING FACE EMBEDDINGS
+------------------------------
+from transformers import AutoModel, AutoTokenizer
+import torch
+
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+model = AutoModel.from_pretrained('bert-base-uncased')
+
+inputs = tokenizer("Hello, world!", return_tensors='pt')
+outputs = model(**inputs)
+
+# Get [CLS] token embedding (sentence representation)
+embedding = outputs.last_hidden_state[:, 0, :]
+print(embedding.shape)  # (1, 768)
+
+================================================================================
+6. SENTENCE EMBEDDINGS
+================================================================================
+
+USING SENTENCE TRANSFORMERS
+-----------------------------
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+sentences = [
+    "I love machine learning",
+    "Machine learning is my passion",
+    "I hate cooking"
+]
+
+embeddings = model.encode(sentences)
+print(embeddings.shape)  # (3, 384)
+
+# Semantic similarity
+from sentence_transformers.util import cosine_similarity
+
+sim_matrix = cosine_similarity(embeddings)
+print(sim_matrix)
+# Sentences 0 and 1 are similar, 2 is different
+
+================================================================================
+7. VISUALIZATION
+================================================================================
+
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+
+words = ['king', 'queen', 'man', 'woman', 'cat', 'dog', 'car', 'bicycle']
+vectors = np.array([model.wv[w] for w in words])
+
+# Reduce to 2D
+tsne = TSNE(n_components=2, random_state=42, perplexity=3)
+vectors_2d = tsne.fit_transform(vectors)
+
+plt.figure(figsize=(10, 8))
+for i, word in enumerate(words):
+    plt.scatter(vectors_2d[i, 0], vectors_2d[i, 1])
+    plt.annotate(word, (vectors_2d[i, 0], vectors_2d[i, 1]))
+plt.title('Word Embeddings (t-SNE)')
+plt.show()
+
+================================================================================
+8. COMPARISON
+================================================================================
+
+| MODEL      | SPEED | OOV HANDLING | SEMANTIC | PRETRAINED AVAILABLE |
+|------------|-------|--------------|----------|---------------------|
+| Word2Vec   | Fast  | No           | Good     | Yes                 |
+| GloVe      | Fast  | No           | Good     | Yes                 |
+| FastText   | Medium| Yes (subwords)| Good    | Yes                 |
+| BERT       | Slow  | Yes (subwords)| Excellent| Yes                 |
+
+================================================================================
+9. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Training embeddings on tiny corpus
+  RIGHT: Use pretrained embeddings unless you have large domain-specific data
+
+MISTAKE 2: Using word embeddings for sentence-level tasks
+  RIGHT: Use sentence transformers (Sentence-BERT) for sentences
+
+MISTAKE 3: Not handling out-of-vocabulary words
+  RIGHT: Use FastText or subword tokenization
+
+MISTAKE 4: Ignoring domain specificity
+  RIGHT: Fine-tune or train custom embeddings for domain-specific text
+
+================================================================================
+10. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the key difference between Word2Vec and GloVe?
+Q2: How does FastText handle out-of-vocabulary words?
+Q3: What is the difference between word embeddings and sentence embeddings?
+Q4: How would you use word embeddings for text classification?
+Q5: What does the t-SNE visualization of embeddings show?
+
+================================================================================
+END OF MODULE 24: WORD EMBEDDINGS
+================================================================================

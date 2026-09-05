@@ -1,0 +1,78 @@
+# NLP — PROJECTS
+
+---
+
+## PROJECT 1 — SPAM CLASSIFIER (Level 1)
+
+### Problem Statement
+Build a text classifier for spam detection using NLP techniques.
+
+### Requirements
+- Text preprocessing pipeline (tokenization, lowercasing, stopword removal, lemmatization)
+- Feature extraction (Bag of Words, TF-IDF)
+- Train classifiers (Naive Bayes, Logistic Regression, SVM)
+- Evaluate with precision, recall, F1
+- Build prediction function
+
+### Dataset
+- SMS Spam Collection or SMS Spam Dataset
+
+### Expected Output
+- Preprocessing pipeline
+- Model comparison table
+- Confusion matrix
+- Top features per class
+
+---
+
+## PROJECT 2 — SENTIMENT ANALYZER (Level 2)
+
+### Problem Statement
+Build a sentiment analysis system for product reviews.
+
+### Requirements
+- Text preprocessing pipeline
+- Multiple feature approaches:
+  - TF-IDF + traditional ML
+  - Word2Vec embeddings + neural network
+  - Pre-trained transformer (BERT)
+- Handle class imbalance
+- Compare all approaches
+- Build prediction API
+
+### Dataset
+- Amazon Reviews or Yelp Reviews
+
+### Expected Output
+- Model comparison (3 approaches)
+- Accuracy and F1 scores
+- Confusion matrices
+- Example predictions
+
+---
+
+## PROJECT 3 — DOCUMENT CLASSIFICATION SYSTEM (Level 3)
+
+### Problem Statement
+Build a multi-class document classification system.
+
+### Requirements
+- Multi-class text classification
+- Preprocessing pipeline
+- Feature engineering
+- Multiple model comparison
+- Hyperparameter tuning (GridSearchCV)
+- Model persistence
+- API endpoint for predictions
+- Database for storing predictions
+- Docker containerization
+
+### Dataset
+- 20 Newsgroups or AG News
+
+### Expected Output
+- Complete ML pipeline
+- Model comparison report
+- API with /predict endpoint
+- Docker deployment
+- README documentation

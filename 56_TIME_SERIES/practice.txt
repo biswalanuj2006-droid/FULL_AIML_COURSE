@@ -1,0 +1,39 @@
+================================================================================
+TIME SERIES — PRACTICE SET (25 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is stationarity?
+Q2: What is the difference between trend and seasonality?
+Q3: What is autocorrelation?
+Q4: What is differencing?
+Q5: What is ARIMA?
+Q6: Why can't you shuffle time series data?
+Q7: What is rolling window?
+Q8: What is exponential smoothing?
+
+MEDIUM (12)
+============
+Q9: Implement ARIMA for stock prediction.
+Q10: Build time-series feature engineering pipeline.
+Q11: Implement LSTM forecasting model.
+Q12: Compare ARIMA vs Prophet vs LSTM.
+Q13: Build time-series cross-validation.
+14: Implement anomaly detection for time series.
+Q15: Build forecasting evaluation framework.
+Q16: Implement rolling window features.
+Q17: Compare different forecasting models.
+Q18: Build time-series preprocessing pipeline.
+Q19: Implement lag feature engineering.
+Q20: Build time-series visualization dashboard.
+
+HARD (5)
+=========
+Q21: Build production forecasting system.
+Q22: Implement multivariate time-series forecasting.
+Q23: Build time-series with exogenous variables.
+Q24: Implement online forecasting system.
+Q25: Build time-series anomaly detection pipeline.
+
+================================================================================

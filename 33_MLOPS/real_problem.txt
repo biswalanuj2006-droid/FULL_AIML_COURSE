@@ -1,0 +1,70 @@
+================================================================================
+REAL PROBLEM - 33 MLOPS
+================================================================================
+
+PROBLEM A: "Training is not reproducible: the same script gives 91.2%
+one day and 90.4% the next, and nobody can say why."
+WHY IT HAPPENS
+  1. No fixed seed (or seeds set per-library but not for the data
+     loader / GPU kernels).
+  2. Dependencies changed (pip install picked a new version).
+  3. The dataset file was silently replaced, or the train/val split is
+     done with a random shuffle that is not cached.
+  4. Multi-GPU / nondeterministic ops.
+HOW TO SOLVE
+  1. Record a run manifest automatically: git commit hash, dependency
+     versions (pip freeze), seed, dataset checksum (md5), hyperparams,
+     metrics. MLflow/TensorBoard capture this for you - use one.
+  2. Make the split deterministic: shuffle ONCE and save the indices;
+     load them every run.
+  3. Verify the dataset checksum at the start of training - 30 seconds
+     of hashing prevents a day of debugging.
+  4. If you must be bit-exact, set torch.use_deterministic_algorithms.
+
+PROBLEM B: "The monitoring dashboard shows accuracy 90% but the
+business says the model's decisions are bad."
+WHY: you monitor the wrong metric. Offline accuracy assumes the live
+distribution equals training. In production you need to monitor:
+  (a) input drift - feature distributions vs training,
+  (b) prediction drift - output class rates vs training,
+  (c) delayed ground-truth quality - actual outcomes when labels
+      arrive,
+  (d) business impact - the metric the business actually feels
+      (e.g. fraud $ recovered), which rarely equals accuracy.
+HOW TO SOLVE
+  1. Track a small labeled sample of live predictions scored against
+     real outcomes (even 100/day beats a weekly offline eval).
+  2. Set drift alerts on features with high model reliance (SHAP
+     top-10 features, not all features).
+  3. Define the decision threshold by cost, not by accuracy.
+
+PROBLEM C: "Retraining on new data made the model WORSE."
+WHY (check in order):
+  1. The new data's labels are from a different labeling guide (label
+     drift) - e.g. annotators changed, or a rule changed.
+  2. The retrain pipeline has a different preprocessing path than the
+     original (the classic - see 34_MODEL_DEPLOYMENT).
+  3. The model was retrained from scratch and random seed luck changed
+     the result, or you retrained on data that includes the failure
+     period where the OLD model's errors contaminated the labels
+     (label feedback loop).
+HOW TO SOLVE
+  1. Diff the label distributions old vs new before training.
+  2. Champion/challenger: train the new model, but A/B or shadow-test
+     it against the deployed one for a week before swapping.
+  3. Guard against feedback loops: if predictions become labels,
+     sample and re-validate a fraction of them by humans.
+
+PROBLEM D: "Pipeline runs fine on my laptop, fails in the cloud with a
+mysterious import error."
+WHY: implicit dependencies - the laptop has packages installed
+globally that were never declared; the cloud only has what the image
+declares.
+HOW TO SOLVE
+  1. Declare the environment (requirements.txt / poetry / uv) and the
+     Python version; test the Docker image locally with
+     --platform linux before pushing.
+  2. Run training in a fresh venv/container once in a while on purpose
+     - it surfaces every undeclared dependency.
+  3. Pin versions for anything you train on; allow ranges only for
+     dev-time tools.

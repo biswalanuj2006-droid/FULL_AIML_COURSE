@@ -1,0 +1,116 @@
+================================================================================
+MODULE 04 — DATA VISUALIZATION
+LESSON 03: SEABORN
+================================================================================
+
+## What You Will Learn
+- Seaborn statistical plots
+- Heatmaps and correlation matrices
+- Pair plots
+- Distribution plots
+- Categorical plots
+- Themes and styling
+
+================================================================================
+1. WHY SEABORN?
+================================================================================
+
+Seaborn builds on Matplotlib and provides:
+- Beautiful default styles
+- Statistical visualizations
+- Easy creation of complex plots
+- Integration with Pandas DataFrames
+
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+================================================================================
+2. DISTRIBUTION PLOTS
+================================================================================
+
+    # Histogram with density curve
+    sns.histplot(data=df, x="age", kde=True)
+
+    # KDE (Kernel Density Estimation)
+    sns.kdeplot(data=df, x="age", hue="churn", fill=True)
+
+    # Rug plot
+    sns.rugplot(data=df, x="age")
+
+    ML USE: Understanding feature distributions
+
+================================================================================
+3. CATEGORICAL PLOTS
+================================================================================
+
+    # Box plot
+    sns.boxplot(data=df, x="department", y="salary")
+
+    # Violin plot (box + KDE)
+    sns.violinplot(data=df, x="department", y="salary", inner="box")
+
+    # Strip plot (individual points)
+    sns.stripplot(data=df, x="department", y="salary", alpha=0.5)
+
+    # Swarm plot (non-overlapping points)
+    sns.swarmplot(data=df, x="department", y="salary")
+
+    # Count plot
+    sns.countplot(data=df, x="churn")
+
+    # Bar plot with confidence interval
+    sns.barplot(data=df, x="department", y="salary", ci=95)
+
+    ML USE: Comparing distributions across categories
+
+================================================================================
+4. RELATIONSHIP PLOTS
+================================================================================
+
+    # Scatter plot with regression line
+    sns.lmplot(data=df, x="age", y="income", hue="churn")
+
+    # Scatter plot matrix
+    sns.pairplot(df[["age", "income", "tenure", "churn"]],
+                 hue="churn", diag_kind="kde")
+
+    ML USE: Feature relationships, detecting patterns
+
+================================================================================
+5. HEATMAPS
+================================================================================
+
+    # Correlation matrix
+    corr = df.select_dtypes(include=[np.number]).corr()
+    sns.heatmap(corr, annot=True, cmap="coolwarm", center=0,
+                fmt=".2f", square=True)
+    plt.title("Feature Correlation Matrix")
+    plt.show()
+
+    # Confusion matrix (we'll see this in ML module)
+    from sklearn.metrics import confusion_matrix
+    cm = confusion_matrix(y_true, y_pred)
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+
+    ML USE: Feature correlation, confusion matrices
+
+================================================================================
+6. THEMES AND STYLING
+================================================================================
+
+    sns.set_theme(style="whitegrid")    # Set global theme
+    sns.set_palette("husl")             # Set color palette
+
+    # Common themes: "darkgrid", "whitegrid", "dark", "white", "ticks"
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. When would you use a violin plot vs a box plot?
+2. What does sns.pairplot() show?
+3. How do you create a correlation heatmap?
+
+================================================================================
+NEXT LESSON: 05_ml_visualizations.txt
+================================================================================

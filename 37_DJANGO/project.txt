@@ -1,0 +1,17 @@
+================================================================================
+DJANGO MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: DJANGO BLOG (Beginner)
+====================================
+Build simple blog with Django models and admin.
+
+PROJECT 2: DJANGO REST API (Intermediate)
+============================================
+Build REST API with DRF, authentication, permissions.
+
+PROJECT 3: PRODUCTION DJANGO APP (Advanced)
+=============================================
+Complete Django app with Docker, testing, deployment.
+
+================================================================================

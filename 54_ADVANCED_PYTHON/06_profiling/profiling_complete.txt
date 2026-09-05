@@ -1,0 +1,151 @@
+=====================================================================
+54_ADVANCED_PYTHON / 06_PROFILING — COMPLETE MODULE
+=====================================================================
+Goal: teach the workflow "correct -> clean -> fast -> memory efficient"
+using Python's built-in and third-party profilers, with an ML flavor.
+
+---------------------------------------------------------------------
+1. WHY PROFILE BEFORE OPTIMIZING
+---------------------------------------------------------------------
+Most "slow code" is slow in a few hot spots, not everywhere. Guessing
+where wastes time and often makes code worse. The engineering workflow:
+
+    SLOW CODE
+      -> measure (profile)
+      -> identify the bottleneck (usually 1-3 functions)
+      -> optimize only that code
+      -> benchmark before/after
+      -> repeat until good enough
+
+Never skip measurement. Premature optimization is the root of evil;
+absent profiling is how you end up optimizing the wrong 5% forever.
+
+---------------------------------------------------------------------
+2. THE THREE QUESTIONS TOOLKIT
+---------------------------------------------------------------------
+Time budget:        how long does each stage take?
+Call count:         which function is called a surprising number of times?
+Allocation:         where is memory being created and dropped?
+
+Profiler            What it answers               How
+------------------  ----------------------------  ---------------------
+time.perf_counter   wall-clock of one section    code instrumentation
+timeit              micro-benchmark of snippets  python -m timeit "..."
+cProfile            per-function time + calls    python -m cProfile -s cumtime app.py
+line_profiler       per-LINE time inside a func  @profile decorator
+memory_profiler     per-line memory usage        @profile + mprof run
+tracemalloc         where allocations happen     snapshot compare
+---------------------------------------------------------------------
+
+---------------------------------------------------------------------
+3. THE FASTEST FIRST FIXES (in order of leverage)
+---------------------------------------------------------------------
+1. Vectorize: replace Python loops over arrays with NumPy.
+   Example (from code/numpy/01_numpy_fundamentals.py): sigmoid over
+   100k values: list comprehension ~ms, vectorized ~10x+ faster.
+2. Avoid recomputation inside loops: hoist constants, cache repeated
+   calls (functools.lru_cache).
+3. Use the right data structure:
+   - membership test: set/dict instead of list ('in' on list = O(n))
+   - deques for both-end append/pop, not list.pop(0) (O(n) shift)
+   - dict.get / collections.defaultdict instead of try/except KeyError
+     in hot paths (when key usually present)
+4. Replace .apply(axis=1) with vectorized column ops in Pandas.
+5. Use generators to stream large data instead of building giant lists.
+6. Sort + bisect / heap for repeated min/max of large collections.
+7. Concurrency only when the workload matches:
+   - I/O-bound (network, disk, DB, API calls)  -> threads or asyncio
+   - CPU-bound (pure math on large data)        -> multiprocessing/NumPy
+   Do NOT use threads to speed up CPU-bound pure-Python math: the GIL
+   serializes it.
+
+---------------------------------------------------------------------
+4. WORKED EXAMPLE (what profiling output looks like)
+---------------------------------------------------------------------
+$ python -m cProfile -s cumtime slow_script.py | head -20
+
+   ncalls  tottime  cumtime  filename:lineno(function)
+      100  0.002    8.410    slow_script.py:20(train_loop)
+  1000000  5.800    5.800    slow_script.py:9(dist)
+   500000  2.100    2.100    {method 'sqrt' ...}
+
+Reading it:
+- train_loop spends 8.4s cumulative; almost all of it (5.8s) is inside
+  dist() called 1,000,000 times — 1M calls for 100 samples means an
+  accidental O(n^2) loop.
+- Optimization: replace the dist() loop with one np.linalg.norm call.
+  Before/after timeit should confirm the win.
+
+How to fix the classic O(n^2): compute pairwise distance with
+broadcasting or scipy.spatial.distance.cdist, never double loops.
+
+---------------------------------------------------------------------
+5. memory_profiler QUICK REFERENCE
+---------------------------------------------------------------------
+$ pip install memory_profiler line_profiler
+
+# memory_profiler_demo.py
+from memory_profiler import profile
+
+@profile
+def load_and_stack():
+    frames = [pd.read_csv(f) for f in files]   # loads n copies!
+    return pd.concat(frames)
+
+Run:  python -m memory_profiler memory_profiler_demo.py
+Fix:  read + process one file at a time (streaming), or concat into a
+      preallocated buffer; free frames with del as you go.
+
+Common memory bugs in ML code:
+- Keeping every intermediate DataFrame/array alive (del + gc).
+- float64 where float32 suffices: 50% memory saving on big arrays.
+- .copy() chains that double memory; use views/inplace where safe.
+- Loading whole CSVs when chunking (pd.read_csv(chunksize=...)) works.
+
+---------------------------------------------------------------------
+6. BENCHMARK BEFORE/AFTER PATTERN
+---------------------------------------------------------------------
+def bench(fn, *args, repeat=5):
+    import time
+    times = []
+    for _ in range(repeat):
+        t0 = time.perf_counter()
+        fn(*args)
+        times.append(time.perf_counter() - t0)
+    return min(times)   # min filters noise from background load
+
+new = bench(fast_similarity, X, q)
+old = bench(slow_similarity, X, q)
+print(f"speedup: {old/new:.1f}x")
+
+Always report: input size, machine roughly, min-of-N timings, and the
+before/after number — that is how "optimization" is proven.
+
+---------------------------------------------------------------------
+7. COMMON MISTAKES
+---------------------------------------------------------------------
+Mistake                    Why it is wrong              Correct approach
+-------------------------  ---------------------------  --------------------
+Optimizing without         You don't know the hot spot  profile first
+profiling
+Looping over NumPy         GIL + interpreter overhead   vectorize / ufuncs
+Threads for CPU math       GIL serializes Python code   multiprocessing/NumPy
+Optimizing readability     Hard-to-maintain code        keep clean; optimize
+boundaries first                                      only proven hot spots
+Benchmarking once          Noise misleads you           min of N repeats
+Premature GPU               0.01s CPU code moved to      only move real
+migration                 GPU pays transfer overhead     bottlenecks
+Applying pandas .apply     Slow Python call per row     vectorized/agg ops
+
+---------------------------------------------------------------------
+8. PRACTICE / DEBUGGING
+---------------------------------------------------------------------
+practice.txt in this folder contains 25 questions, 5 debugging
+problems, and 3 challenges. The key debugging exercises:
+ D1. Why is `arr.tolist()` inside a loop slow?  (per-call copy)
+ D2. Profile: find the accidental O(n^2) in the included example.
+ D3. 1M-row groupby takes 8s; why does category dtype cut it to 1s?
+ D4. Threads did not speed up CPU-bound hashing — explain why.
+ D5. Model inference allocates 2 GB per batch: where do you look first?
+     (answer: tracemalloc snapshot; likely .cpu().numpy() copies per batch)
+=====================================================================

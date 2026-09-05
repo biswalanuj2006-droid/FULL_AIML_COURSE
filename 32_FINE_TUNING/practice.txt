@@ -1,0 +1,199 @@
+# FINE-TUNING — PRACTICE SET
+# 40 Questions + Debugging + Interview
+
+---
+
+## EASY (10 Questions)
+
+1. What is fine-tuning in the context of deep learning?
+   Answer: Taking a pre-trained model and continuing training on a new task-specific dataset
+
+2. What is transfer learning?
+   Answer: Using knowledge learned from one task to improve performance on a different but related task
+
+3. What is the difference between feature extraction and fine-tuning?
+   Answer: Feature extraction freezes pre-trained layers and only trains a new classifier; fine-tuning updates some or all pre-trained weights
+
+4. Why do we use pre-trained models instead of training from scratch?
+   Answer: They already learn general features (edges, textures, patterns) from large datasets, requiring less data and compute for new tasks
+
+5. What is a learning rate in the context of fine-tuning?
+   Answer: The step size for weight updates; typically smaller than training from scratch to avoid destroying pre-learned features
+
+6. What does "freezing a layer" mean?
+   Answer: Setting layer weights to not update during training (requires_grad=False in PyTorch)
+
+7. What is LoRA?
+   Answer: Low-Rank Adaptation — a parameter-efficient fine-tuning method that adds small trainable rank-decomposition matrices
+
+8. What is QLoRA?
+   Answer: Quantized LoRA — combines model quantization (4-bit) with LoRA for memory-efficient fine-tuning
+
+9. What is the purpose of a validation set during fine-tuning?
+   Answer: To monitor overfitting and adjust hyperparameters without touching the test set
+
+10. What is early stopping?
+    Answer: Stopping training when validation loss stops improving to prevent overfitting
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Write PyTorch code to freeze all layers except the last classification layer.
+    ```python
+    for param in model.parameters():
+        param.requires_grad = False
+    for param in model.classifier.parameters():
+        param.requires_grad = True
+    ```
+
+12. Explain the difference between full fine-tuning and parameter-efficient fine-tuning (PEFT).
+    Answer: Full fine-tuning updates all parameters (expensive, needs lots of data); PEFT updates only a small subset (efficient, less data needed)
+
+13. What is discriminative learning rates and why is it useful?
+    Answer: Using different learning rates for different layers — lower for early layers (general features), higher for later layers (task-specific features)
+
+14. How do you choose which layers to freeze?
+    Answer: Start by freezing early layers (general features), unfreeze more layers if the dataset is large enough, and experiment
+
+15. What is the recommended approach when you have very little labeled data (< 1000 samples)?
+    Answer: Freeze all pre-trained layers, train only a classifier head; use data augmentation; consider few-shot learning
+
+16. What is the recommended approach when you have lots of labeled data (> 10K samples)?
+    Answer: Fine-tune the entire model with a small learning rate; use learning rate scheduling
+
+17. Explain the concept of catastrophic forgetting in fine-tuning.
+    Answer: When fine-tuning destroys the pre-trained model's general knowledge, performing worse on the original task
+
+18. What is warm-up in learning rate scheduling?
+    Answer: Starting with a very small learning rate and gradually increasing it to the target rate over a few epochs
+
+19. How do you save and load a fine-tuned model in PyTorch?
+    ```python
+    torch.save(model.state_dict(), 'finetuned_model.pth')
+    model.load_state_dict(torch.load('finetuned_model.pth'))
+    ```
+
+20. What is the difference between fine-tuning BERT for classification vs generation?
+    Answer: Classification uses [CLS] token output → linear layer; generation uses next-token prediction with causal masking
+
+21. Why is fine-tuning LLMs more expensive than fine-tuning vision models?
+    Answer: LLMs have billions of parameters, require more GPU memory, and often need specialized techniques (LoRA, QLoRA, PEFT)
+
+22. What is instruction tuning?
+    Answer: Fine-tuning an LLM on instruction-response pairs to improve its ability to follow user instructions
+
+23. What is RLHF?
+    Answer: Reinforcement Learning from Human Feedback — training a reward model on human preferences, then using it to fine-tune the LLM via PPO
+
+24. What is DPO?
+    Answer: Direct Preference Optimization — a simpler alternative to RLHF that directly optimizes for human preferences without a separate reward model
+
+25. How do you handle class imbalance during fine-tuning?
+    Answer: Use class weights in loss function, oversample minority class, use focal loss, or apply data augmentation
+
+---
+
+## HARD (10 Questions)
+
+26. Implement a fine-tuning pipeline for ResNet-18 on a custom image classification task with:
+    - Layer freezing
+    - Discriminative learning rates
+    - Learning rate scheduling
+    - Early stopping
+    - Model checkpointing
+
+27. Write code to fine-tune BERT for sentiment classification using Hugging Face Transformers.
+
+28. Implement LoRA from scratch in PyTorch for a linear layer.
+
+29. Design a fine-tuning strategy for a 7B parameter LLM on a single consumer GPU.
+
+30. Compare full fine-tuning vs LoRA vs QLoRA vs prompt tuning on:
+    - Memory usage
+    - Training time
+    - Model quality
+    - Data requirements
+
+31. Implement a fine-tuning pipeline with:
+    - Mixed precision training (FP16)
+    - Gradient accumulation
+    - Gradient clipping
+    - Warm-up + cosine annealing
+
+32. Write code to evaluate a fine-tuned model and generate:
+    - Classification report
+    - Confusion matrix
+    - ROC curves
+    - Per-class metrics
+
+33. Implement a data augmentation pipeline for fine-tuning on small image datasets.
+
+34. Design an experiment to compare fine-tuning strategies and track results with MLflow.
+
+35. Implement a fine-tuning pipeline that handles:
+    - Multi-GPU training (DataParallel)
+    - Checkpointing
+    - Resuming training from checkpoint
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Loss doesn't decrease during fine-tuning
+model.classifier = nn.Linear(768, num_classes)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+# Problem: Learning rate too high for fine-tuning
+# Fix: Use lr=1e-5 or 2e-5 for fine-tuning
+
+# Debug 2: CUDA out of memory during fine-tuning
+# Full model + gradients + optimizer states exceed GPU memory
+# Fix: Use gradient checkpointing, reduce batch size, or use LoRA
+
+# Debug 3: Validation accuracy drops after unfreezing layers
+# Unfreezing too many layers at once causes catastrophic forgetting
+# Fix: Gradually unfreeze layers, use smaller learning rate
+
+# Debug 4: Model performs worse than pre-trained baseline
+# Overfitting on small dataset
+# Fix: Add dropout, reduce epochs, use augmentation, freeze more layers
+
+# Debug 5: Fine-tuned model predicts only one class
+# Learning rate too high, destroyed pre-trained weights
+# Fix: Reduce lr to 1e-5, freeze early layers, check class balance
+```
+
+---
+
+## INTERVIEW QUESTIONS (10)
+
+1. **Q:** When would you use fine-tuning vs training from scratch?
+   **A:** Fine-tuning when you have limited data (< 10K samples) and a related pre-trained model exists. Train from scratch when data is abundant and domain is very different.
+
+2. **Q:** Explain the bias-variance tradeoff in fine-tuning.
+   **A:** Pre-trained model has low bias (general features learned). Fine-tuning on small data can increase variance (overfitting). Balance by freezing layers and regularization.
+
+3. **Q:** How does LoRA reduce memory requirements?
+   **A:** Instead of updating full weight matrices (d×d), LoRA updates low-rank decomposition (d×r + r×d where r << d), storing far fewer parameters.
+
+4. **Q:** What is the difference between instruction tuning and RLHF?
+   **A:** Instruction tuning teaches the model to follow instructions via supervised learning. RLHF further aligns the model with human preferences using reinforcement learning.
+
+5. **Q:** How would you fine-tune a vision model for a medical imaging task?
+   **A:** Use ImageNet pre-trained model, freeze early layers, fine-tune later layers with medical data, use heavy augmentation, apply class weighting for rare conditions.
+
+6. **Q:** What are the signs of overfitting during fine-tuning?
+   **A:** Training loss decreasing while validation loss increases; accuracy gap between train and validation; model memorizes training examples.
+
+7. **Q:** How do you handle catastrophic forgetting?
+   **A:** Use low learning rates, freeze early layers, use elastic weight consolidation, use LoRA, gradually unfreeze layers.
+
+8. **Q:** What is the optimal learning rate for fine-tuning?
+   **A:** Typically 1e-5 to 5e-5 for transformers, 1e-4 to 1e-3 for CNNs. Use learning rate finder or grid search.
+
+9. **Q:** Compare fine-tuning GPT-3 vs fine-tuning a smaller open-source model.
+   **A:** GPT-3: API-based, limited control, expensive. Smaller models (LLaMA, Mistral): full control, local deployment, cheaper, but may need more data.
+
+10. **Q:** When would you use prompt tuning instead of fine-tuning?
+    **A:** When you can't modify model weights (API-only models), when you need multiple task-specific versions with minimal storage, or when data is very limited.

@@ -1,0 +1,162 @@
+================================================================================
+ADVANCED PYTHON: ASYNC & CONCURRENCY
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand threading, multiprocessing, and asyncio
+- Choose the right concurrency model for your problem
+- Write async/await code
+- Build concurrent ML pipelines
+
+================================================================================
+1. CPU-BOUND vs I/O-BOUND
+================================================================================
+
+CPU-BOUND: computation-heavy (ML training, data processing)
+  → Use multiprocessing (bypasses GIL)
+
+I/O-BOUND: waiting for external resources (API calls, file I/O, DB)
+  → Use threading or asyncio
+
+GIL (Global Interpreter Lock):
+  Only one thread executes Python bytecode at a time.
+  threading doesn't help for CPU-bound work.
+  multiprocessing uses separate processes (no GIL).
+
+================================================================================
+2. THREADING
+================================================================================
+
+import threading
+import time
+
+def download(url):
+    print(f"Downloading {url}")
+    time.sleep(2)  # simulate I/O
+    print(f"Done {url}")
+
+# Sequential: 6 seconds
+urls = ["url1", "url2", "url3"]
+for url in urls:
+    download(url)
+
+# Parallel with threads: ~2 seconds
+threads = [threading.Thread(target=download, args=(url,)) for url in urls]
+for t in threads: t.start()
+for t in threads: t.join()
+
+THREAD POOL (Simpler)
+----------------------
+from concurrent.futures import ThreadPoolExecutor
+
+with ThreadPoolExecutor(max_workers=3) as executor:
+    results = list(executor.map(download, urls))
+
+================================================================================
+3. MULTIPROCESSING
+================================================================================
+
+from multiprocessing import Pool
+import os
+
+def heavy_computation(n):
+    return sum(i * i for i in range(n))
+
+# Use all CPU cores
+with Pool(os.cpu_count()) as pool:
+    results = pool.map(heavy_computation, [10**7] * 4)
+
+PROCESS POOL EXECUTOR
+----------------------
+from concurrent.futures import ProcessPoolExecutor
+
+with ProcessPoolExecutor(max_workers=4) as executor:
+    results = list(executor.map(heavy_computation, [10**7] * 4))
+
+================================================================================
+4. ASYNCIO
+================================================================================
+
+INTUITION
+---------
+Single-threaded concurrency using cooperative multitasking.
+Perfect for I/O-bound tasks with many concurrent connections.
+
+import asyncio
+import aiohttp
+
+async def fetch(session, url):
+    async with session.get(url) as response:
+        return await response.text()
+
+async def fetch_all(urls):
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch(session, url) for url in urls]
+        return await asyncio.gather(*tasks)
+
+# Run
+results = asyncio.run(fetch_all(["url1", "url2", "url3"]))
+
+ASYNC/AVAW
+-----------
+async def process_data(data):
+    await asyncio.sleep(1)  # non-blocking wait
+    return data * 2
+
+# Run multiple coroutines concurrently
+async def main():
+    tasks = [process_data(i) for i in range(5)]
+    results = await asyncio.gather(*tasks)
+    print(results)
+
+asyncio.run(main())
+
+================================================================================
+5. WHEN TO USE WHAT
+================================================================================
+
+| TASK TYPE         | USE               | WHY                    |
+|-------------------|--------------------|-----------------------|
+| ML Training       | Multiprocessing    | CPU-bound, bypass GIL  |
+| API Calls (many)  | asyncio            | I/O-bound, scalable    |
+| File I/O          | threading          | Simple I/O parallelism |
+| Web Scraping      | asyncio            | Many concurrent reqs   |
+| Data Processing   | multiprocessing    | CPU-bound              |
+| Mixed workload    | asyncio + threads  | Best of both           |
+
+================================================================================
+6. ML PIPELINE EXAMPLE
+================================================================================
+
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+import asyncio
+
+# CPU-bound: model training (use multiprocessing)
+def train_model_fold(fold_data):
+    model = RandomForestClassifier()
+    model.fit(fold_data['X_train'], fold_data['y_train'])
+    return model.score(fold_data['X_test'], fold_data['y_test'])
+
+# I/O-bound: data fetching (use asyncio)
+async def fetch_data(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            return await resp.json()
+
+# Combined pipeline
+async def ml_pipeline():
+    # Fetch data concurrently
+    urls = ["url1", "url2", "url3"]
+    data = await asyncio.gather(*[fetch_data(url) for url in urls])
+
+    # Train models in parallel
+    with ProcessPoolExecutor() as executor:
+        scores = list(executor.map(train_model_fold, data))
+
+    return scores
+
+================================================================================
+END OF MODULE
+================================================================================

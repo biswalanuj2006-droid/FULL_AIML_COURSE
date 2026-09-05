@@ -1,0 +1,116 @@
+================================================================================
+PRACTICE: OPTIMIZER FAMILY (SGD -> momentum -> AdaGrad -> RMSProp -> Adam)
+================================================================================
+Companion: code/ml/gradient_descent_from_scratch.py (batch/SGD/mini-batch/
+momentum) and 05_MATHEMATICS/06_OPTIMIZATION. This set makes you
+implement the full adaptive family and DEBUG the differences empirically.
+
+--------------------------------------------------------------------------------
+PART 1 - CONCEPTUAL (write answers first, no code)
+--------------------------------------------------------------------------------
+1. Write the update rule for vanilla SGD, SGD+momentum, Nesterov
+   momentum, AdaGrad, RMSProp, and Adam, in a consistent notation.
+   Circle: every place a gradient appears, every place a learning rate
+   appears, and every place a bias correction appears.
+2. AdaGrad divides by the accumulated SUM of squared gradients. Why does
+   that make the effective step size vanish over time, and why is that
+   "adaptive" (rare features get bigger steps)?
+3. RMSProp replaces the sum with an EXPONENTIAL MOVING AVERAGE. Write the
+   decay. Why does this fix AdaGrad's vanishing problem?
+4. Adam = RMSProp + momentum + bias correction. What exactly does the
+   bias correction fix, and why does it matter most in the FIRST steps?
+5. AdamW differs from Adam in ONE place. Where, and what failure of
+   L2-regularized Adam does it fix? (Think: what happens to weight decay
+   when it is implemented as an L2 penalty and the effective step size
+   is normalized?)
+6. Which optimizer converges fastest in the first 100 steps on a
+   noisy sparse problem? Which generalizes worst in the long run, and
+   what is the empirical story on transformers (AdamW) vs CNNs (SGD+
+   momentum often wins on accuracy)?
+7. What does the learning rate MEAN in Adam vs SGD? (SGD: actual step
+   size in weight space. Adam: a fraction of the parameter's own scale -
+   which is why 3e-4 "just works" across tasks.)
+
+--------------------------------------------------------------------------------
+PART 2 - NUMERICAL (by hand on one step)
+--------------------------------------------------------------------------------
+8. One weight w = 2.0, gradient g = -0.5, lr = 0.1, momentum beta = 0.9,
+   velocity v = 0 initially.
+   a) SGD step: what is w after one update?
+   b) Momentum: what is v1 and w after one update?
+   c) Show that with constant gradient -0.5 for 10 steps, momentum's
+      step size approaches g/(1-beta) * lr = -5 * lr asymptotically,
+      while SGD's total movement after 10 steps is 10 * lr * 0.5.
+9. Adam first step: m = 0, v = 0, g1 = -0.5, lr = 3e-4, beta1 = 0.9,
+   beta2 = 0.999, eps = 1e-8.
+   a) Compute m1, v1 (unbiased) and the corrected m1_hat, v1_hat.
+   b) Compute the update. What would the update be WITHOUT bias
+      correction? (This is why the first Adam step is not tiny.)
+10. AdaGrad: w = 1.0, lr = 0.1, accumulate G. After gradients g1 = 1.0,
+    g2 = 0.01, what are the two step sizes? Show the second step is
+    roughly 10x smaller relative to the first in step-size-per-unit-
+    gradient terms.
+
+--------------------------------------------------------------------------------
+PART 3 - CODE (implement and verify each claim)
+--------------------------------------------------------------------------------
+11. Implement all six optimizers as functions that update a numpy
+    parameter array given a gradient, keeping their internal state.
+    Verify your updates by hand against PART 2 answers.
+12. Convergence sanity: minimize f(w) = ||X w - y||^2 on a random
+    well-conditioned problem (n=200, d=10). All six should converge to
+    the same optimum; report steps-to-1e-6-loss for each at a fair lr.
+13. The sparse-gradient test: make 95% of gradient entries zero. Compare
+    steps taken by AdaGrad/RMSProp/Adam vs SGD on the rare coordinates.
+    Confirm: adaptive methods move the rare coordinates faster.
+14. The ill-conditioned test: f(w) = 100 w1^2 + w2^2 (a banana-shaped
+    valley). SGD+momentum zigzags; which method handles it best and
+    why? Plot the trajectories.
+15. Numerical check (this is the debugging part): implement Adam and
+    VERIFY that the m and v updates use the SAME gradient at step t
+    (a classic bug updates v with the momentum-corrected gradient, or
+    updates m before computing the correction). Write the buggy
+    version, show it converges slower or diverges, then fix it.
+16. AdamW: implement Adam with L2 penalty added to the loss vs AdamW
+    (decay applied directly to weights). Train a tiny MLP with both at
+    identical lr and weight decay; measure final train loss and the
+    actual L2 norm of the weights. They are NOT equivalent when the
+    adaptive step size varies - show it.
+17. lr schedule interplay: take Adam at lr=3e-4 with (a) fixed lr,
+    (b) cosine decay, (c) linear warmup + decay, on a small CNN-ish
+    problem (or MLP on MNIST via code/dl examples). Report final loss;
+    explain why warmup matters for Adam (huge early effective steps on
+    rare coordinates).
+
+--------------------------------------------------------------------------------
+PART 4 - DEBUGGING (each scenario has a planted cause)
+--------------------------------------------------------------------------------
+18. Loss explodes to NaN at step 50 with Adam at lr = 1e-3 but trains
+    fine at 1e-4. Name two candidate causes and the diagnostic that
+    distinguishes them (gradient norm log vs loss log).
+19. Adam reaches loss 0.01 and stops improving; SGD+momentum from the
+    same start reaches 0.005 but needs 10x more steps. What does this
+    say about the two optimizers' final neighborhoods, and how do you
+    exploit it in practice (optimizer switching / fine-tuning)?
+20. Your per-parameter update is fine in fp64 but NaN in fp32 after
+    100k steps with Adam. Which term is most likely overflowing, and
+    where do you put the eps (hint: eps in the sqrt, not after)?
+21. Momentum with beta=0.99 overshoots on a convex quadratic and
+    oscillates; beta=0.9 is fine. Derive the step-size bound that
+    explains it, then confirm numerically.
+
+--------------------------------------------------------------------------------
+PART 5 - REAL-WORLD / INTERVIEW
+--------------------------------------------------------------------------------
+22. You are fine-tuning a transformer. Default AdamW lr? Why not SGD?
+    What happens if you forget the bias correction in the first 10
+    steps?
+23. You are training a CNN on images with a batch of 128 on one GPU.
+    Your colleague claims Adam always beats SGD here. What experiment
+    settles it, and what is the common empirical outcome after a full
+    LR schedule?
+24. Explain to a non-expert why "the optimizer" is a hyperparameter you
+    must tune together with the learning rate, not separately.
+25. (Open) When would you deliberately choose SGD+momentum over Adam
+    even though Adam converges faster in loss? Give a concrete
+    generalization argument and the test that would support it.

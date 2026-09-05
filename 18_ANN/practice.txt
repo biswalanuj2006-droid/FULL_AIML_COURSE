@@ -1,0 +1,78 @@
+================================================================================
+ANN MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (15 Questions)
+================================
+Q1: What is a perceptron and how does it make decisions?
+Q2: What is the difference between a weight and a bias?
+Q3: What does the sigmoid function output and why is it useful?
+Q4: What is forward propagation?
+Q5: Why do neural networks need activation functions?
+Q6: What is the difference between ReLU and sigmoid?
+Q7: What is a loss function and why do we need it?
+Q8: What is backpropagation in simple terms?
+Q9: What is gradient descent?
+Q10: What is the learning rate and what happens if it's too high?
+Q11: What is the vanishing gradient problem?
+Q12: What is the difference between a hidden layer and an output layer?
+Q13: What is batch size in neural network training?
+Q14: What is an epoch?
+Q15: What is overfitting in neural networks?
+
+SECTION B — MEDIUM (15 Questions)
+==================================
+Q16: Implement a single neuron (perceptron) from scratch in NumPy.
+Q17: Implement forward propagation for a 2-layer network.
+Q18: Implement backpropagation for a 2-layer network.
+Q19: Compare ReLU, sigmoid, and tanh on a simple problem.
+Q20: Implement a neural network that XORs two inputs.
+Q21: Train a neural network on MNIST and plot loss curves.
+Q22: Implement dropout regularization from scratch.
+Q23: Implement batch normalization from scratch.
+Q24: Compare different weight initialization strategies.
+Q25: Implement early stopping for neural network training.
+Q26: Implement learning rate scheduling.
+Q27: Build a neural network classifier with PyTorch.
+Q28: Build a neural network regressor with Keras.
+Q29: Implement gradient clipping.
+Q30: Compare SGD, Adam, and RMSProp optimizers.
+
+SECTION C — HARD (10 Questions)
+================================
+Q31: Implement a neural network from complete scratch (no frameworks).
+Q32: Implement backpropagation with numerical gradient checking.
+Q33: Build a deep network (5+ layers) and analyze gradient flow.
+Q34: Implement a custom loss function in PyTorch.
+Q35: Build a neural network that handles variable-length inputs.
+Q36: Implement mixed precision training conceptually.
+Q37: Design a neural network architecture for a specific problem.
+Q38: Implement transfer learning with a pretrained model.
+Q39: Analyze training instability and fix it.
+Q40: Implement a neural network with custom activation functions.
+
+SECTION D — DEBUGGING (8 Problems)
+====================================
+D1: Why is my neural network loss not decreasing?
+D2: Fix: NaN loss during training.
+D3: Why is training accuracy high but validation accuracy low?
+D4: Fix: GPU out of memory error.
+D5: Why is the model predicting the same output for all inputs?
+D6: Fix: Exploding gradients in deep network.
+D7: Why is training extremely slow?
+D8: Fix: Model overfits with small dataset.
+
+SECTION E — INTERVIEW (10 Questions)
+======================================
+I1: Explain backpropagation to a non-technical person.
+I2: Why use ReLU over sigmoid in hidden layers?
+I3: What is the bias-variance tradeoff in neural networks?
+I4: How do you choose the number of hidden layers and neurons?
+I5: What is batch normalization and why does it help?
+I6: Explain the difference between SGD and Adam.
+I7: How do you prevent overfitting in neural networks?
+I8: What is transfer learning and when is it useful?
+I9: How does dropout work and why is it effective?
+I10: What are the limitations of neural networks?
+
+================================================================================

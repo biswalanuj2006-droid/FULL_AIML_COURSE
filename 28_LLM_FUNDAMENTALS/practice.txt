@@ -1,0 +1,72 @@
+================================================================================
+LLM FUNDAMENTALS MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (15 Questions)
+================================
+Q1: What is a Large Language Model?
+Q2: What is tokenization and why is it needed?
+Q3: What is the difference between BPE and WordPiece?
+Q4: What is the context window of an LLM?
+Q5: What is temperature in text generation?
+Q6: What is top-k and top-p sampling?
+Q7: What is the difference between completion and chat models?
+Q8: What is a system prompt?
+Q9: What is hallucination in LLMs?
+Q10: What is grounding and how does it help?
+Q11: What is the difference between GPT and BERT?
+Q12: What is an API key and why keep it secret?
+Q13: What is rate limiting?
+Q14: What is streaming in LLM APIs?
+Q15: What is the difference between open-source and closed-source LLMs?
+
+SECTION B — MEDIUM (15 Questions)
+==================================
+Q16: Call OpenAI API for text classification.
+Q17: Build a chatbot with conversation history.
+Q18: Implement structured JSON output from LLM.
+Q19: Build a document summarization system.
+Q20: Implement function calling with LLM.
+Q21: Build a multi-turn conversation system.
+Q22: Compare different LLM models on the same task.
+Q23: Implement a prompt template system.
+Q24: Build a code generation assistant.
+Q25: Implement token counting and cost estimation.
+Q26: Build an LLM-powered Q&A system.
+Q27: Implement streaming text generation.
+Q28: Build a content classification system with LLM.
+Q29: Implement retry logic for API failures.
+Q30: Build a translation system with LLM.
+
+SECTION C — HARD (8 Questions)
+================================
+Q31: Build a production LLM application with error handling.
+Q32: Implement a multi-model routing system.
+Q33: Build an LLM evaluation framework.
+Q34: Implement a cost-optimization layer for LLM calls.
+Q35: Build a content moderation system with LLM.
+Q36: Implement a retrieval-augmented generation system.
+Q37: Build a multi-agent LLM system.
+Q38: Implement an LLM observability platform.
+
+SECTION D — DEBUGGING (6 Problems)
+====================================
+D1: Why is LLM returning unexpected format?
+D2: Fix: Token limit exceeded error.
+D3: Why is LLM hallucinating facts?
+D4: Fix: API rate limit error handling.
+D5: Why is LLM response inconsistent?
+D6: Fix: Streaming response is garbled.
+
+SECTION E — INTERVIEW (8 Questions)
+=====================================
+I1: Explain how GPT generates text step by step.
+I2: What are the limitations of current LLMs?
+I3: When would you use fine-tuning vs RAG?
+I4: How do you reduce LLM hallucination?
+I5: What is the difference between instruct and base models?
+I6: How do you evaluate LLM outputs?
+I7: What is the difference between LoRA and full fine-tuning?
+I8: How would you design a production LLM system?
+
+================================================================================

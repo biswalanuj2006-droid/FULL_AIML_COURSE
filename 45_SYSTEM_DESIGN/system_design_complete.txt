@@ -1,0 +1,176 @@
+================================================================================
+MODULE 45: AI/ML SYSTEM DESIGN — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Design end-to-end ML systems
+- Make architectural decisions
+- Handle scaling, monitoring, and maintenance
+- Design for reliability and fault tolerance
+
+================================================================================
+1. ML SYSTEM DESIGN FRAMEWORK
+================================================================================
+
+1. UNDERSTAND THE PROBLEM
+   - What is the business objective?
+   - What is the ML task? (classification, generation, etc.)
+   - What are the success metrics?
+   - What are the constraints? (latency, cost, privacy)
+
+2. DATA DESIGN
+   - Where does data come from?
+   - How much data is available?
+   - What preprocessing is needed?
+   - How to handle data quality issues?
+
+3. MODEL DESIGN
+   - What model architecture?
+   - What features?
+   - How to train and evaluate?
+   - Online vs batch prediction?
+
+4. SYSTEM ARCHITECTURE
+   - How components connect
+   - Data flow
+   - API design
+   - Storage choices
+
+5. DEPLOYMENT & MONITORING
+   - How to deploy?
+   - How to monitor performance?
+   - How to handle model updates?
+   - How to detect drift?
+
+================================================================================
+2. ML PREDICTION SYSTEM ARCHITECTURE
+================================================================================
+
+                    User
+                      ↓
+                 Frontend
+                      ↓
+                 API Gateway
+                      ↓
+                 Backend API
+                ↙     ↓      ↘
+           Database   ML     Cache
+                     ↓
+                  Model
+                     ↓
+                Prediction
+                     ↓
+                  Logging
+                     ↓
+                 Monitoring
+
+COMPONENTS
+----------
+- Frontend: User interface (web/mobile)
+- API Gateway: Rate limiting, authentication
+- Backend API: Business logic, orchestration
+- ML Model: Inference service
+- Database: Store predictions, user data
+- Cache: Fast retrieval of common predictions
+- Monitoring: Track model performance, drift
+
+================================================================================
+3. RECOMMENDATION SYSTEM DESIGN
+================================================================================
+
+OFFLINE PIPELINE
+----------------
+Data Collection → Feature Engineering → Model Training
+→ Model Evaluation → Model Registry → Batch Predictions
+
+ONLINE PIPELINE
+----------------
+User Request → Feature Store → Model Inference
+→ Re-ranking → Response → Logging
+
+TECHNOLOGIES
+------------
+- Data: Spark, Pandas
+- Feature Store: Redis, Feast
+- Model: XGBoost, Neural Collaborative Filtering
+- Serving: FastAPI, TensorFlow Serving
+- Storage: PostgreSQL, S3
+- Cache: Redis
+
+================================================================================
+4. REAL-TIME ML SYSTEM DESIGN
+================================================================================
+
+EXAMPLE: FRAUD DETECTION SYSTEM
+
+Data Flow:
+Transaction → Kafka → Feature Engineering
+→ ML Model (real-time) → Decision (flag/allow)
+→ Alert System → Dashboard
+
+Architecture:
+- Kafka: stream transactions
+- Flink/Spark Streaming: compute features
+- ML Model: lightweight model for low latency
+- Redis: cache recent features
+- PostgreSQL: store decisions
+- Dashboard: monitor alerts
+
+Latency Requirements:
+- Fraud detection: < 100ms
+- Recommendation: < 500ms
+- Search ranking: < 200ms
+
+================================================================================
+5. RAG SYSTEM DESIGN
+================================================================================
+
+Components:
+1. Document Pipeline: Load → Clean → Chunk → Embed → Store
+2. Retrieval: Query → Embed → Vector Search → Rerank
+3. Generation: Context + Query → LLM → Response
+4. Evaluation: Accuracy, faithfulness, relevance
+
+Architecture:
+- Document Store: PostgreSQL (metadata)
+- Vector DB: Qdrant / Pinecone
+- Embeddings: Sentence Transformers
+- LLM: GPT-4 / Claude
+- Cache: Redis (for repeated queries)
+- API: FastAPI
+- Frontend: React / Streamlit
+
+================================================================================
+6. DESIGN DECISIONS
+================================================================================
+
+BATCH vs REAL-TIME
+-------------------
+Batch: predictions generated periodically (e.g., daily recommendations)
+Real-time: predictions on-demand (e.g., fraud detection)
+
+ONLINE vs OFFLINE INFERENCE
+----------------------------
+Online: API call → prediction (low latency needed)
+Offline: batch job → predictions stored (latency not critical)
+
+MONITORING vs OBSERVABILITY
+----------------------------
+Monitoring: tracking metrics (accuracy, latency)
+Observability: understanding system behavior (logs, traces, metrics)
+
+================================================================================
+7. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What are the key components of an ML prediction system?
+Q2: When would you use batch vs real-time predictions?
+Q3: What is a feature store and why use one?
+Q4: How do you handle model drift in production?
+Q5: Design a fraud detection system at a high level.
+
+================================================================================
+END OF MODULE 45: AI/ML SYSTEM DESIGN
+================================================================================

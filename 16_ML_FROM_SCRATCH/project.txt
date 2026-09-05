@@ -1,0 +1,46 @@
+================================================================================
+16_ML_FROM_SCRATCH - PROJECTS (3 LEVELS)
+Complete the practice file first. These projects prove you can build ML
+without libraries - the skill that turns library users into ML engineers.
+================================================================================
+
+PROJECT 1 - LEVEL 1: From-Scratch Linear/Logistic Regression Library
+  Implement a small library with NumPy only:
+  - LinearRegression (fit via normal equation AND gradient descent)
+  - LogisticRegression (binary, sigmoid + BCE)
+  - Standardization helper
+  Requirements:
+  - Match sklearn's coefficients to ~1e-4 on a synthetic dataset
+  - Plot the loss curve and the fitted line/boundary
+  - Report MAE/MSE (regression) and accuracy (classification)
+  Success criteria: numeric parity with sklearn shown in the output.
+
+PROJECT 2 - LEVEL 2: KNN + K-Means + Naive Bayes Toolbox
+  Implement, from scratch:
+  - KNN classifier (brute force) with k selection via validation
+  - K-Means with k-means++ initialization and elbow plot
+  - Gaussian Naive Bayes classifier
+  Test on sklearn's iris / make_blobs datasets and compare each against its
+  sklearn counterpart (accuracy, silhouette for clustering).
+  Success criteria: within ~2% accuracy of sklearn on the same splits,
+  with a written explanation of any gap.
+
+PROJECT 3 - LEVEL 3: Mini Neural Net + PCA Framework
+  Build a small autograd-free deep learning toolkit:
+  - Dense layer, ReLU/Sigmoid/Softmax, BCE + CrossEntropy
+  - Forward/backward with the chain rule (implement backprop by hand)
+  - Mini-batch SGD with momentum
+  - Training loop with train/validation split and early stopping
+  Also implement PCA from scratch and use it to compress MNIST digits
+  (784 -> 50 dims) before classifying with your net.
+  Success criteria:
+  - >90% accuracy on MNIST test set with your own backprop
+  - PCA reconstruction error plot (explained variance vs dims)
+  - A short report explaining each gradient you computed
+
+General rule: for every implementation, print a comparison table against
+sklearn. If you cannot reach parity, investigate why - that investigation
+is the actual learning.
+================================================================================
+END
+================================================================================

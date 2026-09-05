@@ -1,0 +1,104 @@
+================================================================================
+MODULE 02 — NUMPY
+LESSON 05: RANDOM NUMBER GENERATION
+================================================================================
+
+## What You Will Learn
+- Random seed for reproducibility
+- Common distributions
+- Random sampling for ML
+- Train/test split with NumPy
+
+================================================================================
+1. RANDOM SEED — CRITICAL FOR REPRODUCIBILITY
+================================================================================
+
+    # Without seed — results change every run
+    np.random.rand(5)    # Different each time
+
+    # With seed — results are the same every run
+    np.random.seed(42)
+    np.random.rand(5)    # Same every time
+
+    # Modern way (recommended)
+    rng = np.random.default_rng(seed=42)
+    rng.random(5)
+
+    ALWAYS SET RANDOM SEEDS IN ML EXPERIMENTS.
+    This ensures your results can be reproduced.
+
+================================================================================
+2. COMMON DISTRIBUTIONS
+================================================================================
+
+UNIFORM [0, 1):
+    rng.random(5)              # [0.123, 0.456, ...]
+    rng.uniform(low=0, high=10, size=5)  # [2.3, 7.1, ...]
+
+NORMAL (Gaussian):
+    rng.standard_normal(5)      # Mean=0, Std=1
+    rng.normal(loc=0, scale=1, size=5)   # Custom mean/std
+    rng.normal(loc=5, scale=2, size=(3, 4))  # 3x4 matrix
+
+    ML USE: Weight initialization in neural networks
+    weights = rng.normal(0, 0.01, size=(100, 50))  # He initialization
+
+INTEGER:
+    rng.integers(low=0, high=10, size=5)     # [3, 7, 1, 9, 2]
+    rng.integers(low=0, high=2, size=1000)   # Binary labels
+
+CHOICE (random sampling):
+    rng.choice([1, 2, 3, 4, 5], size=3, replace=False)
+    # Random 3 elements without replacement
+
+    rng.choice(1000, size=100, replace=False)
+    # Random 100 indices from 0-999
+
+BERNOULLI:
+    rng.binomial(n=1, p=0.5, size=10)  # Coin flips
+
+MULTINOMIAL:
+    rng.multinomial(n=1, pvals=[0.3, 0.5, 0.2], size=5)
+    # Categorical distribution
+
+================================================================================
+3. ML USE CASES
+================================================================================
+
+TRAIN/TEST SPLIT:
+    def simple_train_test_split(X, y, test_size=0.2, seed=42):
+        rng = np.random.default_rng(seed=seed)
+        n = len(X)
+        indices = rng.permutation(n)
+        split = int(n * (1 - test_size))
+        return X[indices[:split]], X[indices[split:]], \
+               y[indices[:split]], y[indices[split:]]
+
+WEIGHT INITIALIZATION:
+    # Xavier/Glorot initialization
+    def init_weights_xavier(fan_in, fan_out):
+        std = np.sqrt(2.0 / (fan_in + fan_out))
+        return np.random.randn(fan_in, fan_out) * std
+
+    # He initialization (for ReLU)
+    def init_weights_he(fan_in, fan_out):
+        std = np.sqrt(2.0 / fan_in)
+        return np.random.randn(fan_in, fan_out) * std
+
+SUBSAMPLING:
+    # Random subsample for faster experimentation
+    n_sample = 1000
+    idx = rng.choice(len(X), size=n_sample, replace=False)
+    X_sample, y_sample = X[idx], y[idx]
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. Why set random seed in ML experiments?
+2. What is the difference between rng.random() and rng.standard_normal()?
+3. How do you randomly sample 100 indices without replacement?
+
+================================================================================
+NEXT LESSON: 06_statistics.txt
+================================================================================

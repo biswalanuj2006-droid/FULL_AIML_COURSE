@@ -1,0 +1,72 @@
+================================================================================
+FASTAPI MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (15 Questions)
+================================
+Q1: What is FastAPI and why use it?
+Q2: What is the difference between GET and POST?
+Q3: What is a path parameter vs query parameter?
+Q4: What is Pydantic and why is it used?
+Q5: What is the difference between request body and query params?
+Q6: What is async in FastAPI?
+Q7: What is dependency injection?
+Q8: What is middleware?
+Q9: What is CORS?
+Q10: What is a status code?
+Q11: What is OpenAPI/Swagger?
+Q12: What is the difference between 200 and 201 status codes?
+Q13: What is HTTP vs HTTPS?
+Q14: What is JSON?
+Q15: What is REST?
+
+SECTION B — MEDIUM (15 Questions)
+==================================
+Q16: Build a simple REST API with CRUD operations.
+Q17: Implement JWT authentication in FastAPI.
+Q18: Build an ML model serving API.
+Q19: Implement file upload endpoint.
+Q20: Build API with database integration (SQLAlchemy).
+Q21: Implement rate limiting middleware.
+Q22: Build a background task system.
+Q23: Implement WebSocket endpoint.
+Q24: Build API with proper error handling.
+Q25: Implement API versioning.
+Q26: Build a streaming response endpoint.
+Q27: Implement dependency injection for database.
+Q28: Build API with Pydantic validation.
+Q29: Implement CORS configuration.
+Q30: Build a health check endpoint.
+
+SECTION C — HARD (8 Questions)
+================================
+Q31: Build a production ML inference API with caching.
+Q32: Implement multi-user authentication with roles.
+Q33: Build a real-time prediction API with WebSocket.
+Q34: Implement API with PostgreSQL + SQLAlchemy.
+Q35: Build a file processing pipeline API.
+Q36: Implement API with background job queue.
+Q37: Build a multi-tenant API system.
+Q38: Implement comprehensive API testing suite.
+
+SECTION D — DEBUGGING (6 Problems)
+====================================
+D1: Why is API returning 422 Unprocessable Entity?
+D2: Fix: CORS error when calling from frontend.
+D3: Why is the API response slow?
+D4: Fix: Database connection error in production.
+D5: Why is async endpoint blocking?
+D6: Fix: File upload fails for large files.
+
+SECTION E — INTERVIEW (8 Questions)
+=====================================
+I1: Explain how FastAPI achieves high performance.
+I2: What is the difference between FastAPI and Flask?
+I3: How do you secure a FastAPI application?
+I4: How would you deploy FastAPI to production?
+I5: What is dependency injection and how does FastAPI implement it?
+I6: How do you handle file uploads securely?
+I7: What is the best way to handle errors in FastAPI?
+I8: How would you scale a FastAPI application?
+
+================================================================================

@@ -1,0 +1,331 @@
+================================================================================
+MLOPS LIBRARIES DEEP DIVE — MLFLOW, OPTUNA, DVC
+================================================================================
+
+## What You Will Learn
+- MLflow for experiment tracking and model registry
+- Optuna for hyperparameter optimization
+- DVC for data and model versioning
+
+## Why These Libraries?
+MLOps bridges the gap between ML experiments and production systems.
+Without proper tooling, ML projects become un reproducible messes.
+
+pip install mlflow optuna dvc
+
+================================================================================
+1. MLFLOW — EXPERIMENT TRACKING AND MODEL REGISTRY
+================================================================================
+
+WHAT IS MLFLOW?
+    An open-source platform for managing the ML lifecycle:
+    - Experiment tracking (log params, metrics, artifacts)
+    - Model registry (version models)
+    - Model deployment
+
+BASIC EXPERIMENT TRACKING:
+    import mlflow
+    import mlflow.sklearn
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.metrics import f1_score
+
+    mlflow.set_experiment("churn_prediction")
+
+    with mlflow.start_run(run_name="rf_baseline"):
+        # Log parameters
+        mlflow.log_param("n_estimators", 100)
+        mlflow.log_param("max_depth", 5)
+        mlflow.log_param("model_type", "RandomForest")
+
+        # Train model
+        model = RandomForestClassifier(n_estimators=100, max_depth=5)
+        model.fit(X_train, y_train)
+
+        # Log metrics
+        y_pred = model.predict(X_test)
+        mlflow.log_metric("f1", f1_score(y_test, y_pred))
+        mlflow.log_metric("accuracy", model.score(X_test, y_test))
+
+        # Log model
+        mlflow.sklearn.log_model(model, "model")
+
+        # Log artifacts (plots, data)
+        mlflow.log_artifact("confusion_matrix.png")
+
+        print(f"Run ID: {mlflow.active_run().info.run_id}")
+
+VIEWING EXPERIMENTS:
+    # Launch MLflow UI
+    mlflow ui
+    # Opens at http://localhost:5000
+
+    # Or from command line
+    mlflow ui --port 5000
+
+LOGGING WITH AUTOLOG:
+    # Auto-log everything (parameters, metrics, model)
+    mlflow.sklearn.autolog()
+
+    with mlflow.start_run():
+        model = RandomForestClassifier(n_estimators=100)
+        model.fit(X_train, y_train)    # Everything logged automatically!
+
+MODEL REGISTRY:
+    # Register a model
+    mlflow.register_model(
+        f"runs:/<run_id>/model",
+        "churn-predictor"
+    )
+
+    # Load a registered model
+    model = mlflow.pyfunc.load_model("models:/churn-predictor/Production")
+
+    # Transition model stage
+    client = mlflow.tracking.MlflowClient()
+    client.transition_model_version_stage(
+        name="churn-predictor",
+        version=1,
+        stage="Production"
+    )
+
+PRACTICAL EXPERIMENT TRACKING:
+    import mlflow
+    from sklearn.model_selection import cross_val_score
+
+    experiments = [
+        {"name": "lr", "model": LogisticRegression(), "params": {"C": 1.0}},
+        {"name": "rf", "model": RandomForestClassifier(), "params": {"n_estimators": 100}},
+        {"name": "xgb", "model": XGBClassifier(), "params": {"learning_rate": 0.1}},
+    ]
+
+    for exp in experiments:
+        with mlflow.start_run(run_name=exp["name"]):
+            mlflow.log_params(exp["params"])
+
+            scores = cross_val_score(exp["model"], X, y, cv=5, scoring="f1")
+            mlflow.log_metric("f1_mean", scores.mean())
+            mlflow.log_metric("f1_std", scores.std())
+
+            print(f"{exp['name']}: F1 = {scores.mean():.4f} ± {scores.std():.4f}")
+
+================================================================================
+2. OPTUNA — HYPERPARAMETER OPTIMIZATION
+================================================================================
+
+WHAT IS OPTUNA?
+    A hyperparameter optimization framework that uses:
+    - Bayesian optimization (smarter than grid/random search)
+    - Pruning (early stopping bad trials)
+    - Efficient search spaces
+
+pip install optuna
+
+BASIC USAGE:
+    import optuna
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import cross_val_score
+
+    def objective(trial):
+        # Define search space
+        n_estimators = trial.suggest_int("n_estimators", 50, 500)
+        max_depth = trial.suggest_int("max_depth", 3, 20)
+        min_samples_split = trial.suggest_int("min_samples_split", 2, 20)
+        min_samples_leaf = trial.suggest_int("min_samples_leaf", 1, 10)
+
+        # Create model
+        model = RandomForestClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            random_state=42
+        )
+
+        # Evaluate
+        scores = cross_val_score(model, X_train, y_train, cv=5, scoring="f1")
+        return scores.mean()
+
+    # Run optimization
+    study = optuna.create_study(direction="maximize")
+    study.optimize(objective, n_trials=100)
+
+    # Results
+    print(f"Best F1: study.best_value:.4f")
+    print(f"Best params: study.best_params")
+
+PRUNING (EARLY STOPPING BAD TRIALS):
+    def objective(trial):
+        n_estimators = trial.suggest_int("n_estimators", 50, 500)
+        max_depth = trial.suggest_int("max_depth", 3, 20)
+
+        model = RandomForestClassifier(n_estimators=n_estimators,
+                                        max_depth=max_depth)
+
+        # Cross-validation with pruning
+        scores = []
+        for fold, (train_idx, val_idx) in enumerate(kf.split(X_train)):
+            model.fit(X_train[train_idx], y_train[train_idx])
+            score = model.score(X_train[val_idx], y_train[val_idx])
+            scores.append(score)
+
+            # Report intermediate value
+            trial.report(np.mean(scores), fold)
+
+            # Check if trial should be pruned
+            if trial.should_prune():
+                raise optuna.TrialPruned()
+
+        return np.mean(scores)
+
+    study = optuna.create_study(
+        direction="maximize",
+        pruner=optuna.pruners.MedianPruner()
+    )
+
+VISUALIZATION:
+    # Plot optimization history
+    optuna.visualization.plot_optimization_history(study)
+
+    # Plot parameter importances
+    optuna.visualization.plot_param_importances(study)
+
+    # Plot parallel coordinate
+    optuna.visualization.plot_parallel_coordinate(study)
+
+ADVANCED SEARCH SPACES:
+    def objective(trial):
+        # Categorical
+        model_type = trial.suggest_categorical("model_type",
+                                                ["rf", "xgb", "lgbm"])
+
+        # Integer
+        n_estimators = trial.suggest_int("n_estimators", 50, 500)
+
+        # Float (log scale)
+        learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-1, log=True)
+
+        # Float (uniform)
+        subsample = trial.suggest_float("subsample", 0.5, 1.0)
+
+        # Conditional parameters
+        if model_type == "rf":
+            max_depth = trial.suggest_int("max_depth", 3, 20)
+        elif model_type == "xgb":
+            max_depth = trial.suggest_int("xgb_max_depth", 3, 10)
+
+STUDY PERSISTENCE:
+    # Save study to database
+    study = optuna.create_study(
+        study_name="churn_optimization",
+        storage="sqlite:///optuna.db",
+        load_if_exists=True
+    )
+
+    # Resume optimization
+    study.optimize(objective, n_trials=50)
+
+================================================================================
+3. DVC — DATA AND MODEL VERSIONING
+================================================================================
+
+WHAT IS DVC?
+    Data Version Control. Git for data and models.
+    Tracks changes to datasets, models, and pipelines.
+
+pip install dvc
+
+BASICS:
+    # Initialize
+    dvc init
+
+    # Track a file
+    dvc add data/train.csv
+    git add data/train.csv.dvc .gitignore
+
+    # Commit
+    git commit -m "Add training data"
+
+    # Push data to remote storage
+    dvc push
+
+    # Pull data
+    dvc pull
+
+    # Get version
+    git checkout <commit>
+    dvc checkout
+
+PIPELINES:
+    # Define a pipeline in dvc.yaml
+    stages:
+      preprocess:
+        cmd: python src/preprocess.py
+        deps:
+          - src/preprocess.py
+          - data/raw.csv
+        outs:
+          - data/processed.csv
+
+      train:
+        cmd: python src/train.py
+        deps:
+          - src/train.py
+          - data/processed.csv
+        outs:
+          - models/model.joblib
+        metrics:
+          - metrics.json:
+              cache: false
+
+    # Run pipeline
+    dvc repro
+
+    # Show pipeline
+    dvc dag
+
+REMOTE STORAGE:
+    # Configure remote (S3, GCS, Azure, etc.)
+    dvc remote add -d myremote s3://mybucket/dvc
+    dvc push
+    dvc pull
+
+WHEN TO USE DVC:
+    - Large datasets that shouldn't go in Git
+    - Reproducible ML pipelines
+    - Collaborative ML projects
+    - When you need to version datasets and models
+
+================================================================================
+4. COMPARISON: WHEN TO USE WHAT
+================================================================================
+
+┌──────────────┬─────────────────────────────────────────────┐
+│ Tool         │ Use For                                     │
+├──────────────┼─────────────────────────────────────────────┤
+│ MLflow       │ Experiment tracking, model registry,        │
+│              │ model deployment, team collaboration         │
+│ Optuna       │ Hyperparameter optimization, smart search   │
+│ DVC          │ Data versioning, pipeline reproducibility   │
+│ Git          │ Code versioning                             │
+│ Weights &    │ Cloud experiment tracking (alternative      │
+│ Biases       │ to MLflow)                                  │
+└──────────────┴─────────────────────────────────────────────┘
+
+COMBINED WORKFLOW:
+    1. DVC: Version your data and pipeline
+    2. Optuna: Find best hyperparameters
+    3. MLflow: Track experiments and register model
+    4. Git: Version your code
+    5. Docker: Package everything for deployment
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What does mlflow.start_run() do?
+2. Why is Optuna better than GridSearchCV for large search spaces?
+3. What is the difference between DVC and Git?
+4. How do you view MLflow experiment results?
+5. When should you use pruning in Optuna?
+
+================================================================================

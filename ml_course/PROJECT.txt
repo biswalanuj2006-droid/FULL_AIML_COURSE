@@ -1,0 +1,322 @@
+================================================================================
+ULTRA-DEEP MACHINE LEARNING COURSE  -  PROJECT.txt
+================================================================================
+Companion to COURSE.txt and PRACTICE.txt.  Projects progress through
+tiers - do NOT skip tiers; each tier unlocks the skills the next needs.
+
+  TIER E   FUNDAMENTAL   (10)  Python + NumPy + Pandas + sklearn
+  TIER D   BEGINNER      (10)  EDA + preprocessing + evaluation
+  TIER C   INTERMEDIATE  (10)  features + CV + tuning + model comparison
+  TIER B   ADVANCED      (10)  boosters + imbalance + explainability +
+                               time series + anomaly detection
+  TIER A   INDUSTRY      (10)  API + Docker + Postgres + Redis + MLflow +
+                               monitoring + drift
+  TIER S   ELITE         (5)   full production ML systems
+  TIER S+  RESEARCH      (3)   paper reproduction + novel improvement
+
+Every project must include (the PROJECT REQUIREMENT template):
+problem statement, business motivation, dataset requirements, data
+collection, EDA, preprocessing, feature engineering, baseline,
+algorithms, training, validation, hyperparameter tuning, metrics,
+error analysis, explainability, deployment, monitoring, documentation,
+GitHub structure, resume description, interview questions.
+
+GitHub structure for every project (learn this once):
+  README.md            # problem, results table, how to run
+  data/                # raw + processed (gitignore large files / use DVC)
+  notebooks/           # EDA + experiments (numbered)
+  src/                 # features.py, models.py, train.py, predict.py
+  tests/               # test_features.py, test_pipeline.py, golden.json
+  configs/             # params.yaml per run
+  deploy/              # Dockerfile, compose.yaml, mlflow config
+
+================================================================================
+TIER E - FUNDAMENTAL (10 projects)
+================================================================================
+E1. STUDENT PERFORMANCE PREDICTION  - predict exam score from study hours,
+    attendance, sleep.  Linear regression + R2/RMSE.  Plot the fit line.
+E2. HOUSE PRICE PREDICTION (linear) - 5-8 numeric features; compare
+    Linear vs Ridge vs Lasso with proper scaling; coefficient table.
+E3. SALARY PREDICTION  - years experience + education level; fit three
+    linear variants, report the bias-variance view (degree-2 polynomial).
+E4. IRIS-STYLE 3-CLASS CLASSIFICATION  - LogisticRegression (OvR +
+    multinomial), confusion matrix, per-class precision/recall.
+E5. TITANIC SURVIVAL  - full beginner loop: EDA, fill missing, encode,
+    logistic baseline, k-fold accuracy.
+E6. HEIGHTS AND WEIGHTS (BMI CLASSES) - KNN with standardization; show
+    what happens WITHOUT scaling.
+E7. BINARY SENTIMENT (IMDB tiny / toy reviews) - TF-IDF + Naive Bayes;
+    report precision/recall and inspect top words per class.
+E8. MANUAL GRADIENT DESCENT LAB  - implement GD for a 1-D and 2-D linear
+    regression; plot the loss curve; verify against lstsq (EXAMPLE.py S7).
+E9. K-MEANS ON CUSTOMER SPENDING  - 2 features; elbow + silhouette;
+    describe the segments as a stakeholder would.
+E10. METRICS DASHBOARD  - build a function library computing confusion
+    matrix, precision/recall/F1, ROC/AUC from scratch (EXAMPLE.py S15)
+    and test it against sklearn on a synthetic dataset.
+
+EXIT TEST (Tier E): you can write linear/logistic regression, KNN and
+Naive Bayes from scratch and explain every line; you never look at the
+test set while developing.
+
+================================================================================
+TIER D - BEGINNER (10 projects)
+================================================================================
+D1. CUSTOMER CHURN  - EDA + preprocessing + logistic vs tree baseline;
+    report PR-AUC (imbalanced); threshold analysis.
+D2. LOAN APPROVAL  - missing-heavy dataset; iterative imputation vs
+    simple; leakage audit on every column (which would exist at decision
+    time?); AUC + threshold at the bank's cost ratio.
+D3. SALES PREDICTION (tabular)  - date features + lag features + temporal
+    split; beat the "last value" baseline.
+D4. MEDICAL RISK SCREENING  - rare-positive dataset; class weights,
+    threshold tuning, calibration curve, report at business threshold.
+D5. SPAM DETECTION  - text pipeline: TF-IDF + NB vs logistic; error
+    analysis on the top misclassified emails.
+D6. HEART DISEASE  - decision tree vs logistic; tree visualization;
+    feature importances vs coefficients - do they agree?
+D7. USED CAR PRICE  - high cardinality (make/model); frequency encoding
+    vs one-hot; tree vs linear comparison.
+D8. EMPLOYEE ATTRITION  - build a Decision Tree and a Random Forest;
+    OOB score; compare with 5-fold CV; report both.
+D9. BOSTON-STYLE REGRESSION  - Ridge/Lasso paths: plot coefficients vs
+    alpha; pick alpha by CV; interpret the selected features.
+D10. WRITE THE LEAKAGE REPORT  - take D2/D3 and write a one-page report:
+    every potential leak, why it is (or is not) a leak, and the check
+    that would catch it in CI.
+
+EXIT TEST (Tier D): you can run a complete train/val/test loop with
+proper stratification, identify leakage, and defend your metric choice.
+
+================================================================================
+TIER C - INTERMEDIATE (10 projects)
+================================================================================
+C1. FRAUD DETECTION (imbalanced)  - SMOTE vs class weights vs threshold;
+    PR-AUC + MCC; report the precision@k the fraud team actually uses.
+C2. PRODUCT CATEGORIZATION  - high-cardinality text + categoricals;
+    target encoding (out-of-fold, smoothed) vs embeddings; compare.
+C3. CHURN V2  - feature engineering focus: interaction features, ratios,
+    recency/frequency/monetary-style aggregations; prove each feature's
+    CV contribution with an ablation table.
+C4. MODEL COMPARISON ARENA  - RF vs XGBoost vs LightGBM vs CatBoost on
+    ONE dataset with identical folds; paired significance; write the
+    comparison table with the winner's justification.
+C5. HYPERPARAMETER SWEET SPOT  - Optuna study over 6+ parameters for a
+    GBDT; show the trials plot; report the top-5 trials, not just the
+    best (stability matters).
+C6. TIME-SERIES FORECASTING (demand)  - lag/rolling/calendar features +
+    LightGBM vs ARIMA; expanding-window validation; MASE; forecast vs
+    actual plot with intervals from quantile regression (or residual
+    std).
+C7. PCA EXPLORER  - project a high-dim dataset to 2D with PCA; then run
+    KNN before/after PCA at several dimensions; plot the accuracy curve
+    and explain the curse-of-dimensionality result.
+C8. CUSTOMER SEGMENTATION  - K-Means + hierarchical + DBSCAN on the same
+    data; silhouette + qualitative review; a business memo describing
+    each segment.
+C9. ANOMALY DETECTION (manufacturing)  - IsolationForest vs LOF on
+    sensor data with hand-labeled faults; precision@k; threshold choice.
+C10. INTERPRETABILITY REPORT  - on C1 or C4: SHAP beeswarm + dependence
+    plots + permutation importance; a "what drives fraud" write-up; note
+    where the explanations could mislead (correlated features).
+
+EXIT TEST (Tier C): you can design a fair multi-model comparison, tune
+hyperparameters without overfitting the validation set, and explain any
+prediction locally and globally.
+
+================================================================================
+TIER B - ADVANCED (10 projects)
+================================================================================
+B1. REVENUE-UPLIFT (CATE)  - simulated A/B data; estimate treatment
+    effect by conditioning; build an uplift model; recommend who to
+    target (Module 35 in practice).
+B2. CREDIT RISK WITH CALIBRATION  - XGBoost + isotonic calibration;
+    regulatory-style report: calibration curves per risk bucket, Brier,
+    threshold at capital-cost ratio.
+B3. IMBALANCED MULTICLASS  - rare disease across 5 classes; balanced
+    accuracy + per-class PR; class weights vs resampling; confusion
+    matrix heatmap with error patterns.
+B4. STREAMING-STYLE ONLINE MODEL  - incremental logistic (SGD) vs batch;
+    simulate a data stream with drift; track accuracy over time; retrain
+    triggers.
+B5. DISTRIBUTION-SHIFT LAB  - train on 2019 data, test on 2020-2022
+    (or synthetic regimes); PSI per feature; show detection before the
+    business notices.
+B6. ADVERSARIAL ROBUSTNESS  - FGSM/PGD on a small NN; measure accuracy
+    under attack; retrain with adversarial training; report the
+    robustness-accuracy tradeoff.
+B7. MODEL DISTILLATION  - train a large GBDT (teacher) and a small one
+    (student) on soft targets; show the student beats direct small-model
+    training.
+B8. ACTIVE LEARNING SIMULATION  - simulate labeling budgets; uncertainty
+    sampling vs random; learning-curve comparison (Module 44).
+B9. FEDERATED-STYLE TRAINING  - split data across 5 "clients" (non-iid);
+    train local models + average weights vs central training; measure the
+    gap (Module 44; use sklearn, no heavy framework needed).
+B10. CONTINUAL LEARNING TOY  - two sequential tasks; measure forgetting
+    (task A accuracy after learning B); replay vs EWC-lite vs no
+    mitigation.
+
+EXIT TEST (Tier B): you can run an experiment with ablations + multiple
+seeds + statistical comparison, and you can articulate the failure modes
+of each advanced method.
+
+================================================================================
+TIER A - INDUSTRY (10 projects)
+================================================================================
+A1. FASTAPI MODEL SERVICE  - train a churn model; joblib artifact;
+    FastAPI /predict + /health with Pydantic schema; pytest the
+    endpoint via TestClient.
+A2. DOCKERIZE THE SERVICE  - Dockerfile (multi-stage), compose.yaml with
+    the API; curl a prediction from inside the container.
+A3. POSTGRES + PREDICTION LOGGING  - store requests/predictions in
+    Postgres; a /logs endpoint; schema with indexes.
+A4. REDIS CACHE  - cache repeated predictions; TTL; measure hit rate and
+    latency improvement on a load test.
+A5. MLFLOW PIPELINE  - track 50+ runs of a GBDT (params/metrics/artifacts);
+    promote the best to the registry; load and serve it.
+A6. MONITORING DASHBOARD  - Evidently (or hand-rolled PSI/KS) drift
+    reports; prediction drift + feature drift; alert thresholds.
+A7. RETRAINING LOOP  - scheduled retraining with champion/challenger:
+    train new model, compare on delayed labels, auto-promote if it wins.
+A8. DATA VALIDATION IN CI  - pandera/great_expectations schema tests on
+    every new dataset; a golden-dataset unit test for the pipeline.
+A9. TEST SUITE FOR ML  - slice metrics, invariance test (sensitive attr),
+    leakage time-travel test, calibration test - wired into pytest.
+A10. PRODUCTION README  - write the full deployment doc: architecture
+    diagram, env vars, runbooks, rollback, cost estimate.
+
+EXIT TEST (Tier A): you can take a trained model and ship it as a
+monitored, tested, containerized service with a retraining loop.
+
+================================================================================
+TIER S - ELITE (5 massive projects)
+================================================================================
+S1. FRAUD DETECTION PLATFORM  - streaming-like batch scoring, feature
+    store pattern (online == offline features), PR-AUC + precision@k
+    dashboards, drift + delayed-label monitoring, retraining, A/B of
+    thresholds, Docker Compose (API + Postgres + Redis + MLflow).
+S2. REAL-TIME RECOMMENDATION ENGINE  - collaborative filtering +
+    content embeddings; online serving with Redis cache; offline
+    evaluation (NDCG/hit-rate) and a canary deploy.
+S3. INTELLIGENT DEMAND FORECASTING  - multi-horizon forecasting with
+    GBDT + ARIMA hybrid; hierarchical aggregation; MASE vs baselines;
+    monitoring of forecast error by SKU; retraining triggers.
+S4. INDUSTRIAL PREDICTIVE MAINTENANCE  - sensor windows -> features;
+    anomaly + remaining-useful-life models; precision@k on failures;
+    alerting policy with cost of false alarms vs missed failures.
+S5. LARGE-SCALE RISK PREDICTION  - multiclass risk with imbalance;
+    calibration per risk tier; explainability report for regulators;
+    monitoring of tier drift; full MLOps loop.
+
+================================================================================
+TIER S+ - RESEARCH / SYSTEM LEVEL (3 projects)
+================================================================================
+R1. PAPER REPRODUCTION  - pick one paper (e.g. "Random Forests"
+    Breiman 2001, "XGBoost" Chen 2016, "SMOTE" Chawla 2002, "Isolation
+    Forest" Liu 2008).  Reproduce the core experiment: dataset, metric,
+    baselines, >=5 seeds, ablations.  Report: what reproduced, what did
+    not, your hypothesis why.
+R2. REPRODUCTION + IMPROVEMENT  - take R1's result and make ONE novel,
+    testable change (a better initialization, a robust loss variant, a
+    drift-adaptive retraining rule).  Ablate your change against the
+    original; statistical evaluation; write it up as a 4-page report
+    with limitations.
+R3. RESEARCH-TO-PRODUCTION  - turn R2's improvement into a system: data
+    validation, retraining pipeline, monitoring, deployment - with the
+    paper's claim stated as a falsifiable hypothesis your monitoring
+    actually tests.
+
+================================================================================
+FINAL CAPSTONE - PRODUCTION MACHINE LEARNING PLATFORM
+================================================================================
+One massive project combining every module of the course.
+
+GOAL
+Build an end-to-end production ML platform around ONE business problem
+of your choice (churn, fraud, demand, pricing, predictive maintenance).
+The platform must be runnable with Docker Compose and monitored for
+drift, with a retraining pipeline.
+
+REQUIREMENTS (checklist - every item is graded)
+[ ] DATA INGESTION - batch loader with schema validation (pandera).
+[ ] DATA VALIDATION - missing/range/type checks; leakage scan report.
+[ ] EDA - notebook with hypotheses; every hypothesis tested.
+[ ] FEATURE ENGINEERING - offline == online feature code (single module).
+[ ] BASELINES - Dummy + linear + last-value (if temporal) + champion.
+[ ] MULTIPLE ALGORITHMS - >= 3 families (linear, trees, booster).
+[ ] CROSS-VALIDATION - stratified/grouped/temporal as appropriate.
+[ ] HYPERPARAMETER OPTIMIZATION - Optuna, nested-CV honest reporting.
+[ ] EXPERIMENT TRACKING - MLflow: >= 30 runs, params/metrics/artifacts.
+[ ] MODEL REGISTRY - promote the chosen model with lineage.
+[ ] MODEL COMPARISON - statistical justification (paired CV + CI) for
+    the final choice.
+[ ] EXPLAINABILITY - SHAP global + local; permutation importance.
+[ ] FASTAPI SERVICE - /predict, /health, Pydantic schema, auth (API key).
+[ ] POSTGRESQL - predictions + feedback stored; indexes; connection
+    pooling.
+[ ] REDIS - prediction cache; rate limiting.
+[ ] DOCKER - multi-stage Dockerfile; Docker Compose for the whole stack.
+[ ] LOGGING - structured logs with request ids.
+[ ] MONITORING - PSI/KS drift + prediction drift + delayed-label
+    performance; alert thresholds.
+[ ] DRIFT DETECTION + RETRAINING - champion/challenger with auto-promote
+    (or a documented decision rule).
+[ ] DASHBOARD - a simple metrics page (or Evidently report) showing the
+    monitored numbers.
+[ ] DOCUMENTATION - README with architecture diagram, runbook, env
+    config, rollback plan, cost estimate.
+[ ] TESTING - pytest suite: data tests, golden dataset, slice metrics,
+    invariance, calibration, endpoint tests.
+[ ] GIT/GITHUB - clean structure, CI (lint + tests + smoke train).
+[ ] PRESENTATION - 10-minute demo + the experiment report (Module 38
+    structure) as PDF.
+
+ARCHITECTURE (the target)
+  USER -> API GATEWAY -> FASTAPI -> FEATURE MODULE (online)
+    -> MODEL (registry artifact)
+    -> POSTGRES (log) -> REDIS (cache)
+    -> MONITOR (drift + delayed labels) -> RETRAIN TRIGGER -> MLFLOW
+  All services under Docker Compose; all config via env vars.
+
+MILESTONES (6 weeks at ~10h/week)
+  W1  problem + data + validation + EDA (modules 6-10)
+  W2  features + baselines + first models + CV (modules 11-18, 22)
+  W3  tuning + tracking + model selection + explainability (26-28)
+  W4  FastAPI + Postgres + Redis + Docker (40)
+  W5  monitoring + drift + retraining loop (34, 42)
+  W6  tests, CI, docs, dashboard, presentation (38, 41, 45)
+
+ACCEPTANCE CRITERIA
+- `docker compose up` starts the whole platform; /predict works.
+- The chosen model beats every baseline on the final metric with a CI
+  that excludes the baseline.
+- A simulated production feed triggers a drift alert; the retraining
+  pipeline runs and (if the challenger wins) promotes automatically.
+- A new developer can reproduce every number from the README + MLflow.
+- The experiment report answers: what failed, why, and what you would
+  do next.
+
+GRADING RUBRIC (summarized)
+  25% correctness of ML work (validation, leakage, metrics)
+  20% engineering (API, Docker, DBs, caching, tests)
+  15% MLOps (tracking, registry, monitoring, retraining)
+  15% analysis (comparison justification, error analysis, explanations)
+  10% documentation and reproducibility
+  10% presentation and research thinking
+  5%  polish (CI, security hygiene, cost reasoning)
+
+================================================================================
+RESUME + INTERNSHIP PREPARATION (how to convert the tiers)
+================================================================================
+- GitHub: top 3 repos (one per tier C/B, one Tier A+) with READMEs that
+  lead with RESULTS (numbers) and an architecture diagram.
+- Model cards for every deployed model (performance, limitations, data).
+- One experiment report PDF (Module 38 format) - interviewers read these.
+- Resume bullets: "Built an XGBoost churn model (PR-AUC 0.83, +0.12 over
+  baseline) served via FastAPI with drift monitoring; retraining loop
+  auto-promotes challengers on delayed labels."
+- Interview prep: your repos are your study material for the system
+  design and scenario questions in PRACTICE.txt.
+
+END OF PROJECT.txt

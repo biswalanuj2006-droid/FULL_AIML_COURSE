@@ -1,0 +1,17 @@
+================================================================================
+PROMPT ENGINEERING — PROJECTS
+================================================================================
+
+PROJECT 1: PROMPT LIBRARY (Beginner)
+=======================================
+Build collection of prompts for common tasks.
+
+PROJECT 2: PROMPT EVALUATION TOOL (Intermediate)
+==================================================
+Build tool to evaluate prompt quality across tasks.
+
+PROJECT 3: PROMPT OPTIMIZATION SYSTEM (Advanced)
+==================================================
+Automatically optimize prompts based on evaluation metrics.
+
+================================================================================

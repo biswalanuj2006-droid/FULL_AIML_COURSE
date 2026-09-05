@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI/ML Engineering — Diagram Gallery (64 images)</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+         margin: 0; background: #f4f5f7; color: #1d2129; }
+  header { background: #101828; color: #fff; padding: 22px 28px; }
+  header h1 { margin: 0 0 4px; font-size: 22px; }
+  header p { margin: 0; color: #aab4c4; font-size: 14px; }
+  main { max-width: 1280px; margin: 0 auto; padding: 18px 28px 60px; }
+  section { margin-top: 26px; }
+  h2 { font-size: 16px; border-bottom: 2px solid #cbd2dc; padding-bottom: 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 16px; margin-top: 12px; }
+  .card { background: #fff; border: 1px solid #dfe3ea; border-radius: 8px;
+          overflow: hidden; box-shadow: 0 1px 2px rgba(16,24,40,.06); }
+  .card img { width: 100%; height: auto; display: block; background: #fff;
+              border-bottom: 1px solid #eef0f4; }
+  .meta { padding: 10px 12px 12px; }
+  .title { font-weight: 600; font-size: 14px; }
+  .file { color: #667085; font-size: 12px; margin-top: 2px; font-family: ui-monospace, monospace; }
+  .cap { color: #475467; font-size: 12.5px; margin-top: 6px; line-height: 1.45; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #0f1218; color: #e4e7ec; }
+    .card { background: #161b24; border-color: #242b37; }
+    .card img { background: #161b24; border-color: #1c2230; }
+    .file { color: #98a2b3; } .cap { color: #c0c6d0; }
+    h2 { border-color: #2a3240; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI/ML Engineering — Diagram Gallery</h1>
+  <p>64 diagrams &middot; llm_course / genai_agents_course / ml_course + core-curriculum visuals
+     &middot; regenerate: python diagrams/generate_gallery.py &middot; review: python diagrams/verify_diagrams.py</p>
+</header>
+<main>
+    <section>
+      <h2>LLM Course — internals, training, inference (diagrams/llm/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../llm/kv_cache.png" target="_blank"><img loading="lazy" src="thumbs/llm/kv_cache.png" alt="kv_cache"></a>
+        <div class="meta">
+          <div class="title">kv_cache</div>
+          <div class="file">llm/kv_cache.png &middot; 939x639</div>
+          <div class="cap">O(T^2) full recompute vs O(T) cached decoding, annotated with measured speedups (2.4x @ T=128 ... 11x @ T=768)</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../llm/kv_cache_memory.png" target="_blank"><img loading="lazy" src="thumbs/llm/kv_cache_memory.png" alt="kv_cache_memory"></a>
+        <div class="meta">
+          <div class="title">kv_cache_memory</div>
+          <div class="file">llm/kv_cache_memory.png &middot; 917x591</div>
+          <div class="cap">KV cache memory growth: ~0.5 MiB/token =&gt; 2 GiB @ 4k, 64 GiB @ 128k context</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../llm/llm_architecture.png" target="_blank"><img loading="lazy" src="thumbs/llm/llm_architecture.png" alt="llm_architecture"></a>
+        <div class="meta">
+          <div class="title">llm_architecture</div>
+          <div class="file">llm/llm_architecture.png &middot; 1004x1057</div>
+          <div class="cap">Decoder-only GPT stack: token embeddings -&gt; RoPE -&gt; N blocks (RMSNorm, MHA, SwiGLU FFN) -&gt; final norm -&gt; LM head -&gt; sampling</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../llm/lora.png" target="_blank"><img loading="lazy" src="thumbs/llm/lora.png" alt="lora"></a>
+        <div class="meta">
+          <div class="title">lora</div>
+          <div class="file">llm/lora.png &middot; 1167x648</div>
+          <div class="cap">W&#x27; = W + (alpha/r) B A: adapter low-rank decomposition with the verified 48x trainable-parameter reduction</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../llm/prefill_decode.png" target="_blank"><img loading="lazy" src="thumbs/llm/prefill_decode.png" alt="prefill_decode"></a>
+        <div class="meta">
+          <div class="title">prefill_decode</div>
+          <div class="file">llm/prefill_decode.png &middot; 1595x610</div>
+          <div class="cap">Prefill phase (parallel, compute-bound) vs decode phase (one token at a time, memory-bandwidth-bound)</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../llm/pretraining_pipeline.png" target="_blank"><img loading="lazy" src="thumbs/llm/pretraining_pipeline.png" alt="pretraining_pipeline"></a>
+        <div class="meta">
+          <div class="title">pretraining_pipeline</div>
+          <div class="file">llm/pretraining_pipeline.png &middot; 1764x554</div>
+          <div class="cap">Raw data -&gt; filter -&gt; clean -&gt; dedup -&gt; tokenize -&gt; pack -&gt; shuffle -&gt; batch -&gt; train -&gt; validate -&gt; checkpoint</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../llm/quantization.png" target="_blank"><img loading="lazy" src="thumbs/llm/quantization.png" alt="quantization"></a>
+        <div class="meta">
+          <div class="title">quantization</div>
+          <div class="file">llm/quantization.png &middot; 917x618</div>
+          <div class="cap">7B model memory: FP32 28 GB -&gt; FP16/BF16 14 GB -&gt; INT8 7 GB -&gt; INT4 3.5 GB</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../llm/sampling.png" target="_blank"><img loading="lazy" src="thumbs/llm/sampling.png" alt="sampling"></a>
+        <div class="meta">
+          <div class="title">sampling</div>
+          <div class="file">llm/sampling.png &middot; 1595x610</div>
+          <div class="cap">Temperature reshaping of logits [2, 1, 0.1] (T=0.1 sharp, T=1.0, T=2.0 flat), top-k and top-p truncation</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../llm/scaling_laws.png" target="_blank"><img loading="lazy" src="thumbs/llm/scaling_laws.png" alt="scaling_laws"></a>
+        <div class="meta">
+          <div class="title">scaling_laws</div>
+          <div class="file">llm/scaling_laws.png &middot; 1171x639</div>
+          <div class="cap">REAL lab sweep: val loss 2.723 (S) -&gt; 2.617 (M) -&gt; 2.421 (L) vs bigram 2.763; ppl 15.2/13.7/11.3</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../llm/speculative_decoding.png" target="_blank"><img loading="lazy" src="thumbs/llm/speculative_decoding.png" alt="speculative_decoding"></a>
+        <div class="meta">
+          <div class="title">speculative_decoding</div>
+          <div class="file">llm/speculative_decoding.png &middot; 1275x583</div>
+          <div class="cap">Draft (gamma tokens) -&gt; verify in parallel -&gt; accept/reject -&gt; resample: ~2.6x fewer forwards</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>GenAI + Agents Course — RAG agents, multi-agent, bench (diagrams/agents/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../agents/agent_loop.png" target="_blank"><img loading="lazy" src="thumbs/agents/agent_loop.png" alt="agent_loop"></a>
+        <div class="meta">
+          <div class="title">agent_loop</div>
+          <div class="file">agents/agent_loop.png &middot; 1167x756</div>
+          <div class="cap">Observe -&gt; reason -&gt; act (tool call) -&gt; observe result -&gt; repeat until final answer; tool registry + safety guards</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../agents/embedding_bench.png" target="_blank"><img loading="lazy" src="thumbs/agents/embedding_bench.png" alt="embedding_bench"></a>
+        <div class="meta">
+          <div class="title">embedding_bench</div>
+          <div class="file">agents/embedding_bench.png &middot; 1594x609</div>
+          <div class="cap">REAL lab numbers: dense 9/9 vs lexical 6/9 hit@1; paraphrases 6/6 vs 4/6; HF MiniLM matches local SVD</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../agents/multi_agent.png" target="_blank"><img loading="lazy" src="thumbs/agents/multi_agent.png" alt="multi_agent"></a>
+        <div class="meta">
+          <div class="title">multi_agent</div>
+          <div class="file">agents/multi_agent.png &middot; 1221x756</div>
+          <div class="cap">Supervisor pattern: supervisor routes to writer / reviewer / researcher specialists, results return to supervisor</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../agents/prod_rag_server.png" target="_blank"><img loading="lazy" src="thumbs/agents/prod_rag_server.png" alt="prod_rag_server"></a>
+        <div class="meta">
+          <div class="title">prod_rag_server</div>
+          <div class="file">agents/prod_rag_server.png &middot; 1329x775</div>
+          <div class="cap">Production RAG server: auth/RBAC -&gt; per-key quota -&gt; Redis-style cache -&gt; RAG brain -&gt; SQL request log</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../agents/rag_agent.png" target="_blank"><img loading="lazy" src="thumbs/agents/rag_agent.png" alt="rag_agent"></a>
+        <div class="meta">
+          <div class="title">rag_agent</div>
+          <div class="file">agents/rag_agent.png &middot; 1406x734</div>
+          <div class="cap">RAG agent: query -&gt; retrieve -&gt; ground -&gt; generate with citations; tool calls for calculator/retrieval; injection guard</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>ML Course — lifecycle + model diagnostics (diagrams/ml/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../ml/confusion_matrix.jpg" target="_blank"><img loading="lazy" src="thumbs/ml/confusion_matrix.jpg" alt="confusion_matrix"></a>
+        <div class="meta">
+          <div class="title">confusion_matrix</div>
+          <div class="file">ml/confusion_matrix.jpg &middot; 922x885</div>
+          <div class="cap">TP/TN/FP/FN layout with derived metrics (accuracy, precision, recall, F1)</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/cross_validation.jpg" target="_blank"><img loading="lazy" src="thumbs/ml/cross_validation.jpg" alt="cross_validation"></a>
+        <div class="meta">
+          <div class="title">cross_validation</div>
+          <div class="file">ml/cross_validation.jpg &middot; 1785x734</div>
+          <div class="cap">K-fold CV: fold rotation, train/validation blocks per fold</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/decision_boundary.jpg" target="_blank"><img loading="lazy" src="thumbs/ml/decision_boundary.jpg" alt="decision_boundary"></a>
+        <div class="meta">
+          <div class="title">decision_boundary</div>
+          <div class="file">ml/decision_boundary.jpg &middot; 1184x884</div>
+          <div class="cap">Classifier decision boundary vs data points (linear and non-linear)</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/feature_importance.png" target="_blank"><img loading="lazy" src="thumbs/ml/feature_importance.png" alt="feature_importance"></a>
+        <div class="meta">
+          <div class="title">feature_importance</div>
+          <div class="file">ml/feature_importance.png &middot; 1046x637</div>
+          <div class="cap">Permutation / tree-based feature importance ranking with drop-off</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/imbalance.png" target="_blank"><img loading="lazy" src="thumbs/ml/imbalance.png" alt="imbalance"></a>
+        <div class="meta">
+          <div class="title">imbalance</div>
+          <div class="file">ml/imbalance.png &middot; 1469x637</div>
+          <div class="cap">Class imbalance: skewed distribution + SMOTE oversampling of the minority class</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/kmeans.png" target="_blank"><img loading="lazy" src="thumbs/ml/kmeans.png" alt="kmeans"></a>
+        <div class="meta">
+          <div class="title">kmeans</div>
+          <div class="file">ml/kmeans.png &middot; 1418x637</div>
+          <div class="cap">K-means iterations: centroids moving, assignments updating, convergence on the objective</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/learning_curves.png" target="_blank"><img loading="lazy" src="thumbs/ml/learning_curves.png" alt="learning_curves"></a>
+        <div class="meta">
+          <div class="title">learning_curves</div>
+          <div class="file">ml/learning_curves.png &middot; 923x639</div>
+          <div class="cap">Train vs validation error as training set grows: high-variance (gap) vs high-bias (plateau) diagnosis</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/ml_lifecycle.png" target="_blank"><img loading="lazy" src="thumbs/ml/ml_lifecycle.png" alt="ml_lifecycle"></a>
+        <div class="meta">
+          <div class="title">ml_lifecycle</div>
+          <div class="file">ml/ml_lifecycle.png &middot; 1764x576</div>
+          <div class="cap">Full ML lifecycle: data -&gt; EDA -&gt; features -&gt; train/val/test -&gt; baseline -&gt; model -&gt; tune -&gt; deploy -&gt; monitor -&gt; drift -&gt; retrain (closed loop)</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/ml_workflow.jpg" target="_blank"><img loading="lazy" src="thumbs/ml/ml_workflow.jpg" alt="ml_workflow"></a>
+        <div class="meta">
+          <div class="title">ml_workflow</div>
+          <div class="file">ml/ml_workflow.jpg &middot; 2385x885</div>
+          <div class="cap">End-to-end ML workflow diagram (data -&gt; modeling -&gt; evaluation -&gt; deployment)</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/model_comparison.jpg" target="_blank"><img loading="lazy" src="thumbs/ml/model_comparison.jpg" alt="model_comparison"></a>
+        <div class="meta">
+          <div class="title">model_comparison</div>
+          <div class="file">ml/model_comparison.jpg &middot; 1785x1035</div>
+          <div class="cap">Model comparison: accuracy/latency/size trade-offs</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/overfitting.jpg" target="_blank"><img loading="lazy" src="thumbs/ml/overfitting.jpg" alt="overfitting"></a>
+        <div class="meta">
+          <div class="title">overfitting</div>
+          <div class="file">ml/overfitting.jpg &middot; 1485x884</div>
+          <div class="cap">Overfitting vs underfitting vs good fit curves</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/pca.png" target="_blank"><img loading="lazy" src="thumbs/ml/pca.png" alt="pca"></a>
+        <div class="meta">
+          <div class="title">pca</div>
+          <div class="file">ml/pca.png &middot; 1524x638</div>
+          <div class="cap">PCA projection: data cloud, first principal component direction, explained-variance scree</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/pr_curve.png" target="_blank"><img loading="lazy" src="thumbs/ml/pr_curve.png" alt="pr_curve"></a>
+        <div class="meta">
+          <div class="title">pr_curve</div>
+          <div class="file">ml/pr_curve.png &middot; 923x637</div>
+          <div class="cap">Precision-recall curve with baseline and trade-off regions (for imbalanced classes)</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/roc_curve.jpg" target="_blank"><img loading="lazy" src="thumbs/ml/roc_curve.jpg" alt="roc_curve"></a>
+        <div class="meta">
+          <div class="title">roc_curve</div>
+          <div class="file">ml/roc_curve.jpg &middot; 1184x884</div>
+          <div class="cap">ROC curve with AUC annotation</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/test.jpg" target="_blank"><img loading="lazy" src="thumbs/ml/test.jpg" alt="test"></a>
+        <div class="meta">
+          <div class="title">test</div>
+          <div class="file">ml/test.jpg &middot; 1200x900</div>
+          <div class="cap">Train / validation / test split with leakage warning</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../ml/time_series.png" target="_blank"><img loading="lazy" src="thumbs/ml/time_series.png" alt="time_series"></a>
+        <div class="meta">
+          <div class="title">time_series</div>
+          <div class="file">ml/time_series.png &middot; 1029x637</div>
+          <div class="cap">Trend + seasonality decomposition with forecast over the historical series</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>Mathematics (diagrams/math/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../math/bias_variance.jpg" target="_blank"><img loading="lazy" src="thumbs/math/bias_variance.jpg" alt="bias_variance"></a>
+        <div class="meta">
+          <div class="title">bias_variance</div>
+          <div class="file">math/bias_variance.jpg &middot; 1484x884</div>
+          <div class="cap">Bias-variance decomposition: low/high bias x low/high variance quadrants</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../math/entropy_gini.jpg" target="_blank"><img loading="lazy" src="thumbs/math/entropy_gini.jpg" alt="entropy_gini"></a>
+        <div class="meta">
+          <div class="title">entropy_gini</div>
+          <div class="file">math/entropy_gini.jpg &middot; 2085x734</div>
+          <div class="cap">Entropy and Gini impurity as functions of class probability</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../math/gradient_descent.jpg" target="_blank"><img loading="lazy" src="thumbs/math/gradient_descent.jpg" alt="gradient_descent"></a>
+        <div class="meta">
+          <div class="title">gradient_descent</div>
+          <div class="file">math/gradient_descent.jpg &middot; 1484x1185</div>
+          <div class="cap">Gradient descent: cost surface, steps to minimum, learning-rate effect</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../math/sigmoid.jpg" target="_blank"><img loading="lazy" src="thumbs/math/sigmoid.jpg" alt="sigmoid"></a>
+        <div class="meta">
+          <div class="title">sigmoid</div>
+          <div class="file">math/sigmoid.jpg &middot; 1484x884</div>
+          <div class="cap">Sigmoid curve with its derivative</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>Deep Learning (diagrams/dl/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../dl/activation_functions.jpg" target="_blank"><img loading="lazy" src="thumbs/dl/activation_functions.jpg" alt="activation_functions"></a>
+        <div class="meta">
+          <div class="title">activation_functions</div>
+          <div class="file">dl/activation_functions.jpg &middot; 1784x1522</div>
+          <div class="cap">Sigmoid / tanh / ReLU / GELU / SiLU curves with derivative behavior</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../dl/backpropagation.jpg" target="_blank"><img loading="lazy" src="thumbs/dl/backpropagation.jpg" alt="backpropagation"></a>
+        <div class="meta">
+          <div class="title">backpropagation</div>
+          <div class="file">dl/backpropagation.jpg &middot; 2085x734</div>
+          <div class="cap">Backpropagation flow: forward pass, loss, gradients flowing backward through the graph</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../dl/cnn_architecture.jpg" target="_blank"><img loading="lazy" src="thumbs/dl/cnn_architecture.jpg" alt="cnn_architecture"></a>
+        <div class="meta">
+          <div class="title">cnn_architecture</div>
+          <div class="file">dl/cnn_architecture.jpg &middot; 2085x734</div>
+          <div class="cap">CNN stack: conv -&gt; pool -&gt; conv -&gt; pool -&gt; flatten -&gt; dense</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../dl/gradient_descent.jpg" target="_blank"><img loading="lazy" src="thumbs/dl/gradient_descent.jpg" alt="gradient_descent"></a>
+        <div class="meta">
+          <div class="title">gradient_descent</div>
+          <div class="file">dl/gradient_descent.jpg &middot; 2233x772</div>
+          <div class="cap">Neural-net gradient descent: loss landscape and optimization path</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../dl/lstm_gates.jpg" target="_blank"><img loading="lazy" src="thumbs/dl/lstm_gates.jpg" alt="lstm_gates"></a>
+        <div class="meta">
+          <div class="title">lstm_gates</div>
+          <div class="file">dl/lstm_gates.jpg &middot; 2085x884</div>
+          <div class="cap">LSTM cell: forget / input / output gates and cell-state highway</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../dl/neural_network.jpg" target="_blank"><img loading="lazy" src="thumbs/dl/neural_network.jpg" alt="neural_network"></a>
+        <div class="meta">
+          <div class="title">neural_network</div>
+          <div class="file">dl/neural_network.jpg &middot; 1485x1034</div>
+          <div class="cap">MLP: input -&gt; hidden layers -&gt; output with weights and activations</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>Backend / APIs (diagrams/backend/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../backend/api_flow.jpg" target="_blank"><img loading="lazy" src="thumbs/backend/api_flow.jpg" alt="api_flow"></a>
+        <div class="meta">
+          <div class="title">api_flow</div>
+          <div class="file">backend/api_flow.jpg &middot; 2085x734</div>
+          <div class="cap">API request flow: client -&gt; route -&gt; validation -&gt; service -&gt; response</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../backend/backend_architecture.jpg" target="_blank"><img loading="lazy" src="thumbs/backend/backend_architecture.jpg" alt="backend_architecture"></a>
+        <div class="meta">
+          <div class="title">backend_architecture</div>
+          <div class="file">backend/backend_architecture.jpg &middot; 2085x1184</div>
+          <div class="cap">Backend architecture: FastAPI, DB, cache, workers</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>NLP (diagrams/nlp/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../nlp/nlp_pipeline.jpg" target="_blank"><img loading="lazy" src="thumbs/nlp/nlp_pipeline.jpg" alt="nlp_pipeline"></a>
+        <div class="meta">
+          <div class="title">nlp_pipeline</div>
+          <div class="file">nlp/nlp_pipeline.jpg &middot; 2385x734</div>
+          <div class="cap">NLP pipeline: raw text -&gt; clean -&gt; tokenize -&gt; features -&gt; model</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../nlp/sentiment_analysis.jpg" target="_blank"><img loading="lazy" src="thumbs/nlp/sentiment_analysis.jpg" alt="sentiment_analysis"></a>
+        <div class="meta">
+          <div class="title">sentiment_analysis</div>
+          <div class="file">nlp/sentiment_analysis.jpg &middot; 1482x884</div>
+          <div class="cap">Sentiment classification flow with example scores</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../nlp/word_embeddings.jpg" target="_blank"><img loading="lazy" src="thumbs/nlp/word_embeddings.jpg" alt="word_embeddings"></a>
+        <div class="meta">
+          <div class="title">word_embeddings</div>
+          <div class="file">nlp/word_embeddings.jpg &middot; 1485x1185</div>
+          <div class="cap">Word embeddings: high-dim one-hot to dense vector space with similar words near each other</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>RAG (diagrams/rag/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../rag/rag_pipeline.jpg" target="_blank"><img loading="lazy" src="thumbs/rag/rag_pipeline.jpg" alt="rag_pipeline"></a>
+        <div class="meta">
+          <div class="title">rag_pipeline</div>
+          <div class="file">rag/rag_pipeline.jpg &middot; 2385x884</div>
+          <div class="cap">RAG pipeline: documents -&gt; chunk -&gt; embed -&gt; vector DB -&gt; retrieve -&gt; LLM -&gt; grounded answer</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../rag/rag_vs_finetuning.jpg" target="_blank"><img loading="lazy" src="thumbs/rag/rag_vs_finetuning.jpg" alt="rag_vs_finetuning"></a>
+        <div class="meta">
+          <div class="title">rag_vs_finetuning</div>
+          <div class="file">rag/rag_vs_finetuning.jpg &middot; 2085x885</div>
+          <div class="cap">RAG vs fine-tuning comparison: knowledge updates, cost, hallucination</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>Transformers (diagrams/transformers/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../transformers/self_attention.jpg" target="_blank"><img loading="lazy" src="thumbs/transformers/self_attention.jpg" alt="self_attention"></a>
+        <div class="meta">
+          <div class="title">self_attention</div>
+          <div class="file">transformers/self_attention.jpg &middot; 1485x1034</div>
+          <div class="cap">Scaled dot-product attention: Q, K, V, scores, softmax, weighted sum</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../transformers/transformer_architecture.jpg" target="_blank"><img loading="lazy" src="thumbs/transformers/transformer_architecture.jpg" alt="transformer_architecture"></a>
+        <div class="meta">
+          <div class="title">transformer_architecture</div>
+          <div class="file">transformers/transformer_architecture.jpg &middot; 1785x1484</div>
+          <div class="cap">Transformer block: attention + add&amp;norm + FFN + add&amp;norm</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>Training-run graphs (diagrams/graphs/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../graphs/gradient_descent_from_scratch.png" target="_blank"><img loading="lazy" src="thumbs/graphs/gradient_descent_from_scratch.png" alt="gradient_descent_from_scratch"></a>
+        <div class="meta">
+          <div class="title">gradient_descent_from_scratch</div>
+          <div class="file">graphs/gradient_descent_from_scratch.png &middot; 1320x495</div>
+          <div class="cap">From-scratch gradient descent run: loss over iterations</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../graphs/lstm_sine_forecast.png" target="_blank"><img loading="lazy" src="thumbs/graphs/lstm_sine_forecast.png" alt="lstm_sine_forecast"></a>
+        <div class="meta">
+          <div class="title">lstm_sine_forecast</div>
+          <div class="file">graphs/lstm_sine_forecast.png &middot; 1000x350</div>
+          <div class="cap">LSTM sine-wave forecast vs ground truth</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../graphs/nn_training_loss.png" target="_blank"><img loading="lazy" src="thumbs/graphs/nn_training_loss.png" alt="nn_training_loss"></a>
+        <div class="meta">
+          <div class="title">nn_training_loss</div>
+          <div class="file">graphs/nn_training_loss.png &middot; 1200x750</div>
+          <div class="cap">Neural-network training loss curves</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../graphs/pca_demo.png" target="_blank"><img loading="lazy" src="thumbs/graphs/pca_demo.png" alt="pca_demo"></a>
+        <div class="meta">
+          <div class="title">pca_demo</div>
+          <div class="file">graphs/pca_demo.png &middot; 1200x900</div>
+          <div class="cap">PCA demo projection</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../graphs/vis_01_loss_curve.png" target="_blank"><img loading="lazy" src="thumbs/graphs/vis_01_loss_curve.png" alt="vis_01_loss_curve"></a>
+        <div class="meta">
+          <div class="title">vis_01_loss_curve</div>
+          <div class="file">graphs/vis_01_loss_curve.png &middot; 550x385</div>
+          <div class="cap">Training loss curve (matplotlib basics)</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../graphs/vis_02_regression.png" target="_blank"><img loading="lazy" src="thumbs/graphs/vis_02_regression.png" alt="vis_02_regression"></a>
+        <div class="meta">
+          <div class="title">vis_02_regression</div>
+          <div class="file">graphs/vis_02_regression.png &middot; 550x385</div>
+          <div class="cap">Regression fit example</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../graphs/vis_03_confusion.png" target="_blank"><img loading="lazy" src="thumbs/graphs/vis_03_confusion.png" alt="vis_03_confusion"></a>
+        <div class="meta">
+          <div class="title">vis_03_confusion</div>
+          <div class="file">graphs/vis_03_confusion.png &middot; 440x385</div>
+          <div class="cap">Confusion matrix example</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../graphs/vis_04_roc.png" target="_blank"><img loading="lazy" src="thumbs/graphs/vis_04_roc.png" alt="vis_04_roc"></a>
+        <div class="meta">
+          <div class="title">vis_04_roc</div>
+          <div class="file">graphs/vis_04_roc.png &middot; 550x385</div>
+          <div class="cap">ROC curve example</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>Graph ML (diagrams/graph/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../graph/link_prediction_auc.png" target="_blank"><img loading="lazy" src="thumbs/graph/link_prediction_auc.png" alt="link_prediction_auc"></a>
+        <div class="meta">
+          <div class="title">link_prediction_auc</div>
+          <div class="file">graph/link_prediction_auc.png &middot; 793x575</div>
+          <div class="cap">GCN link prediction: real AUC benchmark numbers</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../graph/message_passing.png" target="_blank"><img loading="lazy" src="thumbs/graph/message_passing.png" alt="message_passing"></a>
+        <div class="meta">
+          <div class="title">message_passing</div>
+          <div class="file">graph/message_passing.png &middot; 1089x554</div>
+          <div class="cap">Graph message passing: node -&gt; aggregate neighbors -&gt; update (GCN step)</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>Recommenders (diagrams/recommenders/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../recommenders/als_vs_sgd_rmse.png" target="_blank"><img loading="lazy" src="thumbs/recommenders/als_vs_sgd_rmse.png" alt="als_vs_sgd_rmse"></a>
+        <div class="meta">
+          <div class="title">als_vs_sgd_rmse</div>
+          <div class="file">recommenders/als_vs_sgd_rmse.png &middot; 793x547</div>
+          <div class="cap">ALS vs SGD matrix factorization: real RMSE benchmark numbers</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../recommenders/two_stage_recsys.png" target="_blank"><img loading="lazy" src="thumbs/recommenders/two_stage_recsys.png" alt="two_stage_recsys"></a>
+        <div class="meta">
+          <div class="title">two_stage_recsys</div>
+          <div class="file">recommenders/two_stage_recsys.png &middot; 1069x626</div>
+          <div class="cap">Two-stage recommender: candidate generation -&gt; ranking</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>Reinforcement Learning (diagrams/rl/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../rl/agent_env_loop.png" target="_blank"><img loading="lazy" src="thumbs/rl/agent_env_loop.png" alt="agent_env_loop"></a>
+        <div class="meta">
+          <div class="title">agent_env_loop</div>
+          <div class="file">rl/agent_env_loop.png &middot; 1069x531</div>
+          <div class="cap">RL loop: agent &lt;-&gt; environment, action/state/reward cycle</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../rl/qlearning_vs_optimal.png" target="_blank"><img loading="lazy" src="thumbs/rl/qlearning_vs_optimal.png" alt="qlearning_vs_optimal"></a>
+        <div class="meta">
+          <div class="title">qlearning_vs_optimal</div>
+          <div class="file">rl/qlearning_vs_optimal.png &middot; 775x575</div>
+          <div class="cap">Q-learning returns vs optimal: real benchmark numbers</div>
+        </div>
+      </div>
+      </div>
+    </section>
+  <footer style="margin-top:34px; color:#667085; font-size:12.5px;">
+    Full-size images live in <code>diagrams/&lt;category&gt;/</code>. Thumbnails regenerate only when the
+    source is newer. See <code>diagrams/DIAGRAM_GALLERY.md</code> for the markdown index and
+    <code>diagrams/gallery/REVIEW.txt</code> for the integrity review.
+  </footer>
+</main>
+</body>
+</html>

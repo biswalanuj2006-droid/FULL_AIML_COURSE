@@ -1,0 +1,44 @@
+================================================================================
+CODE PRACTICE - code/transformers (Hugging Face pipelines)
+Companion: 01_hf_pipeline.py
+================================================================================
+RUN & OBSERVE
+1. Run the example; list the tasks each pipeline() call solved and the
+   model it downloaded (check the cache dir).
+2. Note the latency of each pipeline call on CPU - warm up twice and
+   time the second call (cold vs warm inference).
+
+MODIFY
+3. Add pipelines for: zero-shot classification, question answering with
+   a provided context, summarization, and translation. For QA, ask a
+   question whose answer is NOT in the context and observe behavior.
+4. Change the sentiment model to a larger one and compare prediction
+   quality + latency on 20 hard sentences.
+5. Batch 16 texts through pipeline() at once vs one-by-one; measure the
+   throughput gain (batching is the cheap win from the 26 lesson).
+
+DEBUG
+6. Feed a 2000-token text to a model with max_length=512: read the
+   truncation warning, set truncation=True, and check whether the
+   result changes (the silent-truncation trap from 26 real_problem).
+7. GPU vs CPU device mismatch: force device=0 without a GPU and fix
+   the error by checking torch.cuda.is_available() first.
+8. Load a model name that does not exist / wrong task label and read
+   the error: what does the "task -> model" map tell you?
+
+BUILD (mini)
+9. Embedding extraction: get [CLS] embeddings for 100 sentences,
+   cluster them (k-means from code/04), and sanity-check the clusters
+   are semantically coherent.
+10. Write a 15-line classifier: encode texts with the tokenizer, feed
+    logits through softmax, and compare against pipeline() output for
+    the same texts (they should match - verify your tokenizer usage).
+11. Tokenizer round-trip: tokenize -> decode a sentence and verify it
+    reconstructs; find a word that round-trips imperfectly (subword
+    splitting) and explain why that matters for RAG chunking.
+
+RELATE
+12. Connect one failure from 26_TRANSFORMERS/real_problem.txt to a run
+    here (e.g. repetition_penalty for generation, or latency fixes).
+13. (Interview) What does pipeline() do under the hood (tokenize ->
+    forward -> postprocess)? Use your #10 reproduction as evidence.

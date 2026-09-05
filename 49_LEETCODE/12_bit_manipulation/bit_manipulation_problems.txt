@@ -1,0 +1,64 @@
+================================================================================
+LEETCODE PATTERN: BIT MANIPULATION — 15 PROBLEMS
+================================================================================
+
+PATTERN: Use when dealing with binary representation, XOR, or bit operations.
+
+================================================================================
+EASY (5 Problems)
+================================================================================
+
+1. SINGLE NUMBER (LC #136)
+   def singleNumber(nums):
+       result = 0
+       for num in nums:
+           result ^= num  # XOR cancels pairs
+       return result
+
+2. NUMBER OF 1 BITS (LC #191)
+   def hammingWeight(n):
+       count = 0
+       while n:
+           count += 1
+           n &= n - 1  # clear lowest set bit
+       return count
+
+3. COUNTING BITS (LC #338)
+4. BITWISE AND OF NUMBERS RANGE (LC #201)
+5. CONVERT NUMBER TO HEX (LC #405)
+
+================================================================================
+MEDIUM (7 Problems)
+================================================================================
+
+6. SINGLE NUMBER II (LC #137)
+7. BITWISE OPERATIONS FOR SUBSETS (LC #78) — bitmask
+8. MINIMUM BIT FLIPS TO CONVERT NUMBER (LC #2220)
+9. XOR QUERIES OF SUBARRAY (LC #1310)
+10. FLIP BITS TO MAXIMIZE OR (LC #3175)
+11. LONGEST SUBARRAY WITH MAXIMUM BITWISE AND (LC #2419)
+12. FIND XOR OF ALLElements (LC #2317)
+
+================================================================================
+HARD (3 Problems)
+================================================================================
+
+13. MAXIMUM XOR OF TWO NUMBERS (LC #421)
+14. MINIMUM XOR SUM OF TWO ARRAYS (LC #1879)
+15. COUNT PAIRS WITH XOR IN A RANGE (LC #1803)
+
+================================================================================
+KEY BIT OPERATIONS
+===================
+x & (x - 1)    → clear lowest set bit
+x & (-x)        → isolate lowest set bit
+x ^ x = 0       → self-cancel
+x & 0 = 0       → AND with 0
+x | 1 = set LSB → set bit
+x ^ 1           → toggle bit
+(x >> n) & 1    → get nth bit
+x << n           → multiply by 2^n
+
+================================================================================
+END OF BIT MANIPULATION PATTERN
+================================================================================

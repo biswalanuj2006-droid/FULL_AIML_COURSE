@@ -1,0 +1,50 @@
+================================================================================
+THINK.TXT - 06 ML FUNDAMENTALS
+Difficult reasoning problems. Attempt them; do not look for single "correct"
+answers. OPEN PROBLEM means no settled answer exists - argue with evidence.
+================================================================================
+
+1. A model gets 99% accuracy on validation but fails in production. List
+   every plausible cause you can think of, ordered by likelihood, and for
+   each: what evidence would confirm it and what fix you would try.
+2. Explain overfitting to a non-technical stakeholder using ONLY a physical
+   analogy. Then explain why that analogy breaks down mathematically.
+3. "More data beats a better model." When is this true, when false, and how
+   would you test it with finite compute?
+4. You are given a dataset with 10 features but a senior engineer says to
+   add 90 more synthetic features derived from them. Argue both sides with
+   specific failure modes (optimization, generalization, leakage).
+5. Train/validation/test: some practitioners carve the test set once and
+   never touch it. Others prefer nested CV. Derive when each is correct and
+   what each silently assumes about the future.
+6. What exactly does a "label" mean when human annotators disagree 15% of
+   the time? How does label noise change the ceiling of achievable
+   accuracy, and how would you estimate that ceiling?
+7. Is a model that memorizes but generalizes possible? Characterize the
+   boundary between "memorization" and "learning" with examples (image
+   duplicates, ID features, few-shot regimes).
+8. A colleague fits StandardScaler on the full dataset "just to look at
+   distributions" and reuses those stats later in the pipeline. Trace the
+   exact path by which test information enters training.
+9. Bias-variance: you can only reduce one of them by adding data. Which one
+   and why? Give a dataset example where adding data does NOT reduce
+   variance.
+10. If your validation curve and training curve are both high and close
+    together, what is wrong and what are your three best interventions?
+11. Some say the test set should be a sample of the DEPLOYMENT distribution,
+    not the training distribution. Formalize this and give two real
+    scenarios where training and deployment distributions differ.
+12. You must ship a model next week with 500 labeled samples. Compare in
+    detail: simple linear model, KNN, deep net, and "ask an expert" as a
+    baseline. Which do you trust and why?
+13. What is the difference between a model being wrong and being uncertain?
+    How do you measure each, and which matters more for a medical screener?
+14. Design an experiment to prove (or disprove) that adding feature X
+    improves a model - controls, splits, repeats, and how you would report
+    the result without overclaiming.
+15. OPEN PROBLEM: Is there a principled, universally agreed definition of
+    "generalization" that covers classical ML, deep learning, and LLMs?
+    Survey the definitions you know and argue which is most useful.
+================================================================================
+END
+================================================================================

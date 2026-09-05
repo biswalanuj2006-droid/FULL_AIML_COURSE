@@ -1,0 +1,17 @@
+================================================================================
+VECTOR DATABASES — PROJECTS
+================================================================================
+
+PROJECT 1: SIMPLE VECTOR SEARCH (Beginner)
+=============================================
+Build document search with FAISS.
+
+PROJECT 2: MULTI-VECTOR DATABASE COMPARISON (Intermediate)
+===========================================================
+Compare FAISS vs Chroma vs Qdrant on same dataset.
+
+PROJECT 3: PRODUCTION VECTOR SERVICE (Advanced)
+=================================================
+Build production vector search API with multiple backends.
+
+================================================================================

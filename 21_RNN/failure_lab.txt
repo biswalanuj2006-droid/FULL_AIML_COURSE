@@ -1,0 +1,58 @@
+================================================================================
+FAILURE LAB - 21 RNN
+Reproduce -> diagnose -> fix -> report.
+================================================================================
+
+LAB 1 - THE VANISHING SEQUENCE
+  Char-level RNN over 200-char sequences: loss plateaus, outputs are
+  repetitive garbage.
+  Tasks: (1) reproduce; (2) print gradient norms at step 1 vs step 100
+  of BPTT (expect decay); (3) explain the product-of-Jacobians
+  mechanism; (4) fix with gradient clipping (exploding side), better
+  init (orthogonal, spectral radius ~1), and shorter unrolling; report
+  the loss curve before/after.
+
+LAB 2 - THE EXPLODING STEP
+  Loss fine for 5 epochs, then NaN within one epoch.
+  Tasks: (1) reproduce with seed; (2) check gradient norm right before
+  NaN - if it exploded, apply clip_grad_norm_ and re-run; (3) also test
+  lower lr and input scaling; (4) report which fix held and why.
+
+LAB 3 - THE SHUFFLED TIME SERIES
+  Random train/test split on a sine-plus-noise series: RNN "learns"
+  and validation looks fine, but a walk-forward evaluation is much
+  worse.
+  Tasks: (1) reproduce both evaluations and the gap; (2) explain the
+  temporal leakage; (3) fix with a time-based split and re-train;
+  (4) also check whether lags/windows were computed before splitting.
+
+LAB 4 - THE SHORT-MEMORY LSTM
+  LSTM trained to copy a 10-token pattern works; the same model on a
+  100-token pattern with long gaps between signals fails.
+  Tasks: (1) reproduce both; (2) diagnose: capacity, training length,
+  or forgetting? Use a probe: feed the signal at position 5 vs 95 and
+  compare hidden-state influence; (3) fix with attention-style skip or
+  a gated cell (LSTM) + proper init; (4) write the rule about what
+  recurrence alone can and cannot remember.
+
+LAB 5 - THE TEACHER-FORCING CRUTCH
+  Seq2seq translation model trained with teacher forcing scores well on
+  BLEU-style metrics during training logs but produces broken outputs
+  at inference.
+  Tasks: (1) reproduce the exposure-bias failure on a small toy mapping;
+  (2) explain why errors compound at inference; (3) fix with scheduled
+  sampling or curriculum, plus beam search at inference; (4) evaluate
+  with the SAME decoding used in production (never teacher-forced
+  evaluation).
+
+LAB 6 - THE SHAPE/STATE BUG
+  Model trains but predictions are always the same regardless of input
+  order (inputs [1,2,3] and [3,2,1] give identical outputs).
+  Tasks: (1) reproduce; (2) diagnose: did the recurrent state reset per
+  batch? is the input actually being fed to the recurrent layer?; (3)
+  fix state handling (stateful vs stateless, hidden reset, sequence
+  packing); (4) add a permutation test: shuffle a sequence, require the
+  output to change.
+================================================================================
+END
+================================================================================

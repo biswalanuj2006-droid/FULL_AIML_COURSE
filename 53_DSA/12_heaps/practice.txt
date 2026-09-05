@@ -1,0 +1,143 @@
+# HEAPS — PRACTICE SET
+# 30 Questions + Coding + Debugging
+
+---
+
+## EASY (8 Questions)
+
+1. What is a heap?
+   Answer: A complete binary tree where parent is ≤ (min-heap) or ≥ (max-heap) its children
+
+2. What is the time complexity of inserting into a heap?
+   Answer: O(log n) — bubble up
+
+3. What is the time complexity of extracting min/max?
+   Answer: O(log n) — sink down
+
+4. What is the difference between min-heap and max-heap?
+   Answer: Min-heap: smallest element at root. Max-heap: largest element at root
+
+5. How is a heap typically represented?
+   Answer: As an array where for node at index i: left child = 2i+1, right child = 2i+2, parent = (i-1)//2
+
+6. What is heapify?
+   Answer: The process of converting an array into a heap, or restoring heap property after modification
+
+7. What is the time complexity of building a heap from an array?
+   Answer: O(n) — not O(n log n) as commonly assumed
+
+8. What is a priority queue?
+   Answer: An abstract data type where elements are served based on priority, typically implemented with a heap
+
+---
+
+## MEDIUM (12 Questions)
+
+9. Find the kth largest element.
+    ```python
+    import heapq
+    def kth_largest(nums, k):
+        return heapq.nlargest(k, nums)[-1]
+    ```
+
+10. Top K frequent elements.
+    ```python
+    from collections import Counter
+    def top_k_frequent(nums, k):
+        count = Counter(nums)
+        return [x for x, _ in heapq.nlargest(k, count.items(), key=lambda x: x[1])]
+    ```
+
+11. Find median from data stream.
+    ```python
+    import heapq
+    class MedianFinder:
+        def __init__(self):
+            self.lo = []  # max-heap (invert values)
+            self.hi = []  # min-heap
+        def add_num(self, num):
+            heapq.heappush(self.lo, -num)
+            heapq.heappush(self.hi, -heapq.heappop(self.lo))
+            if len(self.hi) > len(self.lo):
+                heapq.heappush(self.lo, -heapq.heappop(self.hi))
+        def find_median(self):
+            if len(self.lo) > len(self.hi):
+                return -self.lo[0]
+            return (-self.lo[0] + self.hi[0]) / 2
+    ```
+
+12. Merge k sorted lists using min-heap.
+
+13. K closest points to origin.
+
+14. Kth smallest element in sorted matrix.
+
+15. Reorganize string (no adjacent same characters).
+
+16. Task scheduler (least intervals).
+
+17. Sort characters by frequency.
+
+18. Find median from stream.
+
+19. Kth largest element in a stream.
+
+20. Meeting rooms II (minimum rooms needed).
+
+---
+
+## HARD (5 Questions)
+
+21. Find median from data stream — online algorithm.
+22. Sliding window median using two heaps.
+23. Employee free time (merge intervals with heap).
+24. Kth smallest pair distance.
+25. Smallest range covering elements from k lists.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Python heapq is min-heap only
+import heapq
+heap = [3, 1, 4, 1, 5]
+heapq.heapify(heap)  # Min-heap: [1, 1, 4, 3, 5]
+# For max-heap: negate values
+max_heap = [-x for x in heap]
+heapq.heapify(max_heap)
+
+# Debug 2: Heap doesn't maintain order after pop
+import heapq
+heap = [1, 3, 5, 7, 9]
+heapq.heappop(heap)
+# heap is now [3, 7, 5, 9] — still valid heap
+
+# Debug 3: Top K uses wrong heap
+def top_k(nums, k):
+    heap = []
+    for num in nums:
+        heapq.heappush(heap, num)
+        if len(heap) > k:
+            heapq.heappop(heap)  # Pops smallest — keeps largest k
+    return heap  # Returns k largest — correct!
+# But if you want k smallest, use max-heap instead
+
+# Debug 4: Median finder balance issue
+class MedianFinder:
+    def add_num(self, num):
+        heapq.heappush(self.lo, num)
+        heapq.heappush(self.hi, -heapq.heappop(self.lo))
+        # Bug: if len(hi) > len(lo), balance is wrong
+        if len(self.hi) > len(self.lo):
+            heapq.heappush(self.lo, -heapq.heappop(self.hi))
+    # Fix: ensure len(lo) >= len(hi)
+
+# Debug 5: Heap sort not stable
+def heap_sort(arr):
+    import heapq
+    heapq.heapify(arr)
+    return [heapq.heappop(arr) for _ in range(len(arr))]
+# heap_sort is not stable — equal elements may change order
+# Fix: Use (value, index) tuples to break ties
+```

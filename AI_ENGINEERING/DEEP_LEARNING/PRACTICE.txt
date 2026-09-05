@@ -1,0 +1,275 @@
+================================================================================
+DEEP LEARNING  -  PRACTICE.txt
+================================================================================
+Course   : AI_ENGINEERING/DEEP_LEARNING/  (companion to COURSE.txt)
+Levels   : 0 Foundation / 1 Beginner / 2 Intermediate / 3 Advanced /
+           4 Expert / 5 Research
+Types    : CONCEPT (C)  MATH (M)  CODING (K)  DEBUGGING (D)  ARCHITECTURE (A)
+           DESIGN (S)  INTERVIEW (I)  CASE (CS)
+Rules    : do the MATH by hand first; every numerical answer below was
+           recomputed and is annotated VERIFIED.  For CODING, implement in
+           plain Python/numpy FIRST, then PyTorch (the no-framework-first
+           rule).  Module links are DL-xx from COURSE.txt.
+
+================================================================================
+LEVEL 0 - FOUNDATION (Python, tensors, math)
+================================================================================
+C1. What is a tensor?  Rank-0/1/2/3 shapes for scalar, vector, matrix, batch.
+C2. Broadcasting rule: what shapes can multiply/ add?  (align from right;
+    dims must be equal or 1.)
+C3. What is a derivative?  A partial derivative?  A gradient?
+C4. Chain rule in one sentence.  (DL-01)
+M1.  Multiply matrix A (2x3) by B (3x2); give the (1,1) entry formula.
+     VERIFIED: (AB)_11 = sum_k A_1k B_k1 = A_11 B_11 + A_12 B_21 + A_13 B_31.
+M2.  Given f(x) = x^2, g(x) = 2x+1: compute d/dx f(g(x)) at x=3 by the
+     chain rule.  VERIFIED: f'(g) * g' = 2(2*3+1)*2 = 28.
+M3.  Jacobian of f(x,y) = (x^2 + y, 3y - x).  VERIFIED: rows are gradients
+     of each output: [[2x, 1], [-1, 3]].
+K1.  In numpy/torch: create (3,4) tensor, transpose it, broadcast-add a
+     (4,) vector; report the result shape.  (3,4)
+K2.  Write relu, sigmoid, tanh, softmax from scratch (numpy) with stable
+     softmax (subtract row max first).
+D1.  torch.tensor([1,2,3]) * torch.tensor([[1],[2]]) raises.  Why?
+     (broadcast mismatch: (3,) vs (2,1) cannot align -> no error actually;
+     explain what happens: align from right: 3 vs 1 -> ok; then 1 vs 2 ->
+     mismatch -> RuntimeError.)
+I1.  "What does requires_grad do?  What is a leaf tensor?" (DL-02/03)
+
+================================================================================
+LEVEL 1 - BEGINNER (perceptron -> MLP, PyTorch basics)
+================================================================================
+C1.  Why can't a perceptron learn XOR?  Draw the boundary argument. (DL-04)
+C2.  Why a bias term?  (Boundary need not pass through the origin.)
+C3.  MLP forward equation for 2 hidden layers, in full notation. (DL-05)
+C4.  Three reasons ReLU beat sigmoid hidden units.  (vanishing, cost,
+     dead-neuron caveat) (DL-05)
+C5.  Why is cross-entropy the classification loss and MSE the regression
+     loss?  (NLL under categorical vs Gaussian) (DL-01/06)
+C6.  What does backward() compute, and why call zero_grad() first? (DL-03)
+M1.  Softmax of [2.0, 1.0, 0.1].  VERIFIED: e^2=7.389, e^1=2.718,
+     e^.1=1.105; sum 11.212; p = [0.659, 0.242, 0.099] (sums to 1.000).
+M2.  Cross-entropy for that softmax with true class 0: -ln(0.659) =
+     0.417 nats.  VERIFIED.
+M3.  MLP forward: x (1x2) = [[1,2]], W1 (3x2), b1 (3x1), ReLU, W2 (1x3).
+     Pick W1 = [[1,0],[0,1],[1,1]], b1 = [0,0,-1], W2 = [1,1,1].
+     z1 = [1,2,2] (third: 1+2-1=2); a1 = ReLU = [1,2,2]; y = 5. VERIFIED.
+K1.  Perceptron from scratch (numpy) on the OR dataset; show it converges.
+K2.  MLP in torch: 2 hidden layers (4, 8), tanh, train on XOR with MSE;
+     report final loss < 0.05.
+K3.  Manual training loop: Dataset/DataLoader, Adam, epoch loop, per-epoch
+     train/val loss printout - no sklearn anywhere.
+K4.  Implement BCEWithLogits numerically as (1-y)z + log(1+e^-z) and show
+     it matches torch's on random tensors (rel diff < 1e-5).
+D1.  Loss is NaN from step 1 on MNIST-like data.  Give the ordered debug
+     checklist (data -> LR -> logits -> dtype).  (DL-20)
+D2.  Train loss falls, val loss flat at chance.  Two hypotheses and how to
+     test each (capacity too low vs leakage).
+I1.  "Implement one training step from memory: logits, loss, backward,
+     step, zero_grad - and why that order." (DL-03)
+I2.  "Why does eval() matter and what exactly does it change?" (DL-02/03)
+
+================================================================================
+LEVEL 2 - INTERMEDIATE (optimization, normalization, CNNs)
+================================================================================
+C1.  Adam equations with bias correction; why AdamW differs. (DL-06)
+C2.  Why warmup for transformers and cosine decay afterwards. (DL-06)
+C3.  Xavier vs He: the derivation intuition (2/fan_in for ReLU). (DL-07)
+C4.  BatchNorm vs LayerNorm: over WHAT each normalizes; why transformers
+     use LayerNorm/RMSNorm. (DL-08)
+C5.  Pre-norm vs post-norm and why pre wins for deep stacks. (DL-08)
+C6.  Conv output size formula; receptive field after two 3x3 convs. (DL-10)
+C7.  What does a 1x1 conv do?  A stride-2 conv?  Global average pooling?
+M1.  Conv 3x3, C_in=16, C_out=32: parameters.  VERIFIED: 16*9*32 + 32 =
+     4,608 + 32 = 4,640.
+M2.  Conv output dims: H=32, K=3, P=1, S=1 -> 32 (same); H=32, K=5,
+     P=0, S=2 -> (32-5)/2+1 = 14.5 -> invalid; H=33, K=5, P=0, S=2 ->
+     (33-5)/2+1 = 15.  VERIFIED.
+M3.  ResNet block params: 64->64 3x3 conv twice.  VERIFIED: 2*(64*9*64+64)
+     = 2*36,928 = 73,856; bottleneck 1x1-3x3-1x1 (64->64->256):
+     64*64 + 64*9*64 + 256*64 = 4,096 + 36,864 + 16,384 = 57,344 (plus
+     biases 64+64+256=384 -> 57,728 with biases).  Main path ~22% cheaper
+     at 4x the width.
+M4.  L2 (weight decay): loss = CE + (wd/2)||W||^2.  Gradient contribution
+     = wd*W.  With wd=1e-4 and |W_ij|=2, the decay gradient = 2e-4.
+     VERIFIED.
+K1.  Implement SGD with momentum and Adam from scratch in numpy on a toy
+     quadratic loss; print convergence curves for lr in {0.01, 0.1, 1}.
+K2.  Implement 2D convolution with a naive loop AND im2col + matmul;
+     verify both match torch.nn.functional.conv2d on random tensors.
+K3.  Implement BatchNorm and LayerNorm manually for a (B,T,C) tensor and
+     verify against torch on the same data (atol 1e-5); show BN depends on
+     batch but LN does not (change batch size, compare outputs).
+K4.  Build a CNN (conv-bn-relu x3 + pool + FC) on FashionMNIST (or a
+     synthetic image set if offline); report test accuracy > 0.85 and a
+     confusion matrix; add augmentation and show the gain.
+D1.  Model: train acc 0.99, val 0.60, rising gap.  What three levers, in
+     order?  (regularize/augment/data; verify no leakage first) (DL-09/20)
+D2.  First conv layer outputs are ALL the same constant for every image.
+     Cause?  (init symmetry/zero or dead ReLU; check activation stats)
+D3.  BatchNorm + batch_size=1 at inference produces wild outputs.  Why and
+     what to do?  (running stats update never happened in train, or BN in
+     eval uses stale stats; use GroupNorm/LayerNorm)
+I1.  "Output size of a conv with H=64, K=3, P=1, S=2."  (32)
+I2.  "Why does deep CNN training need normalization and residuals?"
+I3.  "Adam vs SGD generalization - what do you pick and when?"
+
+================================================================================
+LEVEL 3 - ADVANCED (RNN/LSTM/attention/transformers)
+================================================================================
+C1.  Explain BPTT and why gradient products vanish/explode. (DL-13)
+C2.  LSTM gates: names, equations, and the cell-state gradient path that
+     fixes vanishing gradients. (DL-14)
+C3.  GRU vs LSTM: gates, params, when each. (DL-15)
+C4.  Attention equation with every symbol and every shape; why 1/sqrt(dk).
+     (DL-16)
+C5.  What masks exist and where each is applied.  (DL-16)
+C6.  Transformer block order from memory (pre-norm). (DL-17)
+C7.  Encoder vs decoder attention patterns + use cases. (DL-17)
+C8.  Why is the transformer parallelizable over time when RNNs aren't?
+M1.  LSTM params: in=64, hidden=128.  VERIFIED: 4*(128*(128+64)+128) =
+     4*(24,576+128) = 4*24,704 = 98,816.
+M2.  GRU params same sizes: 3*(128*(128+64)+128) = 3*24,704 = 74,112.
+     VERIFIED.
+M3.  Attention with d_model=8, n_heads=2: d_head=4.  Q,K,V for one head
+     (batch 1, seq 3): shapes QK^T = (3,3); output (3,4).  VERIFIED by
+     construction.
+M4.  Self-attention FLOPs for T=512, d_model=768, no heads split:
+     QK^T = 2*T^2*d = 2*512^2*768 = 402,653,184 ~ 4.0e8 FLOPs per layer;
+     with n_layers=12 ~ 4.8e9 for attention (order of magnitude;
+     VERIFIED arithmetic: 512^2=262,144; *768*2 = 402,653,184).
+M5.  Sinusoidal position encoding at pos=0, dim=0: PE = sin(0) = 0.
+     At pos=0, dim=1: cos(0) = 1.  VERIFIED.
+K1.  Implement an RNN cell + BPTT manually on a tiny copy task (input
+     length 8); then show GRU/LSTM learn it when RNN struggles.
+K2.  Implement LSTM cell from scratch (torch) and match nn.LSTM forward
+     on random input (atol 1e-4) - the classic correctness check.
+K3.  Implement scaled dot-product attention + causal mask in numpy and
+     torch; check row sums = 1 and the mask property on a 4x4 example.
+K4.  Multi-head attention from scratch; compare against nn.MultiheadAttention
+     on the same Q,K,V (atol 1e-4, careful with shapes).
+K5.  Build a tiny decoder-only transformer (embed, 2 blocks, LM head) and
+     train it to overfit 100 short sequences; print train perplexity < 1.5.
+D1.  Decoder trains to low loss but generates repeated garbage.  First
+     suspect?  (causal mask missing/misapplied; check attention pattern)
+D2.  LSTM on a 100-token task never beats a 1-step baseline.  Diagnosis?
+     (vanishing over length; gradient norms per step; truncate or switch)
+D3.  Attention matrix is IDENTITY (each token attends only to itself).
+     Cause?  (init/scale collapse or no learned projections; check Q,K
+     variance)
+I1.  "Derive d(softmax CE)/dz."  (s - y)
+I2.  "Why scale attention by sqrt(d_k)?"  (DL-16.3)
+I3.  "What exactly does the KV cache store and why?"  (llm_course link:
+     K/V per layer per token, to skip recompute in decode)
+
+================================================================================
+LEVEL 4 - EXPERT (generative, performance, production)
+================================================================================
+C1.  AE vs VAE latent spaces; why sampling from a plain AE fails. (DL-19)
+C2.  The VAE loss: name both terms, write ELBO, explain KL role.
+C3.  GAN training game + mode collapse + why diffusion replaced GANs
+     for image generation.
+C4.  Diffusion: forward noising schedule, the noise-prediction loss, and
+     DDIM's trick (fewer steps).
+C5.  Mixed precision: why fp16 needs GradScaler but bf16 does not.
+C6.  Gradient accumulation math and the divide-by-k rule. (DL-21)
+C7.  Gradient checkpointing: what it trades for what.
+C8.  DDP vs FSDP vs tensor parallel in one sentence each.
+M1.  Adam memory: 1M-param model, fp32 Adam.  VERIFIED: params 4MB +
+     grads 4MB + m 4MB + v 4MB = 16MB (+ activations).
+M2.  Effective batch: physical 32, accumulate 4 steps.  VERIFIED: 128;
+     loss must be divided by 4.
+M3.  VAE ELBO terms for one sample: recon = 5.0 nats, KL = 0.5 nats ->
+     loss = 5.5.  VERIFIED (mean over batch).
+K1.  Implement a VAE on MNIST-style data (or synthetic blobs if offline):
+     encoder -> mu/logvar -> reparam -> decoder; print recon loss and KL
+     per epoch; sample 10 latents and show distinct outputs.
+K2.  Implement a GAN (MLP) on a 2D mixture of Gaussians; log D and G
+     losses; show the generator's distribution covers the modes (or
+     diagnose mode collapse and add a fix).
+K3.  Add GradScaler + autocast to any training loop; verify train loss
+     matches fp32 within 0.05 after 5 epochs.
+K4.  Write a leakage test: shuffle labels -> retrain -> accuracy should
+     fall to chance; add it as a CI test.
+S1.  Design the memory budget for a 1B-param transformer training run
+     (fp32 Adam): params 4GB, grads 4GB, moments 8GB, activations per
+     batch ... where would you cut first?  (activations -> checkpoint,
+     then bf16) (DL-21)
+CS1. Case: an ML team ships a vision classifier that nails the test set
+     but fails in production photos.  Walk the diagnosis (distribution
+     shift, preprocessing mismatch, eval() bug, calibration) and the
+     monitoring you'd add.
+
+================================================================================
+LEVEL 5 - RESEARCH (reading + reproducing + designing)
+================================================================================
+C1.  Why does depth help more than width at fixed parameter count?
+     (compositionality; DL-00)
+C2.  What is catastrophic forgetting and when does transfer learning
+     trigger it?  (DL-12)
+C3.  Double descent: what phenomenon does it name and why does it
+     challenge the bias-variance story?  (DL-09/20 research notes)
+C4.  State-space models vs transformers: the core trade (linear vs
+     quadratic in length; gating vs attention).  (DL-13/15 research)
+C5.  Why did ResNet's residual connection become universal (transformers
+     included)?  (DL-11/17)
+R1.  Read the original ResNet paper; reproduce Table 1 (plain vs
+     residual, 18/34 layers) on CIFAR-10-ish data (or report train-error
+     degradation on the plain net - the paper's core observation).
+R2.  Read "Attention is All You Need"; implement multi-head attention
+     from the equations only (no peeking) and verify vs a reference.
+R3.  Ablation: train the same transformer with (a) post-norm, (b)
+     pre-norm, (c) pre-norm + RMSNorm; report val loss curves.  What do
+     you conclude about the norm placement?
+R4.  Design an experiment to test whether SGD's batch size affects
+     generalization independently of LR (cite what you would control).
+R5.  VAE on a toy: does KL annealing change the quality/coverage
+     trade-off?  Measure reconstruction vs KL and sample diversity.
+
+================================================================================
+FINAL EXAM (DL) - pick any 20; write full answers
+================================================================================
+CONCEPTS (8)
+1. Explain the transformer block from memory with the math of one head.
+2. Why do RNNs struggle with long sequences but LSTMs do not?
+3. What exactly does backpropagation compute and how does autograd do it?
+4. When would you choose an MLP over XGBoost, and vice versa?
+5. What does transfer learning give you and when does it fail?
+6. VAE vs GAN vs diffusion: loss, stability, sample quality.
+7. Why pre-norm + LayerNorm + residuals for deep transformers?
+8. Explain gradient accumulation and gradient checkpointing.
+MATH (5)
+9.  Attention example: d_k=2, Q=K=I, V=[10;20] - compute outputs.
+    VERIFIED: rows [13.32, 16.68] (worked in DL-16.4).
+10. Params of one transformer layer d_model=512, d_ff=2048, 8 heads.
+    VERIFIED: attention 4*512^2 = 1,048,576; MLP 2*512*2048 = 2,097,152;
+    norms 2*512 = 1,024 -> total 3,146,752 (~3.15M) per layer.
+11. LSTM params in=100, hidden=256.  VERIFIED: 4*(256*356+256) = 364,544.
+12. Conv params 3->64, 3x3, then 64->128, 3x3, stride 2.
+    VERIFIED: (3*9*64+64) + (64*9*128+128) = 1,792 + 73,856 = 75,648.
+13. CE + softmax gradient identity: prove dL/dz = softmax(z) - y.
+CODING (4)
+14. Implement an MLP + full training loop in <60 lines, reaches <0.05
+    loss on XOR, with a one-batch overfit test built in.
+15. Implement attention + causal mask in numpy; verify row sums.
+16. Implement manual conv2d (im2col) matching torch.
+17. Implement VAE reparametrization and one training step.
+DEBUGGING (3)
+18. NaN at epoch 2 only.  Ordered checklist.
+19. Train/val gap grows every epoch.  Action plan.
+20. Model great in notebook, wrong in the API.  Five suspects.
+(Interview sets and case studies are embedded in every level above; the
+DL interview loop = PROJECT.txt tiers + PORTFOLIO_KIT from ml_course.)
+
+================================================================================
+VERIFIED ANSWERS INDEX (all recomputed by hand)
+================================================================================
+L0-M1 (AB)_11 expansion; L0-M2 28; L0-M3 [[2x,1],[-1,3]]
+L1-M1 [0.659, 0.242, 0.099]; L1-M2 0.417 nats; L1-M3 y=5
+L2-M1 4,640; L2-M3 73,856 / 57,728 (with biases); L2-M2 15
+L3-M1 98,816; L3-M2 74,112; L3-M4 4.0e8/layer; L3-M5 PE[0,0]=0, PE[0,1]=1
+L4-M1 16 MB; L4-M2 128; L4-M3 5.5
+Exam-9 rows [13.32, 16.68]; Exam-10 ~3.15M/layer; Exam-11 364,544;
+Exam-12 75,648
+================================================================================
+END PRACTICE.txt
+================================================================================

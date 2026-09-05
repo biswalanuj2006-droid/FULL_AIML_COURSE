@@ -1,0 +1,34 @@
+================================================================================
+RESEARCH ENGINEERING — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (6)
+=========
+Q1: What is the difference between a conference and journal paper?
+Q2: How do you read a research paper efficiently?
+Q3: What is an ablation study?
+Q4: What is a baseline?
+Q5: What is statistical significance?
+Q6: What is reproducibility?
+
+MEDIUM (8)
+===========
+Q7: Read and implement a simple ML paper.
+Q8: Design experiment for model comparison.
+Q9: Implement ablation study for a model.
+Q10: Write a research-style experiment report.
+Q11: Reproduce results from a famous paper.
+Q12: Design dataset for specific ML task.
+Q13: Implement evaluation framework from paper.
+Q14: Analyze paper limitations and propose improvements.
+
+HARD (6)
+=========
+Q15: Implement and improve upon a recent paper.
+Q16: Design complete research experiment.
+Q17: Write research proposal for new method.
+Q18: Implement paper and create comparison study.
+Q19: Design novel evaluation metrics.
+Q20: Create research roadmap for a problem.
+
+================================================================================

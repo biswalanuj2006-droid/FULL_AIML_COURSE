@@ -1,0 +1,228 @@
+================================================================================
+DSA MODULE 3: STRINGS — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Manipulate strings efficiently
+- Apply hashing, two pointers, and sliding window to string problems
+- Implement pattern matching (KMP, Rabin-Karp)
+- Solve 15+ string LeetCode problems
+
+================================================================================
+1. STRING BASICS
+================================================================================
+
+Strings in Python are immutable sequences of characters.
+
+Access: s[i] → O(1)
+Concatenation: s1 + s2 → O(n+m) (creates new string)
+Slicing: s[l:r] → O(r-l)
+Length: len(s) → O(1)
+
+STRING BUILDR (for concatenation in loops)
+-------------------------------------------
+# BAD: O(n²) — creates new string each time
+result = ""
+for char in chars:
+    result += char  # O(n) each time!
+
+# GOOD: O(n) — amortized O(1) per append
+result = []
+for char in chars:
+    result.append(char)
+result = "".join(result)
+
+================================================================================
+2. FREQUENCY COUNTING
+================================================================================
+
+# Count character frequencies
+from collections import Counter
+
+def char_frequency(s):
+    freq = {}
+    for c in s:
+        freq[c] = freq.get(c, 0) + 1
+    return freq
+
+# Or simply:
+freq = Counter(s)
+
+# Check if two strings are anagrams
+def is_anagram(s, t):
+    return Counter(s) == Counter(t)
+# Time: O(n), Space: O(1) since alphabet is fixed
+
+# Check permutation of one in another
+def check_inclusion(s1, s2):
+    if len(s1) > len(s2): return False
+    s1_count = Counter(s1)
+    window_count = Counter(s2[:len(s1)])
+
+    if s1_count == window_count: return True
+
+    for i in range(len(s1), len(s2)):
+        # Add new char, remove old char
+        new_char = s2[i]
+        old_char = s2[i - len(s1)]
+        window_count[new_char] = window_count.get(new_char, 0) + 1
+        window_count[old_char] -= 1
+        if window_count[old_char] == 0:
+            del window_count[old_char]
+        if s1_count == window_count: return True
+    return False
+
+================================================================================
+3. TWO POINTER STRING PROBLEMS
+================================================================================
+
+VALID PALINDROME
+----------------
+def is_palindrome(s):
+    left, right = 0, len(s) - 1
+    while left < right:
+        while left < right and not s[left].isalnum():
+            left += 1
+        while left < right and not s[right].isalnum():
+            right -= 1
+        if s[left].lower() != s[right].lower():
+            return False
+        left += 1
+        right -= 1
+    return True
+
+REVERSE WORDS IN STRING
+------------------------
+def reverse_words(s):
+    words = s.split()
+    return " ".join(words[::-1])
+
+================================================================================
+4. PATTERN MATCHING
+================================================================================
+
+KMP (Knuth-Morris-Pratt)
+-------------------------
+Intuition: When a mismatch occurs, we don't need to restart from
+the beginning. Use the "failure function" to skip ahead.
+
+def kmp_search(text, pattern):
+    def build_lps(pattern):
+        lps = [0] * len(pattern)
+        length = 0
+        i = 1
+        while i < len(pattern):
+            if pattern[i] == pattern[length]:
+                length += 1
+                lps[i] = length
+                i += 1
+            elif length > 0:
+                length = lps[length - 1]
+            else:
+                lps[i] = 0
+                i += 1
+        return lps
+
+    lps = build_lps(pattern)
+    i = j = 0
+    results = []
+    while i < len(text):
+        if text[i] == pattern[j]:
+            i += 1; j += 1
+            if j == len(pattern):
+                results.append(i - j)
+                j = lps[j - 1]
+        elif j > 0:
+            j = lps[j - 1]
+        else:
+            i += 1
+    return results
+
+Time: O(n + m), Space: O(m)
+
+RABIN-KARP
+-----------
+Use rolling hash to compare pattern with text windows.
+
+def rabin_karp(text, pattern):
+    n, m = len(text), len(pattern)
+    if m > n: return []
+
+    d, q = 256, 101  # alphabet size, prime
+    h = pow(d, m-1) % q
+    p_hash, t_hash = 0, 0
+
+    for i in range(m):
+        p_hash = (d * p_hash + ord(pattern[i])) % q
+        t_hash = (d * t_hash + ord(text[i])) % q
+
+    results = []
+    for i in range(n - m + 1):
+        if p_hash == t_hash:
+            if text[i:i+m] == pattern:
+                results.append(i)
+        if i < n - m:
+            t_hash = (d * (t_hash - ord(text[i]) * h) + ord(text[i+m])) % q
+            if t_hash < 0: t_hash += q
+    return results
+
+================================================================================
+5. TRIE (Preview — full module in DSA Module 16)
+================================================================================
+
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.is_end = False
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word):
+        node = self.root
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        node.is_end = True
+
+    def search(self, word):
+        node = self.root
+        for char in word:
+            if char not in node.children:
+                return False
+            node = node.children[char]
+        return node.is_end
+
+================================================================================
+6. LEETCODE PROBLEMS
+================================================================================
+
+EASY
+----
+1. Valid Anagram (LC #242)
+2. Valid Palindrome (LC #125)
+3. Reverse String (LC #344)
+4. First Unique Character (LC #387)
+5. Ransom Note (LC #383)
+
+MEDIUM
+------
+6. Longest Substring Without Repeating (LC #3)
+7. Minimum Window Substring (LC #76)
+8. Group Anagrams (LC #49)
+9. Longest Palindromic Substring (LC #5)
+10. Encode and Decode Strings (LC #271)
+
+HARD
+----
+11. Text Justification (LC #68)
+12. Wildcard Matching (LC #44)
+13. Regular Expression Matching (LC #10)
+
+================================================================================
+END OF MODULE 3
+================================================================================

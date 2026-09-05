@@ -1,0 +1,29 @@
+================================================================================
+CLOUD — PRACTICE SET (15 Questions)
+================================================================================
+
+EASY (6)
+=========
+Q1: What is the difference between IaaS, PaaS, SaaS?
+Q2: What is auto-scaling?
+Q3: What is a load balancer?
+Q4: What is cloud storage?
+Q5: What is serverless computing?
+Q6: What is container orchestration?
+
+MEDIUM (6)
+===========
+Q7: Deploy ML model to AWS/GCP/Azure.
+Q8: Set up cloud storage for ML data.
+Q9: Configure auto-scaling for model serving.
+Q10: Implement cloud monitoring.
+Q11: Set up cloud networking.
+Q12: Implement cloud cost optimization.
+
+HARD (3)
+=========
+Q13: Design multi-region ML deployment.
+Q14: Implement cloud ML pipeline.
+Q15: Build cloud-native ML platform.
+
+================================================================================

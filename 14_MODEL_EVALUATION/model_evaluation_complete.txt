@@ -1,0 +1,297 @@
+================================================================================
+MODULE 14 — MODEL EVALUATION
+COMPLETE GUIDE: METRICS, CROSS-VALIDATION, CURVES, SELECTION
+================================================================================
+
+## What You Will Learn
+- Classification metrics (accuracy, precision, recall, F1, ROC-AUC, etc.)
+- Regression metrics (MAE, MSE, RMSE, R²)
+- Clustering metrics (silhouette, Davies-Bouldin)
+- Cross-validation strategies
+- ROC curves and PR curves
+- Learning curves
+- Model comparison and selection
+
+## Why You Need It
+Choosing the wrong metric leads to wrong models. A spam filter optimized for
+accuracy might mark everything as "not spam" (99% accuracy but useless).
+Understanding evaluation is the difference between a toy model and a
+production-ready system.
+
+================================================================================
+1. THE GOLDEN RULE
+================================================================================
+
+NEVER evaluate on training data.
+
+    Training set → Build the model
+    Validation set → Tune hyperparameters
+    Test set → FINAL evaluation (use ONCE)
+
+    If you evaluate on training data, you measure memorization, not learning.
+
+================================================================================
+2. CLASSIFICATION METRICS
+================================================================================
+
+CONFUSION MATRIX:
+    ┌─────────────────────────────────┐
+    │              Predicted          │
+    │              Pos     Neg        │
+    │ Actual Pos │  TP  │   FN  │     │
+    │ Actual Neg │  FP  │   TN  │     │
+    └─────────────────────────────────┘
+
+    TP: True Positive (correctly predicted positive)
+    FP: False Positive (predicted positive, actually negative)
+    FN: False Negative (predicted negative, actually positive)
+    TN: True Negative (correctly predicted negative)
+
+    from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+    cm = confusion_matrix(y_test, y_pred)
+    ConfusionMatrixDisplay(cm).plot()
+
+ACCURACY:
+    Accuracy = (TP + TN) / (TP + FP + FN + TN)
+
+    "What fraction of predictions are correct?"
+
+    from sklearn.metrics import accuracy_score
+    accuracy_score(y_test, y_pred)
+
+    WHEN TO USE: Balanced classes only!
+    WHEN NOT: Imbalanced data (99% accuracy by predicting majority class)
+
+PRECISION:
+    Precision = TP / (TP + FP)
+
+    "Of all positive predictions, how many are actually positive?"
+
+    from sklearn.metrics import precision_score
+    precision_score(y_test, y_pred)
+
+    WHEN TO USE: Cost of false positive is high
+    Example: Spam filter (marking legitimate email as spam is bad)
+
+RECALL (Sensitivity):
+    Recall = TP / (TP + FN)
+
+    "Of all actual positives, how many did we catch?"
+
+    from sklearn.metrics import recall_score
+    recall_score(y_test, y_pred)
+
+    WHEN TO USE: Cost of false negative is high
+    Example: Disease detection (missing a disease is dangerous)
+
+F1 SCORE:
+    F1 = 2 × (Precision × Recall) / (Precision + Recall)
+
+    Harmonic mean of precision and recall.
+
+    from sklearn.metrics import f1_score
+    f1_score(y_test, y_pred, average='weighted')
+
+    WHEN TO USE: Imbalanced classes, want balance between precision and recall
+
+SPECIFICITY:
+    Specificity = TN / (TN + FP)
+
+    "Of all actual negatives, how many did we correctly identify?"
+
+ROC-AUC:
+    from sklearn.metrics import roc_auc_score, roc_curve
+
+    # For probability predictions
+    y_prob = model.predict_proba(X_test)[:, 1]
+    auc = roc_auc_score(y_test, y_prob)
+
+    # ROC Curve
+    fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+    plt.plot(fpr, tpr, label=f'AUC = {auc:.3f}')
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve')
+
+    AUC = 1.0: Perfect
+    AUC = 0.5: Random
+    AUC < 0.5: Worse than random
+
+PRECISION-RECALL CURVE:
+    from sklearn.metrics import precision_recall_curve, average_precision_score
+
+    precision, recall, thresholds = precision_recall_curve(y_test, y_prob)
+    ap = average_precision_score(y_test, y_prob)
+
+    plt.plot(recall, precision, label=f'AP = {ap:.3f}')
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curve')
+
+    WHEN TO USE PR-AUC:
+    - Highly imbalanced datasets (fraud, rare disease)
+    - ROC-AUC can be misleadingly high when negative class dominates
+
+LOG LOSS:
+    from sklearn.metrics import log_loss
+
+    log_loss(y_test, y_prob)
+
+    Punishes confident wrong predictions heavily.
+
+CLASSIFICATION REPORT:
+    from sklearn.metrics import classification_report
+
+    print(classification_report(y_test, y_pred))
+
+================================================================================
+3. REGRESSION METRICS
+================================================================================
+
+MEAN ABSOLUTE ERROR (MAE):
+    MAE = (1/n) Σ|yᵢ - ŷᵢ|
+
+    from sklearn.metrics import mean_absolute_error
+    mean_absolute_error(y_test, y_pred)
+
+    Easy to interpret: "Average error is $5,000"
+
+MEAN SQUARED ERROR (MSE):
+    MSE = (1/n) Σ(yᵢ - ŷᵢ)²
+
+    Penalizes large errors more than small ones.
+
+ROOT MEAN SQUARED ERROR (RMSE):
+    RMSE = √MSE
+
+    Same units as target variable.
+
+    from sklearn.metrics import mean_squared_error
+    np.sqrt(mean_squared_error(y_test, y_pred))
+
+R² (COEFFICIENT OF DETERMINATION):
+    R² = 1 - (SS_res / SS_tot)
+
+    Where SS_res = Σ(y - ŷ)² and SS_tot = Σ(y - ȳ)²
+
+    R² = 1.0: Perfect prediction
+    R² = 0.0: Predicts the mean
+    R² < 0: Worse than predicting the mean
+
+    from sklearn.metrics import r2_score
+    r2_score(y_test, y_pred)
+
+METRIC SELECTION:
+    ┌──────────────────┬──────────────────────────────────┐
+    │ Metric           │ When to Use                      │
+    ├──────────────────┼──────────────────────────────────┤
+    │ MAE              │ Robust to outliers               │
+    │ RMSE             │ Penalize large errors            │
+    │ R²               │ Variance explained               │
+    │ MAPE             │ Percentage error (be careful!)   │
+    │ Adjusted R²      │ Compare models with different #  │
+    │                  │ of features                       │
+    └──────────────────┴──────────────────────────────────┘
+
+================================================================================
+4. CROSS-VALIDATION
+================================================================================
+
+WHY NOT JUST TRAIN/TEST SPLIT?
+    Single split can be lucky or unlucky.
+    Cross-validation gives more robust estimates.
+
+K-FOLD CROSS-VALIDATION:
+    Data is split into K folds. Each fold is used as test set once.
+
+    Fold 1: [Test] [Train] [Train] [Train] [Train]
+    Fold 2: [Train] [Test] [Train] [Train] [Train]
+    Fold 3: [Train] [Train] [Test] [Train] [Train]
+    Fold 4: [Train] [Train] [Train] [Test] [Train]
+    Fold 5: [Train] [Train] [Train] [Train] [Test]
+
+    from sklearn.model_selection import cross_val_score
+
+    scores = cross_val_score(model, X, y, cv=5, scoring='f1')
+    print(f"F1: {scores.mean():.4f} ± {scores.std():.4f}")
+
+STRATIFIED K-FOLD:
+    from sklearn.model_selection import StratifiedKFold
+
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    scores = cross_val_score(model, X, y, cv=skf, scoring='f1')
+
+    IMPORTANT: Always use stratified for classification!
+
+REPEATED K-FOLD:
+    from sklearn.model_selection import RepeatedStratifiedKFold
+
+    rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=42)
+    scores = cross_val_score(model, X, y, cv=rskf, scoring='f1')
+
+================================================================================
+5. LEARNING CURVES
+================================================================================
+
+from sklearn.model_selection import learning_curve
+
+train_sizes, train_scores, val_scores = learning_curve(
+    model, X, y, cv=5,
+    train_sizes=np.linspace(0.1, 1.0, 10),
+    scoring='accuracy'
+)
+
+train_mean = train_scores.mean(axis=1)
+val_mean = val_scores.mean(axis=1)
+
+plt.plot(train_sizes, train_mean, label='Training score')
+plt.plot(train_sizes, val_mean, label='Validation score')
+plt.xlabel('Training Set Size')
+plt.ylabel('Score')
+plt.title('Learning Curve')
+plt.legend()
+
+INTERPRETATION:
+    ┌──────────────────────────────────────────────┐
+    │ Both curves converge → Good fit              │
+    │ Large gap between curves → Overfitting       │
+    │ Both curves low → Underfitting               │
+    │ Curves not converged → Need more data        │
+    └──────────────────────────────────────────────┘
+
+================================================================================
+6. MODEL SELECTION
+================================================================================
+
+COMPARISON TABLE:
+    results = []
+    for name, model in models.items():
+        scores = cross_val_score(model, X, y, cv=5, scoring='f1')
+        results.append({
+            'Model': name,
+            'F1 Mean': scores.mean(),
+            'F1 Std': scores.std()
+        })
+
+    results_df = pd.DataFrame(results).sort_values('F1 Mean', ascending=False)
+
+WHICH METRIC TO OPTIMIZE:
+    - Balanced classification: F1 or Accuracy
+    - Imbalanced classification: F1 or ROC-AUC
+    - Highly imbalanced: PR-AUC
+    - Regression: RMSE or MAE
+    - Ranking: ROC-AUC
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. When should you use precision vs recall?
+2. What does ROC-AUC = 0.7 mean?
+3. Why use stratified cross-validation?
+4. What does a learning curve with large gap indicate?
+5. When should you use PR-AUC instead of ROC-AUC?
+
+================================================================================

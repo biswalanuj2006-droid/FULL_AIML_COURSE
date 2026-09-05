@@ -1,0 +1,50 @@
+================================================================================
+THINK.TXT - 09 CLASSIFICATION
+================================================================================
+
+1. Logistic regression is a "linear classifier" yet produces curved
+   probability contours under sigmoid. Resolve this apparent contradiction
+   precisely (decision boundary vs probability surface).
+2. Decision boundaries: for KNN, SVM (linear + RBF), logistic regression,
+   and a depth-3 tree on the same 2D dataset, sketch/simulate the
+   boundaries. Explain WHY each looks the way it does in terms of its
+   objective function.
+3. Class imbalance of 99:1. Accuracy says 99%. Derive why precision-recall
+   is the honest pair here, and what happens to ROC-AUC when the positive
+   class is rare.
+4. A tree model and a logistic model both reach 0.85 F1. When would you
+   still strongly prefer each? Consider: features, data size, latency,
+   regulation, and interactions.
+5. Softmax outputs "probabilities" that are systematically overconfident.
+   Where does the overconfidence come from and what are the fixes
+   (temperature, calibration, OOD)?
+6. SVM with RBF kernel has an implicit feature space of infinite
+   dimension, yet generalizes. Explain this paradox using margin theory.
+7. You have 20,000 rows and 2,000 features (many irrelevant), binary
+   target. Compare logistic (with penalty), RBF-SVM, and boosted trees in
+   terms of expected performance and why.
+8. Threshold choice: moving the decision threshold from 0.5 to 0.9 changes
+   precision/recall but not the model. Formalize the trade-off when the
+   cost of a false positive is 10x a false negative. What is the optimal
+   threshold rule and its assumption?
+9. Label noise at 10% flips random training labels. Which classifiers are
+   most robust to it and why? Which metric degrades first?
+10. Nearest-neighbor classifiers suffer the curse of dimensionality.
+    Quantify: at 100 dimensions, what is the expected ratio of
+    nearest-to-farthest distance for uniform data, and why does that break
+    KNN?
+11. Multi-class with 500 classes: contrast one-vs-rest logistic,
+    softmax regression, trees, and KNN in training cost and accuracy
+    behavior. Which scales?
+12. Two models: one predicts 0.9 for all positives, another predicts 0.55
+    for all positives. Both are always correct. Which is better and how
+    do you measure it (calibration vs discrimination)?
+13. Derive why Naive Bayes can be optimal even when its independence
+    assumption is badly violated (think: ranking vs density estimation).
+14. OPEN PROBLEM: threshold-free classifier evaluation is an active
+    research area (AUC, PR-AUC, cost curves). Argue which single metric
+    you would standardize on for deployment decisions and defend it
+    against its known critics.
+================================================================================
+END
+================================================================================

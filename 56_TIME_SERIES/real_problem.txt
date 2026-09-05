@@ -1,0 +1,54 @@
+================================================================================
+REAL PROBLEM - 16 TIME SERIES
+================================================================================
+
+PROBLEM A: "My demand forecast is 20% better in backtests than in real
+life. Every Monday the model under-predicts."
+WHY IT HAPPENS (diagnose in order)
+  1. Backtest used a random split -> temporal leakage inflated scores.
+  2. Weekly seasonality not modeled: Monday is systematically different
+     and the model learned the average.
+  3. Real life has holidays/promotions that never appeared in training.
+HOW TO SOLVE
+  1. Switch to walk-forward validation and re-measure (expect the gap
+     to shrink).
+  2. Add day-of-week + holiday + promo features; verify Monday error
+     drops.
+  3. Keep a naive/persistence baseline: if your model cannot beat
+     "same day last week", the signal work is not done.
+
+PROBLEM B: "Forecast looks fine in aggregate but misses every spike."
+WHY: MSE/RMSE training optimizes the average; spikes are rare so they
+barely move the loss, and the model learns to ignore them.
+HOW TO SOLVE
+  1. Inspect errors by magnitude bucket - confirm spikes dominate the
+     business impact but not the loss.
+  2. Train with quantile loss at high quantiles (q=0.9) if you need
+     upper-bound estimates, or add spike-specific features (events,
+     leading indicators).
+  3. Report pinball loss and coverage of prediction intervals, not just
+     RMSE.
+
+PROBLEM C: "The model degrades 3 months after each retrain."
+WHY: concept drift (buying behavior, price sensitivity, competitors).
+The retraining cadence is fixed; drift speed varies.
+HOW TO SOLVE
+  1. Monitor residuals: rolling mean of (actual - prediction). When it
+     moves > k*std persistently, that is drift, not noise.
+  2. Retrain when drift is detected (threshold on the drift metric),
+     not on a calendar.
+  3. Keep the last N good models: if a retrain performs worse, roll
+     back automatically (champion/challenger with an alert).
+
+PROBLEM D: "Sales spike every Friday but my model flattens them."
+WHY: features (day-of-week) exist, but the model is underfit or the
+tree splits cannot express the interaction (weekday x product x promo).
+HOW TO SOLVE
+  1. Confirm the signal exists: group mean by day-of-week - is Friday
+     actually higher? If flat in data, it is a data problem.
+  2. Add interaction features and raise model capacity.
+  3. Verify on a Friday-only holdout slice - evaluate where the
+     business actually cares.
+================================================================================
+END
+================================================================================

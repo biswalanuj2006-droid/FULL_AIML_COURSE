@@ -1,0 +1,207 @@
+================================================================================
+MODULE 39: AUTHENTICATION & AUTHORIZATION — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Implement JWT authentication
+- Understand OAuth2 concepts
+- Hash and verify passwords securely
+- Protect API endpoints
+- Implement role-based access control (RBAC)
+
+================================================================================
+1. AUTHENTICATION vs AUTHORIZATION
+================================================================================
+
+AUTHENTICATION: "Who are you?"
+  → Login, identity verification
+
+AUTHORIZATION: "What can you do?"
+  → Permissions, access control
+
+Example:
+  Authentication: Verifying your ID card
+  Authorization: Using that ID to enter different rooms
+
+================================================================================
+2. PASSWORD HASHING
+================================================================================
+
+NEVER STORE PLAINTEXT PASSWORDS!
+
+USING BCRYPT
+-------------
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Hash password
+hashed = pwd_context.hash("my_password")
+
+# Verify password
+is_valid = pwd_context.verify("my_password", hashed)
+
+USING ARGON2 (RECOMMENDED)
+----------------------------
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+hashed = pwd_context.hash("my_password")
+
+================================================================================
+3. JWT (JSON Web Tokens)
+================================================================================
+
+INTUITION
+---------
+JWT = a secure token that contains user information.
+No server-side session needed — stateless authentication.
+
+JWT STRUCTURE
+-------------
+Header.Payload.Signature
+
+Header: {"alg": "HS256", "typ": "JWT"}
+Payload: {"user_id": 123, "exp": 1700000000}
+Signature: HMAC-SHA256(header + payload, secret)
+
+IMPLEMENTATION
+--------------
+import jwt
+from datetime import datetime, timedelta
+
+SECRET_KEY = "your-secret-key"  # Store in env variable!
+ALGORITHM = "HS256"
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(hours=24)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def verify_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+FASTAPI INTEGRATION
+-------------------
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+security = HTTPBearer()
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    payload = verify_token(credentials.credentials)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
+    return payload
+
+@app.get("/protected")
+async def protected_route(user=Depends(get_current_user)):
+    return {"message": f"Hello user {user['user_id']}"}
+
+================================================================================
+4. ROLE-BASED ACCESS CONTROL (RBAC)
+================================================================================
+
+ROLES
+-----
+admin   → full access
+editor  → can create and edit
+viewer  → read-only access
+
+IMPLEMENTATION
+--------------
+from enum import Enum
+from functools import wraps
+
+class Role(Enum):
+    ADMIN = "admin"
+    EDITOR = "editor"
+    VIEWER = "viewer"
+
+ROLE_PERMISSIONS = {
+    Role.ADMIN: ["read", "write", "delete", "manage_users"],
+    Role.EDITOR: ["read", "write"],
+    Role.VIEWER: ["read"],
+}
+
+def require_role(required_role):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(user=Depends(get_current_user)):
+            user_role = Role(user.get("role", "viewer"))
+            if required_role not in ROLE_PERMISSIONS[user_role]:
+                raise HTTPException(status_code=403, detail="Insufficient permissions")
+            return await func(user=user)
+        return wrapper
+    return decorator
+
+@app.delete("/models/{model_id}")
+@require_role(Role.ADMIN)
+async def delete_model(model_id: int, user=Depends(get_current_user)):
+    return {"deleted": model_id}
+
+================================================================================
+5. API KEY AUTHENTICATION
+================================================================================
+
+import secrets
+
+def generate_api_key():
+    return secrets.token_urlsafe(32)
+
+# Store API keys hashed
+api_key_hash = pwd_context.hash(generate_api_key())
+
+# Verify
+is_valid = pwd_context.verify(provided_key, stored_hash)
+
+# Usage in FastAPI
+async def verify_api_key(api_key: str = Header(...)):
+    # Look up and verify key
+    if not valid_key:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+
+================================================================================
+6. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Storing passwords in plaintext
+  RIGHT: Always hash with bcrypt or argon2
+
+MISTAKE 2: Using weak JWT secrets
+  RIGHT: Use a strong, random secret (32+ characters)
+
+MISTAKE 3: Long JWT expiration times
+  RIGHT: 15-60 minutes for access tokens, refresh tokens for longer
+
+MISTAKE 4: Not validating input
+  RIGHT: Validate all user input, prevent injection attacks
+
+MISTAKE 5: Exposing sensitive data in JWT payload
+  RIGHT: Never put passwords or secrets in JWT payload
+
+================================================================================
+7. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between authentication and authorization?
+Q2: Why should you never store plaintext passwords?
+Q3: What are the three parts of a JWT?
+Q4: When should you use API keys vs JWT?
+Q5: What is RBAC and when is it useful?
+
+================================================================================
+END OF MODULE 39: AUTHENTICATION & AUTHORIZATION
+================================================================================

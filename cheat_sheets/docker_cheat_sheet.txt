@@ -1,0 +1,82 @@
+================================================================================
+DOCKER CHEAT SHEET
+================================================================================
+
+BASIC COMMANDS
+--------------
+docker build -t name:tag .         # Build image
+docker run -d -p 8000:8000 name    # Run container (detached)
+docker ps                          # List running containers
+docker ps -a                       # List all containers
+docker stop container_id            # Stop container
+docker rm container_id              # Remove container
+docker logs container_id            # View logs
+docker exec -it container_id bash   # Enter container
+docker system prune -a              # Clean up
+
+DOCKERFILE
+----------
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+EXPOSE 8000
+HEALTHCHECK --interval=30s CMD curl -f http://localhost:8000/health
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+DOCKER COMPOSE
+--------------
+version: '3.8'
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      - DATABASE_URL=postgresql://postgres:pass@db:5432/mydb
+    depends_on:
+      - db
+      - redis
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  redis:
+    image: redis:7
+volumes:
+  pgdata:
+
+Commands:
+docker-compose up -d
+docker-compose down
+docker-compose logs api
+docker-compose exec api bash
+
+DOCKERIGNORE
+-------------
+__pycache__
+*.pyc
+.env
+.git
+.venv
+*.pkl
+*.h5
+*.pt
+tests/
+notebooks/
+.vscode/
+
+BEST PRACTICES
+--------------
+1. Use slim base images
+2. Copy requirements.txt before code (cache layers)
+3. Run as non-root user
+4. Use .dockerignore
+5. Multi-stage builds for smaller images
+6. Never hardcode secrets
+7. Use health checks
+
+================================================================================

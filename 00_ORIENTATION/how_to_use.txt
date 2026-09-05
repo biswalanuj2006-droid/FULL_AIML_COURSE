@@ -1,0 +1,300 @@
+================================================================================
+                     AI/ML ENGINEERING COURSE
+                     HOW TO USE THIS COURSE
+================================================================================
+
+================================================================================
+1. COURSE STRUCTURE OVERVIEW
+================================================================================
+
+Each module folder contains:
+
+    MODULE_NAME/
+    ├── README.md           ← Module overview
+    ├── notes/              ← Theory and explanations
+    │   ├── 01_topic.txt
+    │   ├── 02_topic.txt
+    │   └── ...
+    ├── math/               ← Mathematical foundations
+    ├── diagrams/           ← Visual explanations (JPG/PNG)
+    ├── code/               ← Code examples
+    │   ├── from_scratch.py
+    │   ├── library_version.py
+    │   └── examples/
+    ├── exercises/          ← Practice problems
+    │   ├── beginner/
+    │   ├── intermediate/
+    │   └── advanced/
+    ├── labs/               ← Hands-on laboratories
+    ├── projects/           ← Module projects
+    │   ├── level_1/
+    │   ├── level_2/
+    │   └── level_3/
+    └── cheatsheet/         ← Quick reference
+
+================================================================================
+2. LEARNING SEQUENCE FOR EACH MODULE
+================================================================================
+
+Follow this sequence for EVERY module:
+
+STEP 1: READ THE OVERVIEW
+    Read the module README.md
+    Understand: What you will learn, Why it matters, Prerequisites
+
+STEP 2: STUDY THE THEORY
+    Read all notes/ files in order
+    Take notes on key concepts
+    Don't skip the "Why this exists" sections
+
+STEP 3: STUDY THE MATHEMATICS
+    Read math/ files
+    Work through numerical examples BY HAND
+    Understand every formula and symbol
+
+STEP 4: STUDY THE DIAGRAMS
+    Look at diagrams/ files
+    Connect visual representations to the theory
+    Create your own sketches if helpful
+
+STEP 5: RUN THE CODE
+    Open code/ files in Jupyter or your editor
+    Run every code example
+    Modify parameters and observe changes
+    Experiment freely
+
+STEP 6: COMPLETE EXERCISES
+    Start with beginner/ exercises
+    Progress to intermediate/ and advanced/
+    Check answers only AFTER attempting
+
+STEP 7: WORK THROUGH LABS
+    Labs are guided, step-by-step experiments
+    Complete every lab before moving on
+
+STEP 8: BUILD THE PROJECT
+    Start with Level 1 project
+    Progress to Level 2 and Level 3
+    Apply everything learned in the module
+
+STEP 9: REVIEW CHEAT SHEET
+    Read the module cheat sheet
+    Mark concepts you're still unsure about
+
+STEP 10: TEST YOURSELF
+    Answer the interview questions
+    Complete the module quiz
+    Check the knowledge checkpoint
+
+================================================================================
+3. TIME MANAGEMENT
+================================================================================
+
+RECOMMENDED DAILY SCHEDULE:
+
+    2 hours: Theory and Mathematics
+    1 hour:  Code examples and experiments
+    1 hour:  Exercises and labs
+    1 hour:  Project work
+
+    Total: 5 hours/day (25 hours/week)
+
+OR:
+
+    Read theory: 30 min
+    Study math: 30 min
+    Code examples: 1 hour
+    Exercises: 1 hour
+    Project: 1.5 hours
+
+    Total: 4.5 hours/day (22.5 hours/week)
+
+KEY PRINCIPLE:
+    > Do not rush. Understanding is more important than speed.
+    > It is better to deeply understand 1 module than to
+    > superficially complete 5 modules.
+
+================================================================================
+4. ACTIVE LEARNING TECHNIQUES
+================================================================================
+
+DON'T JUST READ — DO:
+
+    1. WRITE CODE BY HAND
+       Before copying code, try to write it yourself first.
+       Even if you make mistakes, the process teaches you.
+
+    2. EXPLAIN OUT LOUD
+       After reading a concept, explain it out loud as if
+       teaching someone else. If you can't explain it simply,
+       you don't understand it well enough.
+
+    3. CHANGE PARAMETERS
+       When you run code, don't just observe the output.
+       Change values, break things, see what happens.
+
+    4. DRAW DIAGRAMS
+       For every algorithm, draw a simple diagram on paper.
+       This activates visual memory and deepens understanding.
+
+    5. CONNECT TO PREVIOUS MODULES
+       Ask: "How does this relate to what I learned before?"
+       Build a mental map of connections between concepts.
+
+    6. DEBUG PURPOSEFULLY
+       When code fails, READ the error message carefully.
+       Don't immediately copy a fix. Understand WHY it failed.
+
+================================================================================
+5. COMMON MISTAKES TO AVOID
+================================================================================
+
+    ✗ Rushing through theory without doing exercises
+    ✗ Copying code without understanding it
+    ✗ Skipping mathematics sections
+    ✗ Skipping projects
+    ✗ Moving to next module without completing the current one
+    ✗ Reading without running the code
+    ✗ Ignoring error messages
+    ✗ Not using version control (Git)
+    ✗ Not using virtual environments
+    ✗ Trying to memorize everything instead of understanding patterns
+
+    ✓ Read, then code, then experiment, then build
+    ✓ Understand WHY before memorizing HOW
+    ✓ Take breaks — learning requires rest
+    ✓ Revisit concepts you forgot
+    ✓ Build projects that interest you
+    ✓ Ask questions (on forums, communities)
+    ✓ Be patient with yourself
+
+================================================================================
+6. TRACKING PROGRESS
+================================================================================
+
+Use ROADMAP.md to track your progress:
+
+    [ ] Not started
+    [~] In progress
+    [x] Completed
+
+Also maintain a personal learning journal:
+
+    DATE: ___________
+    MODULE: ___________
+    WHAT I LEARNED:
+    _______________________________________________
+    WHAT WAS CONFUSING:
+    _______________________________________________
+    WHAT I NEED TO REVISIT:
+    _______________________________________________
+    NEXT STEP:
+    _______________________________________________
+
+================================================================================
+7. WHEN YOU GET STUCK
+================================================================================
+
+STEP 1: Re-read the relevant section carefully
+STEP 2: Search the error message or concept
+STEP 3: Check the exercises and solutions in the module
+STEP 4: Look at the code examples and compare with yours
+STEP 5: Post on Stack Overflow, Reddit (r/learnmachinelearning),
+        or the course community
+STEP 6: Move on temporarily and come back later
+
+DO NOT:
+    ✗ Copy solutions without understanding
+    ✗ Spend more than 30 minutes on one problem without progress
+    ✗ Skip to the next module out of frustration
+
+================================================================================
+8. PROJECT GUIDELINES
+================================================================================
+
+EVERY project must include:
+
+    1. Problem Statement
+       What problem are you solving? Why does it matter?
+
+    2. Dataset
+       What data are you using? What does each feature mean?
+
+    3. Approach
+       What algorithm/method will you use? Why?
+
+    4. Implementation
+       Clean, modular, well-commented code
+
+    5. Evaluation
+       What metrics did you use? How did the model perform?
+
+    6. Visualization
+       Key charts and graphs showing results
+
+    7. Documentation
+       README.md with clear instructions
+
+    8. Reflection
+       What went well? What would you improve?
+
+LEVEL 1 PROJECTS:
+    - Single model, small dataset, simple interface
+    - Focus on understanding the basics
+
+LEVEL 2 PROJECTS:
+    - Multiple models, real dataset, preprocessing pipeline
+    - Focus on engineering practice
+
+LEVEL 3 PROJECTS:
+    - Production-style: API, database, testing, deployment
+    - Focus on real-world systems
+
+================================================================================
+9. STUDY GROUPS AND COMMUNITIES
+================================================================================
+
+Consider joining:
+
+    - r/learnmachinelearning (Reddit)
+    - r/MachineLearning (Reddit)
+    - Kaggle (competitions and discussions)
+    - Discord ML communities
+    - Local meetups
+    - LinkedIn AI/ML groups
+
+Sharing your learning with others accelerates understanding.
+
+================================================================================
+10. AFTER COMPLETING THE COURSE
+================================================================================
+
+    1. Build 3-5 portfolio projects
+    2. Write blog posts about what you learned
+    3. Contribute to open-source ML projects
+    4. Apply for AI/ML engineering positions
+    5. Keep learning — the field evolves rapidly
+    6. Specialize in your area of interest:
+       - ML Engineer
+       - Deep Learning Engineer
+       - NLP Engineer
+       - Computer Vision Engineer
+       - GenAI Engineer
+       - AI Backend Engineer
+
+================================================================================
+START YOUR JOURNEY
+================================================================================
+
+Now that you understand how to use this course:
+
+    1. Complete the diagnostic: diagnostic_assessment.txt
+    2. Set up your environment: setup_guide.txt
+    3. Start Module 01: Python for AI/ML
+
+The journey of a thousand miles begins with a single step.
+Your first step is the diagnostic assessment.
+
+Good luck! 🚀
+
+================================================================================

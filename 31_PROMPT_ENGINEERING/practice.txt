@@ -1,0 +1,34 @@
+================================================================================
+PROMPT ENGINEERING — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is prompt engineering?
+Q2: What is zero-shot vs few-shot prompting?
+Q3: What is chain-of-thought?
+Q4: What is a system prompt?
+Q5: What is temperature in prompting?
+Q6: What is the difference between instruct and base models?
+Q7: What is the importance of prompt format?
+Q8: What is prompt injection?
+
+MEDIUM (8)
+===========
+Q9: Design prompts for 5 different NLP tasks.
+Q10: Build prompt template library.
+Q11: Implement chain-of-thought for math problems.
+Q12: Build few-shot classification system.
+Q13: Compare prompt strategies on same task.
+Q14: Implement structured output prompting.
+Q15: Build prompt evaluation framework.
+Q16: Implement prompt optimization system.
+
+HARD (4)
+=========
+Q17: Build production prompt management system.
+Q18: Implement prompt testing framework.
+Q19: Build prompt A/B testing system.
+Q20: Implement prompt version control.
+
+================================================================================

@@ -1,0 +1,49 @@
+================================================================================
+THINK.TXT - 22 LSTM / GRU
+================================================================================
+
+1. The cell state c_t is the LSTM's highway for gradients. Trace
+   dL/dc_t through the forget gate and show why the additive path lets
+   gradients survive long sequences where a plain RNN's multiplicative
+   path dies.
+2. Why does the forget gate being initialized near 1 matter more than
+   the input gate's init? Connect this to gradient flow at t=0 of
+   training.
+3. GRU merges the cell and hidden state and drops the output gate.
+   Count parameters and argue when the smaller GRU beats LSTM and when
+   LSTM's extra gate pays off.
+4. "LSTM gates are a soft attention over memory." Defend this view,
+   then say where it breaks (gates are input-dependent scalars, not a
+   content-addressable lookup).
+5. A 3-layer stacked LSTM with 256 units overfits your 5k-sample
+   dataset. Rank fixes: fewer layers, more dropout, smaller hidden
+   size, regularization, pretraining/embeddings - and justify with the
+   capacity/regularization trade-off.
+6. Bidirectional LSTM: doubles capacity and sees the future. When is
+   seeing the future legitimate (NLP classification) vs leakage (time
+   series forecasting)? Formalize the rule.
+7. Your LSTM forecaster's test loss is worse than naive persistence on
+   a noisy series. Is the LSTM broken? Argue when a persistence
+   baseline SHOULD win and what it says about the signal-to-noise
+   ratio.
+8. Teacher forcing during training masks errors that appear at
+   inference (exposure bias). Explain the failure mode and how
+   scheduled sampling or curriculum approaches address it.
+9. An LSTM for machine translation needs attention to beat a 30-token
+   bottleneck. Explain why a fixed-size context vector loses
+   information regardless of LSTM quality - the motivation for
+   attention (Module 25).
+10. Numerical: a GRU has 3 gates, hidden 128, input 64. Compute the
+    parameter count of the recurrent cell (ignore bias nuances, state
+    the formula). Compare with LSTM for the same sizes.
+11. Your LSTM trains fine but CUDA OOMs during long sequences. Explain
+    why memory grows with sequence length (BPTT stores activations per
+    step) and the fixes: truncated BPTT, gradient checkpointing,
+    smaller batch.
+12. OPEN PROBLEM: gated RNNs have been largely replaced by attention
+    and state-space models for language, yet remain strong for some
+    streaming/online tasks. Characterize precisely the task properties
+    where recurrence still wins and where it cannot compete.
+================================================================================
+END
+================================================================================

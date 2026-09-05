@@ -1,0 +1,83 @@
+================================================================================
+CARD: K-NEAREST NEIGHBORS
+================================================================================
+PROBLEM   classify/regress by label similarity of nearby points.
+MODEL     non-parametric: no learned weights; store all training rows.
+PREDICT   classification: majority vote of K nearest (Euclidean default)
+          y_hat = mode{ y_j : j in N_K(x) };  optionally distance-weighted.
+          regression: mean of the K neighbors' y.
+KEY       decision boundary is piecewise-linear between points;
+          bias-variance controlled by K: small K = low bias/high
+          variance (overfit), large K = smooth (underfit).
+          Curse of dimensionality: in high d, all pairs are ~equidistant
+          and neighborhoods contain "everything" - distance stops being
+          informative; standardize features or KNN is dominated by scale.
+COMPLEXITY train O(1) (store); predict O(n d) brute force -> use KD-tree/
+          ball-tree (low d) or approximate ANN (high d) at scale.
+FAILURES  imbalanced classes (majority swamps small K neighborhoods);
+          irrelevant/noisy features (distance polluted) -> feature
+          selection matters; huge inference cost.
+CONNECTS  locally weighted regression, kernel density estimation;
+          the concept of "neighborhood" that spectral methods use.
+
+================================================================================
+CARD: NAIVE BAYES
+================================================================================
+PROBLEM   fast probabilistic classifier, often on text.
+MODEL     generative: p(y|x) ∝ p(y) prod_j p(x_j | y)
+          The NAIVE assumption: features are conditionally independent
+          given the class. Almost always false - yet often works,
+          because you only need the argmax class to be right, not the
+          probabilities.
+VARIANTS  Gaussian NB:  p(x_j|y) = N(x_j; mu_jy, sigma_jy^2)
+          Multinomial NB: p(x|y) ∝ prod_j theta_{jy}^{count_j} with
+          theta_jy = (count_jy + alpha)/(count_y + alpha*V)  (alpha =
+          Laplace smoothing, V = vocab size) - classic for TF features.
+          Bernoulli NB: binary presence/absence features.
+KEY       trains in one pass (counts + means); works with tiny data;
+          gives well-behaved probability estimates on text; calibrate if
+          you need real probabilities (independence violation makes
+          probabilities extreme).
+COMPLEXITY train O(nd); predict O(d).
+FAILURES  correlated features (e.g. "congrats" + "win" together) double-
+          count evidence -> overconfident; rare words need smoothing.
+CONNECTS  generative models see p(x) -> anomaly detection uses the same
+          per-class densities (see GMM card); see 23_NLP for text use.
+
+================================================================================
+CARD: SUPPORT VECTOR MACHINE
+================================================================================
+PROBLEM   max-margin linear (or kernelized) classifier.
+MODEL     f(x) = sign(w.x + b); margin = 1/||w|| in canonical form.
+PRIMAL    min 1/2 ||w||^2 + C sum_i xi_i
+          s.t.  y_i (w.x_i + b) >= 1 - xi_i, xi_i >= 0
+          (hinge loss view: min 1/2||w||^2 + C sum max(0, 1-y_i f(x_i)))
+DUAL      max sum_i alpha_i - 1/2 sum_ij alpha_i alpha_j y_i y_j k(x_i,x_j)
+          s.t.  0 <= alpha_i <= C,  sum alpha_i y_i = 0
+          w = sum_i alpha_i y_i x_i   ->  w is a combo of SUPPORT
+          VECTORS (alpha_i > 0).  Kernel k replaces x_i.x_j.
+KEY       KKT complementarity: alpha_i (y_i f(x_i) - 1 + xi_i) = 0.
+          Convex -> unique global optimum. RBF kernel =
+          exp(-gamma||x-z||^2) = inner product in infinite-dim space.
+COMPLEXITY train ~O(n^2)-O(n^3); predict O(#SV) kernel evals.
+FAILURES  uncalibrated distances (use Platt scaling for probs);
+          needs scaling; kernel SVM does not scale past ~100k rows.
+CONNECTS  full derivation in 09 svm_deep_dive.txt; ancestor of kernel
+          methods and of attention's inner-product machinery.
+
+================================================================================
+CARD: PERCEPTRON
+================================================================================
+PROBLEM   simplest online linear classifier (historical + didactic).
+MODEL     y_hat = sign(w.x + b)
+UPDATE    if y_i (w.x_i + b) <= 0 (mistake):  w <- w + y_i x_i
+          One update per mistake; converges (finite mistakes) iff data
+          is linearly separable; the number of mistakes is bounded by
+          (R/rho)^2 where R = max ||x||, rho = margin.
+KEY       = SGD on the perceptron loss max(0, -y f(x)) with lr 1;
+          ancestor of logistic regression (smooth hinge) and of
+          one-layer NNs.
+FAILURES  never converges on non-separable data (oscillates);
+          no probabilities.
+CONNECTS  logistic regression smooths this; SVMs give it a margin +
+          regularization.

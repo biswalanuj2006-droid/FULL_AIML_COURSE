@@ -1,0 +1,170 @@
+# QUEUES — PRACTICE SET
+# 30 Questions + Coding + Debugging
+
+---
+
+## EASY (8 Questions)
+
+1. What is a queue?
+   Answer: FIFO (First In, First Out) data structure — enqueue at back, dequeue from front
+
+2. What is the time complexity of enqueue and dequeue?
+   Answer: O(1) for both (using linked list or circular array)
+
+3. What is a circular queue?
+   Answer: A queue where the last position connects back to the first, reusing space
+
+4. What is a deque?
+   Answer: Double-ended queue — allows insertion and removal from both ends
+
+5. What is a priority queue?
+   Answer: A queue where elements are dequeued based on priority (highest or lowest), not insertion order
+
+6. How is a priority queue typically implemented?
+   Answer: Using a binary heap — O(log n) for insert and extract
+
+7. What is BFS?
+   Answer: Breadth-First Search — uses a queue to explore nodes level by level
+
+8. What is the difference between stack and queue?
+   Answer: Stack: LIFO. Queue: FIFO.
+
+---
+
+## MEDIUM (12 Questions)
+
+9. Implement a queue using two stacks.
+    ```python
+    class Queue:
+        def __init__(self):
+            self.in_stack = []
+            self.out_stack = []
+        def enqueue(self, x):
+            self.in_stack.append(x)
+        def dequeue(self):
+            if not self.out_stack:
+                while self.in_stack:
+                    self.out_stack.append(self.in_stack.pop())
+            return self.out_stack.pop()
+    ```
+
+10. Implement a circular queue.
+    ```python
+    class CircularQueue:
+        def __init__(self, k):
+            self.queue = [None] * k
+            self.head = self.tail = -1
+            self.size = k
+        def enqueue(self, val):
+            if (self.tail + 1) % self.size == self.head:
+                return False  # Full
+            if self.head == -1:
+                self.head = 0
+            self.tail = (self.tail + 1) % self.size
+            self.queue[self.tail] = val
+            return True
+        def dequeue(self):
+            if self.head == -1:
+                return False
+            if self.head == self.tail:
+                self.head = self.tail = -1
+            else:
+                self.head = (self.head + 1) % self.size
+            return True
+    ```
+
+11. Sliding window maximum using deque.
+    ```python
+    from collections import deque
+    def max_sliding_window(nums, k):
+        dq = deque()
+        result = []
+        for i, num in enumerate(nums):
+            while dq and nums[dq[-1]] <= num:
+                dq.pop()
+            dq.append(i)
+            if dq[0] <= i - k:
+                dq.popleft()
+            if i >= k - 1:
+                result.append(nums[dq[0]])
+        return result
+    ```
+
+12. Number of islands using BFS.
+
+13. Open the lock (BFS shortest path).
+
+14. Rotting oranges (multi-source BFS).
+
+15. Perfect squares (BFS shortest path).
+
+16. Word ladder (BFS).
+
+17. Implement stack using deque.
+
+18. First non-repeating character in a stream.
+
+19. Data stream median using two heaps (min-heap + max-heap).
+
+20. Task scheduler (greedy + priority queue).
+
+---
+
+## HARD (5 Questions)
+
+21. Median of data stream (using two heaps).
+22. Sliding window median.
+23. Find median from data stream (online algorithm).
+24. Merge k sorted lists using priority queue.
+25. Shortest path in binary matrix (BFS).
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Queue implementation doesn't handle empty
+class Queue:
+    def __init__(self):
+        self.items = []
+    def dequeue(self):
+        return self.items.pop(0)  # Bug: O(n) time, and crashes if empty
+    # Fix: Check empty, use collections.deque for O(1) popleft
+
+# Debug 2: BFS doesn't track visited
+def bfs(graph, start):
+    queue = [start]
+    while queue:
+        node = queue.pop(0)
+        for neighbor in graph[node]:
+            queue.append(neighbor)  # Bug: may revisit nodes (infinite loop)
+    # Fix: Add visited set
+
+# Debug 3: Priority queue returns wrong direction
+import heapq
+def k_smallest(nums, k):
+    return heapq.nlargest(k, nums)  # Bug: should be nsmallest
+# Fix: Use heapq.nsmallest(k, nums)
+
+# Debug 4: Circular queue dequeue doesn't reset
+def dequeue(self):
+    if self.head == -1: return False
+    self.head = (self.head + 1) % self.size
+    # Bug: doesn't reset when head passes tail
+    return True
+
+# Debug 5: Sliding window with wrong indices
+def max_sliding_window(nums, k):
+    from collections import deque
+    dq = deque()
+    result = []
+    for i in range(len(nums)):
+        while dq and nums[dq[-1]] < nums[i]:
+            dq.pop()
+        dq.append(i)
+        if dq[0] == i - k:  # Bug: should be <= i - k
+            dq.popleft()
+        if i >= k - 1:
+            result.append(nums[dq[0]])
+    return result
+```

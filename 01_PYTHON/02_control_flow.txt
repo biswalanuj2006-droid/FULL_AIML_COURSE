@@ -1,0 +1,457 @@
+================================================================================
+MODULE 01 — PYTHON FOR AI/ML
+LESSON 02: CONTROL FLOW
+================================================================================
+
+## What You Will Learn
+- Conditional statements (if/elif/else)
+- Loops (for, while)
+- List/dict/set comprehensions
+- Loop control (break, continue, else)
+- Practical patterns for data manipulation
+
+## Why You Need It
+Control flow lets you make decisions based on data conditions, iterate
+through datasets, filter rows, transform features, and build preprocessing
+pipelines. Comprehensions are the Pythonic way to manipulate data.
+
+================================================================================
+1. CONDITIONAL STATEMENTS
+================================================================================
+
+BASIC IF/ELSE:
+
+    temperature = 35
+
+    if temperature > 30:
+        print("It's hot!")
+    elif temperature > 20:
+        print("It's nice.")
+    else:
+        print("It's cold!")
+
+    OUTPUT: It's hot!
+
+MULTIPLE CONDITIONS:
+
+    accuracy = 0.85
+
+    if accuracy >= 0.95:
+        rating = "Excellent"
+    elif accuracy >= 0.85:
+        rating = "Good"
+    elif accuracy >= 0.70:
+        rating = "Acceptable"
+    elif accuracy >= 0.50:
+        rating = "Poor"
+    else:
+        rating = "Unusable"
+
+    print(f"Model rating: {rating}")
+
+TERNARY (INLINE IF):
+
+    x = 10
+    result = "positive" if x > 0 else "non-positive"
+    print(result)    # "positive"
+
+    ML USE: Assign categories based on thresholds
+    category = "high" if income > 50000 else "low"
+
+NESTED CONDITIONS:
+
+    if has_data:
+        if is_valid:
+            if is_labeled:
+                process_supervised()
+            else:
+                process_unsupervised()
+        else:
+            clean_data()
+    else:
+        collect_data()
+
+    NOTE: Deep nesting is hard to read. Prefer early returns or functions.
+
+ASSIGNMENT EXPRESSIONS (walrus operator :=, Python 3.8+):
+
+    data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    if (n := len(data)) > 5:
+        print(f"Dataset has {n} samples (more than 5)")
+
+================================================================================
+2. FOR LOOPS
+================================================================================
+
+BASIC FOR LOOP:
+
+    for i in range(5):
+        print(i)
+
+    OUTPUT: 0, 1, 2, 3, 4
+
+    range(stop)          → 0 to stop-1
+    range(start, stop)   → start to stop-1
+    range(start, stop, step) → start to stop-1, stepping by step
+
+ITERATING OVER COLLECTIONS:
+
+    # Lists
+    models = ["Linear Regression", "Random Forest", "XGBoost"]
+    for model in models:
+        print(f"Training {model}...")
+
+    # Dictionaries
+    params = {"n_estimators": 100, "max_depth": 5, "learning_rate": 0.1}
+    for key, value in params.items():
+        print(f"{key}: {value}")
+
+    # Strings
+    for char in "hello":
+        print(char, end=" ")
+
+    # With index
+    for i, model in enumerate(models):
+        print(f"{i+1}. {model}")
+
+    OUTPUT:
+    1. Linear Regression
+    2. Random Forest
+    3. XGBoost
+
+ZIP — ITERATING MULTIPLE SEQUENCES:
+
+    models = ["LR", "RF", "XGB"]
+    scores = [0.82, 0.87, 0.89]
+
+    for model, score in zip(models, scores):
+        print(f"{model}: {score}")
+
+ML USE — Training Multiple Models:
+
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.svm import SVC
+
+    models = {
+        "Logistic Regression": LogisticRegression(),
+        "Random Forest": RandomForestClassifier(),
+        "SVM": SVC()
+    }
+
+    for name, model in models.items():
+        model.fit(X_train, y_train)
+        score = model.score(X_test, y_test)
+        print(f"{name}: {score:.4f}")
+
+================================================================================
+3. WHILE LOOPS
+================================================================================
+
+    iteration = 0
+    loss = 1.0
+
+    while loss > 0.01:
+        iteration += 1
+        loss = loss * 0.5   # Simulate loss decreasing
+        print(f"Iteration {iteration}: loss = {loss:.4f}")
+
+    OUTPUT:
+    Iteration 1: loss = 0.5000
+    Iteration 2: loss = 0.2500
+    Iteration 3: loss = 0.1250
+    Iteration 4: loss = 0.0625
+    Iteration 5: loss = 0.0313
+    Iteration 6: loss = 0.0156
+    Iteration 7: loss = 0.0078
+
+    CAUTION: Always have an exit condition!
+    An infinite loop will freeze your program.
+
+================================================================================
+4. LOOP CONTROL
+================================================================================
+
+BREAK — Exit the loop early:
+
+    for epoch in range(100):
+        loss = train_epoch(epoch)
+        if loss < 0.001:
+            print(f"Converged at epoch {epoch}")
+            break
+
+CONTINUE — Skip to next iteration:
+
+    for value in [1, -2, 3, -4, 5]:
+        if value < 0:
+            continue    # Skip negative values
+        print(value)
+
+    OUTPUT: 1, 3, 5
+
+FOR-ELSE — Runs when loop completes without break:
+
+    for epoch in range(100):
+        loss = train_epoch(epoch)
+        if loss < 0.001:
+            print("Converged!")
+            break
+    else:
+        print("Did not converge within 100 epochs")
+
+    The else block runs ONLY if the loop completes without hitting break.
+
+================================================================================
+5. LIST COMPREHENSIONS — ESSENTIAL FOR ML
+================================================================================
+
+WHAT IS A LIST COMPREHENSION?
+    A concise way to create lists by applying an expression to each item.
+
+    Traditional way:
+    result = []
+    for x in range(10):
+        if x % 2 == 0:
+            result.append(x ** 2)
+
+    List comprehension:
+    result = [x ** 2 for x in range(10) if x % 2 == 0]
+
+    Same result: [0, 4, 16, 36, 64]
+
+SYNTAX:
+    [expression for item in iterable if condition]
+
+BASIC EXAMPLES:
+
+    # Square numbers
+    squares = [x**2 for x in range(10)]
+    # [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+
+    # Filter even numbers
+    evens = [x for x in range(20) if x % 2 == 0]
+    # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+    # Convert strings to lowercase
+    names = ["Alice", "BOB", "Charlie"]
+    lower = [name.lower() for name in names]
+    # ["alice", "bob", "charlie"]
+
+    # Extract feature from dictionary
+    data = [{"name": "Alice", "age": 25}, {"name": "Bob", "age": 30}]
+    ages = [person["age"] for person in data]
+    # [25, 30]
+
+ML USE CASES:
+
+    # 1. Filter columns by type
+    numeric_features = [col for col in df.columns if df[col].dtype in ['int64', 'float64']]
+
+    # 2. Create feature names
+    feature_names = [f"feature_{i}" for i in range(10)]
+
+    # 3. Extract predictions from multiple models
+    predictions = [model.predict(X_test) for model in trained_models]
+
+    # 4. Filter high-importance features
+    important = [feat for feat, imp in zip(features, importances) if imp > 0.01]
+
+    # 5. Clean column names
+    clean_cols = [col.strip().lower().replace(" ", "_") for col in df.columns]
+
+NESTED COMPREHENSIONS:
+
+    # Flatten a 2D list
+    matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    flat = [num for row in matrix for num in row]
+    # [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+    # Read order: outer → inner (same as nested for loops)
+
+COMPREHENSION WITH IF-ELSE (ternary):
+
+    # Map values
+    labels = [1 if x > 0.5 else 0 for x in [0.3, 0.7, 0.9, 0.1]]
+    # [0, 1, 1, 0]
+
+    # Classify
+    categories = ["high" if s > 100 else "low" for s in [50, 150, 200, 30]]
+    # ["low", "high", "high", "low"]
+
+================================================================================
+6. DICTIONARY COMPREHENSIONS
+================================================================================
+
+    # Create dictionary from two lists
+    names = ["Alice", "Bob"]
+    scores = [95, 87]
+    grade_book = {name: score for name, score in zip(names, scores)}
+    # {"Alice": 95, "Bob": 87}
+
+    # Filter dictionary
+    passed = {name: score for name, scores in grade_book.items() if score >= 90}
+    # {"Alice": 95}
+
+    # Transform values
+    doubled = {k: v * 2 for k, v in grade_book.items()}
+    # {"Alice": 190, "Bob": 174}
+
+ML USE:
+
+    # Model comparison
+    results = {name: model.score(X_test, y_test) for name, model in models.items()}
+
+    # Hyperparameter grid
+    param_grid = {f"n_estimators": [50, 100, 200]}
+
+================================================================================
+7. SET COMPREHENSIONS
+================================================================================
+
+    # Unique characters
+    text = "hello world"
+    unique_chars = {char for char in text if char != " "}
+    # {'h', 'e', 'l', 'o', 'w', 'r', 'd'}
+
+    # Unique feature types
+    dtypes = {str(dtype) for dtype in df.dtypes}
+    # {'int64', 'float64', 'object'}
+
+================================================================================
+8. GENERATOR EXPRESSIONS
+================================================================================
+
+WHY GENERATORS?
+    Lists store ALL values in memory.
+    Generators produce values ONE AT A TIME.
+
+    For a dataset with 1 million rows:
+    - List: Uses memory for all 1M values
+    - Generator: Uses memory for only 1 value at a time
+
+SYNTAX:
+    (expression for item in iterable if condition)
+    Note: Uses parentheses (), not brackets []
+
+    # Generator
+    gen = (x**2 for x in range(1000000))
+    print(next(gen))    # 0
+    print(next(gen))    # 1
+    print(next(gen))    # 4
+
+    # You can iterate over it
+    for value in (x**2 for x in range(10)):
+        print(value)
+
+ML USE:
+
+    # Process large files line by line
+    def read_large_file(filepath):
+        with open(filepath) as f:
+            for line in f:
+                yield line.strip()
+
+    # Process data in batches
+    def batch_generator(data, batch_size=32):
+        for i in range(0, len(data), batch_size):
+            yield data[i:i+batch_size]
+
+    # Lazy evaluation for large datasets
+    predictions = (model.predict(x) for x in large_dataset)
+
+================================================================================
+9. PRACTICAL PATTERNS FOR ML
+================================================================================
+
+PATTERN 1: Data Filtering
+
+    # Filter valid rows
+    valid_data = [row for row in data if all(v is not None for v in row)]
+
+    # Filter by condition
+    high_income = [row for row in data if row["income"] > 50000]
+
+PATTERN 2: Feature Engineering
+
+    # Create interaction features
+    interaction = [x1 * x2 for x1, x2 in zip(features_1, features_2)]
+
+    # Polynomial features
+    poly_features = [[x**p for p in range(1, 4)] for x in values]
+
+PATTERN 3: Data Validation
+
+    # Check for missing values
+    missing = {col: df[col].isnull().sum() for col in df.columns}
+    problematic = {col: count for col, count in missing.items() if count > 0}
+
+PATTERN 4: Results Aggregation
+
+    # Collect results from cross-validation
+    scores = []
+    for fold in range(5):
+        score = train_and_evaluate(fold)
+        scores.append(score)
+
+    mean_score = sum(scores) / len(scores)
+
+================================================================================
+10. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Using comprehension when a loop is clearer
+    # BAD: Hard to read
+    result = [model.fit(X_train, y_train) for model in models]
+
+    # GOOD: Use a loop for side effects
+    for model in models:
+        model.fit(X_train, y_train)
+
+    RULE: Use comprehensions to CREATE lists.
+          Use loops for SIDE EFFECTS (training, printing, saving).
+
+MISTAKE 2: Modifying list while iterating
+    lst = [1, 2, 3, 4, 5]
+    for x in lst:
+        if x > 3:
+            lst.remove(x)    # BUG!
+
+    # CORRECT
+    lst = [x for x in lst if x <= 3]
+
+MISTAKE 3: Not using enumerate when you need index
+    # BAD
+    for i in range(len(models)):
+        print(models[i])
+
+    # GOOD
+    for i, model in enumerate(models):
+        print(model)
+
+MISTAKE 4: Creating unnecessary intermediate lists
+    # BAD: Creates list in memory
+    total = sum([x**2 for x in range(1000000)])
+
+    # GOOD: Generator (no intermediate list)
+    total = sum(x**2 for x in range(1000000))
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the output of [x**2 for x in range(5) if x % 2 == 0]?
+2. What is the difference between a list comprehension and a generator?
+3. When should you use a for loop instead of a comprehension?
+4. What does enumerate() do?
+5. What does zip() do?
+
+ANSWERS:
+1. [0, 4, 16]
+2. List comprehension creates a full list in memory; generator yields one item at a time
+3. When you have side effects (training, printing, saving) or complex logic
+4. Returns (index, value) pairs for iterating with index
+5. Takes multiple iterables and returns tuples of corresponding elements
+
+================================================================================
+NEXT LESSON: 03_functions.txt — Functions, Args, Lambdas, Decorators
+================================================================================

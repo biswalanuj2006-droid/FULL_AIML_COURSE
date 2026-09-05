@@ -1,0 +1,187 @@
+================================================================================
+MODULE 04: DATA VISUALIZATION - LESSON 4: PLOTLY
+Interactive charts, dashboards, hover, and sharing analysis
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able to:
+- Build interactive line, scatter, bar, and histogram charts
+- Use hover data and rangesliders to explore datasets
+- Create subplots and animated/3D views where they add value
+- Understand Plotly Express vs graph_objects and when to use each
+- Export interactive figures (HTML) and static images (PNG)
+
+================================================================================
+1. PLOTLY EXPRESS vs GRAPH_OBJECTS
+================================================================================
+
+Two APIs for the same engine:
+
+  plotly.express (px)     - high level, one-liner charts from DataFrames
+                            px.scatter(df, x=..., y=..., color=..., size=...)
+  plotly.graph_objects    - low level, full control, reusable layout
+                            go.Figure(data=[go.Scatter(x=..., y=...)])
+
+RULE: start with px for exploration; drop to go for fine control or
+complex layouts.
+
+  import plotly.express as px
+  import plotly.graph_objects as go
+
+The result of either is a go.Figure object with .show(), .write_html(),
+.write_image().
+
+================================================================================
+2. FIRST INTERACTIVE CHART
+================================================================================
+
+  fig = px.line(df, x="date", y="sales", color="region",
+                title="Sales by region over time")
+  fig.show()
+
+  # one line
+  fig = px.line(df, x="date", y="sales")
+
+Hover is automatic: move the mouse and read exact values. That one feature
+alone makes Plotly superior for exploration over static matplotlib.
+
+Save/share:
+  fig.write_html("sales.html")        # self-contained interactive file
+  fig.write_image("sales.png")        # static image (needs kaleido)
+
+================================================================================
+3. THE WORKHORSE CHARTS FOR AI/ML WORK
+================================================================================
+
+Scatter (with color = 3rd dimension):
+  fig = px.scatter(df, x="feature_a", y="feature_b", color="target",
+                   hover_data=["id"], title="Decision boundary intuition")
+
+Histogram with grouping:
+  fig = px.histogram(df, x="age", color="churned", nbins=30,
+                     barmode="overlay", opacity=0.6)
+
+Box/violin:
+  fig = px.box(df, x="model", y="accuracy", color="model")
+  fig = px.violin(df, x="model", y="latency_ms", box=True)
+
+Bar with error bars:
+  fig = px.bar(results, x="model", y="f1", error_y="f1_std",
+               color="model")
+
+Line with rangeslider (time series!):
+  fig = px.line(ts, x="time", y="value")
+  fig.update_xaxes(rangeslider_visible=True)
+
+Correlation heatmap:
+  fig = px.imshow(corr, text_auto=True, color_continuous_scale="RdBu_r",
+                  zmin=-1, zmax=1, title="Feature correlations")
+
+================================================================================
+4. UPDATING LAYOUTS (one source of truth)
+================================================================================
+
+Instead of restyling per trace, style once:
+
+  fig.update_layout(
+      title="..." ,
+      xaxis_title="...",
+      yaxis_title="...",
+      template="plotly_white",      # clean, modern
+      legend_title="Model",
+      width=900, height=500,
+  )
+
+  fig.update_xaxes(tickangle=45)
+  fig.update_yaxes(range=[0, 1])    # pin probability axes
+
+Templates: "plotly_white", "plotly_dark", "seaborn", "ggplot2".
+Use one template consistently per project.
+
+================================================================================
+5. SUBPLOTS AND SHARED AXES
+================================================================================
+
+  from plotly.subplots import make_subplots
+
+  fig = make_subplots(rows=1, cols=2,
+                      subplot_titles=("Train loss", "Val loss"),
+                      shared_yaxes=True)
+  fig.add_trace(go.Scatter(x=ep, y=train_loss, name="train"), row=1, col=1)
+  fig.add_trace(go.Scatter(x=ep, y=val_loss, name="val"), row=1, col=2)
+  fig.update_layout(height=400, showlegend=False)
+
+NOTE: for many-panel static comparisons, matplotlib subplots are often
+easier to make publication-clean. Choose Plotly when interactivity or
+dashboarding is the goal.
+
+================================================================================
+6. DASHBOARDS: the dash pattern (minimal)
+================================================================================
+
+Plotly powers Dash, a Python dashboard framework:
+
+  from dash import Dash, dcc, html
+  app = Dash()
+  app.layout = html.Div([
+      dcc.Graph(figure=fig),
+      dcc.Dropdown(options=[{"label": c, "value": c} for c in cols],
+                   value=cols[0], id="col-drop"),
+  ])
+  if __name__ == "__main__":
+      app.run(debug=True)
+
+Callbacks (interactive update):
+  from dash import Input, Output
+  @app.callback(Output("graph", "figure"), Input("col-drop", "value"))
+  def update_hist(col):
+      return px.histogram(df, x=col)
+
+Rough decision: static report -> matplotlib; exploratory/interactive ->
+Plotly; product dashboard -> Dash (or Streamlit - Module on rapid apps).
+
+================================================================================
+7. 3D AND ANIMATIONS: ONLY WHERE THEY ADD VALUE
+================================================================================
+
+  fig = px.scatter_3d(pca_df, x="pc1", y="pc2", z="pc3", color="label")
+
+Animation (e.g., K-Means iterations, training progress):
+  fig = px.scatter(frames_df, x="x", y="y", color="cluster",
+                   animation_frame="iteration")
+
+RULE: 3D charts are usually harder to read than 2D projections (PCA pairs
+plots). Use them for demos/presentations, not for analysis conclusions.
+
+================================================================================
+8. COMMON MISTAKES
+================================================================================
+
+1. Calling fig.show() inside a loop -> opens hundreds of windows.
+   Build one figure and add traces in the loop.
+2. Forgetting write_html for sharing: teammates without Python cannot open
+   .py-generated charts; HTML works anywhere.
+3. Missing kaleido for write_image (pip install kaleido) - static export
+   fails otherwise.
+4. Huge DataFrames -> every point a hover object: slow. Downsample for
+   exploration or use px.scatter(..., opacity=0.1) with sample.
+5. Mixing px and go styles with inconsistent templates.
+6. Notebooks: interactive figures need the right renderer.
+   fig.show(renderer="notebook") or set renderers in one config cell.
+
+================================================================================
+9. MINI CHALLENGE (do this now, code it)
+================================================================================
+
+Load any dataset with 3+ numeric columns and a target column:
+  1. Interactive scatter of the two most important features colored by
+     target (from a quick random-forest importance run or correlation).
+  2. Correlation heatmap with text_auto.
+  3. Time-series style: pick a numeric column, line chart with
+     rangeslider_visible=True.
+  4. Save all three as one HTML report file and open it in a browser.
+
+================================================================================
+END OF LESSON 4 - continue to 05_ml_visualizations.txt
+================================================================================

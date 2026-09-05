@@ -1,0 +1,193 @@
+================================================================================
+MODULE 04: DATA VISUALIZATION - LESSON 2: MATPLOTLIB ADVANCED
+Subplots, customization, annotations, styles, and publication-quality figures
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able to:
+- Build multi-panel figures with plt.subplots()
+- Fine-tune ticks, limits, spines, colors, and text
+- Annotate charts (arrows, text, spans) for ML explanations
+- Use styles and rcParams for consistent, professional output
+- Save figures at the right resolution/format for reports
+
+================================================================================
+1. THE FIGURE-AXES MENTAL MODEL
+================================================================================
+
+Matplotlib has two layers:
+
+  Figure  - the whole canvas/window (can hold many axes)
+  Axes    - one plot area with its own ticks, labels, lines
+
+Think: figure = page, axes = panels on the page.
+
+  fig, ax = plt.subplots()          # 1 axes
+  fig, axes = plt.subplots(2, 3)    # 2 rows x 3 cols, axes is 2D array
+
+Use the OBJECT-ORIENTED style (ax.plot(...)) rather than plt.plot(...) once
+you make anything with more than one panel. It keeps everything explicit.
+
+RULE: almost every plt.X function has an ax.X twin.
+  plt.title(...)      ->  ax.set_title(...)
+  plt.xlabel(...)     ->  ax.set_xlabel(...)
+  plt.legend(...)     ->  ax.legend(...)
+  plt.xticks(...)     ->  ax.set_xticks(...)
+Prefer the ax.* versions.
+
+================================================================================
+2. SUBPLOTS: SHARING AND LAYOUT
+================================================================================
+
+Shared axes (critical for fair comparisons!):
+
+  fig, axes = plt.subplots(1, 2, sharey=True, figsize=(10, 4))
+  axes[0].hist(data_a, bins=30)
+  axes[1].hist(data_b, bins=30)
+
+  sharex/sharey align the axis ranges so readers can compare directly.
+  Without shared axes, two identical-shaped distributions can look wildly
+  different.
+
+Layout control:
+  fig.tight_layout()                 # auto-fit spacing (call before save)
+  fig.subplots_adjust(wspace=0.3, hspace=0.4)
+
+Freeing axes: when you create a grid but don't fill every cell,
+  fig.delaxes(axes[2, 1])            # remove an unused subplot
+
+================================================================================
+3. TICKS, LIMITS, SPINES
+================================================================================
+
+  ax.set_xlim(0, 100)
+  ax.set_ylim(-1, 1)
+
+  ax.set_xticks([0, 25, 50, 75, 100])
+  ax.set_xticklabels(["0%", "25%", ...], rotation=45)
+
+  ax.tick_params(axis="x", rotation=45, labelsize=9)
+
+Removing chartjunk:
+  ax.spines["top"].set_visible(False)
+  ax.spines["right"].set_visible(False)
+  ax.grid(alpha=0.3, linestyle="--")
+
+Log scales (long-tailed features, loss curves):
+  ax.set_yscale("log")
+
+================================================================================
+4. ANNOTATIONS (WHERE ML EXPLANATIONS LIVE)
+================================================================================
+
+Arrows and text make plots self-explanatory:
+
+  ax.annotate("decision boundary", xy=(x_point, y_point),
+              xytext=(x_text, y_text),
+              arrowprops=dict(arrowstyle="->", color="red"))
+
+Highlighting regions:
+  ax.axvline(x=0.5, color="k", linestyle="--", alpha=0.5)   # vertical line
+  ax.axhline(y=0.0, color="k", linestyle="--", alpha=0.5)
+  ax.axvspan(xmin, xmax, alpha=0.15, color="red")           # shaded band
+  ax.axhspan(ymin, ymax, alpha=0.15, color="blue")
+
+Text boxes:
+  ax.text(0.95, 0.05, "n=1200, AUC=0.91", transform=ax.transAxes,
+          ha="right", va="bottom", fontsize=9,
+          bbox=dict(boxstyle="round", facecolor="white", alpha=0.9))
+
+NOTE: transform=ax.transAxes positions relative to the AXES (0-1), not the
+data coordinates — perfect for watermark-style notes.
+
+Example: highlight the point where a model crosses chance on a learning
+curve, annotate the "elbow" of an elbow plot, draw arrows on a confusion
+matrix heatmap's largest error cell.
+
+================================================================================
+5. STYLES AND RC PARAMS (CONSISTENCY)
+================================================================================
+
+  print(plt.style.available)        # see built-in styles
+  plt.style.use("ggplot")           # or "seaborn-v0_8-whitegrid", "default"
+
+Style at figure level (safer than global):
+  with plt.style.context("ggplot"):
+      fig, ax = plt.subplots()
+
+Global defaults via rcParams (do this in a config cell/script once):
+  plt.rcParams.update({
+      "figure.dpi": 120,
+      "font.size": 10,
+      "axes.grid": True,
+      "grid.alpha": 0.3,
+      "axes.spines.top": False,
+      "axes.spines.right": False,
+  })
+
+Palette consistency: reuse the same colors across all figures of a report.
+  colors = ["#1f77b4", "#ff7f0e", "#2ca02c"]
+  ax.plot(x, y, color=colors[0])
+
+================================================================================
+6. SAVING FIGURES FOR REPORTS
+================================================================================
+
+  fig.savefig("figure.png", dpi=150, bbox_inches="tight")
+  fig.savefig("figure.pdf")                 # vector - for papers
+  fig.savefig("figure.jpg", dpi=200, quality=95)   # raster - for web
+
+  bbox_inches="tight" removes excess whitespace - ALWAYS use it.
+  dpi>=150 for anything printed or shared.
+
+ALWAYS call plt.close(fig) after saving in loops/scripts, or you will
+accumulate invisible figures and leak memory (and warning spam).
+
+PNG vs JPG: PNG for plots with text/lines (lossless); JPG for photographic
+content only. Do not save line charts as JPG.
+
+================================================================================
+7. TITLES, LABELS, LEGENDS: THE MINIMUM FOR HONEST CHARTS
+================================================================================
+
+A chart is only honest if a stranger can read it:
+  ax.set_title("Validation accuracy vs epochs\n(model: ResNet18, lr=1e-3)")
+  ax.set_xlabel("Epoch")
+  ax.set_ylabel("Accuracy")
+  ax.legend(loc="best", frameon=False)
+
+Axes labels ALWAYS include units when meaningful:
+  "Latency (ms)", "Revenue ($M)", "F1 score".
+
+================================================================================
+8. COMMON MISTAKES
+================================================================================
+
+1. Mixing pyplot and OO styles in one script -> confusing state bugs.
+   Fix: pick one (OO) and stay consistent.
+2. Saving before tight_layout/bbox_inches -> clipped labels.
+3. Using plt.show() in scripts meant to save -> empty files, blocked runs.
+   Use fig.savefig(...) and plt.close(fig) instead; plt.show() only in
+   interactive notebooks.
+4. Different axis ranges across panels -> misleading comparison.
+   Use sharex/sharey or explicit set_xlim.
+5. Default font sizes too small for slide/report reproduction.
+   Set rcParams font.size = 10-12.
+6. Overplotting without alpha -> invisible data density.
+   scatter(x, y, s=5, alpha=0.4).
+
+================================================================================
+9. MINI CHALLENGE (do this now, code it)
+================================================================================
+
+Build a 2x2 figure titled "Model comparison - binary classifier" with:
+  - top-left: ROC curves of 3 models, annotate AUC of each
+  - top-right: PR curves, shaded area under best model
+  - bottom-left: confusion matrix heatmap of best model
+  - bottom-right: feature importance bar chart (sorted, colored)
+Share the x-range where appropriate, save as roc_report.png at dpi=150.
+
+================================================================================
+END OF LESSON 2 - continue to 03_seaborn.txt
+================================================================================

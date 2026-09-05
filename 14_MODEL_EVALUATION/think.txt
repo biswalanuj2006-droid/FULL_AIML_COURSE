@@ -1,0 +1,46 @@
+================================================================================
+THINK.TXT - 14 MODEL EVALUATION
+================================================================================
+
+1. You tuned hyperparameters on the validation set 200 times. Explain why
+   the validation score is now optimistic and why the test set is your
+   only honest number - and what you do when you only have one dataset.
+2. Accuracy, precision, recall, F1, ROC-AUC, PR-AUC: for a fraud model
+   where positives cost $50 and negatives cost $1, derive which metric
+   matches the economics and why.
+3. ROC-AUC is 0.95, PR-AUC is 0.3, on the same model. Reconcile these.
+   Which do you report to the business and why?
+4. K-fold CV assumes exchangeable rows. Give three datasets where this
+   fails (groups, time, duplicates) and the correct CV variant for each.
+5. Nested CV: outer loop estimates performance, inner loop tunes.
+   Explain the bias in "tune then measure on the same fold" and why
+   nested CV fixes it, including its cost.
+6. Class imbalance and F1: is F1 macro or weighted more honest for a
+   99:1 problem? What does each answer and who is asking?
+7. Your model's ROC curve is a perfect step: AUC 1.0. Is the model
+   perfect? What could produce this artifact and how do you check?
+8. Calibration: the model says 0.8 for 100 predictions and 82 are
+   positive. Is it calibrated? How do you measure calibration beyond
+   this (ECE, reliability diagram)?
+9. Statistical comparison: Model A beats Model B by 0.01 ROC-AUC on one
+   test set. Run the argument for why you should not deploy A, including
+   the test of significance you would use and its assumptions.
+10. Learning curves: train error and val error converge high. What do you
+    do? Both low with a gap? Only train error low? Map each pattern to
+    its remedy.
+11. Regression: RMSE is dominated by a handful of huge errors; MAE hides
+    them. Give the business scenario for each being the "correct" choice
+    and a third metric that balances both.
+12. You evaluate on the same test set every week for a year while
+    retraining monthly. Explain test-set overfitting over time and how
+    rolling/refreshed test sets fix it.
+13. Cost-sensitive evaluation: define expected cost of a classifier given
+    a confusion matrix and costs c_FP, c_FN, c_TP, c_TN. Derive the
+    optimal operating point on the ROC curve.
+14. OPEN PROBLEM: point estimates hide uncertainty. Design an evaluation
+    report that reports a model's performance with honest uncertainty
+    (intervals, repeated splits) and discuss what remains unsolved in
+    comparing such intervals.
+================================================================================
+END
+================================================================================

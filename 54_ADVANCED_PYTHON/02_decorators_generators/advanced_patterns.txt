@@ -1,0 +1,202 @@
+================================================================================
+ADVANCED PYTHON: DECORATORS, GENERATORS & PATTERNS
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Write custom decorators with arguments
+- Use generators and iterators for memory efficiency
+- Apply context managers and closures
+- Write professional Python code
+
+================================================================================
+1. DECORATORS DEEP DIVE
+================================================================================
+
+BASIC DECORATOR
+---------------
+import functools
+import time
+
+def timer(func):
+    @functools.wraps(func)  # preserves function metadata
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        print(f"{func.__name__} took {time.time()-start:.4f}s")
+        return result
+    return wrapper
+
+@timer
+def slow_function():
+    time.sleep(1)
+
+DECORATOR WITH ARGUMENTS
+--------------------------
+def retry(max_attempts=3, delay=1):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_attempts):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if attempt == max_attempts - 1:
+                        raise
+                    print(f"Attempt {attempt+1} failed: {e}")
+                    time.sleep(delay)
+        return wrapper
+    return decorator
+
+@retry(max_attempts=5, delay=2)
+def fetch_data(url):
+    # may fail sometimes
+    pass
+
+CLASS-BASED DECORATOR
+----------------------
+class CountCalls:
+    def __init__(self, func):
+        functools.update_wrapper(self, func)
+        self.func = func
+        self.count = 0
+
+    def __call__(self, *args, **kwargs):
+        self.count += 1
+        print(f"Call {self.count} to {self.func.__name__}")
+        return self.func(*args, **kwargs)
+
+@CountCalls
+def say_hello():
+    print("Hello!")
+
+================================================================================
+2. GENERATORS
+================================================================================
+
+INTUITION
+---------
+Generators produce values one at a time using yield.
+They don't store all values in memory — perfect for large datasets.
+
+FIBONACCI GENERATOR
+---------------------
+def fibonacci():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+# Use
+fib = fibonacci()
+for _ in range(10):
+    print(next(fib))  # 0, 1, 1, 2, 3, 5, 8, 13, 21, 34
+
+READING LARGE FILES
+--------------------
+def read_large_file(path):
+    with open(path, 'r') as f:
+        for line in f:
+            yield line.strip()
+
+# Memory efficient: only one line in memory at a time
+for line in read_large_file('huge_file.txt'):
+    process(line)
+
+GENERATOR EXPRESSIONS
+----------------------
+squares = (x**2 for x in range(1000000))  # O(1) memory
+total = sum(squares)  # processes one at a time
+
+vs list comprehension:
+squares = [x**2 for x in range(1000000)]  # O(n) memory
+
+================================================================================
+3. ITERATORS
+================================================================================
+
+class Countdown:
+    def __init__(self, start):
+        self.start = start
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.start <= 0:
+            raise StopIteration
+        self.start -= 1
+        return self.start + 1
+
+for num in Countdown(5):
+    print(num)  # 5, 4, 3, 2, 1
+
+================================================================================
+4. CONTEXT MANAGERS
+================================================================================
+
+BUILT-IN
+--------
+with open('file.txt', 'r') as f:
+    content = f.read()
+# File automatically closed even if exception occurs
+
+CUSTOM CONTEXT MANAGER
+-----------------------
+from contextlib import contextmanager
+
+@contextmanager
+def timer_context(label):
+    start = time.time()
+    yield  # code inside 'with' block runs here
+    elapsed = time.time() - start
+    print(f"{label}: {elapsed:.4f}s")
+
+with timer_context("Training"):
+    train_model()
+
+USING CLASS
+------------
+class DatabaseConnection:
+    def __enter__(self):
+        self.conn = create_connection()
+        return self.conn
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.conn.close()
+        return False  # don't suppress exceptions
+
+================================================================================
+5. CLOSURES
+================================================================================
+
+def make_multiplier(factor):
+    def multiplier(x):
+        return x * factor  # 'factor' is captured from outer scope
+    return multiplier
+
+double = make_multiplier(2)
+triple = make_multiplier(3)
+print(double(5))  # 10
+print(triple(5))  # 15
+
+WHY USE CLOSURES:
+- Factory functions
+- Callbacks with state
+- Decorators
+- Functional programming patterns
+
+================================================================================
+6. COMMON MISTAKES
+================================================================================
+
+1. Not using @functools.wraps in decorators (loses function name/docs)
+2. Using generators when list is fine (readability vs performance)
+3. Not using context managers for resource cleanup
+4. Over-engineering with metaclasses when simple classes work
+5. Not using dataclasses for data containers
+
+================================================================================
+END OF MODULE
+================================================================================

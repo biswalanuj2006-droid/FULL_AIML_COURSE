@@ -1,0 +1,113 @@
+================================================================================
+DSA MODULE 10: SORTING — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Implement all major sorting algorithms
+- Analyze time/space complexity of each
+- Choose the right sorting algorithm
+- Solve sorting-based LeetCode problems
+
+================================================================================
+1. SORTING ALGORITHMS COMPARISON
+================================================================================
+
+| ALGORITHM      | BEST    | AVERAGE   | WORST    | SPACE  | STABLE |
+|----------------|---------|-----------|----------|--------|--------|
+| Bubble Sort    | O(n)    | O(n²)     | O(n²)    | O(1)   | Yes    |
+| Selection Sort | O(n²)   | O(n²)     | O(n²)    | O(1)   | No     |
+| Insertion Sort | O(n)    | O(n²)     | O(n²)    | O(1)   | Yes    |
+| Merge Sort     | O(nlogn)| O(nlogn)  | O(nlogn) | O(n)   | Yes    |
+| Quick Sort     | O(nlogn)| O(nlogn)  | O(n²)    | O(logn)| No     |
+| Heap Sort      | O(nlogn)| O(nlogn)  | O(nlogn) | O(1)   | No     |
+| Counting Sort  | O(n+k)  | O(n+k)    | O(n+k)   | O(k)   | Yes    |
+| Radix Sort     | O(nk)   | O(nk)     | O(nk)    | O(n+k) | Yes    |
+
+================================================================================
+2. KEY ALGORITHMS
+================================================================================
+
+MERGE SORT
+-----------
+def merge_sort(arr):
+    if len(arr) <= 1: return arr
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    return merge(left, right)
+
+def merge(left, right):
+    result = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i]); i += 1
+        else:
+            result.append(right[j]); j += 1
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+QUICK SORT
+-----------
+def quick_sort(arr):
+    if len(arr) <= 1: return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quick_sort(left) + middle + quick_sort(right)
+
+IN-PLACE QUICK SORT
+---------------------
+def quick_sort_inplace(arr, lo, hi):
+    if lo < hi:
+        p = partition(arr, lo, hi)
+        quick_sort_inplace(arr, lo, p - 1)
+        quick_sort_inplace(arr, p + 1, hi)
+
+def partition(arr, lo, hi):
+    pivot = arr[hi]
+    i = lo
+    for j in range(lo, hi):
+        if arr[j] < pivot:
+            arr[i], arr[j] = arr[j], arr[i]
+            i += 1
+    arr[i], arr[hi] = arr[hi], arr[i]
+    return i
+
+HEAP SORT
+----------
+def heap_sort(arr):
+    import heapq
+    heapq.heapify(arr)
+    return [heapq.heappop(arr) for _ in range(len(arr))]
+
+================================================================================
+3. LEETCODE SORTING PROBLEMS
+================================================================================
+
+EASY
+----
+1. Sort Colors (LC #75)
+2. Merge Sorted Array (LC #88)
+3. Relative Sort Array (LC #1122)
+
+MEDIUM
+------
+4. Sort an Array (LC #912)
+5. Sort Characters By Frequency (LC #451)
+6. Minimum Number of Arrows (LC #452)
+7. Meeting Rooms II (LC #253)
+
+HARD
+----
+8. Count of Smaller Numbers After Self (LC #315)
+9. Merge k Sorted Lists (LC #23)
+10. Find Median from Data Stream (LC #295)
+
+================================================================================
+END OF MODULE 10
+================================================================================

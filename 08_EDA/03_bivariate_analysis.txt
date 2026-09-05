@@ -1,0 +1,220 @@
+================================================================================
+MODULE 08: EDA — LESSON 3: BIVARIATE ANALYSIS
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able to:
+- Analyze relationships between two variables
+- Compute and interpret correlations
+- Create appropriate bivariate visualizations
+- Identify feature-target relationships for ML
+
+================================================================================
+1. WHY BIVARIATE ANALYSIS?
+================================================================================
+
+INTUITION
+---------
+Univariate analysis tells you about individual features.
+Bivariate analysis tells you how TWO features relate to each other.
+
+This is critical for ML because:
+- Features correlated with the target → useful for prediction
+- Features correlated with each other → potential redundancy
+
+================================================================================
+2. NUMERICAL vs NUMERICAL
+================================================================================
+
+2.1 CORRELATION COEFFICIENTS
+-----------------------------
+import pandas as pd
+import numpy as np
+
+# Pearson (linear relationships)
+pearson_corr = df['age'].corr(df['income'])
+
+# Spearman (monotonic, rank-based)
+spearman_corr = df['age'].corr(df['income'], method='spearman')
+
+# Kendall (ordinal, small datasets)
+kendall_corr = df['age'].corr(df['income'], method='kendall')
+
+INTERPRETING CORRELATION
+------------------------
+|corr| > 0.7  → strong
+|corr| 0.3-0.7 → moderate
+|corr| < 0.3  → weak
+
++1 → perfect positive linear relationship
+ 0 → no linear relationship
+-1 → perfect negative linear relationship
+
+IMPORTANT: Correlation ≠ Causation!
+
+2.2 SCATTER PLOT
+----------------
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=df, x='age', y='income', alpha=0.5)
+plt.title('Age vs Income')
+plt.xlabel('Age')
+plt.ylabel('Income')
+plt.show()
+
+2.3 SCATTER WITH REGRESSION LINE
+---------------------------------
+plt.figure(figsize=(10, 6))
+sns.regplot(data=df, x='age', y='income', line_kws={'color': 'red'})
+plt.title('Age vs Income with Regression Line')
+plt.show()
+
+2.4 HEATMAP OF CORRELATIONS
+----------------------------
+correlation_matrix = df.select_dtypes(include=[np.number]).corr()
+
+plt.figure(figsize=(12, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm',
+            center=0, fmt='.2f', square=True)
+plt.title('Correlation Matrix')
+plt.show()
+
+================================================================================
+3. CATEGORICAL vs NUMERICAL
+================================================================================
+
+3.1 GROUP STATISTICS
+--------------------
+# Mean numerical value by category
+print(df.groupby('department')['salary'].mean())
+
+# Multiple statistics
+print(df.groupby('department')['salary'].agg(['mean', 'median', 'std']))
+
+3.2 BOX PLOTS BY CATEGORY
+--------------------------
+plt.figure(figsize=(10, 6))
+sns.boxplot(data=df, x='department', y='salary')
+plt.title('Salary by Department')
+plt.xticks(rotation=45)
+plt.show()
+
+3.3 VIOLIN PLOTS BY CATEGORY
+-----------------------------
+plt.figure(figsize=(10, 6))
+sns.violinplot(data=df, x='department', y='salary')
+plt.title('Salary Distribution by Department')
+plt.show()
+
+3.4 STATISTICAL TESTS
+----------------------
+from scipy import stats
+
+# ANOVA (compare means across >2 groups)
+groups = [group['salary'].values for name, group in df.groupby('department')]
+f_stat, p_value = stats.f_oneway(*groups)
+print(f"ANOVA: F={f_stat:.2f}, p={p_value:.4f}")
+# p < 0.05 → significant difference between groups
+
+# t-test (compare means across 2 groups)
+group1 = df[df['department'] == 'Engineering']['salary']
+group2 = df[df['department'] == 'Sales']['salary']
+t_stat, p_value = stats.ttest_ind(group1, group2)
+print(f"t-test: t={t_stat:.2f}, p={p_value:.4f}")
+
+================================================================================
+4. CATEGORICAL vs CATEGORICAL
+================================================================================
+
+4.1 CROSS-TABULATION
+--------------------
+ct = pd.crosstab(df['gender'], df['department'])
+print(ct)
+
+# With proportions
+ct_pct = pd.crosstab(df['gender'], df['department'], normalize='index')
+print(ct_pct)
+
+4.2 CHI-SQUARED TEST
+--------------------
+from scipy.stats import chi2_contingency
+
+chi2, p_value, dof, expected = chi2_contingency(ct)
+print(f"Chi-squared: {chi2:.2f}, p={p_value:.4f}")
+# p < 0.05 → variables are dependent (not independent)
+
+4.3 STACKED BAR CHART
+----------------------
+ct_pct.plot(kind='bar', stacked=True, figsize=(10, 6))
+plt.title('Department Distribution by Gender')
+plt.ylabel('Proportion')
+plt.show()
+
+================================================================================
+5. FEATURE-TARGET RELATIONSHIPS (ML-FOCUSED)
+================================================================================
+
+FOR CLASSIFICATION TARGETS
+---------------------------
+# Numerical feature vs binary target
+for col in numerical_features:
+    plt.figure(figsize=(8, 4))
+    sns.boxplot(data=df, x=target, y=col)
+    plt.title(f'{col} by {target}')
+    plt.show()
+
+# Categorical feature vs target
+for col in categorical_features:
+    ct = pd.crosstab(df[col], df[target], normalize='index')
+    ct.plot(kind='bar', stacked=True, figsize=(10, 5))
+    plt.title(f'{target} Rate by {col}')
+    plt.show()
+
+FOR REGRESSION TARGETS
+-----------------------
+for col in numerical_features:
+    plt.figure(figsize=(8, 4))
+    sns.scatterplot(data=df, x=col, y=target, alpha=0.3)
+    plt.title(f'{col} vs {target}')
+    plt.show()
+
+# Correlation with target
+target_corr = df.select_dtypes(include=[np.number]).corr()[target].sort_values()
+print(target_corr)
+
+================================================================================
+6. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Assuming correlation means causation
+  WRONG: "Ice cream sales cause drowning deaths" (both caused by summer)
+  RIGHT: Correlation identifies patterns, not causes
+
+MISTAKE 2: Ignoring non-linear relationships
+  WRONG: Only checking Pearson correlation (linear only)
+  RIGHT: Also check Spearman, scatter plots for non-linear patterns
+
+MISTAKE 3: Not checking for multicollinearity
+  WRONG: Keeping highly correlated features
+  RIGHT: Remove one of two features with |corr| > 0.9
+
+MISTAKE 4: Using correlation for categorical data
+  WRONG: df['color'].corr(df['size'])
+  RIGHT: Use chi-squared test for categorical vs categorical
+
+================================================================================
+7. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between Pearson and Spearman correlation?
+Q2: When would you use a chi-squared test instead of correlation?
+Q3: Why is multicollinearity a problem for linear models?
+Q4: How do you identify which features are most useful for a classification task?
+Q5: What does a scatter plot with no clear pattern tell you?
+
+================================================================================
+END OF LESSON 3
+================================================================================

@@ -1,0 +1,29 @@
+================================================================================
+AUTHENTICATION — PRACTICE SET (15 Questions)
+================================================================================
+
+EASY (6)
+=========
+Q1: What is authentication vs authorization?
+Q2: What is JWT?
+Q3: What is password hashing?
+Q4: What is API key authentication?
+Q5: What is OAuth?
+Q6: What is RBAC?
+
+MEDIUM (6)
+===========
+Q7: Implement JWT authentication in FastAPI.
+Q8: Build user registration with password hashing.
+Q9: Implement role-based access control.
+Q10: Build API key management system.
+Q11: Implement token refresh mechanism.
+Q12: Build secure password reset flow.
+
+HARD (3)
+=========
+Q13: Build multi-tenant auth system.
+Q14: Implement OAuth2 flow.
+Q15: Build auth with rate limiting and lockout.
+
+================================================================================

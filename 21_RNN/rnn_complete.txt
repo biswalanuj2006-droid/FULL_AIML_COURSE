@@ -1,0 +1,172 @@
+================================================================================
+MODULE 21: RECURRENT NEURAL NETWORKS (RNN) — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand sequential data and why RNNs are needed
+- Explain RNN forward propagation and backpropagation through time
+- Identify the vanishing/exploding gradient problem
+- Implement basic RNNs
+- Know when to use RNNs vs other approaches
+
+================================================================================
+1. WHY RNNs?
+================================================================================
+
+PROBLEM: SEQUENTIAL DATA
+-------------------------
+Regular neural networks assume inputs are independent.
+But in sequences, ORDER MATTERS:
+- "The cat sat on the mat" ≠ "The mat sat on the cat"
+- Today's stock price depends on yesterday's
+- Next word in a sentence depends on previous words
+
+RNN SOLUTION
+------------
+RNNs have a "memory" — they maintain a hidden state that captures
+information from previous time steps.
+
+================================================================================
+2. RNN ARCHITECTURE
+================================================================================
+
+BASIC RNN CELL
+--------------
+At each time step t:
+  h_t = f(W_hh × h_{t-1} + W_xh × x_t + b)
+
+where:
+  h_t = hidden state at time t (the "memory")
+  x_t = input at time t
+  W_hh = hidden-to-hidden weights
+  W_xh = input-to-hidden weights
+  b = bias
+  f = activation function (usually tanh)
+
+OUTPUT:
+  y_t = W_hy × h_t + b_y
+
+UNROLLING THROUGH TIME
+-----------------------
+Time step 1: h₁ = f(W_hh × h₀ + W_xh × x₁)
+Time step 2: h₂ = f(W_hh × h₁ + W_xh × x₂)
+Time step 3: h₃ = f(W_hh × h₂ + W_xh × x₃)
+...
+
+The SAME weights are shared across all time steps!
+This is what makes RNNs parameter-efficient.
+
+================================================================================
+3. RNN TYPES
+================================================================================
+
+ONE-TO-ONE: Regular neural network (no RNN needed)
+ONE-TO-MANY: Image captioning (one image → sequence of words)
+MANY-TO-ONE: Sentiment analysis (sequence of words → one label)
+MANY-TO-MANY (equal): Named entity recognition (same length input/output)
+MANY-TO-MANY (unequal): Machine translation (encoder-decoder)
+
+================================================================================
+4. BACKPROPAGATION THROUGH TIME (BPTT)
+================================================================================
+
+INTUITION
+---------
+To update weights, we need gradients. In RNNs, the loss at time T
+depends on ALL previous hidden states.
+
+The gradient flows backward through ALL time steps:
+∂L/∂W = Σₜ ∂L/∂yₜ × ∂yₜ/∂hₜ × ∂hₜ/∂hₜ₋₁ × ... × ∂h₁/∂W
+
+PROBLEM: VANISHING GRADIENT
+----------------------------
+When sequences are long, gradients multiply many small numbers
+(< 1) together → gradient approaches 0 → early time steps don't learn.
+
+This means RNNs struggle to learn long-range dependencies.
+
+PROBLEM: EXPLODING GRADIENT
+----------------------------
+When gradients multiply large numbers (> 1) → gradient explodes.
+Solution: gradient clipping.
+
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
+================================================================================
+5. PYTORCH IMPLEMENTATION
+================================================================================
+
+import torch
+import torch.nn as nn
+
+class SimpleRNN(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.rnn = nn.RNN(input_size, hidden_size, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        # x shape: (batch, seq_len, input_size)
+        h0 = torch.zeros(1, x.size(0), self.hidden_size)
+
+        out, _ = self.rnn(x, h0)  # out: (batch, seq_len, hidden_size)
+        out = self.fc(out[:, -1, :])  # take last time step
+        return out
+
+# Example: sequence classification
+model = SimpleRNN(input_size=10, hidden_size=64, output_size=2)
+x = torch.randn(32, 20, 10)  # batch=32, seq_len=20, features=10
+output = model(x)  # shape: (32, 2)
+
+================================================================================
+6. LIMITATIONS OF BASIC RNNs
+================================================================================
+
+1. VANISHING GRADIENT: Can't learn long-range dependencies
+2. SEQUENTIAL PROCESSING: Can't parallelize (slow training)
+3. SHORT-TERM MEMORY: Forgets information from early time steps
+
+EXAMPLE OF LONG-RANGE DEPENDENCY:
+"The cats, which were playing in the garden all afternoon, ______ tired."
+→ Need to remember "cats" (plural) to predict "were" and "got"
+
+Basic RNNs struggle with this because the dependency is far apart.
+
+SOLUTION: LSTM and GRU (next module)
+
+================================================================================
+7. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Not normalizing input sequences
+  RIGHT: Standardize or normalize input features
+
+MISTAKE 2: Not handling variable-length sequences
+  RIGHT: Use pack_padded_sequence for batch processing
+
+MISTAKE 3: Using basic RNN for long sequences
+  RIGHT: Use LSTM or GRU for sequences > 20 steps
+
+MISTAKE 4: Forgetting to detach hidden states
+  RIGHT: Use .detach() or .clone() when截断 BPTT
+
+MISTAKE 5: Not using GPU for RNN training
+  RIGHT: RNNs are sequential but still benefit from GPU
+
+================================================================================
+8. SKILLS CHECKPOINT
+================================================================================
+
+Q1: How does an RNN maintain memory across time steps?
+Q2: What is the vanishing gradient problem in RNNs?
+Q3: Why are RNN weights shared across time steps?
+Q4: What is the difference between many-to-one and one-to-many RNNs?
+Q5: How does gradient clipping help with exploding gradients?
+Q6: Why can't RNNs learn very long-range dependencies?
+
+================================================================================
+END OF MODULE 21: RNN
+================================================================================

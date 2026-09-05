@@ -1,0 +1,166 @@
+# TRIES — PRACTICE SET
+# 25 Questions + Coding + Debugging
+
+---
+
+## EASY (6 Questions)
+
+1. What is a trie?
+   Answer: A tree-like data structure for storing strings, where each node represents a character
+
+2. What is the time complexity of search in a trie?
+   Answer: O(m) where m is the length of the search string
+
+3. What is the advantage of a trie over a hash set?
+   Answer: Efficient prefix searching, ordered traversal, space sharing for common prefixes
+
+4. What is a prefix tree?
+   Answer: Same as trie — a tree where each path from root to node represents a prefix
+
+5. What is the space complexity of a trie?
+   Answer: O(ALPHABET_SIZE × N × M) worst case, but much less with shared prefixes
+
+6. What is the use of tries in autocomplete?
+   Answer: Given a prefix, traverse the trie to find all words with that prefix
+
+---
+
+## MEDIUM (10 Questions)
+
+7. Implement a basic trie.
+    ```python
+    class TrieNode:
+        def __init__(self):
+            self.children = {}
+            self.is_end = False
+    class Trie:
+        def __init__(self):
+            self.root = TrieNode()
+        def insert(self, word):
+            node = self.root
+            for c in word:
+                if c not in node.children:
+                    node.children[c] = TrieNode()
+                node = node.children[c]
+            node.is_end = True
+        def search(self, word):
+            node = self.root
+            for c in word:
+                if c not in node.children:
+                    return False
+                node = node.children[c]
+            return node.is_end
+        def starts_with(self, prefix):
+            node = self.root
+            for c in prefix:
+                if c not in node.children:
+                    return False
+                node = node.children[c]
+            return True
+    ```
+
+8. Implement autocomplete using trie.
+    ```python
+    def autocomplete(trie, prefix):
+        node = trie.root
+        for c in prefix:
+            if c not in node.children:
+                return []
+            node = node.children[c]
+        results = []
+        def dfs(node, current):
+            if node.is_end:
+                results.append(current)
+            for c, child in node.children.items():
+                dfs(child, current + c)
+        dfs(node, prefix)
+        return results
+    ```
+
+9. Word search II (Trie + DFS backtracking).
+
+10. Implement XOR trie for maximum XOR.
+
+11. Replace words using trie.
+
+12. Implement search suggestions system.
+
+13. Longest word in dictionary.
+
+14. Map sum pairs.
+
+15. Prefix and suffix search.
+
+16. Palindrome pairs using trie.
+
+---
+
+## HARD (5 Questions)
+
+17. Word search II using Trie + backtracking.
+18. Implement XOR trie for maximum XOR queries.
+19. Stream of characters (search if any previously streamed word is a suffix).
+20. Word break using trie.
+21. Concatenated words using trie.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Trie search doesn't check is_end
+class Trie:
+    def search(self, word):
+        node = self.root
+        for c in word:
+            if c not in node.children:
+                return False
+            node = node.children[c]
+        return True  # Bug: should be node.is_end
+    # "app" exists but "ap" shouldn't match if only "app" inserted
+
+# Debug 2: Trie insert doesn't handle empty string
+class Trie:
+    def insert(self, word):
+        node = self.root
+        for c in word:  # Empty string: loop doesn't execute
+            ...
+        node.is_end = True  # Correctly marks root as end for empty string
+    # But search("") should return True if "" was inserted
+
+# Debug 3: Autocomplete doesn't handle prefix not in trie
+def autocomplete(trie, prefix):
+    node = trie.root
+    for c in prefix:
+        node = node.children[c]  # Bug: KeyError if prefix not in trie
+    # Fix: if c not in node.children: return []
+
+# Debug 4: XOR trie — wrong bit order
+def insert(root, num):
+    node = root
+    for i in range(31, -1, -1):
+        bit = (num >> i) & 1
+        if bit not in node.children:
+            node.children[bit] = TrieNode()
+        node = node.children[bit]
+# Correct — processes bits from MSB to LSB
+
+# Debug 5: Trie memory — not cleaning up deleted nodes
+class Trie:
+    def delete(self, word):
+        def _delete(node, word, depth):
+            if depth == len(word):
+                node.is_end = False
+                return len(node.children) == 0
+            c = word[depth]
+            if c not in node.children:
+                return False
+            should_delete = _delete(node.children[c], word, depth + 1)
+            if should_delete:
+                del node.children[c]
+                return len(node.children) == 0 and not node.is_end
+            return False
+        _delete(self.root, word, 0)
+# Bug: doesn't handle case where word is prefix of another word
+# Fix: Check is_end before deleting
+```

@@ -1,0 +1,132 @@
+================================================================================
+DSA MODULE 12: HEAPS & PRIORITY QUEUES — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Implement min/max heaps
+- Use heap for top-K and streaming problems
+- Solve 10+ heap LeetCode problems
+
+================================================================================
+1. HEAP FUNDAMENTALS
+================================================================================
+
+A heap is a complete binary tree where:
+- MIN HEAP: parent ≤ children (smallest at root)
+- MAX HEAP: parent ≥ children (largest at root)
+
+Python has min-heap built-in via heapq.
+
+MIN HEAP OPERATIONS (all O(log n) except peek O(1))
+-----------------------------------------------------
+import heapq
+
+heap = []
+heapq.heappush(heap, 3)      # insert
+heapq.heappush(heap, 1)
+heapq.heappush(heap, 4)
+smallest = heapq.heappop(heap)  # remove min → 1
+peek = heap[0]                 # peek min → 3
+
+# Build heap from list: O(n)
+heap = [3, 1, 4, 1, 5]
+heapq.heapify(heap)
+
+# Max heap (negate values)
+max_heap = []
+heapq.heappush(max_heap, -val)
+max_val = -heapq.heappop(max_heap)
+
+================================================================================
+2. TOP-K PROBLEMS
+================================================================================
+
+KTH LARGEST ELEMENT (LC #215)
+-------------------------------
+def findKthLargest(nums, k):
+    import heapq
+    return heapq.nlargest(k, nums)[-1]
+
+# Or using heap of size k: O(n log k)
+def findKthLargest(nums, k):
+    import heapq
+    heap = nums[:k]
+    heapq.heapify(heap)
+    for num in nums[k:]:
+        if num > heap[0]:
+            heapq.heapreplace(heap, num)
+    return heap[0]
+
+TOP K FREQUENT ELEMENTS (LC #347)
+-----------------------------------
+def topKFrequent(nums, k):
+    from collections import Counter
+    import heapq
+
+    freq = Counter(nums)
+    return heapq.nlargest(k, freq.keys(), key=freq.get)
+
+K CLOSEST POINTS TO ORIGIN (LC #973)
+--------------------------------------
+def kClosest(points, k):
+    import heapq
+    return heapq.nsmallest(k, points, key=lambda p: p[0]**2 + p[1]**2)
+
+================================================================================
+3. STREAMING / MAINTAINING ORDER
+================================================================================
+
+FIND MEDIAN FROM DATA STREAM (LC #295)
+----------------------------------------
+import heapq
+
+class MedianFinder:
+    def __init__(self):
+        self.lo = []   # max heap (negated)
+        self.hi = []   # min heap
+
+    def addNum(self, num):
+        heapq.heappush(self.lo, -num)
+        heapq.heappush(self.hi, -heapq.heappop(self.lo))
+
+        if len(self.hi) > len(self.lo):
+            heapq.heappush(self.lo, -heapq.heappop(self.hi))
+
+    def findMedian(self):
+        if len(self.lo) > len(self.hi):
+            return -self.lo[0]
+        return (-self.lo[0] + self.hi[0]) / 2
+
+SLIDING WINDOW MAXIMUM (LC #239)
+----------------------------------
+See Queues module for monotonic queue approach.
+
+================================================================================
+4. LEETCODE PROBLEMS
+================================================================================
+
+EASY
+----
+1. Kth Largest Element in a Stream (LC #703)
+2. Last Stone Weight (LC #1046)
+3. Relative Ranks (LC #506)
+
+MEDIUM
+------
+4. Kth Largest Element in Array (LC #215)
+5. Top K Frequent Elements (LC #347)
+6. K Closest Points to Origin (LC #973)
+7. Task Scheduler (LC #621)
+8. Reorganize String (LC #767)
+
+HARD
+----
+9. Find Median from Data Stream (LC #295)
+10. Merge k Sorted Lists (LC #23)
+11. IPO (LC #502)
+
+================================================================================
+END OF MODULE 12
+================================================================================

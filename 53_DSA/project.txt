@@ -1,0 +1,38 @@
+================================================================================
+53_DSA - PROJECTS (3 LEVELS)
+Each DSA topic folder already has practice problems. These projects combine
+the topics into systems an AI/ML engineer would actually build.
+================================================================================
+
+PROJECT 1 - LEVEL 1: HashMap + LRU Cache
+  - Implement a HashMap from scratch (open addressing or chaining) with
+    resize on load factor.
+  - Implement an LRU cache (hash map + doubly linked list), O(1) get/put.
+  - Stress-test both against Python dict / functools.lru_cache for
+    correctness and measure operation time growth vs size.
+  Why it matters: cache layers, feature stores, and inference caching in ML
+  systems all use exactly this data structure.
+
+PROJECT 2 - LEVEL 2: Sliding Window + Heap Analytics Engine
+  Given a stream of numeric events (simulate with a generator):
+  - Rolling statistics (mean, median, min, max) over a sliding window
+  - Top-K frequent items with a min-heap
+  - Detect anomalies: values > rolling_mean + 3*rolling_std
+  Requirements: O(log k) per event for median/heap parts, plotted output of
+  window stats and detected anomalies.
+
+PROJECT 3 - LEVEL 3: Graph Pipeline for Data / ML Workflows
+  Build a small task-scheduling engine over a DAG (like a mini Airflow):
+  - Nodes = tasks with dependencies (edges), typed with durations
+  - Topological sort to order execution; detect cycles
+  - Critical path (longest path) using DP on the DAG
+  - Optionally: two-threaded executor that runs ready tasks concurrently
+  Use cases to demonstrate: an ML pipeline DAG
+  (load -> clean -> featurize -> train -> evaluate -> deploy).
+  Success criteria: cycle detection works, correct execution order,
+  critical-path duration matches a hand-computed example.
+
+Deliverable per project: code + tests + complexity analysis in comments.
+================================================================================
+END
+================================================================================

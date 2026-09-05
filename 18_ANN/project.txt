@@ -1,0 +1,56 @@
+================================================================================
+ANN MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: NEURAL NETWORK FROM SCRATCH (Beginner)
+===================================================
+Problem: Implement a complete neural network using only NumPy.
+Requirements:
+- 2-layer network (input → hidden → output)
+- Forward propagation
+- Backpropagation
+- Training loop
+- Test on XOR problem
+- Test on spiral dataset
+Evaluation: Accuracy > 90% on test set
+
+PROJECT 2: MNIST DIGIT CLASSIFIER (Intermediate)
+==================================================
+Problem: Build a neural network to classify handwritten digits.
+Requirements:
+- Load MNIST dataset
+- Preprocess (normalize, flatten)
+- Build network with PyTorch OR from scratch
+- Train with validation
+- Achieve > 95% accuracy
+- Plot training curves
+- Visualize predictions and errors
+Evaluation: Accuracy > 95%
+
+PROJECT 3: IMAGE CLASSIFIER WITH TRANSFER LEARNING (Advanced)
+==============================================================
+Problem: Fine-tune a pretrained model for custom image classification.
+Requirements:
+- Use a custom dataset (cats vs dogs, flowers, etc.)
+- Use pretrained ResNet/VGG
+- Replace final layer
+- Fine-tune with small learning rate
+- Data augmentation
+- Achieve > 90% accuracy
+- Build inference API
+Evaluation: Accuracy > 90%, API working
+
+PROJECT 4: NEURAL NETWORK OPTIMIZATION STUDY (Expert/Research)
+================================================================
+Problem: Systematically compare optimization strategies.
+Requirements:
+- Implement 3+ optimizers (SGD, Adam, RMSProp)
+- Test on 3+ datasets
+- Compare convergence speed
+- Compare final accuracy
+- Analyze learning rate sensitivity
+- Create comprehensive comparison tables
+- Write research-style report
+Evaluation: Rigorous experimental methodology
+
+================================================================================

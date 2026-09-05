@@ -1,0 +1,381 @@
+================================================================================
+MODULE 05 — MATHEMATICS FOR ML
+LESSON 03: CALCULUS FOR MACHINE LEARNING
+================================================================================
+
+## What You Will Learn
+- Derivatives and their meaning
+- Derivative rules
+- Partial derivatives
+- The gradient
+- The chain rule
+- The Hessian
+- How calculus powers gradient descent and backpropagation
+
+## Why You Need It
+Calculus is HOW models learn. Gradient descent uses derivatives to find
+the minimum of the loss function. Backpropagation uses the chain rule to
+compute gradients through neural networks. Without calculus, you cannot
+understand training.
+
+================================================================================
+1. WHAT IS A DERIVATIVE?
+================================================================================
+
+INTUITION:
+    The derivative measures the RATE OF CHANGE of a function.
+
+    Think of it as: "If I change x a tiny bit, how much does f(x) change?"
+
+    f(x) = x²
+    f'(x) = 2x
+
+    At x = 3: f'(3) = 6
+    This means: at x=3, the function is increasing at a rate of 6.
+
+GEOMETRIC MEANING:
+    The derivative is the SLOPE of the tangent line at any point.
+
+    f(x)
+    │      ·
+    │     /·
+    │    / ·        ← Tangent line at point
+    │   /  ·
+    │  /   ·
+    │ /    ·
+    │/     ·
+    └────────── x
+        a
+
+    At point x=a, the tangent line has slope f'(a).
+
+    - Positive slope: function is increasing
+    - Negative slope: function is decreasing
+    - Zero slope: local minimum or maximum
+
+================================================================================
+2. DERIVATIVE RULES
+================================================================================
+
+POWER RULE:
+    d/dx(xⁿ) = nxⁿ⁻¹
+
+    d/dx(x²) = 2x
+    d/dx(x³) = 3x²
+    d/dx(x) = 1
+    d/dx(5) = 0 (constant)
+
+SUM RULE:
+    d/dx(f(x) + g(x)) = f'(x) + g'(x)
+
+    d/dx(x² + 3x) = 2x + 3
+
+PRODUCT RULE:
+    d/dx(f(x) × g(x)) = f'(x)g(x) + f(x)g'(x)
+
+    d/dx(x² × sin(x)) = 2x × sin(x) + x² × cos(x)
+
+QUOTIENT RULE:
+    d/dx(f(x)/g(x)) = (f'g - fg') / g²
+
+CHAIN RULE (CRITICAL FOR ML):
+    d/dx[f(g(x))] = f'(g(x)) × g'(x)
+
+    "Derivative of outer function × derivative of inner function"
+
+    EXAMPLE:
+    f(x) = (2x + 1)³
+
+    Let u = 2x + 1, so f = u³
+    df/du = 3u²
+    du/dx = 2
+
+    df/dx = 3u² × 2 = 6(2x + 1)²
+
+    ML CONNECTION: This is EXACTLY backpropagation.
+    Neural networks are compositions of functions.
+    The chain rule lets us compute gradients through the composition.
+
+EXPONENTIAL DERIVATIVE:
+    d/dx(eˣ) = eˣ    (its own derivative!)
+
+    d/dx(e²ˣ) = 2e²ˣ (by chain rule)
+
+LOGARITHM DERIVATIVE:
+    d/dx(ln(x)) = 1/x
+
+    ML CONNECTION:
+    Log loss: L = -ln(p)
+    dL/dp = -1/p
+
+    Sigmoid: σ(z) = 1/(1 + e⁻ᶻ)
+    σ'(z) = σ(z)(1 - σ(z))
+
+================================================================================
+3. PARTIAL DERIVATIVES
+================================================================================
+
+WHEN A FUNCTION HAS MULTIPLE VARIABLES:
+
+    f(x, y) = x² + 2xy + y²
+
+    ∂f/∂x = 2x + 2y    (derivative with respect to x, treating y as constant)
+    ∂f/∂y = 2x + 2y    (derivative with respect to y, treating x as constant)
+
+    ∂ means "partial derivative"
+
+GEOMETRIC MEANING:
+    ∂f/∂x = rate of change in the x-direction
+    ∂f/∂y = rate of change in the y-direction
+
+ML USE:
+    Loss function L(w₁, w₂, ..., wₙ) depends on ALL weights.
+
+    To improve the model, we need to know:
+    "How does the loss change if I increase each weight slightly?"
+
+    This is exactly what partial derivatives tell us.
+
+    ∂L/∂w₁ = how loss changes with w₁
+    ∂L/∂w₂ = how loss changes with w₂
+    ...
+    ∂L/∂wₙ = how loss changes with wₙ
+
+================================================================================
+4. THE GRADIENT
+================================================================================
+
+The gradient is the VECTOR of all partial derivatives.
+
+    ∇f = [∂f/∂x₁, ∂f/∂x₂, ..., ∂f/∂xₙ]
+
+    ∇ (nabla) = gradient operator
+
+EXAMPLE:
+    f(x, y) = x² + y²
+
+    ∇f = [2x, 2y]
+
+    At point (3, 4): ∇f = [6, 8]
+
+GEOMETRIC MEANING:
+    The gradient points in the direction of STEEPEST ASCENT.
+
+    To MINIMIZE a function (which is what ML does), we go in the
+    OPPOSITE direction: -∇f (steepest descent).
+
+    ┌──────────────────────────────────────┐
+    │  GRADIENT = direction of steepest ↑  │
+    │  -GRADIENT = direction of steepest ↓ │
+    │                                      │
+    │  We want to MINIMIZE loss, so we     │
+    │  move in the -GRADIENT direction.    │
+    └──────────────────────────────────────┘
+
+ML USE — GRADIENT DESCENT:
+
+    Loss L(w) depends on weights w.
+    Gradient ∇L tells us: "which direction increases loss?"
+    We move OPPOSITE to the gradient: w_new = w_old - η × ∇L
+
+    where η (eta) = learning rate
+
+================================================================================
+5. THE CHAIN RULE IN DEPTH
+================================================================================
+
+SIMPLE CHAIN RULE:
+    d/dx[f(g(x))] = f'(g(x)) × g'(x)
+
+MULTIPLE VARIABLES:
+    If z = f(x, y) and x = g(t), y = h(t):
+    dz/dt = (∂f/∂x)(dx/dt) + (∂f/∂y)(dy/dt)
+
+NEURAL NETWORK EXAMPLE:
+
+    A simple network:
+    z = wx + b        (linear)
+    a = sigmoid(z)     (activation)
+    L = -y × ln(a)     (loss)
+
+    We want: ∂L/∂w (how loss changes with weight w)
+
+    By chain rule:
+    ∂L/∂w = (∂L/∂a) × (∂a/∂z) × (∂z/∂w)
+
+    Step by step:
+    ∂L/∂a = -y/a              (derivative of loss w.r.t. activation)
+    ∂a/∂z = a(1-a)            (derivative of sigmoid)
+    ∂z/∂w = x                 (derivative of linear w.r.t. w)
+
+    ∂L/∂w = (-y/a) × a(1-a) × x = -y(1-a)x
+
+    THIS IS BACKPROPAGATION.
+
+    The chain rule lets us compute the gradient of the loss
+    with respect to ANY weight, no matter how deep the network.
+
+================================================================================
+6. THE HESSIAN
+================================================================================
+
+The Hessian is the MATRIX of second partial derivatives.
+
+    H[i][j] = ∂²f / (∂xᵢ ∂xⱼ)
+
+    For f(x, y) = x² + 2y²:
+    H = │ ∂²f/∂x²    ∂²f/∂x∂y │   = │ 2  0 │
+        │ ∂²f/∂y∂x   ∂²f/∂y²  │     │ 0  4 │
+
+INTERPRETATION:
+    - Diagonal elements: curvature in each direction
+    - Off-diagonal elements: how directions interact
+
+GEOMETRIC MEANING:
+    - Positive definite Hessian: All directions curve up → LOCAL MINIMUM
+    - Negative definite Hessian: All directions curve down → LOCAL MAXIMUM
+    - Mixed signs: SADDLE POINT (minimum in some directions, maximum in others)
+
+ML USE:
+    - Second-order optimization (Newton's method)
+    - Understanding loss landscape curvature
+    - Detecting saddle points in neural network training
+
+    WARNING: Computing the Hessian is O(n²) expensive.
+    In practice, neural networks use first-order methods (gradient descent)
+    because computing the Hessian is too expensive for millions of parameters.
+
+================================================================================
+7. OPTIMIZATION
+================================================================================
+
+WHAT IS OPTIMIZATION?
+    Finding the input that MINIMIZES (or MAXIMIZES) a function.
+
+    In ML: Find the weights that MINIMIZE the loss function.
+
+    min_w L(w)
+
+LOCAL vs GLOBAL MINIMUM:
+
+    L(w)
+    │  ╲      ╱╲      ╱
+    │   ╲    ╱  ╲    ╱
+    │    ╲  ╱    ╲  ╱
+    │     ╲╱      ╲╱
+    │   local     global
+    │   min       min
+
+    - Global minimum: Lowest point overall
+    - Local minimum: Lowest point in a neighborhood
+    - Saddle point: Minimum in some directions, maximum in others
+
+    ML CHALLENGE: Neural network loss functions have MANY local minima
+    and saddle points. Finding the global minimum is NP-hard.
+
+CONVEX vs NON-CONVEX:
+
+    Convex function: Bowl shape, one global minimum.
+    Linear regression, logistic regression → convex.
+
+    Non-convex function: Many local minima.
+    Neural networks → non-convex.
+
+    Convex problems are EASY (one minimum).
+    Non-convex problems are HARD (many minima).
+
+================================================================================
+8. DIRECTIONAL DERIVATIVE
+================================================================================
+
+The rate of change of f in the direction of vector v.
+
+    D_v f = ∇f · v / ||v||
+
+    ML USE:
+    - Gradient descent chooses the direction of steepest descent: -∇f
+    - Momentum-based methods combine current gradient with past direction
+
+================================================================================
+9. PRACTICAL EXAMPLES
+================================================================================
+
+EXAMPLE 1: Derivative of Loss Function
+
+    Linear regression loss:
+    L(w) = (1/n) Σ(yᵢ - wxᵢ)²
+
+    dL/dw = (2/n) Σ(yᵢ - wxᵢ)(-xᵢ) = -(2/n) Σ(yᵢ - wxᵢ)xᵢ
+
+    Set to 0 for minimum:
+    Σ(yᵢ - wxᵢ)xᵢ = 0
+    Σyᵢxᵢ - wΣxᵢ² = 0
+    w = Σyᵢxᵢ / Σxᵢ²
+
+    This is the closed-form solution for linear regression!
+
+EXAMPLE 2: Sigmoid Derivative
+
+    σ(z) = 1 / (1 + e⁻ᶻ)
+
+    Let u = 1 + e⁻ᶻ
+    σ(z) = u⁻¹
+    dσ/dz = -u⁻² × (-e⁻ᶻ) = e⁻ᶻ / (1 + e⁻ᶻ)²
+          = σ(z) × (1 - σ(z))
+
+    At z = 0: σ(0) = 0.5, σ'(0) = 0.5 × 0.5 = 0.25
+    At z = 5: σ(5) ≈ 0.993, σ'(5) ≈ 0.007 (very small → vanishing gradient)
+
+EXAMPLE 3: Gradient Descent Step
+
+    L(w) = (w - 3)²
+
+    dL/dw = 2(w - 3)
+
+    Start at w = 0, learning rate η = 0.1
+
+    Step 1: w = 0 - 0.1 × 2(0-3) = 0 + 0.6 = 0.6
+    Step 2: w = 0.6 - 0.1 × 2(0.6-3) = 0.6 + 0.48 = 1.08
+    Step 3: w = 1.08 - 0.1 × 2(1.08-3) = 1.08 + 0.384 = 1.464
+    ...
+
+    After many steps: w → 3 (the minimum!)
+
+================================================================================
+10. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Confusing partial and total derivatives
+    ∂f/∂x is partial (one variable at a time)
+    df/dx is total (all variables change)
+
+MISTAKE 2: Forgetting the chain rule in backpropagation
+    Every layer's gradient depends on ALL subsequent layers.
+    Missing one link breaks the entire gradient computation.
+
+MISTAKE 3: Ignoring learning rate
+    Too large: Overshoot the minimum, diverge
+    Too small: Extremely slow convergence
+    Just right: Converge efficiently
+
+MISTAKE 4: Confusing gradient with second derivative
+    Gradient = first derivative = direction
+    Hessian = second derivative = curvature
+
+MISTAKE 5: Assuming gradient descent finds global minimum
+    For non-convex problems (neural networks), gradient descent
+    finds a LOCAL minimum, not necessarily the global one.
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What does the derivative represent geometrically?
+2. What is the chain rule and why is it essential for neural networks?
+3. What direction does gradient descent move in?
+4. What is the difference between a local and global minimum?
+5. Why don't we use the Hessian in large neural networks?
+
+================================================================================
+NEXT LESSON: 04_PROBABILITY/probability_for_ml.txt
+================================================================================

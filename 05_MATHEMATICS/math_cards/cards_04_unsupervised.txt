@@ -1,0 +1,97 @@
+================================================================================
+CARD: K-MEANS
+================================================================================
+PROBLEM   partition n points into K clusters minimizing within-cluster
+          scatter.
+OBJECTIVE min over assignments c_i and centers mu_k of
+          sum_i ||x_i - mu_{c_i}||^2
+ALGORITHM alternate (Lloyd):
+          E-step: assign each x_i to the nearest mu_k.
+          M-step: mu_k <- mean of points assigned to k.
+          Initialize with k-means++ (spread-out seeds).
+KEY       converges to a LOCAL optimum (restart several seeds);
+          objective = trace of within-cluster scatter; equivalent to a
+          hard-assignment GMM with spherical covariances.
+          Elbow/inertia or silhouette for choosing K.
+COMPLEXITY O(n K d) per iteration, typically few iterations.
+FAILURES  assumes spherical equal-size clusters; sensitive to scale
+          (standardize!); K must be given; mean is non-robust to
+          outliers; high-d (curse of distance).
+CONNECTS  GMM softens it; MiniBatch K-Means scales it; the assignment
+          step is a nearest-neighbor problem (see KNN card).
+
+================================================================================
+CARD: GAUSSIAN MIXTURE MODEL (EM)
+================================================================================
+PROBLEM   soft clustering with elliptical clusters + density p(x).
+MODEL     p(x) = sum_k pi_k N(x; mu_k, Sigma_k)
+          pi_k = mixing weights (sum to 1, >= 0).
+OBJECTIVE maximize log-likelihood sum_i log p(x_i) (non-convex).
+ALGORITHM EM (Baum-Welch generalization):
+          E: responsibilities gamma_ik = pi_k N(x_i|mu_k,Sig_k) /
+             sum_j pi_j N(x_i|mu_j,Sig_j)
+          M: pi_k = (sum_i gamma_ik)/n
+             mu_k = sum_i gamma_ik x_i / sum_i gamma_ik
+             Sig_k = sum_i gamma_ik (x_i-mu_k)(x_i-mu_k)^T / sum_i gamma_ik
+          EM is guaranteed to not decrease likelihood each iteration.
+KEY       gives DENSITIES: score p(x) for anomaly detection and
+          generative sampling; with full covariance = ellipsoidal
+          clusters (vs K-Means spheres); diagonal covariance for
+          high-d; ties to variational inference.
+COMPLEXITY O(n K d^2) with full covariances (inversion).
+FAILURES  local optima + singularities (a cluster collapsing onto one
+          point -> likelihood -> inf; regularize covariance);
+          K must be chosen (BIC/AIC).
+CONNECTS  K-Means = hard EM with unit spherical covariance; HMMs are
+          GMMs over hidden states over time (see probabilistic_ml).
+
+================================================================================
+CARD: PCA
+================================================================================
+PROBLEM   find the d' orthogonal directions of maximum variance;
+          compress/reconstruct with least error.
+TWO VIEWS 1) maximize variance: max Var(X v) s.t. ||v||=1
+          2) minimize reconstruction error: min ||X - X V V^T||^2_F
+          Both solved by the same eigendecomposition.
+SOLUTION  center X (subtract mean per column). Compute covariance
+          S = X^T X / n (or use SVD of X directly: X = U S V^T).
+          Principal directions = top d' EIGENVECTORS of S
+          (columns of V in the SVD); scores = X V.
+          Explained variance of component k = lambda_k / sum lambda.
+KEY       SVD connection: eigenvectors of X^T X are the right singular
+          vectors - numerically better (never form X^T X explicitly).
+          Whitening scales components to unit variance.
+          Data must be STANDARDIZED first if features have different
+          units (else PCA finds "units" not structure).
+COMPLEXITY SVD O(n d^2) (d features); fast for wide data via
+          randomized SVD.
+FAILURES  linear only (kernel PCA/t-SNE/UMAP for nonlinear); mean +
+          covariance are non-robust (outliers skew axes); directions
+          are dense - not interpretable (use NMF/rotations if needed).
+CONNECTS  see dimensionality_reduction_complete.txt; Ridge regression
+          can be seen as PCA-shrinkage in the eigenbasis.
+
+================================================================================
+CARD: DBSCAN / ANOMALY SCORES (quick cards)
+================================================================================
+DBSCAN    density-based clustering: a point is a CORE point if >=
+          minPts neighbors within radius eps. Clusters grow by
+          chaining core points; non-core neighbors are border points;
+          the rest are NOISE.
+          eps + minPts are the knobs; k-distance plot picks eps.
+          Handles arbitrary shapes and outliers natively; O(n log n)
+          with index; fails when density varies a lot (HDBSCAN fixes
+          by varying density).
+
+ANOMALY SCORES (threshold-based detection; see 55_ANOMALY_DETECTION)
+          Z-score      z = (x - mu)/sigma       (assumes Gaussian)
+          Robust z     z = 0.6745 (x - med)/MAD (median + median
+                       absolute deviation; resistant to outliers)
+          IQR fence    x < Q1 - 1.5 IQR or x > Q3 + 1.5 IQR
+          Isolation Forest score: s(x) = 2^(-E[h(x)] / c(n)),
+          E[h(x)] = avg path length to isolate x, c(n) = avg path of
+          a random BST on n points. SHORTER path (s close to 1) =
+          more anomalous - anomalies are few and different, so they
+          isolate fast.
+          Mahalanobis  D^2 = (x - mu)^T Sigma^-1 (x - mu) - the
+          multivariate standardized distance (Elliptic Envelope).

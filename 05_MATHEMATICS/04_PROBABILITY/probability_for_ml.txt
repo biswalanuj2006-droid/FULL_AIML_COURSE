@@ -1,0 +1,357 @@
+================================================================================
+MODULE 05 — MATHEMATICS FOR ML
+LESSON 04: PROBABILITY FOR MACHINE LEARNING
+================================================================================
+
+## What You Will Learn
+- Probability basics
+- Conditional probability
+- Bayes theorem
+- Random variables
+- Common distributions
+- Maximum Likelihood Estimation
+- How probability powers ML
+
+## Why You Need It
+ML is fundamentally about PROBABILITY. Classification predicts P(class|data).
+Generative models learn P(data). Naive Bayes uses Bayes theorem. Loss functions
+are negative log-likelihoods. Probability is everywhere in ML.
+
+================================================================================
+1. PROBABILITY BASICS
+================================================================================
+
+WHAT IS PROBABILITY?
+    A measure of how likely an event is to occur.
+
+    P(event) = number of favorable outcomes / total outcomes
+
+    Flipping a fair coin:
+    P(heads) = 1/2 = 0.5
+    P(tails) = 1/2 = 0.5
+
+    Rolling a die:
+    P(6) = 1/6 ≈ 0.167
+    P(even) = 3/6 = 0.5
+
+AXIOMS:
+    1. 0 ≤ P(event) ≤ 1
+    2. P(certain event) = 1
+    3. P(impossible event) = 0
+    4. P(A or B) = P(A) + P(B) - P(A and B)
+
+COMPLEMENT:
+    P(not A) = 1 - P(A)
+
+    If P(rain) = 0.3, then P(no rain) = 0.7
+
+================================================================================
+2. JOINT AND MARGINAL PROBABILITY
+================================================================================
+
+JOINT PROBABILITY P(A and B):
+    Probability of BOTH A and B occurring.
+
+    Example: P(sunny AND hot) = 0.3
+
+MARGINAL PROBABILITY:
+    Probability of one event, ignoring others.
+
+    If we know P(sunny, hot), P(sunny, cold), P(rainy, hot), P(rainy, cold):
+    P(sunny) = P(sunny, hot) + P(sunny, cold)
+
+INDEPENDENCE:
+    P(A and B) = P(A) × P(B)
+
+    Coin flips are independent:
+    P(heads on flip 1 AND heads on flip 2) = 0.5 × 0.5 = 0.25
+
+    Weather and traffic are NOT independent:
+    P(rainy AND traffic) ≠ P(rainy) × P(traffic)
+
+================================================================================
+3. CONDITIONAL PROBABILITY
+================================================================================
+
+P(A | B) = "probability of A GIVEN that B occurred"
+
+    P(A | B) = P(A and B) / P(B)
+
+EXAMPLE:
+    A = "has disease", B = "tests positive"
+    P(disease) = 0.01
+    P(positive | disease) = 0.95 (sensitivity)
+    P(positive | no disease) = 0.05 (false positive rate)
+
+    P(disease | positive) = ?
+
+    Using Bayes theorem (see next section).
+
+ML USE:
+    P(churn | features) — probability customer will churn given their data
+    P(spam | words) — probability email is spam given the words
+    P(fraud | transaction) — probability transaction is fraudulent
+
+================================================================================
+4. BAYES THEOREM — CRITICAL FOR ML
+================================================================================
+
+    P(A | B) = P(B | A) × P(A) / P(B)
+
+    Where:
+    P(A | B) = posterior (what we want to know)
+    P(B | A) = likelihood (how likely is the evidence given our hypothesis)
+    P(A)     = prior (what we believed before seeing evidence)
+    P(B)     = marginal likelihood (total probability of evidence)
+
+EXAMPLE — Medical Test:
+
+    P(disease) = 0.01 (1% of population has the disease)
+    P(positive | disease) = 0.95 (test detects 95% of diseased)
+    P(positive | no disease) = 0.05 (5% false positive rate)
+
+    What is P(disease | positive)?
+
+    P(positive) = P(positive | disease) × P(disease) +
+                  P(positive | no disease) × P(no disease)
+                = 0.95 × 0.01 + 0.05 × 0.99
+                = 0.0095 + 0.0495
+                = 0.059
+
+    P(disease | positive) = (0.95 × 0.01) / 0.059 = 0.161
+
+    Only 16.1% chance of actually having the disease despite positive test!
+
+    This is counterintuitive but crucial: base rates matter.
+
+ML USE — NAIVE BAYES CLASSIFIER:
+
+    P(spam | words) = P(words | spam) × P(spam) / P(words)
+
+    "Naive" assumes features are independent given the class:
+    P(w₁, w₂, ..., wₙ | spam) = P(w₁|spam) × P(w₂|spam) × ... × P(wₙ|spam)
+
+    Despite this unrealistic assumption, Naive Bayes works well for:
+    - Text classification (spam, sentiment)
+    - Real-time prediction (very fast)
+    - Small datasets
+
+================================================================================
+5. RANDOM VARIABLES
+================================================================================
+
+A RANDOM VARIABLE maps outcomes to numbers.
+
+DISCRETE RANDOM VARIABLE:
+    Can take countable values.
+
+    Example: Number of clicks on an ad (0, 1, 2, 3, ...)
+    Example: Email classification (0=ham, 1=spam)
+
+CONTINUOUS RANDOM VARIABLE:
+    Can take any value in a range.
+
+    Example: House price ($100,000 to $1,000,000)
+    Example: Temperature (-20°C to 50°C)
+
+PMF (Probability Mass Function):
+    P(X = x) for discrete variables.
+    Gives probability of each specific value.
+
+PDF (Probability Density Function):
+    f(x) for continuous variables.
+    Area under the curve = probability.
+
+    P(a < X < b) = ∫ₐᵇ f(x) dx
+
+    NOTE: For continuous variables, P(X = exact value) = 0.
+    We can only talk about probability over RANGES.
+
+CDF (Cumulative Distribution Function):
+    F(x) = P(X ≤ x)
+
+    Gives probability that X is less than or equal to x.
+
+================================================================================
+6. EXPECTATION AND VARIANCE
+================================================================================
+
+EXPECTATION (Mean):
+    E[X] = Σ x × P(x)    (discrete)
+    E[X] = ∫ x × f(x) dx (continuous)
+
+    "Weighted average of all possible values"
+
+    Example: Rolling a fair die
+    E[X] = (1+2+3+4+5+6)/6 = 3.5
+
+VARIANCE:
+    Var(X) = E[(X - E[X])²] = E[X²] - (E[X])²
+
+    "How spread out is the distribution?"
+
+    Low variance: Values are close to the mean
+    High variance: Values are spread far from the mean
+
+STANDARD DEVIATION:
+    σ = √Var(X)
+
+    Same units as the original data.
+
+COVARIANCE:
+    Cov(X, Y) = E[(X - E[X])(Y - E[Y])]
+
+    Measures how two variables change together.
+    Positive: When X increases, Y tends to increase.
+    Negative: When X increases, Y tends to decrease.
+    Zero: No linear relationship.
+
+ML USE:
+    - Expectation: Expected loss, expected prediction
+    - Variance: Feature importance, model uncertainty
+    - Covariance: Feature relationships, PCA input
+
+================================================================================
+7. COMMON PROBABILITY DISTRIBUTIONS
+================================================================================
+
+BERNOULLI DISTRIBUTION:
+    Single binary trial.
+    P(X=1) = p, P(X=0) = 1-p
+
+    ML USE: Binary classification target (churn/no churn)
+
+BINOMIAL DISTRIBUTION:
+    Number of successes in n independent Bernoulli trials.
+    P(X=k) = C(n,k) × pᵏ × (1-p)ⁿ⁻ᵏ
+
+    ML USE: Number of correct predictions out of n trials
+
+GAUSSIAN (NORMAL) DISTRIBUTION:
+    f(x) = (1/√(2πσ²)) × e^(-(x-μ)²/(2σ²))
+
+    Bell-shaped curve, defined by mean μ and variance σ².
+
+    68% of data within ±1σ
+    95% of data within ±2σ
+    99.7% of data within ±3σ
+
+    ML USE:
+    - Feature distributions (many features are approximately Gaussian)
+    - Gaussian Naive Bayes assumes features are Gaussian
+    - Weight initialization (normal distribution)
+    - Noise model
+
+UNIFORM DISTRIBUTION:
+    All values equally likely.
+    f(x) = 1/(b-a) for a ≤ x ≤ b
+
+    ML USE: Random initialization, dropout masks
+
+POISSON DISTRIBUTION:
+    Number of events in a fixed interval.
+    P(X=k) = (λᵏ × e⁻λ) / k!
+
+    ML USE: Count data (number of purchases, number of clicks)
+
+EXPONENTIAL DISTRIBUTION:
+    Time between events.
+    f(x) = λe⁻λˣ
+
+    ML USE: Survival analysis, time-to-event modeling
+
+================================================================================
+8. MAXIMUM LIKELIHOOD ESTIMATION (MLE)
+================================================================================
+
+CORE IDEA:
+    Given observed data, find the parameters that make the data
+    MOST LIKELY.
+
+    θ_MLE = argmax_θ P(data | θ)
+
+EXAMPLE:
+    Flip a coin 10 times: H, H, T, H, H, H, T, H, H, H
+    7 heads, 3 tails.
+
+    P(data | p) = p⁷ × (1-p)³
+
+    Maximize by taking derivative and setting to 0:
+    d/dp [p⁷(1-p)³] = 0
+    7p⁶(1-p)³ - 3p⁷(1-p)² = 0
+    p = 7/10 = 0.7
+
+    MLE estimate: p = 0.7
+
+ML CONNECTION:
+    Logistic regression uses MLE to find the best weights.
+
+    L(w) = Π P(yᵢ | xᵢ, w)    (likelihood)
+
+    Maximize likelihood = minimize negative log-likelihood:
+    min_w [-Σ log P(yᵢ | xᵢ, w)]
+
+    For logistic regression:
+    P(y=1|x) = σ(w·x + b)
+    Log-likelihood = Σ[yᵢ log(σ(w·xᵢ)) + (1-yᵢ) log(1-σ(w·xᵢ))]
+
+    This is the CROSS-ENTROPY LOSS function!
+
+================================================================================
+9. BAYESIAN INFERENCE
+================================================================================
+
+BAYES vs FREQUENTIST:
+    Frequentist: Parameters are fixed (unknown constants)
+    Bayesian: Parameters are random variables with distributions
+
+    Bayesian update:
+    P(θ | data) = P(data | θ) × P(θ) / P(data)
+
+    posterior = likelihood × prior / evidence
+
+ML USE:
+    - Bayesian optimization for hyperparameter tuning
+    - Bayesian neural networks (uncertainty estimation)
+    - Prior knowledge incorporation
+
+================================================================================
+10. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Confusing P(A|B) with P(B|A)
+    P(positive | disease) = 0.95
+    P(disease | positive) = 0.161
+
+    These are VERY different! Bayes theorem connects them.
+
+MISTAKE 2: Ignoring base rates
+    Even with a 95% accurate test, if the disease is rare (1%),
+    most positive results are FALSE positives.
+
+MISTAKE 3: Assuming independence
+    Naive Bayes assumes feature independence. This is often wrong
+    but the classifier still works because it only needs to RANK
+    probabilities, not estimate them precisely.
+
+MISTAKE 4: Confusing probability with confidence
+    P(spam) = 0.7 doesn't mean 70% confident. It means: if we saw
+    many similar emails, 70% would be spam.
+
+MISTAKE 5: Forgetting to normalize
+    After computing unnormalized probabilities, divide by the sum
+    to get actual probabilities.
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is Bayes theorem and what does each term mean?
+2. What is the difference between PMF and PDF?
+3. What does the variance measure?
+4. What is Maximum Likelihood Estimation?
+5. Why does Naive Bayes work despite the independence assumption?
+
+================================================================================
+NEXT LESSON: 05_STATISTICS/statistics_for_ml.txt
+================================================================================

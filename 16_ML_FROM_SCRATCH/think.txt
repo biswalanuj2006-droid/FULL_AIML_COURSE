@@ -1,0 +1,47 @@
+================================================================================
+THINK.TXT - 16 ML FROM SCRATCH
+================================================================================
+
+1. When you implement linear regression via the normal equation, the
+   answer is exact. Via gradient descent it is approximate. Argue when
+   each is the correct engineering choice, including n, d, and
+   conditioning.
+2. Your from-scratch logistic regression matches sklearn to 1e-6 on easy
+   data but diverges on scaled data. List every numerical difference
+   that could cause it (solver, tol, intercept handling, regularization)
+   and how you would isolate each.
+3. Vectorization: the same KNN is 200x slower with Python loops than with
+   NumPy broadcasting on 10k points. Explain what broadcasting does at
+   the memory level and estimate when loops would win.
+4. K-Means from scratch: your inertia matches sklearn but your cluster
+   LABELS differ run to run. Is that a bug? Argue what "correct" means
+   for a randomized algorithm and how you would test your implementation.
+5. Backpropagation is just the chain rule, yet implementing it by hand
+   produces subtle bugs (off-by-one in layers, transposed gradients,
+   missing bias). Design a self-check that would catch each class of bug
+   - then explain why the finite-difference check is the gold standard.
+6. You implement PCA from covariance eigendecomposition and get
+   components that are sign-flipped vs sklearn. Prove they are still
+   correct and decide whether to "fix" the sign.
+7. Your decision tree achieves 100% train accuracy and 60% test. Walk
+   through where your implementation differs from sklearn's defaults
+   (depth, splits, leaf size) that would produce exactly this gap.
+8. When is implementing from scratch better than using sklearn, even in
+   production? Give three genuine cases (custom loss, streaming, exotic
+   constraints) and one case where it is pure ego.
+9. Numerical stability: compute softmax of [1000, 1001, 999] naively vs
+   with max subtraction. Explain the mechanism of floating-point
+   overflow and why the trick is mathematically identity.
+10. A from-scratch model passes unit tests but fails parity with sklearn
+    by 3% accuracy. Is 3% acceptable? Design the experiment that decides
+    whether the gap is a bug or an implementation choice.
+11. Implement KNN using a k-d tree instead of brute force. Explain when
+    the tree is slower than brute force (curse of dimensionality) and
+    verify empirically.
+12. OPEN PROBLEM: "from-scratch parity testing" has no agreed standard
+    (tolerances differ by algorithm, data, and metric). Propose a parity
+    test suite for the algorithms in this module with explicit
+    tolerances and justify each.
+================================================================================
+END
+================================================================================

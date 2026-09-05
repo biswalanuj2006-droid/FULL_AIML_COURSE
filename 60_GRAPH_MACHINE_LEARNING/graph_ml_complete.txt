@@ -1,0 +1,179 @@
+================================================================================
+LESSON: GRAPH MACHINE LEARNING (complete)
+================================================================================
+From graph representations and classic node embeddings to message-
+passing GNNs (GCN/GAT/GraphSAGE), link prediction, and graph RAG.
+
+--------------------------------------------------------------------------------
+1. WHY GRAPHS: relational data as a first-class citizen
+--------------------------------------------------------------------------------
+Tabular ML assumes independent rows; sequences assume an order. Graphs
+assume RELATIONS: users-friends, molecules-atoms, papers-citations,
+entities in a knowledge graph. The relation structure carries signal no
+row-based encoding captures (who you are connected to predicts you).
+KEY TERMS: nodes/vertices, edges (directed/undirected, weighted),
+neighbors N(v), degree, connected components, adjacency matrix.
+
+--------------------------------------------------------------------------------
+2. REPRESENTATIONS
+--------------------------------------------------------------------------------
+ADJACENCY MATRIX A (n x n): A_ij = 1 if edge i->j. Sparse for real
+graphs (store as edge list / CSR). Degree matrix D = diag(deg).
+LAPLACIAN L = D - A (unnormalized); symmetric normalized:
+    L_sym = I - D^{-1/2} A D^{-1/2}
+The Laplacian is the graph's "second-derivative operator": x^T L x =
+sum over edges (x_i - x_j)^2 - a smoothness measure of signal x on the
+graph. Its eigenvectors are the graph's frequency basis (spectral
+methods, GCN ancestry).
+FEATURES: each node may also carry attributes x_v (text, image,
+numeric). Graph ML combines structure (A) with attributes (X).
+
+--------------------------------------------------------------------------------
+3. NODE EMBEDDINGS WITHOUT SUPERVISION (shallow methods)
+--------------------------------------------------------------------------------
+Goal: learn z_v in R^d such that similar nodes are close.
+  DeepWalk / node2vec: run random walks; treat each walk as a "sentence"
+  and nodes as "words"; train skip-gram (see 24 word embeddings). The
+  neighborhood distribution becomes the embedding objective:
+    maximize sum over walks sum over context nodes c of
+      log p(c | z_v)   (softmax over nodes, negative sampling in
+      practice)
+  node2vec biases the walks (BFS-ish vs DFS-ish) to capture structural
+  vs homophilic similarity.
+LIMITATIONS: transductive (new nodes need re-training), no node
+features used, embeddings independent of the task.
+
+--------------------------------------------------------------------------------
+4. MESSAGE PASSING: THE GNN CORE (the math that matters)
+--------------------------------------------------------------------------------
+GNN layers build node representations by AGGREGATING neighbors:
+    h_v^(l+1) = UPDATE( h_v^(l),  AGGREGATE( { h_u^(l) : u in N(v) } ) )
+L layers -> each node's representation depends on its L-hop
+neighborhood. All major GNNs are instances of this template.
+
+GCN (Kipf & Welling 2017):
+    H^(l+1) = sigma( D^{-1/2} A D^{-1/2} H^(l) W^(l) )
+  The normalized adjacency multiplies the weight matrix: each node
+  averages (normalized) neighbor features, then a linear layer W and a
+  nonlinearity. Why the symmetric normalization: prevents degree
+  explosion and keeps the layer stable; A_hat = A + I adds self-loops
+  so a node keeps its own features.
+  First-order approximation of spectral convolution - do not be
+  scared by the name: it is "average my neighbors' features through a
+  learned matrix".
+
+GAT (Graph Attention): replace the fixed normalization with LEARNED
+attention weights over neighbors:
+    alpha_uv = softmax_u( LeakyReLU( a^T [W h_u || W h_v] ) )
+    h_v' = sigma( sum_{u in N(v)} alpha_uv W h_u )
+  The neighbor weights are content-based (like transformer attention,
+  but over the graph's edges instead of all tokens).
+
+GraphSAGE (inductive + scalable):
+    h_v' = sigma( W . CONCAT( h_v, AGG( {h_u : u in N(v)} ) ) )
+  AGG in {mean, LSTM, max-pool}. Samples a fixed-size neighbor subset
+  -> works for HUGE graphs and NEW nodes at inference (inductive), by
+  learning an aggregator function instead of per-node embeddings.
+
+WHY DEPTH IS HARD: after L layers a node sees its L-hop neighborhood
+which grows ~exponentially (over-smoothing: beyond ~5-10 layers all
+node representations converge to similar values). Practical GNNs are
+shallow (2-4 layers); deep GNNs need skip connections/residuals.
+
+--------------------------------------------------------------------------------
+5. TASKS AND LOSSES
+--------------------------------------------------------------------------------
+  NODE CLASSIFICATION: predict label of a node. Loss = cross-entropy
+  on labeled nodes, sharing parameters across all nodes:
+    L = -sum_{v labeled} log p(y_v | z_v)   (z_v from the GNN)
+  LINK PREDICTION: predict missing edges. Score an edge (u,v) by
+  combining its node embeddings (dot product, or a small MLP on
+  concat), train with positive edges + NEGATIVE SAMPLES (random
+  non-edges). Metric: AUC / Hits@k. Used for friend suggestion and
+  knowledge-graph completion.
+  GRAPH CLASSIFICATION: pool all node embeddings (sum/mean/attention),
+  classify the graph (molecule property prediction).
+
+--------------------------------------------------------------------------------
+6. SCALING AND INDUCTION
+--------------------------------------------------------------------------------
+  - Full-batch GCN on 1M nodes = adjacency ops on a 1M^2 sparse matrix
+    per layer: fine on GPU with sparse ops up to ~millions; beyond that,
+    sample: GraphSAGE-style neighbor sampling, or cluster-GCN (partition
+    the graph, train on clusters), or decouple propagation from
+    prediction (SGC, SIGN - precompute A^k X once, train only the
+    weights).
+  - INDUCTION: models that consume node features + local structure can
+    score nodes never seen in training (new users, new papers) -
+    GraphSAGE/GAT do; per-node-embedding methods (DeepWalk) do not.
+
+--------------------------------------------------------------------------------
+7. KNOWLEDGE GRAPHS AND GRAPH RAG
+--------------------------------------------------------------------------------
+KNOWLEDGE GRAPH: directed graph of (head, relation, tail) triples,
+e.g. (Django, framework_of, Python). Reasoning = link prediction over
+relations (TransE: h + r ~= t in embedding space). Embedding a KG
+supports multi-hop QA and entity resolution.
+GRAPH RAG: retrieve not by text similarity but by RELATIONSHIP - seed
+entities from the question, expand through graph edges (neighbors,
+k-hops), and feed the harvested subgraph/triples to the LLM as context.
+Wins where the answer needs connections text search misses ("which of
+our vendors also partners with X?"); cost: graph construction (entity
+extraction + linking) and retrieval design. Hybrid (vector + graph) is
+the pragmatic default.
+
+--------------------------------------------------------------------------------
+8. FAILURE MODES AND DEBUGGING
+--------------------------------------------------------------------------------
+  - Over-smoothing with depth (representations collapse).
+  - Degree bias: hubs dominate message passing; normalize, sample, or
+    down-weight high-degree nodes.
+  - Label/feature leakage in link prediction: never train on edges used
+    to build the message-passing neighborhoods of test nodes (split by
+    TIME or by edges, not random rows of a flattened table).
+  - Transductive vs inductive mismatch at serving time.
+  - Class imbalance in link prediction: negative sampling ratio matters.
+  - Empty/small neighborhoods for new nodes (cold start) - fall back to
+    node features alone.
+DEBUGGING RULE: always compare a GNN against (a) node-features-only
+MLP and (b) shallow embeddings. If the GNN does not beat the MLP that
+ignores structure, either the task has no relational signal or your
+graph is broken (check connectivity, isolate giant component, edge
+direction semantics).
+
+--------------------------------------------------------------------------------
+9. PRACTICE
+--------------------------------------------------------------------------------
+1. (Math) Write the symmetric normalized adjacency used by GCN and
+   explain what the normalization does for a node with degree 1000 vs
+   degree 2.
+2. (Concept) What does x^T L x measure? Use it to justify why the
+   Laplacian is called a smoothness operator.
+3. (Code) From scratch: implement one GCN layer with numpy/scipy on a
+   tiny graph (e.g. Zachary's karate club); train to classify two
+   communities with a few labels; report accuracy vs a feature-less
+   baseline.
+4. (Code) DeepWalk-style: generate random walks, train word2vec-style
+   embeddings (reuse embedding code from 24), and show link prediction
+   improves over random.
+5. (Math) GAT: write the attention coefficient computation and explain
+   the difference from GCN's fixed normalization.
+6. (Reasoning) Why are practical GNNs 2-4 layers deep? What happens at
+   depth 20, and what do residual connections do?
+7. (Code) Link prediction: build positives + negatives, a GNN scorer,
+   and report AUC/Hits@10; explain your negative sampling.
+8. (Design) Recommend connections on a 2-billion-edge social graph.
+   Sketch: sampling strategy, GNN depth, negative sampling, training
+   parallelism, and how NEW users get embeddings (induction).
+9. (Debugging) A GNN matches an MLP that ignores edges. List the checks
+   you run on the graph before blaming the model.
+10. (Graph RAG) For "which vendors partner with our top competitor",
+    explain why vector-only RAG fails and sketch the graph retrieval
+    path (entities -> k-hop expansion -> LLM context).
+11. (Interview) Explain message passing to a non-GNN ML engineer in 3
+    sentences, then derive the GCN update.
+12. (Open-ended) OPEN PROBLEM: expressivity of message passing is
+    bounded (1-WL test equivalence) - heterophilic graphs, long-range
+    dependencies, and over-smoothing each lack a fully satisfying
+    general solution. Pick one and design the experiment that would
+    demonstrate a real fix.

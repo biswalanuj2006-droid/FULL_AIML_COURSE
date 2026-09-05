@@ -1,0 +1,204 @@
+# SPARK / PYSPARK — PRACTICE SET
+# 40 Questions + Debugging + Interview
+
+---
+
+## EASY (10 Questions)
+
+1. What is Apache Spark?
+   Answer: A distributed computing framework for large-scale data processing with APIs in Python, Scala, Java, and R
+
+2. What is the difference between RDD, DataFrame, and Dataset?
+   Answer: RDD: low-level, untyped; DataFrame: structured, typed columns; Dataset: typed DataFrame (JVM only)
+
+3. What is a SparkSession?
+   Answer: The entry point for Spark programming, created via SparkSession.builder
+
+4. What is lazy evaluation in Spark?
+   Answer: Transformations are not executed immediately; Spark builds a DAG and executes only when an action is called
+
+5. What is a transformation vs an action?
+   Answer: Transformation: creates a new RDD/DataFrame (lazy). Action: triggers computation and returns a result (eager)
+
+6. What is a partition?
+   Answer: A physical chunk of data distributed across cluster nodes for parallel processing
+
+7. What is the difference between map() and flatMap()?
+   Answer: map() applies function to each element 1:1. flatMap() applies function and flattens results
+
+8. What is a DataFrame in PySpark?
+   Answer: A distributed collection of data organized into named columns, similar to a Pandas DataFrame
+
+9. How do you read a CSV file in PySpark?
+   ```python
+   df = spark.read.csv("data.csv", header=True, inferSchema=True)
+   ```
+
+10. What is the Catalyst optimizer?
+    Answer: Spark's query optimizer that optimizes SQL/DataFrame operations through logical and physical plan optimization
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Write PySpark code to filter rows where age > 30 and select specific columns.
+    ```python
+    df.filter(df.age > 30).select("name", "age")
+    ```
+
+12. Explain the difference between narrow and wide transformations.
+    Answer: Narrow: each partition depends on one parent (map, filter). Wide: each partition depends on multiple parents (join, groupBy — requires shuffle)
+
+13. What is a shuffle in Spark?
+    Answer: Data redistribution across partitions, triggered by wide transformations. Expensive due to disk I/O and network transfer.
+
+14. How do you cache/persist a DataFrame?
+    ```python
+    df.cache()  # or df.persist(StorageLevel.MEMORY_AND_DISK)
+    ```
+
+15. What is the difference between cache() and persist()?
+    Answer: cache() stores in memory only. persist() allows choosing storage level (MEMORY, DISK, MEMORY_AND_DISK, etc.)
+
+16. Write PySpark code to perform a groupBy aggregation.
+    ```python
+    df.groupBy("department").agg(
+        F.avg("salary").alias("avg_salary"),
+        F.count("*").alias("count")
+    )
+    ```
+
+17. What is a UDF (User Defined Function)?
+    Answer: A custom function registered to extend Spark SQL capabilities when built-in functions are insufficient
+
+18. What is broadcast join?
+    Answer: A join strategy where the smaller table is broadcast to all nodes, avoiding expensive shuffles
+
+19. How do you handle missing data in PySpark?
+    ```python
+    df.na.drop()  # Drop rows with nulls
+    df.na.fill(0)  # Fill nulls with 0
+    df.fillna({"col1": 0, "col2": "unknown"})
+    ```
+
+20. What is Spark SQL?
+    Answer: A Spark module for structured data processing using SQL queries on DataFrames
+
+21. Write PySpark code to read a JSON file and write to Parquet.
+    ```python
+    df = spark.read.json("data.json")
+    df.write.parquet("output.parquet")
+    ```
+
+22. What is the difference between repartition() and coalesce()?
+    Answer: repartition() full shuffle (can increase or decrease partitions). coalesce() reduces partitions without full shuffle (more efficient for decreasing)
+
+23. What is window function in PySpark?
+    ```python
+    from pyspark.sql import Window
+    window = Window.partitionBy("department").orderBy("salary")
+    df.withColumn("rank", F.rank().over(window))
+    ```
+
+24. How do you join two DataFrames?
+    ```python
+    df1.join(df2, df1.id == df2.id, "inner")
+    ```
+
+25. What join types are supported?
+    Answer: inner, outer, left, right, left_semi, left_anti
+
+---
+
+## HARD (10 Questions)
+
+26. Write a PySpark pipeline that:
+    - Reads raw CSV data
+    - Handles missing values
+    - Encodes categorical columns
+    - Scales numerical features
+    - Trains a LogisticRegression model
+    - Evaluates with accuracy
+
+27. Implement a word count pipeline using RDD operations.
+
+28. Optimize a slow PySpark job by identifying and fixing shuffle issues.
+
+29. Write PySpark code to detect anomalies in streaming data using windowed aggregations.
+
+30. Implement a recommendation system using ALS (Alternating Least Squares) in PySpark MLlib.
+
+31. Write code to join three large tables efficiently, explaining your partition strategy.
+
+32. Implement a data quality validation pipeline using PySpark.
+
+33. Optimize a DataFrame operation by choosing between collect(), toPandas(), and show().
+
+34. Write PySpark streaming code that reads from Kafka, processes, and writes to PostgreSQL.
+
+35. Implement a feature engineering pipeline for ML using PySpark Transformer API.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: PySpark job is slow
+df.groupBy("col").count().show()
+# Problem: No partitioning, single partition for entire dataset
+# Fix: df.repartition("col") before groupBy
+
+# Debug 2: OutOfMemoryError
+huge_df = df.collect()  # Collecting too much data to driver
+# Fix: Use toPandas() for small subsets, or process in partitions
+
+# Debug 3: Serialization error with UDF
+@udf
+def my_func(x):
+    return x * 2
+# Problem: Using standard library types not supported by PySpark
+# Fix: Use pyspark.sql.types for return type annotation
+
+# Debug 4: Shuffle spill to disk
+df.groupBy("high_cardinality_col").count()
+# Problem: High cardinality causes massive shuffle
+# Fix: Repartition first, or use salting technique
+
+# Debug 5: Cartesian product accidentally
+df1.join(df2)  # Missing join condition!
+# Fix: Always specify join condition: df1.join(df2, df1.id == df2.id)
+```
+
+---
+
+## INTERVIEW QUESTIONS (10)
+
+1. **Q:** When would you use PySpark vs Pandas?
+   **A:** PySpark: data > memory, distributed cluster, ETL pipelines. Pandas: data fits in memory, single machine, interactive analysis.
+
+2. **Q:** Explain the Spark execution model.
+   **A:** Driver → SparkSession → DAG scheduler → Task scheduler → Executors. Transformations build DAG, actions trigger execution.
+
+3. **Q:** What is the difference between map() and select()?
+   **A:** map() operates on RDD elements. select() operates on DataFrame columns. Prefer select() for structured data (optimized by Catalyst).
+
+4. **Q:** How does Spark handle fault tolerance?
+   **A:** RDDs track lineage (transformation history). Lost partitions are recomputed from parent partitions. Checkpointing can break long lineage chains.
+
+5. **Q:** What is the difference between repartition and coalesce?
+   **A:** repartition: full shuffle, can increase/decrease. coalesce: reduces partitions without shuffle, more efficient for decreasing.
+
+6. **Q:** When would you use broadcast join?
+   **A:** When one table is small enough to fit in memory (< 10MB default threshold). Avoids expensive shuffle of the large table.
+
+7. **Q:** What is skew join and how do you handle it?
+   **A:** When one key has disproportionately many rows. Handle with salting (add random prefix to keys), repartitioning, or adaptive query execution.
+
+8. **Q:** How do you debug a slow PySpark job?
+   **A:** Check Spark UI for stage duration, shuffle read/write, task distribution. Look for data skew, unnecessary shuffles, and poor partitioning.
+
+9. **Q:** What is adaptive query execution (AQE)?
+   **A:** Spark 3.0+ feature that dynamically optimizes query plans at runtime based on actual data statistics (coalescing partitions, optimizing joins).
+
+10. **Q:** How would you process terabyte-scale data with PySpark?
+    **A:** Use partitioned Parquet format, bucket frequently joined columns, broadcast small tables, minimize shuffles, use AQE, and monitor via Spark UI.

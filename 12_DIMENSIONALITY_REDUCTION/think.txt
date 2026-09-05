@@ -1,0 +1,42 @@
+================================================================================
+THINK.TXT - 12 DIMENSIONALITY REDUCTION
+================================================================================
+
+1. PCA maximizes variance of projections. Derive why the top eigenvector
+   of the covariance matrix is the solution, and state the implicit
+   Gaussian assumption.
+2. PCA is scale-dependent. Show a 2-feature example where not
+   standardizing reverses the first component, and argue when raw PCA
+   (without scaling) is actually correct.
+3. Why does PCA fail on data lying on a curved manifold (e.g., a
+   "swiss roll")? What does t-SNE/UMAP assume instead?
+4. Explained variance: 95% threshold selects k components. What does the
+   remaining 5% contain that could still matter for a classifier? Give a
+   concrete case where low-variance directions are the signal.
+5. t-SNE preserves LOCAL structure and often produces visually separate
+   clusters that do not exist. How do you tell a real cluster from a
+   t-SNE artifact, and what do perplexity and early exaggeration do?
+6. UMAP vs t-SNE vs PCA: you must embed 1M vectors for visualization.
+   Compare runtime, global vs local structure, and reproducibility.
+7. PCA for compression vs PCA for noise reduction: reconstructing faces
+   from 50 components vs using them as classifier features - what is
+   being lost and gained in each?
+8. Kernel PCA implicitly maps to a high-dimensional space. How can
+   "going higher" help reduce dimensionality, and what does the kernel
+   choice encode about the data?
+9. NMF produces non-negative parts (e.g., topics, facial features).
+   Derive why non-negativity changes interpretability, and when you would
+   prefer NMF over PCA.
+10. You apply PCA inside a pipeline for a classifier. Where exactly must
+    the PCA fit happen to avoid leakage, and what happens to your CV
+    score if you fit it on all data first?
+11. Random Projection is distribution-free and fast. Explain the
+    Johnson-Lindenstrauss lemma intuition: how can random projections
+    preserve distances, and when would you choose it over PCA?
+12. OPEN PROBLEM: all linear and manifold methods assume SOME structure
+    (linear subspace, manifold, cluster). Is there a principled way to
+    choose the structure assumption from data? Discuss current
+    approaches and their limits.
+================================================================================
+END
+================================================================================

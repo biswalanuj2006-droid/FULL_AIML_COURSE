@@ -1,0 +1,389 @@
+================================================================================
+MODULE 23: NATURAL LANGUAGE PROCESSING (NLP) — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Process and clean text data
+- Apply tokenization, stemming, and lemmatization
+- Vectorize text using Bag of Words and TF-IDF
+- Build text classification models
+- Perform sentiment analysis and named entity recognition
+- Use modern NLP libraries (NLTK, spaCy, Hugging Face)
+
+================================================================================
+1. WHAT IS NLP?
+================================================================================
+
+INTUITION
+---------
+NLP = teaching computers to understand, interpret, and generate human language.
+
+Applications:
+- Spam detection
+- Sentiment analysis
+- Machine translation
+- Chatbots
+- Text summarization
+- Named entity recognition
+- Question answering
+
+CHALLENGE: LANGUAGE IS MESSY
+-----------------------------
+- "I'm" vs "I am" (same meaning)
+- "bank" (river bank vs money bank) — ambiguity
+- Sarcasm: "Oh great, another meeting"
+- Context: "The cat sat on the mat" vs "The cat sat on the data"
+- Negation: "I do NOT like this" — model must catch "NOT"
+
+================================================================================
+2. TEXT PREPROCESSING
+================================================================================
+
+2.1 LOWERCASING
+----------------
+text = "Hello World"
+text = text.lower()  # "hello world"
+
+2.2 REMOVING PUNCTUATION
+-------------------------
+import re
+text = re.sub(r'[^\w\s]', '', text)
+
+2.3 REMOVING WHITESPACE
+------------------------
+text = text.strip()
+text = re.sub(r'\s+', ' ', text)
+
+2.4 REMOVING STOPWORDS
+-----------------------
+from nltk.corpus import stopwords
+
+stop_words = set(stopwords.words('english'))
+words = text.split()
+filtered = [w for w in words if w not in stop_words]
+
+2.5 STEMMING (crude root form)
+-------------------------------
+from nltk.stem import PorterStemmer
+
+stemmer = PorterStemmer()
+stemmer.stem("running")   # "run"
+stemmer.stem("better")    # "better" (not "good" — stems are crude)
+stemmer.stem("studies")   # "studi"
+
+2.6 LEMMATIZATION (proper root form)
+-------------------------------------
+from nltk.stem import WordNetLemmatizer
+
+lemmatizer = WordNetLemmatizer()
+lemmatizer.lemmatize("running", pos='v')  # "run"
+lemmatizer.lemmatize("better", pos='a')   # "good"
+lemmatizer.lemmatize("studies", pos='n')  # "study"
+
+STEMMING vs LEMMATIZATION
+--------------------------
+Stemming: faster, cruder, may produce non-words
+Lemmatization: slower, produces real words, needs POS tag
+
+2.7 COMPLETE PIPELINE
+---------------------
+import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+
+nltk.download('stopwords')
+nltk.download('wordnet')
+
+def preprocess_text(text):
+    # Lowercase
+    text = text.lower()
+    # Remove punctuation and numbers
+    text = re.sub(r'[^a-zA-Z\s]', '', text)
+    # Tokenize
+    words = text.split()
+    # Remove stopwords
+    stop_words = set(stopwords.words('english'))
+    words = [w for w in words if w not in stop_words]
+    # Lemmatize
+    lemmatizer = WordNetLemmatizer()
+    words = [lemmatizer.lemmatize(w) for w in words]
+    return ' '.join(words)
+
+================================================================================
+3. TOKENIZATION
+================================================================================
+
+WORD TOKENIZATION
+-----------------
+text = "I love natural language processing"
+tokens = text.split()  # ['I', 'love', 'natural', 'language', 'processing']
+
+# Better: NLTK tokenizer
+from nltk.tokenize import word_tokenize
+tokens = word_tokenize("I love NLP!")  # ['I', 'love', 'NLP', '!']
+
+# spaCy tokenizer
+import spacy
+nlp = spacy.load('en_core_web_sm')
+doc = nlp("I love NLP!")
+tokens = [token.text for token in doc]
+
+SENTENCE TOKENIZATION
+---------------------
+from nltk.tokenize import sent_tokenize
+sentences = sent_tokenize("Hello. How are you? I'm fine.")
+# ['Hello.', 'How are you?', "I'm fine."]
+
+SUBWORD TOKENIZATION (for transformers)
+----------------------------------------
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+tokens = tokenizer.tokenize("I love natural language processing")
+# ['i', 'love', 'natural', 'language', 'processing']
+
+tokenizer("I love NLP", return_tensors='pt')
+# {'input_ids': tensor([[ 101, 1045, 2293, 2395, 102]]), ...}
+
+================================================================================
+4. TEXT VECTORIZATIONS
+================================================================================
+
+PROBLEM: ML models need numbers, not text.
+SOLUTION: Convert text to numerical vectors.
+
+4.1 BAG OF WORDS (BoW)
+------------------------
+from sklearn.feature_extraction.text import CountVectorizer
+
+corpus = [
+    "I love machine learning",
+    "I love deep learning",
+    "machine learning is great"
+]
+
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(corpus)
+
+print(vectorizer.get_feature_names_out())
+# ['deep', 'great', 'is', 'learning', 'love', 'machine']
+
+print(X.toarray())
+# [[0, 0, 0, 1, 1, 1],
+#  [1, 0, 0, 1, 1, 0],
+#  [0, 1, 1, 1, 0, 1]]
+
+PROS: Simple, fast
+CONS: Loses word order, high dimensionality, no semantic meaning
+
+4.2 TF-IDF (Term Frequency - Inverse Document Frequency)
+---------------------------------------------------------
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(corpus)
+
+TF-IDF = TF × IDF
+TF = (count of word in document) / (total words in document)
+IDF = log(N / (number of documents containing word))
+
+INTUITION: Words that appear frequently in ONE document but rarely
+across all documents are important.
+
+PROS: Downweights common words, better than BoW
+CONS: Still no semantic meaning, high dimensionality
+
+4.3 WORD EMBEDDINGS (next module)
+----------------------------------
+Dense vectors that capture semantic meaning.
+"king" - "man" + "woman" ≈ "queen"
+
+================================================================================
+5. TEXT CLASSIFICATION
+================================================================================
+
+FROM SCRATCH WITH SKLEARN
+--------------------------
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import cross_val_score
+
+# Sample data
+texts = ["great product", "terrible service", "love it", "hate this", ...]
+labels = [1, 0, 1, 0, ...]
+
+pipeline = Pipeline([
+    ('tfidf', TfidfVectorizer(max_features=5000)),
+    ('model', LogisticRegression(max_iter=1000))
+])
+
+scores = cross_val_score(pipeline, texts, labels, cv=5, scoring='accuracy')
+print(f"Accuracy: {scores.mean():.4f}")
+
+SPAM CLASSIFIER EXAMPLE
+------------------------
+from sklearn.model_selection import train_test_split
+
+# Load dataset (e.g., SMS Spam Collection)
+import pandas as pd
+df = pd.read_csv('spam.csv', encoding='latin-1')
+df = df[['v1', 'v2']]
+df.columns = ['label', 'text']
+df['label'] = (df['label'] == 'spam').astype(int)
+
+# Preprocess
+df['clean_text'] = df['text'].apply(preprocess_text)
+
+# Split
+X_train, X_test, y_train, y_test = train_test_split(
+    df['clean_text'], df['label'], test_size=0.2, random_state=42
+)
+
+# Train
+pipeline = Pipeline([
+    ('tfidf', TfidfVectorizer(max_features=5000, ngram_range=(1, 2))),
+    ('model', LogisticRegression(max_iter=1000))
+])
+pipeline.fit(X_train, y_train)
+print(f"Accuracy: {pipeline.score(X_test, y_test):.4f}")
+
+================================================================================
+6. SENTIMENT ANALYSIS
+================================================================================
+
+USING HUGGING FACE PIPELINE
+-----------------------------
+from transformers import pipeline
+
+classifier = pipeline('sentiment-analysis')
+result = classifier("I love this movie!")
+print(result)  # [{'label': 'POSITIVE', 'score': 0.9998}]
+
+result = classifier("This is terrible.")
+print(result)  # [{'label': 'NEGATIVE', 'score': 0.9994}]
+
+BATCH PROCESSING
+----------------
+results = classifier([
+    "Great product!",
+    "Worst experience ever",
+    "It's okay, nothing special"
+])
+for r in results:
+    print(f"{r['label']}: {r['score']:.4f}")
+
+================================================================================
+7. NAMED ENTITY RECOGNITION (NER)
+================================================================================
+
+INTUITION
+---------
+Identify and classify named entities in text (persons, organizations,
+locations, dates, etc.)
+
+USING SPACY
+-----------
+import spacy
+nlp = spacy.load('en_core_web_sm')
+
+doc = nlp("Apple Inc. was founded by Steve Jobs in Cupertino, California in 1976.")
+
+for ent in doc.ents:
+    print(f"{ent.text} → {ent.label_}")
+
+# Apple Inc. → ORG
+# Steve Jobs → PERSON
+# Cupertino → GPE
+# California → GPE
+# 1976 → DATE
+
+USING HUGGING FACE
+-------------------
+from transformers import pipeline
+
+ner = pipeline('ner', aggregation_strategy='simple')
+results = ner("Apple Inc. was founded by Steve Jobs in California.")
+for r in results:
+    print(f"{r['word']} → {r['entity_group']} ({r['score']:.3f})")
+
+================================================================================
+8. N-GRAMS
+================================================================================
+
+INTUITION
+---------
+N-grams capture word sequences.
+
+Unigrams: ["I", "love", "NLP"]
+Bigrams:  ["I love", "love NLP"]
+Trigrams: ["I love NLP"]
+
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Include bigrams
+vectorizer = CountVectorizer(ngram_range=(1, 2))  # unigrams + bigrams
+X = vectorizer.fit_transform(corpus)
+
+WHY N-GRAMS?
+------------
+"not good" → unigrams: ["not", "good"] (positive-sounding)
+            → bigrams: ["not good"] (clearly negative!)
+
+================================================================================
+9. LIBRARIES COMPARISON
+================================================================================
+
+| LIBRARY     | USE CASE                    | STRENGTHS                  |
+|-------------|-----------------------------|----------------------------|
+| NLTK        | Learning, prototyping       | Comprehensive, educational |
+| spaCy       | Production NLP              | Fast, accurate, pipeline   |
+| Transformers| Modern NLP, deep learning   | State-of-the-art models    |
+| Gensim      | Word embeddings, topics     | Word2Vec, LDA              |
+
+WHEN TO USE WHAT
+----------------
+NLTK: learning, simple tasks, quick prototyping
+spaCy: production NLP, speed-critical, pipeline needs
+Transformers: SOTA performance, complex tasks
+Gensim: word embeddings, topic modeling
+
+================================================================================
+10. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Removing all stopwords for sentiment analysis
+  WRONG: Removing "not", "no", "never" (important for sentiment)
+  RIGHT: Keep negation words, or use custom stopword list
+
+MISTAKE 2: Stemming when lemmatization is needed
+  WRONG: "studies" → "studi" (not a real word)
+  RIGHT: Use lemmatization for most tasks
+
+MISTAKE 3: Using Bag of Words for semantic tasks
+  WRONG: BoW for similarity search
+  RIGHT: Use embeddings for semantic understanding
+
+MISTAKE 4: Not preprocessing before vectorization
+  RIGHT: Clean, lowercase, remove noise first
+
+MISTAKE 5: Ignoring class imbalance in text classification
+  RIGHT: Use class weights or oversampling for imbalanced text data
+
+================================================================================
+11. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between stemming and lemmatization?
+Q2: How does TF-IDF improve upon Bag of Words?
+Q3: Why are n-grams useful for sentiment analysis?
+Q4: What are the advantages of using spaCy over NLTK for production?
+Q5: How do word embeddings capture semantic meaning?
+Q6: What preprocessing steps are most important for text classification?
+
+================================================================================
+END OF MODULE 23: NLP
+================================================================================

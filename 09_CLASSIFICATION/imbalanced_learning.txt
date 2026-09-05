@@ -1,0 +1,175 @@
+================================================================================
+MODULE 09 (CLASSIFICATION) - LESSON: IMBALANCED LEARNING
+What to do when 99.9% of your data is one class
+================================================================================
+
+CONTENTS
+  1. The problem: why accuracy lies at 99:1
+  2. Diagnose imbalance before fixing it (is it really imbalance?)
+  3. Evaluation first: the metrics that survive imbalance
+  4. Fix level 0 - change the decision threshold (cheapest, often enough)
+  5. Fix level 1 - class weights / cost-sensitive learning
+  6. Fix level 2 - resampling (undersample, oversample, SMOTE family)
+  7. Fix level 3 - algorithm & data-level changes
+  8. What NOT to do (common traps)
+  9. Worked decision flow
+ 10. Practice
+================================================================================
+
+1. THE PROBLEM
+================================================================================
+Fraud is 0.1% of transactions. A model that predicts "not fraud" for
+everything is 99.9% accurate - and useless.
+
+WHY accuracy lies: it weights every class by its frequency. When one class
+is 99.9%, you can win accuracy by ignoring the rare class entirely.
+
+RULE: accuracy is only meaningful near balanced classes. For imbalanced
+problems, evaluate with PRECISION/RECALL (or PR-AUC), not accuracy or
+even ROC-AUC (ROC stays optimistic because the huge negative class
+dominates its false-positive rate).
+
+2. DIAGNOSE FIRST - THREE KINDS OF "IMBALANCE"
+================================================================================
+a) INTRINSIC imbalance - rare by nature (fraud, cancer, faults).
+   Sampling more positives may be impossible. Cost matters.
+b) EXTRINSIC imbalance - sampling artifact (you collected 1% positives
+   because of budget). Fix the COLLECTION, not the model.
+c) APPARENT imbalance - you think positives are rare but they are just
+   split into many rare subclasses or poorly labeled.
+   Check: label quality first. 15% of your "negatives" may secretly be
+   positives (fraud missed by the old rule) - then "imbalance" is a
+   labeling problem, not a modeling problem.
+
+MEASURE: positive rate = n_pos / n_total. If < ~5%, read this lesson.
+Also measure overlap: if classes separate cleanly, imbalance alone is
+minor.
+
+3. EVALUATION FIRST
+================================================================================
+Use (with justification):
+  - Precision = TP / (TP + FP)  "of flagged, how many are right?"
+  - Recall   = TP / (TP + FN)   "of real positives, how many found?"
+  - F1 / F-beta (beta > 1 weights recall)
+  - PR-AUC (better than ROC-AUC when positives are rare)
+  - Balanced accuracy = mean(recall_pos, recall_neg)
+  - MCC (single-number summary robust to imbalance)
+Always evaluate on a STRATIFIED split (keeps 0.1% in validation).
+
+THRESHOLD ECONOMICS: a decision has costs. Let:
+  cost_FP = cost of a false alarm, cost_FN = cost of a missed positive.
+  Optimal rule: predict positive when  p >= cost_FP / (cost_FP + cost_FN)
+  (Bayes decision rule under 0/1-ish costs). Derive it and use it.
+
+4. FIX LEVEL 0 - THRESHOLD + CALIBRATED PROBABILITIES
+================================================================================
+Many imbalanced models are fine; the 0.5 default threshold is wrong.
+
+  from sklearn.calibration import CalibratedClassifierCV
+  from sklearn.linear_model import LogisticRegression
+
+  model = CalibratedClassifierCV(LogisticRegression(class_weight="balanced"))
+  model.fit(X_train, y_train)
+  probs = model.predict_proba(X_test)[:, 1]
+
+  # choose threshold on VALIDATION only, from cost or desired recall
+  thresh = 0.3
+  preds = (probs >= thresh).astype(int)
+
+Why calibrate: boosting/SVM probabilities are poorly scaled; threshold
+tuning on raw probabilities is unreliable. Calibrate first (Platt or
+isotonic on a held-out set).
+
+5. FIX LEVEL 1 - CLASS WEIGHTS / COST-SENSITIVE
+================================================================================
+Tell the loss function that positives matter more - no data changes, no
+overfitting from resampling.
+
+  LogisticRegression(class_weight="balanced")       # auto 1/frequency
+  RandomForestClassifier(class_weight="balanced")
+  # trees: class_weight affects impurity weighting AND bootstrap sampling
+
+In neural nets: loss = BCEWithLogitsLoss(pos_weight=ratio) or weighted
+sampler in the DataLoader.
+
+Effect: pushes predicted probabilities up; often the best single fix.
+Pair it with level 0 threshold tuning.
+
+6. FIX LEVEL 2 - RESAMPLING (use with care)
+================================================================================
+a) UNDERSAMPLING the majority: fast, reduces data, RISK: discards
+   informative negatives. Better: Tomek links / edited nearest neighbor
+   (remove only "noisy/overlapping" majority points).
+b) OVERSAMPLING positives by duplication: simple, RISK: overfits the
+   copied points (model memorizes duplicates).
+c) SMOTE (synthetic minority oversampling): creates INTERPOLATED
+   positives between neighbors instead of copies. Variants:
+   Borderline-SMOTE / ADASYN (focus on the difficult border region).
+   RISK: if positives are rare AND noisy, synthetic points can be
+   garbage; don't use on high-dim sparse text.
+
+CRITICAL RULE: resample INSIDE each CV fold (after the split), never on
+the full dataset before splitting - otherwise synthetic positives leak
+into validation and your score is fiction. Use imblearn Pipeline.
+
+  from imblearn.over_sampling import SMOTE
+  from imblearn.pipeline import Pipeline as ImbPipeline
+
+  pipe = ImbPipeline([
+      ("smote", SMOTE(random_state=42)),
+      ("model", RandomForestClassifier(n_estimators=200)),
+  ])
+  # cross_val_score(pipe, X, y, cv=StratifiedKFold(5)) - safe by construction
+
+7. FIX LEVEL 3 - ALGORITHM & DATA-LEVEL
+================================================================================
+  - Choose imbalance-friendly learners: gradient boosting with
+    scale_pos_weight (XGBoost) / is_unbalance, CatBoost auto class
+    weights.
+  - Two-stage / anomaly framing: when positives are extremely rare and
+    heterogeneous, treat as anomaly detection (module 11_ANOMALY) to
+    bootstrap labels, then switch to classification.
+  - Ensemble + bagging over resampled folds (BalanceCascade, EasyEnsemble
+    ideas): train classifiers on balanced subsets, average.
+  - Collect more/better positives: with only 100 positives, NO method
+    rescues you - the ceiling is set by data. Know when to stop tuning.
+
+8. WHAT NOT TO DO
+================================================================================
+  - Do NOT report accuracy (or ROC-AUC alone).
+  - Do NOT SMOTE before splitting.
+  - Do NOT tune threshold on the TEST set (it becomes training).
+  - Do NOT assume random oversampling helps; measure.
+  - Do NOT ignore label noise in the majority class - clean it before
+    resampling, or you amplify noise into synthetic positives.
+  - Do NOT use plain K-fold (stratify!).
+  - Do NOT resample then use a model with class_weight - double counting.
+
+9. WORKED DECISION FLOW
+================================================================================
+  1. Compute positive rate; check label quality; stratified split.
+  2. Baseline: logistic + balanced accuracy/PR-AUC. No fixes yet.
+  3. Add class_weight="balanced". Compare PR-AUC.
+  4. Calibrate probabilities; pick threshold from cost ratio on
+     validation.
+  5. If still poor AND you have enough data: try SMOTE inside CV.
+  6. Consider anomaly framing or data collection as the real fix.
+  7. Report: PR-AUC, precision/recall at operating point, MCC, plus the
+     cost per decision. Never just accuracy.
+
+10. PRACTICE (mini)
+================================================================================
+  1. 100k rows, 100 positives, separable classes. Predict the effect of
+     each fix and verify on synthetic data.
+  2. Implement threshold-from-costs on a calibrated model; show how
+     precision/recall move as cost_FP/cost_FN changes 1x -> 10x -> 100x.
+  3. Compare SMOTE-inside-CV vs SMOTE-before-split PR-AUC - expect the
+     second to be inflated. Quantify the inflation.
+  4. Debug: model predicts all negatives even with class_weight. Which
+     checks (probability histogram, threshold, calibration) find the
+     cause?
+
+Full practice: 09_CLASSIFICATION/practice.txt and failure_lab.txt.
+================================================================================
+END OF LESSON
+================================================================================

@@ -1,0 +1,39 @@
+================================================================================
+FEATURE ENGINEERING — PRACTICE SET (25 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is feature engineering?
+Q2: What is log transformation and when to use it?
+Q3: What is one-hot encoding vs ordinal encoding?
+Q4: What is feature selection?
+Q5: What is interaction features?
+Q6: What is binning?
+Q7: What is target encoding?
+Q8: Why is feature engineering important for ML?
+
+MEDIUM (12)
+============
+Q9: Build feature engineering pipeline with sklearn.
+Q10: Implement cyclical encoding for time features.
+Q11: Build aggregation features from transaction data.
+Q12: Implement feature selection using correlation.
+Q13: Build polynomial features pipeline.
+Q14: Implement text feature extraction.
+Q15: Compare feature selection methods.
+Q16: Build datetime feature engineering pipeline.
+Q17: Implement custom feature engineering transformer.
+Q18: Build feature importance analysis.
+Q19: Implement feature selection with RFE.
+Q20: Build complete feature engineering framework.
+
+HARD (5)
+=========
+Q21: Build production feature engineering pipeline.
+Q22: Implement feature store concept.
+Q23: Build automated feature engineering.
+Q24: Implement feature drift detection.
+Q25: Build feature engineering comparison study.
+
+================================================================================

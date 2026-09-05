@@ -1,0 +1,17 @@
+================================================================================
+MODEL EVALUATION — PROJECTS
+================================================================================
+
+PROJECT 1: MODEL EVALUATION REPORT (Beginner)
+===============================================
+Build evaluation report comparing 5 models with multiple metrics.
+
+PROJECT 2: THRESHOLD OPTIMIZATION (Intermediate)
+==================================================
+Optimize classification threshold for specific business metric.
+
+PROJECT 3: MODEL COMPARISON FRAMEWORK (Advanced)
+==================================================
+Build statistical model comparison framework with significance testing.
+
+================================================================================

@@ -1,0 +1,87 @@
+# INTERVIEW PREPARATION — PROJECTS
+
+---
+
+## PROJECT 1 — PORTFOLIO PROJECT (Level 1)
+
+### Problem Statement
+Build a portfolio project that demonstrates your skills.
+
+### Requirements
+- Choose a real-world problem
+- Implement complete ML pipeline
+- Include data preprocessing, EDA, modeling, evaluation
+- Write clean, documented code
+- Create a comprehensive README
+- Deploy or demonstrate results
+
+### Suggested Projects
+- Customer churn predictor
+- House price predictor
+- Sentiment analyzer
+- Image classifier
+- Recommendation system
+
+### Deliverables
+- GitHub repository with:
+  - README.md (problem, approach, results)
+  - Clean code structure
+  - requirements.txt
+  - Model performance metrics
+  - Visualizations
+  - Deployment instructions
+
+---
+
+## PROJECT 2 — MOCK INTERVIEW PROJECT (Level 2)
+
+### Problem Statement
+Simulate a take-home assignment under time pressure.
+
+### Requirements
+- Time limit: 3 hours
+- Real-world dataset
+- Complete ML pipeline
+- Clean code
+- Documentation
+- Presentation of results
+
+### Sample Assignment
+"You are given a dataset of customer transactions. Build a model to predict which customers will churn in the next month. Deliver a working model with evaluation metrics and business recommendations."
+
+### Evaluation Criteria
+- Code quality (20%)
+- ML methodology (30%)
+- Results and analysis (25%)
+- Documentation (15%)
+- Presentation (10%)
+
+---
+
+## PROJECT 3 — SYSTEM DESIGN PROJECT (Level 3)
+
+### Problem Statement
+Design a complete ML system for a specific use case.
+
+### Requirements
+- Architecture diagram
+- Data pipeline design
+- Model selection and justification
+- API design
+- Database schema
+- Deployment strategy
+- Monitoring plan
+- Cost analysis
+- Scalability considerations
+
+### Sample System Design
+"Design a real-time fraud detection system for an e-commerce platform processing 10,000 transactions per minute."
+
+### Deliverables
+- Architecture document
+- Component diagrams
+- Data flow diagrams
+- API specifications
+- Database schema
+- Deployment plan
+- Monitoring dashboard design

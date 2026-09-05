@@ -1,0 +1,80 @@
+================================================================================
+CARD: LINEAR REGRESSION (OLS)
+================================================================================
+PROBLEM   predict real y from x with a linear map.
+MODEL     y = w.x + b + noise ; assume E[noise|x]=0.
+OBJECTIVE minimize SSE:  min_w ||Xw - y||^2      (X: nxd, rows=examples,
+                                                    y: n, w: d, b absorbed
+                                                    into X as a 1-column)
+CLOSED FORM (normal equation)
+          w* = (X^T X)^-1 X^T y
+          Requires X^T X invertible (full column rank).
+          Numerically preferred: solve via SVD/pseudo-inverse or
+          np.linalg.lstsq, NOT by forming the inverse.
+GRADIENT  d/dw ||Xw-y||^2 = 2 X^T (Xw - y)   -> SGD update w -= lr X^T(Xw-y)
+KEY       Gauss-Markov: among linear UNBIASED estimators, OLS has the
+          lowest variance (when errors are homoscedastic + uncorrelated).
+COMPLEXITY normal eq O(n d^2 + d^3); predict O(d).
+FAILURES  multicollinearity (X^T X nearly singular, coefficients blow
+          up/opposite signs), outliers (quadratic loss), extrapolation,
+          heteroscedasticity breaks the inference guarantees.
+CONNECTS  Ridge = OLS + L2 penalty; it is the MAP estimate with a
+          Gaussian prior (see bayesian_and_gp_regression).
+
+================================================================================
+CARD: RIDGE / LASSO / ELASTIC NET
+================================================================================
+PROBLEM   stable linear coefficients under multicollinearity / high-d.
+OBJECTIVE Ridge:       min_w ||Xw-y||^2 + lambda ||w||_2^2
+          Lasso:       min_w ||Xw-y||^2 + lambda ||w||_1
+          ElasticNet:  min_w ||Xw-y||^2 + l1*||w||_1 + l2*||w||_2^2
+CLOSED    Ridge: w* = (X^T X + lambda I)^-1 X^T y   (always invertible)
+          Lasso: no closed form (coordinate descent / LARS).
+KEY       L1 geometry: the diamond constraint touches the elliptical
+          level sets at AXES -> exact zeros (feature selection).
+          L2 geometry: sphere constraint shrinks smoothly, no zeros.
+          Both trade bias (shrinkage toward 0) for variance reduction.
+COMPLEXITY Ridge O(n d^2); Lasso coordinate descent ~O(n d) per sweep.
+FAILURES  lambda too large kills signal; unstandardized features make
+          the penalty meaningless (scale features first!); Lasso with
+          correlated features picks one arbitrarily.
+CONNECTS  Lasso = MAP with Laplace prior; ElasticNet = compromise.
+
+================================================================================
+CARD: LOGISTIC REGRESSION
+================================================================================
+PROBLEM   binary classification with calibrated probabilities.
+MODEL     p(y=1|x) = sigmoid(w.x + b) = 1 / (1 + exp(-(w.x+b)))
+OBJECTIVE maximize log-likelihood = minimize log loss (cross-entropy):
+          min_w -sum_i [ y_i log p_i + (1-y_i) log(1-p_i) ]
+GRADIENT  dL/dw = X^T (p - y)        (beautiful: residual of probabilities)
+          Update: w -= lr * X^T (sigmoid(Xw) - y)
+KEY       linear decision boundary where w.x + b = 0; predictions are
+          probabilities (calibrated if model correct); convex loss.
+          p/(1-p) = exp(w.x+b)  -> the LOG-ODDS are linear in x.
+COMPLEXITY O(nd) per epoch (SGD); predict O(d).
+FAILURES  linear boundary (bias if data is nonlinearly separable),
+          class imbalance skews the intercept, collinearity like OLS.
+CONNECTS  one neuron + sigmoid + BCE = logistic regression (see NN card);
+          Softmax generalizes it to K classes.
+
+================================================================================
+CARD: SOFTMAX + CROSS-ENTROPY (K classes)
+================================================================================
+PROBLEM   multiclass probabilities from K scores z_k.
+MODEL     p_k = exp(z_k) / sum_j exp(z_j)      (z = logits, K-dim)
+OBJECTIVE cross-entropy:  L = -sum_k y_k log p_k
+          (y = one-hot true class; L = -log p_true, the "log of the
+          correct class probability").
+GRADIENT  the single most important DL identity:
+          dL/dz = p - y            (softmax output minus one-hot)
+          i.e. gradient = (predicted probs) - (true distribution).
+          That is why softmax + CE pairs perfectly with backprop: the
+          gradient is simply the prediction error at the output.
+NUM STAB  compute log p directly as z - logsumexp(z) to avoid exp
+          overflow/underflow (never softmax-then-log naively).
+COMPLEXITY O(K) per example.
+FAILURES  saturated logits (gradient ~ p-y still fine for CE, unlike
+          MSE+softmax which saturates to zero gradient).
+CONNECTS  the output head of every classifier net; see
+          code/ml/11_softmax_cross_entropy... gradient-check verified.

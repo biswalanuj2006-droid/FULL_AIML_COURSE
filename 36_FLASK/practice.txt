@@ -1,0 +1,34 @@
+================================================================================
+FLASK MODULE — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is Flask?
+Q2: What is the difference between Flask and FastAPI?
+Q3: What is a route?
+Q4: What is request vs response?
+Q5: What is a template?
+Q6: What is a Blueprint?
+Q7: What is Jinja2?
+Q8: What is a Flask extension?
+
+MEDIUM (8)
+===========
+Q9: Build REST API with Flask.
+Q10: Implement Flask with SQLAlchemy.
+Q11: Build ML model serving API.
+Q12: Implement authentication in Flask.
+Q13: Build Flask application with blueprints.
+Q14: Implement file upload handling.
+Q15: Build Flask API with CORS.
+Q16: Implement Flask testing.
+
+HARD (4)
+=========
+Q17: Build production Flask application.
+Q18: Implement Flask with Redis caching.
+Q19: Build Flask microservices architecture.
+Q20: Implement Flask with Celery background tasks.
+
+================================================================================

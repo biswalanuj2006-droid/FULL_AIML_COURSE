@@ -1,0 +1,64 @@
+================================================================================
+PRACTICE - 06 NEURAL NETWORK FROM SCRATCH
+Work with code/06_neural_network_from_scratch.py open.
+================================================================================
+
+CONCEPTUAL
+ 1. Write the forward pass equations for a 2-layer net and name every
+    symbol.
+ 2. Why must the loss be differentiable with respect to every weight?
+ 3. What does backpropagation compute, and what theorem justifies it?
+ 4. Why initialize weights small/random rather than zero? What breaks
+    with all-zero weights?
+ 5. What is the difference between a gradient and a gradient descent
+    update?
+ 6. Why does ReLU help with vanishing gradients vs sigmoid?
+ 7. What does softmax produce and why use it only at the last layer?
+ 8. What is a learning rate and what happens at 0.001 vs 1.0 vs 100?
+
+NUMERICAL (work by hand, then check with code)
+ 9. 2-2-1 net. x=[1,0], W1=[[0.1,0.2],[0.3,0.4]], b1=0, W2=[0.5,0.6],
+    b2=0, ReLU hidden, sigmoid output. Compute forward pass values.
+10. From Q9: target 1, binary cross-entropy. Compute the loss.
+11. Compute dLoss/dW2 for the Q9 net (chain rule, show each step).
+12. With lr=0.1 write the updated W2 value. Which weight changed more
+    and why?
+
+CODE (write and run)
+13. Implement a 3-layer MLP (784-64-32-10) on MNIST, ReLU + softmax,
+    and report train accuracy after 1 epoch of full-batch GD vs
+    mini-batch (batch=32). Which is faster to converge and why?
+14. Add L2 weight decay; show train/test accuracy with lambda=0 vs 1e-3.
+15. Add dropout between hidden layers; show its effect on the
+    train-vs-test gap.
+16. Write a gradient check: numerical gradient (f(x+h)-f(x-h))/(2h)
+    vs your analytic gradient, max relative error < 1e-6.
+17. Plot the loss curve for lr in {0.01, 0.1, 0.5} on the same axes and
+    explain each shape.
+
+DEBUGGING
+18. Output layer sigmoid + BCE while labels are 0/1 - loss goes to NaN.
+    What numeric operation causes it and what is the stable fix?
+19. All predictions identical after training (e.g., always 0.5). Which
+    of: zero init, lr too high, softmax missing, wrong gradient sign?
+20. Accuracy stays ~chance but loss decreases - what is happening?
+21. Shuffling labels by mistake: what do the curves look like and what
+    does that tell you about your code?
+
+CHALLENGES
+22. Implement the same net in NumPy and in PyTorch; verify the weights
+    converge to the same loss on identical data/seed (explain any
+    differences you find).
+23. Implement momentum (v = beta*v - lr*g) and show convergence speed
+    vs plain SGD on a pathological (skewed) loss surface.
+24. Train on 10% of MNIST and compare with 100% - report the gap and
+    what it implies about data vs model capacity.
+
+REAL-WORLD SCENARIO
+25. A colleague trained a net that nails the training set (100%) but
+    fails validation. Give a debugging plan in 5 steps and justify
+    each step's order.
+
+================================================================================
+END
+================================================================================

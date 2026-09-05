@@ -1,0 +1,516 @@
+================================================================================
+MODULE 18: ARTIFICIAL NEURAL NETWORKS (ANN) — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand the biological inspiration behind neural networks
+- Explain forward propagation mathematically
+- Implement a neural network from scratch using NumPy
+- Build neural networks with PyTorch/Keras
+- Understand activation functions, loss functions, and optimizers
+- Train, validate, and evaluate neural networks
+
+================================================================================
+1. WHAT IS A NEURAL NETWORK?
+================================================================================
+
+INTUITION
+---------
+A neural network is a mathematical function that learns to map inputs
+to outputs by adjusting internal parameters (weights and bias).
+
+Inspired by biological neurons:
+- A biological neuron receives signals from other neurons
+- If the combined signal exceeds a threshold, it fires
+- Artificial neurons do the same thing mathematically
+
+SINGLE NEURON (Perceptron)
+---------------------------
+Inputs: x₁, x₂, ..., xₙ
+Weights: w₁, w₂, ..., wₙ
+Bias: b
+
+Weighted sum: z = w₁x₁ + w₂x₂ + ... + wₙxₙ + b = wᵀx + b
+Output: a = f(z)  where f is the activation function
+
+MATHEMATICS
+-----------
+z = wᵀx + b     (linear transformation)
+a = σ(z)         (non-linear activation)
+
+If a ≥ threshold → neuron "fires" (outputs 1)
+If a < threshold → neuron doesn't fire (outputs 0)
+
+================================================================================
+2. NETWORK ARCHITECTURE
+================================================================================
+
+LAYER TYPES
+-----------
+INPUT LAYER: receives raw features
+  → No computation, just passes data forward
+  → Number of neurons = number of features
+
+HIDDEN LAYERS: intermediate computations
+  → Each layer transforms the data
+  → Multiple hidden layers = "deep" network
+
+OUTPUT LAYER: produces final prediction
+  → 1 neuron for binary classification (sigmoid)
+  → K neurons for multi-class (softmax)
+  → 1 neuron for regression (linear)
+
+EXAMPLE: 3-LAYER NETWORK
+-------------------------
+Input (4 features) → Hidden1 (8 neurons) → Hidden2 (4 neurons) → Output (1)
+
+Total parameters:
+Layer 1: (4 × 8) + 8 = 40  (weights + bias)
+Layer 2: (8 × 4) + 4 = 36
+Layer 3: (4 × 1) + 1 = 5
+Total: 81 parameters to learn!
+
+================================================================================
+3. FORWARD PROPAGATION
+================================================================================
+
+THE PROCESS: data flows from input to output, layer by layer.
+
+For each layer l:
+  z[l] = W[l] · a[l-1] + b[l]    (linear transformation)
+  a[l] = f(z[l])                   (activation)
+
+where:
+  W[l] = weight matrix for layer l
+  b[l] = bias vector for layer l
+  f = activation function
+  a[0] = x (input)
+
+EXAMPLE: NUMERICAL WALKTHROUGH
+------------------------------
+Input: x = [1, 2]
+
+Layer 1: W1 = [[0.5, 0.3], [0.8, 0.1]], b1 = [0.1, 0.2]
+  z1 = W1 · x + b1 = [0.5*1 + 0.3*2 + 0.1, 0.8*1 + 0.1*2 + 0.2]
+     = [1.2, 1.2]
+  a1 = ReLU(z1) = [1.2, 1.2]
+
+Layer 2: W2 = [[0.4], [0.6]], b2 = [0.1]
+  z2 = W2 · a1 + b2 = [0.4*1.2 + 0.6*1.2 + 0.1]
+     = [1.32]
+  a2 = sigmoid(z2) = [0.789]
+
+Prediction: 0.789 (probability of class 1)
+
+================================================================================
+4. ACTIVATION FUNCTIONS
+================================================================================
+
+WHY ACTIVATIONS?
+Without them, the network is just linear regression!
+Stack of linear functions = one linear function.
+Non-linearity is what makes neural networks powerful.
+
+4.1 SIGMOID
+-----------
+σ(z) = 1 / (1 + e⁻ᶻ)
+Range: (0, 1)
+Derivative: σ(z) × (1 - σ(z))
+
+USE: output layer for binary classification
+AVOID: hidden layers (vanishing gradient problem)
+
+4.2 ReLU (Rectified Linear Unit)
+---------------------------------
+f(z) = max(0, z)
+Range: [0, ∞)
+Derivative: 1 if z > 0, else 0
+
+USE: hidden layers (default choice)
+PROBLEM: "dying ReLU" — neurons stuck at 0
+
+4.3 LEAKY ReLU
+---------------
+f(z) = max(0.01z, z)
+Fixes dying ReLU problem.
+
+4.4 TANH (Hyperbolic Tangent)
+------------------------------
+tanh(z) = (eᶻ - e⁻ᶻ) / (eᶻ + e⁻ᶻ)
+Range: (-1, 1)
+USE: when you want centered output
+
+4.5 SOFTMAX (Output Layer)
+--------------------------
+softmax(zᵢ) = eᶻⁱ / Σⱼ eᶻʲ
+Range: (0, 1), sums to 1
+USE: output layer for multi-class classification
+
+4.6 LINEAR (Identity)
+---------------------
+f(z) = z
+USE: output layer for regression
+
+CHOOSING ACTIVATIONS
+--------------------
+Hidden layers: ReLU (default), LeakyReLU, GELU
+Binary output: Sigmoid
+Multi-class output: Softmax
+Regression output: Linear
+
+================================================================================
+5. LOSS FUNCTIONS
+================================================================================
+
+5.1 BINARY CROSS-ENTROPY (Binary Classification)
+-------------------------------------------------
+L = -[y·log(ŷ) + (1-y)·log(1-ŷ)]
+
+5.2 CATEGORICAL CROSS-ENTROPY (Multi-class)
+--------------------------------------------
+L = -Σᵢ yᵢ·log(ŷᵢ)
+
+5.3 MEAN SQUARED ERROR (Regression)
+------------------------------------
+L = (1/n) Σ(yᵢ - ŷᵢ)²
+
+5.4 MEAN ABSOLUTE ERROR (Regression)
+-------------------------------------
+L = (1/n) Σ|yᵢ - ŷᵢ|
+
+================================================================================
+6. BACKPROPAGATION
+================================================================================
+
+INTUITION
+---------
+Backpropagation computes how much each weight contributed to the error,
+so we can update weights to reduce the error.
+
+It uses the CHAIN RULE of calculus to compute gradients efficiently.
+
+THE PROCESS
+-----------
+1. Forward pass: compute predictions
+2. Compute loss
+3. Backward pass: compute gradients of loss w.r.t. each weight
+4. Update weights: w = w - α × ∂L/∂w
+
+CHAIN RULE EXAMPLE
+------------------
+Loss L depends on output a², which depends on z², which depends on W² and a¹.
+
+∂L/∂W² = ∂L/∂a² × ∂a²/∂z² × ∂z²/∂W²
+
+This is computed layer by layer, from output back to input.
+
+Numerical example:
+  L = (a² - y)²
+  a² = sigmoid(z²)
+  z² = W² × a¹ + b²
+
+  ∂L/∂a² = 2(a² - y)
+  ∂a²/∂z² = a²(1 - a²)  [sigmoid derivative]
+  ∂z²/∂W² = a¹
+
+  ∂L/∂W² = 2(a² - y) × a²(1-a²) × a¹
+
+================================================================================
+7. WEIGHT INITIALIZATION
+================================================================================
+
+PROBLEM: Poor initialization → slow learning or dead neurons
+
+BAD: All zeros → symmetric gradients, no learning
+BAD: Random large values → exploding gradients
+
+GOOD INITIALIZATIONS
+---------------------
+Xavier/Glorot: W ~ N(0, 2/(n_in + n_out))
+  → Good for sigmoid, tanh
+
+He/Kaiming: W ~ N(0, 2/n_in)
+  → Good for ReLU
+
+from torch.nn.init import kaiming_normal_, xavier_uniform_
+
+kaiming_normal_(layer.weight, nonlinearity='relu')
+xavier_uniform_(layer.weight)
+
+================================================================================
+8. FROM SCRATCH: NUMPY IMPLEMENTATION
+================================================================================
+
+import numpy as np
+
+class NeuralNetwork:
+    def __init__(self, layers):
+        """layers: list of (input_size, output_size)"""
+        self.weights = []
+        self.biases = []
+        for i in range(len(layers) - 1):
+            # He initialization
+            w = np.random.randn(layers[i], layers[i+1]) * np.sqrt(2.0 / layers[i])
+            b = np.zeros((1, layers[i+1]))
+            self.weights.append(w)
+            self.biases.append(b)
+
+    def sigmoid(self, z):
+        return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+
+    def sigmoid_derivative(self, a):
+        return a * (1 - a)
+
+    def relu(self, z):
+        return np.maximum(0, z)
+
+    def relu_derivative(self, z):
+        return (z > 0).astype(float)
+
+    def forward(self, X):
+        self.activations = [X]
+        self.z_values = []
+
+        for i in range(len(self.weights)):
+            z = self.activations[-1] @ self.weights[i] + self.biases[i]
+            self.z_values.append(z)
+
+            if i < len(self.weights) - 1:  # hidden layers
+                a = self.relu(z)
+            else:  # output layer
+                a = self.sigmoid(z)
+
+            self.activations.append(a)
+
+        return self.activations[-1]
+
+    def backward(self, y, learning_rate=0.01):
+        m = y.shape[0]
+        # Output layer error
+        delta = self.activations[-1] - y
+
+        for i in range(len(self.weights) - 1, -1, -1):
+            # Compute gradients
+            dw = self.activations[i].T @ delta / m
+            db = np.sum(delta, axis=0, keepdims=True) / m
+
+            # Propagate error to previous layer
+            if i > 0:
+                delta = (delta @ self.weights[i].T) * self.relu_derivative(self.z_values[i-1])
+
+            # Update weights
+            self.weights[i] -= learning_rate * dw
+            self.biases[i] -= learning_rate * db
+
+    def compute_loss(self, y_pred, y):
+        return -np.mean(y * np.log(y_pred + 1e-8) + (1-y) * np.log(1 - y_pred + 1e-8))
+
+    def train(self, X, y, epochs=1000, learning_rate=0.01):
+        for epoch in range(epochs):
+            # Forward
+            y_pred = self.forward(X)
+            loss = self.compute_loss(y_pred, y)
+
+            # Backward
+            self.backward(y, learning_rate)
+
+            if epoch % 100 == 0:
+                accuracy = np.mean((y_pred > 0.5).astype(int) == y)
+                print(f"Epoch {epoch}: Loss={loss:.4f}, Accuracy={accuracy:.4f}")
+
+# Usage
+np.random.seed(42)
+X = np.random.randn(100, 4)  # 100 samples, 4 features
+y = (X[:, 0] + X[:, 1] > 0).astype(int).reshape(-1, 1)  # binary target
+
+nn = NeuralNetwork([4, 8, 4, 1])  # 4→8→4→1
+nn.train(X, y, epochs=1000, learning_rate=0.1)
+
+================================================================================
+9. PYTORCH IMPLEMENTATION
+================================================================================
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Prepare data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Convert to tensors
+X_train_t = torch.FloatTensor(X_train)
+y_train_t = torch.FloatTensor(y_train).reshape(-1, 1)
+X_test_t = torch.FloatTensor(X_test)
+y_test_t = torch.FloatTensor(y_test).reshape(-1, 1)
+
+# Define model
+class ANN(nn.Module):
+    def __init__(self, input_size):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Linear(input_size, 8),
+            nn.ReLU(),
+            nn.Linear(8, 4),
+            nn.ReLU(),
+            nn.Linear(4, 1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        return self.network(x)
+
+# Training
+model = ANN(X_train.shape[1])
+criterion = nn.BCELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+for epoch in range(100):
+    # Forward
+    outputs = model(X_train_t)
+    loss = criterion(outputs, y_train_t)
+
+    # Backward
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+    if (epoch + 1) % 10 == 0:
+        with torch.no_grad():
+            test_outputs = model(X_test_t)
+            test_pred = (test_outputs > 0.5).float()
+            accuracy = (test_pred == y_test_t).float().mean()
+            print(f"Epoch {epoch+1}: Loss={loss.item():.4f}, Test Acc={accuracy.item():.4f}")
+
+================================================================================
+10. KERAS IMPLEMENTATION
+================================================================================
+
+from tensorflow import keras
+from tensorflow.keras import layers
+
+model = keras.Sequential([
+    layers.Dense(8, activation='relu', input_shape=(X_train.shape[1],)),
+    layers.Dense(4, activation='relu'),
+    layers.Dense(1, activation='sigmoid')
+])
+
+model.compile(
+    optimizer='adam',
+    loss='binary_crossentropy',
+    metrics=['accuracy']
+)
+
+history = model.fit(
+    X_train, y_train,
+    epochs=100,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=1
+)
+
+# Plot training history
+import matplotlib.pyplot as plt
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Val Loss')
+plt.legend()
+plt.show()
+
+================================================================================
+11. HYPERPARAMETERS
+================================================================================
+
+LEARNING RATE
+-------------
+Too high: oscillates, diverges
+Too low: slow convergence, stuck in local minima
+Start with: 0.001 for Adam, 0.01 for SGD
+
+HIDDEN LAYERS
+-------------
+More layers → more complex patterns (but risk overfitting)
+Start with 1-2 hidden layers, increase if needed
+
+NEURONS PER LAYER
+-----------------
+Common patterns:
+- Pyramid: 128 → 64 → 32 → 1
+- Constant: 64 → 64 → 64 → 1
+- Start with 2× input features
+
+BATCH SIZE
+----------
+Smaller batch: more noise, better generalization
+Larger batch: faster training, may overfit
+Common: 32, 64, 128
+
+EPOCHS
+------
+Train until validation loss stops improving (early stopping)
+
+================================================================================
+12. REGULARIZATION
+================================================================================
+
+DROPOUT
+-------
+Randomly zero out neurons during training.
+Prevents co-adaptation of neurons.
+
+from torch.nn import Dropout
+nn.Dropout(p=0.5)  # 50% of neurons randomly dropped
+
+L2 REGULARIZATION (Weight Decay)
+---------------------------------
+Adds penalty for large weights.
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
+
+EARLY STOPPING
+--------------
+Monitor validation loss, stop when it stops improving.
+
+from keras.callbacks import EarlyStopping
+early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+
+================================================================================
+13. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: No feature scaling
+  WRONG: Neural networks on raw features
+  RIGHT: Always StandardScaler before neural networks
+
+MISTAKE 2: Too many epochs (overfitting)
+  RIGHT: Use early stopping
+
+MISTAKE 3: Learning rate too high
+  RIGHT: Start with 0.001, reduce if loss oscillates
+
+MISTAKE 4: Using sigmoid in hidden layers
+  RIGHT: Use ReLU in hidden layers, sigmoid/softmax only at output
+
+MISTAKE 5: Not shuffling training data
+  RIGHT: shuffle=True in DataLoader or manual shuffle
+
+================================================================================
+14. SKILLS CHECKPOINT
+================================================================================
+
+Q1: Why do neural networks need activation functions?
+Q2: What is the difference between ReLU and sigmoid?
+Q3: Explain backpropagation in your own words.
+Q4: What is the chain rule and how is it used in backpropagation?
+Q5: Why is weight initialization important?
+Q6: What is the vanishing gradient problem?
+Q7: How does dropout help prevent overfitting?
+Q8: What optimizer would you start with and why?
+
+================================================================================
+END OF MODULE 18: ANN
+================================================================================

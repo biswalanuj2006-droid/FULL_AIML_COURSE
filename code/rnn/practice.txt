@@ -1,0 +1,41 @@
+================================================================================
+CODE PRACTICE - code/rnn (Keras LSTM sine forecasting)
+Companion: 01_keras_lstm_sine.py
+================================================================================
+RUN & OBSERVE
+1. Run the example; verify the saved forecast PNG in diagrams/graphs/.
+2. Print the first 10 actual vs predicted values - is there a lag?
+
+MODIFY
+3. Predict the DIFFERENCE instead of the level (first-difference the
+   series, invert at the end) and compare test MSE + the persistence
+   baseline (predict last value). You must beat persistence.
+4. Change window length (10/30/60 time steps) and report test MSE vs
+   window - the bias/variance of the context.
+5. Swap LSTM for GRU at the same size; compare epochs-to-convergence
+   and final MSE (the GRU-vs-LSTM trade from the 22 lesson).
+6. Add a second LSTM layer and dropout; report train vs test MSE.
+
+DEBUG
+7. Remove gradient clipping and raise the LR until the loss explodes to
+   NaN; add back clipnorm/clipvalue and show stability (the RNN
+   gradient-explosion fix in practice).
+8. Scale targets to 0-1 but leave inputs unscaled (or vice versa):
+   show the loss stalls at a constant - the scaling-mismatch symptom.
+9. Feed the raw sine (not scaled) and watch the loss plateau: diagnose
+   via the scale of the predictions vs targets.
+
+BUILD (mini)
+10. Add a persistence and an AR(1) sklearn baseline and put all three
+    (baseline, AR, LSTM) in one comparison table - the lesson's "beat
+    the baseline" bar.
+11. Multi-step forecast: train on windows predicting the next 5 steps;
+    compare direct (5 heads) vs recursive (feed prediction back) and
+    report the error accumulation of the recursive path.
+
+RELATE
+12. Verify the 22_LSTM_GRU claim that LSTM ~= GRU quality on smooth
+    series but LSTM has more parameters - use your run's numbers.
+13. (Interview) Explain the vanishing-gradient mechanism and why the
+    cell's additive path fixes it (use your clipped/NaN runs as
+    evidence).

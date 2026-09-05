@@ -1,0 +1,330 @@
+# ARRAYS — PRACTICE SET
+# 40 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is the time complexity of accessing an element at index i?
+   Answer: O(1) — direct memory access
+
+2. What is the time complexity of inserting at the end of a dynamic array?
+   Answer: O(1) amortized, O(n) worst case (resize)
+
+3. What is the time complexity of inserting at the beginning?
+   Answer: O(n) — must shift all elements
+
+4. What is two-pointer technique?
+   Answer: Using two indices moving toward each other (or same direction) to solve problems in O(n)
+
+5. What is Kadane's algorithm used for?
+   Answer: Finding the maximum subarray sum in O(n) time
+
+6. What is the time complexity of rotating an array by k positions?
+   Answer: O(n) using reversal algorithm
+
+7. What is the difference between a list and an array?
+   Answer: Array: fixed size, contiguous memory. List: dynamic size, may use linked nodes
+
+8. What is prefix sum?
+   Answer: Precomputed cumulative sums allowing O(1) range sum queries
+
+9. What is the time complexity of finding the maximum element?
+   Answer: O(n) — must check every element
+
+10. What is the difference between a static and dynamic array?
+    Answer: Static: fixed size at creation. Dynamic: can grow/shrink (Python list, C++ vector)
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Find two numbers in an array that sum to a target. Optimal approach?
+    ```python
+    def two_sum(nums, target):
+        seen = {}
+        for i, num in enumerate(nums):
+            complement = target - num
+            if complement in seen:
+                return [seen[complement], i]
+            seen[num] = i
+    # Time: O(n), Space: O(n)
+    ```
+
+12. Rotate array by k positions using the reversal algorithm.
+    ```python
+    def rotate(arr, k):
+        n = len(arr)
+        k %= n
+        arr.reverse()
+        arr[:k] = reversed(arr[:k])
+        arr[k:] = reversed(arr[k:])
+    ```
+
+13. Find the maximum subarray sum (Kadane's algorithm).
+    ```python
+    def max_subarray(nums):
+        max_sum = current_sum = nums[0]
+        for num in nums[1:]:
+            current_sum = max(num, current_sum + num)
+            max_sum = max(max_sum, current_sum)
+        return max_sum
+    ```
+
+14. Find the majority element (appears more than n/2 times).
+    ```python
+    def majority_element(nums):
+        candidate, count = nums[0], 1
+        for num in nums[1:]:
+            if count == 0:
+                candidate, count = num, 1
+            elif num == candidate:
+                count += 1
+            else:
+                count -= 1
+        return candidate
+    ```
+
+15. Merge two sorted arrays in O(n+m) time.
+    ```python
+    def merge(a, b):
+        result = []
+        i = j = 0
+        while i < len(a) and j < len(b):
+            if a[i] <= b[j]:
+                result.append(a[i]); i += 1
+            else:
+                result.append(b[j]); j += 1
+        result.extend(a[i:])
+        result.extend(b[j:])
+        return result
+    ```
+
+16. Find the first missing positive integer in O(n) time.
+    ```python
+    def first_missing_positive(nums):
+        n = len(nums)
+        for i in range(n):
+            while 1 <= nums[i] <= n and nums[nums[i]-1] != nums[i]:
+                nums[nums[i]-1], nums[i] = nums[i], nums[nums[i]-1]
+        for i in range(n):
+            if nums[i] != i + 1:
+                return i + 1
+        return n + 1
+    ```
+
+17. What is the difference between sliding window and two pointers?
+    Answer: Two pointers: often move toward each other. Sliding window: maintains a window of variable/fixed size
+
+18. Find the maximum product subarray.
+    ```python
+    def max_product(nums):
+        max_prod = min_prod = result = nums[0]
+        for num in nums[1:]:
+            candidates = (num, max_prod * num, min_prod * num)
+            max_prod, min_prod = max(candidates), min(candidates)
+            result = max(result, max_prod)
+        return result
+    ```
+
+19. Compute prefix sum array.
+    ```python
+    def prefix_sum(arr):
+        prefix = [0] * (len(arr) + 1)
+        for i in range(len(arr)):
+            prefix[i + 1] = prefix[i] + arr[i]
+        return prefix
+    # Range sum [l, r] = prefix[r+1] - prefix[l]
+    ```
+
+20. Find all pairs in array with given sum.
+    ```python
+    def find_pairs(arr, target):
+        seen = set()
+        pairs = []
+        for num in arr:
+            complement = target - num
+            if complement in seen:
+                pairs.append((complement, num))
+            seen.add(num)
+        return pairs
+    ```
+
+21. Move all zeros to end of array while maintaining order.
+    ```python
+    def move_zeros(arr):
+        write = 0
+        for i in range(len(arr)):
+            if arr[i] != 0:
+                arr[write], arr[i] = arr[i], arr[write]
+                write += 1
+    ```
+
+22. Find the element that appears once (all others appear twice).
+    ```python
+    def single_number(nums):
+        result = 0
+        for num in nums:
+            result ^= num
+        return result
+    ```
+
+23. Find the contiguous subarray with largest product.
+    Same as Q18 — track both max and min products.
+
+24. Dutch National Flag problem (sort 0s, 1s, 2s).
+    ```python
+    def sort_colors(nums):
+        lo, mid, hi = 0, 0, len(nums) - 1
+        while mid <= hi:
+            if nums[mid] == 0:
+                nums[lo], nums[mid] = nums[mid], nums[lo]
+                lo += 1; mid += 1
+            elif nums[mid] == 1:
+                mid += 1
+            else:
+                nums[mid], nums[hi] = nums[hi], nums[mid]
+                hi -= 1
+    ```
+
+25. Find the longest consecutive sequence in O(n).
+    ```python
+    def longest_consecutive(nums):
+        num_set = set(nums)
+        longest = 0
+        for num in num_set:
+            if num - 1 not in num_set:
+                current = num
+                while current + 1 in num_set:
+                    current += 1
+                longest = max(longest, current - num + 1)
+        return longest
+    ```
+
+---
+
+## HARD (10 Questions)
+
+26. Find the median of two sorted arrays in O(log(min(m,n))).
+    ```python
+    def findMedianSortedArrays(nums1, nums2):
+        if len(nums1) > len(nums2):
+            nums1, nums2 = nums2, nums1
+        x, y = len(nums1), len(nums2)
+        lo, hi = 0, x
+        while lo <= hi:
+            px = (lo + hi) // 2
+            py = (x + y + 1) // 2 - px
+            max_left_x = float('-inf') if px == 0 else nums1[px-1]
+            min_right_x = float('inf') if px == x else nums1[px]
+            max_left_y = float('-inf') if py == 0 else nums2[py-1]
+            min_right_y = float('inf') if py == y else nums2[py]
+            if max_left_x <= min_right_y and max_left_y <= min_right_x:
+                if (x + y) % 2 == 1:
+                    return max(max_left_x, max_left_y)
+                return (max(max_left_x, max_left_y) + min(min_right_x, min_right_y)) / 2
+            elif max_left_x > min_right_y:
+                hi = px - 1
+            else:
+                lo = px + 1
+    ```
+
+27. Trapping rain water — compute how much water can be trapped.
+    ```python
+    def trap(height):
+        left_max = right_max = 0
+        l, r = 0, len(height) - 1
+        water = 0
+        while l < r:
+            if height[l] < height[r]:
+                if height[l] >= left_max:
+                    left_max = height[l]
+                else:
+                    water += left_max - height[l]
+                l += 1
+            else:
+                if height[r] >= right_max:
+                    right_max = height[r]
+                else:
+                    water += right_max - height[r]
+                r -= 1
+        return water
+    ```
+
+28. Find the maximum area in a histogram.
+
+29. Product of array except self (without division).
+    ```python
+    def product_except_self(nums):
+        n = len(nums)
+        result = [1] * n
+        left = 1
+        for i in range(n):
+            result[i] = left
+            left *= nums[i]
+        right = 1
+        for i in range(n-1, -1, -1):
+            result[i] *= right
+            right *= nums[i]
+        return result
+    ```
+
+30. Sliding window maximum using deque.
+
+31. Find the shortest unsorted continuous subarray.
+
+32. Maximum gap in an array in O(n) (bucket sort/radix sort).
+
+33. Contains duplicate III (maintain window with values within range and index diff).
+
+34. Find the minimum window substring containing all characters of another string.
+
+35. Split array into three parts with equal sum.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Off-by-one in two pointers
+def two_sum_sorted(arr, target):
+    l, r = 0, len(arr)  # Bug: should be len(arr) - 1
+    while l < r:
+        s = arr[l] + arr[r]
+        if s == target: return [l, r]
+        elif s < target: l += 1
+        else: r -= 1
+    return [-1, -1]
+
+# Debug 2: Kadane's doesn't handle all negatives
+def max_subarray(nums):
+    max_sum = 0  # Bug: should initialize to nums[0]
+    current = 0
+    for num in nums:
+        current = max(0, current + num)  # Bug: skips negative numbers
+        max_sum = max(max_sum, current)
+    return max_sum
+
+# Debug 3: Prefix sum off-by-one
+def range_sum(prefix, l, r):
+    return prefix[r] - prefix[l]  # Bug: should be prefix[r+1] - prefix[l]
+
+# Debug 4: Two-pointer doesn't handle duplicates
+def find_pairs(arr, target):
+    arr.sort()
+    l, r = 0, len(arr) - 1
+    while l < r:
+        s = arr[l] + arr[r]
+        if s == target:
+            print(arr[l], arr[r])
+            l += 1; r -= 1  # Bug: doesn't skip duplicates
+        elif s < target: l += 1
+        else: r -= 1
+
+# Debug 5: Rotate array by k doesn't handle k > n
+def rotate(arr, k):
+    k = k  # Bug: should be k %= len(arr)
+    arr.reverse()
+    arr[:k] = reversed(arr[:k])
+    arr[k:] = reversed(arr[k:])
+```

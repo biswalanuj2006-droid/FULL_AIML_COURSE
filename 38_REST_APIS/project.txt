@@ -1,0 +1,17 @@
+================================================================================
+REST APIS — PROJECTS
+================================================================================
+
+PROJECT 1: BLOG API (Beginner)
+=================================
+Build REST API for blog with CRUD operations.
+
+PROJECT 2: ML PREDICTION API (Intermediate)
+=============================================
+Build ML prediction API with validation and error handling.
+
+PROJECT 3: PRODUCTION API PLATFORM (Advanced)
+================================================
+Build complete API with auth, rate limiting, monitoring.
+
+================================================================================

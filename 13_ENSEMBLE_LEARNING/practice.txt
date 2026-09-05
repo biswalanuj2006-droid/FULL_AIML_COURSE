@@ -1,0 +1,41 @@
+================================================================================
+ENSEMBLE LEARNING — PRACTICE SET (30 Questions)
+================================================================================
+
+EASY (10)
+=========
+Q1: What is ensemble learning?
+Q2: What is bagging vs boosting?
+Q3: Why does Random Forest reduce overfitting?
+Q4: What is AdaBoost?
+Q5: What is gradient boosting?
+Q6: What is the difference between XGBoost and Random Forest?
+Q7: What is stacking?
+Q8: What is a weak learner?
+Q9: When does ensemble learning help most?
+Q10: What is voting classifier?
+
+MEDIUM (12)
+============
+Q11: Compare Bagging vs Boosting on same dataset.
+Q12: Implement Random Forest hyperparameter tuning.
+Q13: Compare XGBoost vs LightGBM vs CatBoost.
+Q14: Build stacking ensemble.
+Q15: Implement feature importance analysis for ensembles.
+Q16: Build ensemble of diverse model types.
+Q17: Implement early stopping for gradient boosting.
+Q18: Compare n_estimators impact on performance.
+Q19: Build ensemble with cross-validation.
+Q20: Implement weighted voting ensemble.
+Q21: Compare ensemble methods on imbalanced data.
+Q22: Build custom ensemble framework.
+
+HARD (5)
+=========
+Q23: Implement gradient boosting from scratch.
+Q24: Build production ensemble pipeline.
+Q25: Implement ensemble with dynamic model selection.
+Q26: Build ensemble for multi-output regression.
+Q27: Implement ensemble with online learning.
+
+================================================================================

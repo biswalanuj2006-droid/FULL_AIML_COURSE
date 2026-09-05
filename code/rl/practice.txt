@@ -1,0 +1,50 @@
+================================================================================
+CODE PRACTICE - code/rl (Q-learning on a gridworld)
+Companion: 01_qlearning_gridworld.py (run it first)
+================================================================================
+RUN & OBSERVE
+1. Run the example; confirm the PASS line. Read the learned policy grid
+   and trace the path from START to GOAL with your finger.
+2. The file's history contains two real bugs that were found by
+   running: the off-grid goal and the stochastic-inside-DP loop.
+   Explain why each broke the run.
+
+MODIFY
+3. Change SLIP to 0.0 and 0.5: report Q-learning's mean return vs the
+   optimal policy at each value. At high slip, which route does the
+   optimal policy take (why not hug the pit row)?
+4. Vary epsilon decay (eps0=0.5 vs 0.9, decay 0.99 vs 0.998): plot
+   episodes-to-stable-return and final quality. Find a setting that
+   converges fast AND well.
+5. Swap the reward -0.1 per step for 0.0: does Q-learning still find
+   the goal? What changes in the learned policy's urgency?
+6. Implement SARSA in the same file and compare its learned policy's
+   mean return vs Q-learning at SLIP=0.3 (on-policy safety).
+
+DEBUG
+7. Remove the max_steps bound inside q_learning and show an episode can
+   loop forever when epsilon never decays (set decay=1.0) - the
+   unbounded-episode bug class.
+8. Set lr=0.9: show the Q-values oscillate and returns get worse; then
+   lr=0.01: convergence slows. Report the sweet spot.
+9. Use a deterministic (SLIP=0) environment to train but evaluate with
+   SLIP=0.2 (sim-to-real mismatch): show the return collapse and
+   explain what the lesson calls the gap.
+
+BUILD (mini)
+10. Add value iteration's V* as a heatmap output (print or save a PNG)
+    and overlay the Q-learning Q-values for one state - how close are
+    they after training?
+11. Implement epsilon-greedy with a count-based bonus (explore states
+    visited rarely) and compare episodes-to-solve vs plain decay on the
+    sparse-reward variant (reward only at GOAL, -0.01 otherwise).
+12. Policy extraction for the optimal policy from V* only (no Q):
+    derive the greedy step from the Bellman equation in code and verify
+    it matches optimal_policy().
+
+RELATE
+13. Which 61_REINFORCEMENT_LEARNING practice items (SARSA vs
+    Q-learning, exploration, sparse rewards) did you turn into numbers?
+14. (Interview) Explain the difference between the value iteration's
+    use of transitions() and Q-learning's use of step() - why is one
+    deterministic and the other sampled?

@@ -1,0 +1,74 @@
+================================================================================
+REAL PROBLEM - 20 CNN
+================================================================================
+
+PROBLEM A: "My CNN classifies cats vs dogs at 99.9% accuracy, but fails
+completely on the boss's phone photos."
+WHY IT HAPPENS
+  1. Dataset bias: your dataset was scraped from the web - photos are
+     centered, high-res, well-lit. Phone photos have different
+     framing, blur, lighting, and the animal is small/off-center.
+  2. The model memorized background cues: 99.9% with modern
+     architectures is a red flag - real cat/dog photos are not
+     separable at 99.9%; check if "grass" or "watermark" predicts the
+     label.
+  3. Test set was drawn from the SAME source as training, so the test
+     never exposed the distribution gap.
+HOW TO SOLVE
+  1. Hold out a source-shifted test set (different website/camera) and
+     report on BOTH. Expect the gap - that number is your real
+     generalization.
+  2. Train/test augmentation gap: if you augmented training with
+     aggressive color jitter but evaluate on raw photos, the model
+     expects jittered colors. Match augmentation at test time
+     (or use test-time augmentation and average).
+  3. If background correlates with class, crop to the object for
+     training or add hard examples where the animal is in unusual
+     settings.
+
+PROBLEM B: "Training loss decreases but validation accuracy stays
+flat / diverges after epoch 3."
+WHY: learning-rate explosion after initial convergence, or the
+validation set is too small/noisy to see the improvement, or
+train/val distributions differ (e.g. val images are a different
+resolution and get resized differently - check your resize pipeline is
+identical for both).
+HOW TO SOLVE
+  1. Use a learning-rate scheduler (cosine decay or ReduceLROnPlateau)
+     - flat-then-diverge is the classic sign of an LR that is fine at
+     the start but too high once near the minimum.
+  2. Log val loss per epoch AND per class accuracy; a flat mean with
+     moving class accuracies means you are chasing noise - increase
+     validation set size or use k-fold.
+  3. Verify the resize/normalize constants (mean/std of ImageNet) match
+     how the model was pretrained.
+
+PROBLEM C: "Batch size 32 works; batch size 256 trains but the model is
+worse."
+WHY: bigger batches give noiseless but sharper gradients that land in
+narrow minima that generalize worse; the effective learning rate is
+too high relative to batch size.
+HOW TO SOLVE
+  1. Scale the learning rate with batch size (linear scaling rule:
+     lr_new = lr_base * (batch_new / batch_base)) plus warmup.
+  2. Or keep batch moderate and use gradient accumulation for GPU
+     memory instead of inflating batch size.
+  3. For pretrained backbones, big batches are usually fine - the
+     effect bites hardest when training heads from scratch.
+
+PROBLEM D (debugging): "Loss is NaN from step 1."
+WHY (check in this order):
+  1. Labels are wrong dtype / out of range for CrossEntropyLoss
+     (needs long, in [0, n_classes)).
+  2. Input has NaN pixels (corrupt image file, bad resize of a 1-pixel
+     image dividing by zero variance in normalization).
+  3. LR too high -> logits explode -> softmax -> log(0) -> -inf -> NaN.
+HOW TO SOLVE
+  1. Sanity: run one batch with torch.autograd.detect_anomaly() and
+     print loss right after the forward pass (before .backward()) to
+     see if NaN appears pre- or post-backward.
+  2. Add gradient clipping (max_norm=1.0) and lower LR to 1e-4 to
+     confirm; if clean, raise LR back with warmup.
+  3. Validate every image decodes and has finite pixels before
+     training (log the failing filename - one corrupt file poisons
+     every epoch).

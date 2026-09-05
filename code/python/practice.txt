@@ -1,0 +1,34 @@
+================================================================================
+CODE PRACTICE - code/python (stdlib for AI)
+Companion: 01_stdlib_for_ai.py (run it, read every line)
+================================================================================
+RUN & OBSERVE
+1. Run the example and explain what each stdlib module contributed.
+2. Time json.loads vs a manual parser on a generated 5MB JSON file.
+
+MODIFY
+3. Extend the example with a small caching layer (functools.lru_cache)
+   and show the speed-up on repeated calls.
+4. Add robust error handling: wrap parsing in try/except and log the
+   offending line with logging instead of printing.
+5. Rewrite the file-walking part using pathlib only (no os.path).
+
+DEBUG
+6. The example reads a file with encoding errors on Windows. Fix it so
+   it opens files with errors="replace" and reports the file name.
+7. A generator silently stops early: add a check that the output count
+   matches the input count (the classic "swallowed StopIteration" bug).
+
+BUILD (mini)
+8. CLI tool: given a directory, print the 5 largest files, total size,
+   and file-type histogram - using only stdlib. Compare wall time on a
+   large folder vs os.walk vs pathlib.glob.
+9. Concurrency: fetch N URLs with concurrent.futures ThreadPoolExecutor
+   and compare with sequential timing; explain GIL implications.
+
+RELATE
+10. Map each stdlib trick to where 02_NUMPY/03_PANDAS replace it
+    (e.g. lists -> arrays, csv module -> read_csv).
+11. Pick 3 functions you wrote and add doctests; run with python -m doctest.
+12. (Interview) Explain generators vs lists memory behavior with the
+    code from the example.

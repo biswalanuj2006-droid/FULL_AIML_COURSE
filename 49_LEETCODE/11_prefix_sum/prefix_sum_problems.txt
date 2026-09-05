@@ -1,0 +1,64 @@
+================================================================================
+LEETCODE PATTERN: PREFIX SUM — 15 PROBLEMS
+================================================================================
+
+PATTERN: Use when problem asks for range sums or subarray sums.
+
+================================================================================
+EASY (5 Problems)
+================================================================================
+
+1. RANQ SUM QUERY - IMMUTABLE (LC #303)
+   class NumArray:
+       def __init__(self, nums):
+           self.prefix = [0]
+           for num in nums:
+               self.prefix.append(self.prefix[-1] + num)
+       def sumRange(self, left, right):
+           return self.prefix[right + 1] - self.prefix[left]
+
+2. MAXIMUM SUBARRAY SUM (LC #53) — Kadane's is prefix-sum variant
+3. FIND PIVOT INDEX (LC #724)
+4. LEFTMOST COLUMN WITH AT LEAST A ONE (LC #1428)
+5. TWO SUM (LC #1) — hash map is prefix sum approach
+
+================================================================================
+MEDIUM (7 Problems)
+================================================================================
+
+6. SUBARRAY SUM EQUALS K (LC #560)
+   def subarraySum(nums, k):
+       count = 0; prefix = 0; seen = {0: 1}
+       for num in nums:
+           prefix += num
+           if prefix - k in seen: count += seen[prefix - k]
+           seen[prefix] = seen.get(prefix, 0) + 1
+       return count
+
+7. CONTINUOUS SUBARRAY SUM (LC #523)
+8. SUBARRAY SUM DIVISIBLE BY K (LC #974)
+9. RANGE SUM QUERY 2D (LC #304)
+10. PRODUCT OF ARRAY EXCEPT SELF (LC #238)
+11. SUBARRAY PRODUCT LESS THAN K (LC #713)
+12. FIND THE LONGEST SUBSTRING (LC #1542)
+
+================================================================================
+HARD (3 Problems)
+================================================================================
+
+13. MINIMUM SIZE SUBARRAY SUM (LC #209) — sliding window + prefix
+14. COUNT OF RANGE SUM (LC #327)
+15. MAXIMUM SUM QUERY (LC #2742)
+
+================================================================================
+TEMPLATE: Prefix Sum Array
+def build_prefix(arr):
+    prefix = [0] * (len(arr) + 1)
+    for i in range(len(arr)):
+        prefix[i+1] = prefix[i] + arr[i]
+    return prefix
+
+# Range sum [l, r] = prefix[r+1] - prefix[l]
+================================================================================
+END OF PREFIX SUM PATTERN
+================================================================================

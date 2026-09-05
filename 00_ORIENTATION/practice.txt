@@ -1,0 +1,77 @@
+# ORIENTATION — PRACTICE SET
+# 15 Questions + Self-Assessment
+
+---
+
+## SELF-ASSESSMENT (15 Questions)
+
+1. Rate your Python proficiency (1-10).
+   - 1-3: Beginner → Start with 01_PYTHON
+   - 4-6: Intermediate → Review 01_PYTHON, start 02_NUMPY
+   - 7-8: Advanced → Start 05_MATHEMATICS + 06_ML_FUNDAMENTALS
+   - 9-10: Expert → Start 06_ML_FUNDAMENTALS + 07_DATA_PREPROCESSING
+
+2. Can you write functions, loops, and classes in Python?
+   - Yes → Proceed to NumPy
+   - No → Start 01_PYTHON
+
+3. Do you understand basic statistics (mean, median, standard deviation)?
+   - Yes → Proceed to ML Fundamentals
+   - No → Start 05_MATHEMATICS
+
+4. Have you used any ML libraries before?
+   - Yes → Identify your level and skip ahead
+   - No → Follow the course in order
+
+5. What is your learning goal?
+   - Get a job in AI/ML → Focus on projects + interview prep
+   - Build AI applications → Focus on DL + NLP + GenAI
+   - Research → Focus on mathematics + research engineering
+   - Data science → Focus on Python + statistics + ML
+
+6. How much time can you dedicate daily?
+   - 1 hour → Focus on core modules
+   - 2-3 hours → Full course with projects
+   - 4+ hours → Full course + DSA + LeetCode
+
+7. What is your math background?
+   - High school → Start 05_MATHEMATICS
+   - College calculus → Skip algebra, start linear algebra
+   - Strong math background → Start probability/statistics
+
+8. Do you have a GPU available?
+   - Yes → Can practice deep learning locally
+   - No → Use Google Colab or cloud services
+
+9. Are you comfortable with command line?
+   - Yes → Proceed
+   - No → Learn basic terminal commands first
+
+10. Do you have Git installed?
+    - Yes → Use version control for your projects
+    - No → Install Git and learn basics
+
+11. What is your preferred learning style?
+    - Reading → Focus on theory files
+    - Coding → Focus on code/ and exercises/
+    - Projects → Focus on projects/ and capstone/
+
+12. Do you prefer working through a course linearly or jumping around?
+    - Linearly → Follow module numbers in order
+    - Jumping around → Use the roadmap to find prerequisites
+
+13. How do you handle frustration when stuck?
+    - Google/Stack Overflow → Good skill, keep using
+    - AI assistants → Use for explanations, not copy-paste
+    - Ask peers → Join communities (Reddit, Discord, etc.)
+
+14. What is the most important skill for AI/ML engineering?
+    - Problem solving → Practice DSA + LeetCode
+    - Math intuition → Focus on mathematics modules
+    - Coding ability → Build projects from scratch
+    - All of the above → Follow the complete curriculum
+
+15. Write down 3 specific goals for completing this course:
+    - Goal 1: _______________
+    - Goal 2: _______________
+    - Goal 3: _______________

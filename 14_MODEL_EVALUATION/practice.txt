@@ -1,0 +1,41 @@
+================================================================================
+MODEL EVALUATION — PRACTICE SET (30 Questions)
+================================================================================
+
+EASY (10)
+=========
+Q1: What is accuracy and when is it misleading?
+Q2: What is precision vs recall?
+Q3: What is F1 score?
+Q4: What is ROC-AUC?
+Q5: What is confusion matrix?
+Q6: What is RMSE vs MAE?
+Q7: What is R² score?
+Q8: What is cross-validation?
+Q9: What is stratified k-fold?
+Q10: What is the difference between validation and test set?
+
+MEDIUM (12)
+============
+Q11: Implement all classification metrics from scratch.
+Q12: Plot ROC curves for multiple models.
+Q13: Implement precision-recall curve.
+Q14: Build threshold optimization pipeline.
+Q15: Implement nested cross-validation.
+Q16: Build calibration curve visualization.
+Q17: Compare train vs validation curves (learning curves).
+Q18: Implement bootstrap confidence intervals.
+Q19: Build comprehensive model evaluation report.
+Q20: Implement custom scoring metric.
+Q21: Compare metrics for imbalanced datasets.
+Q22: Build evaluation comparison dashboard.
+
+HARD (5)
+=========
+Q23: Implement statistical significance testing for model comparison.
+Q24: Build error analysis pipeline.
+Q25: Implement distribution shift detection.
+Q26: Build evaluation framework for time-series models.
+Q27: Implement fairness metrics.
+
+================================================================================

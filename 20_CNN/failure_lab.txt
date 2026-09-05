@@ -1,0 +1,56 @@
+================================================================================
+FAILURE LAB - 20 CNN
+Reproduce -> diagnose -> fix -> report.
+================================================================================
+
+LAB 1 - THE CHANNEL-ORDER BUG
+  Training on RGB images preprocessed as BGR (or transposed HxWxC vs
+  CxHxW): validation accuracy ~chance forever.
+  Tasks: (1) reproduce with a deliberately swapped channel order on a
+  small dataset (e.g., CIFAR-10 subset); (2) diagnose by visualizing a
+  batch (the image will look wrong) and checking tensor shapes;
+  (3) fix; (4) add a shape/color sanity check to the data pipeline
+  that fails loudly on channel mismatch.
+
+LAB 2 - THE SMALL-DATA OVERFIT
+  200 images/class, 10 classes: train 99%, val 55%.
+  Tasks: (1) plot curves; (2) rank fixes by expected effect:
+  augmentation, pretrained transfer, dropout, weight decay, smaller
+  model; (3) apply the top two and report the val gap after; (4) argue
+  which single fix mattered most using ablations.
+
+LAB 3 - THE VANISHING RESNET
+  A 50-layer ResNet trains slower than its 18-layer twin and never
+  catches up, even though theory says depth should help.
+  Tasks: (1) reproduce with the same budget; (2) diagnose: is it
+  optimization (lr/batch norm/lr warmup) or data scale?; (3) fix with
+  warmup + proper init + BN and compare curves; (4) state the
+  "depth needs data + schedule" rule with your evidence.
+
+LAB 4 - THE AUGMENTATION THAT LEAKS
+  Random erasing/cutout applied to val: val accuracy inflated.
+  Tasks: (1) find where transforms leak (shared transform object);
+  (2) quantify inflation; (3) write the train-only-augmentation test;
+  (4) also test that the SAME test set used for model selection was not
+  seen by any augmentor at fit time.
+
+LAB 5 - THE PRETRAINED MISMATCH
+  Transfer learning from ImageNet to grayscale medical images: frozen
+  backbone, new head: 45% accuracy.
+  Tasks: (1) diagnose - 1-channel input? wrong normalization
+  (ImageNet mean/std)? head too small? classes too similar?; (2) fix:
+  replicate grayscale to 3ch + correct normalization + proper head;
+  (3) compare frozen vs fine-tune-last-block vs full fine-tune on the
+  SAME val split; (4) report the winner with its curve.
+
+LAB 6 - THE CLASSIFIER THAT SEES BACKGROUNDS
+  Model hits 99% on your dataset but 40% on a new camera angle of the
+  same objects.
+  Tasks: (1) reproduce the domain gap; (2) diagnose shortcut learning
+  (background/color artifacts) with saliency or by cropping to the
+  object; (3) fix with augmentation (crops, color jitter), background
+  randomization, or collecting target-domain data; (4) write an honest
+  "domain robustness" evaluation that reports both domains.
+================================================================================
+END
+================================================================================

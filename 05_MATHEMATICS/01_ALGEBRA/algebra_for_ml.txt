@@ -1,0 +1,399 @@
+================================================================================
+MODULE 05 — MATHEMATICS FOR ML
+LESSON 01: ALGEBRA FOR MACHINE LEARNING
+================================================================================
+
+## What You Will Learn
+- Variables and constants in ML context
+- Linear and quadratic equations
+- Functions and composition
+- Exponential functions
+- Logarithms
+- How algebra powers ML algorithms
+
+## Why You Need It
+Every ML model is defined by algebraic equations. Linear regression is a
+linear equation. Neural networks are compositions of functions. The sigmoid
+function uses exponentials. Log loss uses logarithms. Algebra is everywhere.
+
+================================================================================
+1. VARIABLES AND CONSTANTS
+================================================================================
+
+INTUITION:
+    In algebra, x is a variable — a placeholder for a value.
+    In ML, variables represent data and model parameters.
+
+    ┌─────────────────────────────────────────────┐
+    │           ALGEBRA             │     ML       │
+    │───────────────────────────────│──────────────│
+    │  x, y, z (variables)          │  features,   │
+    │                               │  predictions │
+    │  a, b, c (constants)          │  weights,    │
+    │                               │  bias        │
+    │  f(x) (function)              │  model       │
+    └─────────────────────────────────────────────┘
+
+LINEAR REGRESSION EXAMPLE:
+    y = wx + b
+
+    y  = predicted value (output)
+    w  = weight (slope, constant to be learned)
+    x  = input feature (variable)
+    b  = bias (y-intercept, constant to be learned)
+
+    For predicting house price:
+    price = 150 × size + 50000
+
+    w = 150 (price per sq ft)
+    b = 50000 (base price)
+    x = size in sq ft
+    y = predicted price
+
+MULTIPLE FEATURES:
+    y = w₁x₁ + w₂x₂ + w₃x₃ + b
+
+    y = 0.5 × age + 0.3 × income + 0.2 × tenure + 1000
+
+    This is the FOUNDATION of every linear model.
+
+================================================================================
+2. LINEAR EQUATIONS
+================================================================================
+
+EQUATION: A statement that two expressions are equal.
+
+    2x + 5 = 13
+
+SOLVING:
+    2x + 5 = 13
+    2x = 13 - 5
+    2x = 8
+    x = 4
+
+SLOPE-INTERCEPT FORM:
+    y = mx + b
+
+    m = slope (rise/run)
+    b = y-intercept (where line crosses y-axis)
+
+    EXAMPLE:
+    y = 2x + 1
+
+    When x = 0: y = 1 (y-intercept)
+    When x = 1: y = 3
+    When x = 2: y = 5
+
+    Slope m = 2 means: for every 1 unit increase in x, y increases by 2.
+
+    ML CONNECTION:
+    In linear regression, the slope (m) is the WEIGHT.
+    The y-intercept (b) is the BIAS.
+
+    If income = 0.3 × years_experience + 25000
+    Then slope = 0.3 means: each year of experience adds $300 to income.
+
+SIMULTANEOUS EQUATIONS:
+    2x + y = 10
+    x + y = 6
+
+    Subtract: x = 4, then y = 2
+
+    ML CONNECTION: Solving for weights in linear regression:
+    If we have two equations and two unknowns, we can solve for the weights.
+
+================================================================================
+3. QUADRATIC EQUATIONS
+================================================================================
+
+GENERAL FORM:
+    ax² + bx + c = 0
+
+SOLUTION (Quadratic Formula):
+    x = (-b ± √(b² - 4ac)) / 2a
+
+EXAMPLE:
+    x² - 5x + 6 = 0
+
+    a = 1, b = -5, c = 6
+    x = (5 ± √(25 - 24)) / 2
+    x = (5 ± 1) / 2
+    x = 3 or x = 2
+
+PARABOLA SHAPE:
+    y = ax² + bx + c
+
+    If a > 0: Opens upward (U shape)
+    If a < 0: Opens downward (∩ shape)
+
+    Vertex (minimum/maximum): x = -b / (2a)
+
+    ML CONNECTION:
+    The loss function of linear regression is:
+    L(w) = (1/n) Σ(yᵢ - wxᵢ - b)²
+
+    This is a QUADRATIC function of w. It has a single minimum
+    (parabola opening upward). This is why gradient descent
+    works perfectly for linear regression — there's only one
+    global minimum.
+
+================================================================================
+4. FUNCTIONS
+================================================================================
+
+A FUNCTION maps inputs to outputs:
+
+    f(x) = 2x + 1
+
+    f(0) = 1
+    f(1) = 3
+    f(2) = 5
+
+FUNCTION NOTATION:
+    f: x → y
+    "f maps x to y"
+
+    f(x) = 2x + 1 means: "multiply input by 2, add 1"
+
+COMPOSITION OF FUNCTIONS:
+    If f(x) = 2x + 1 and g(x) = x²
+
+    f(g(x)) = f(x²) = 2x² + 1
+
+    ML CONNECTION: Neural networks are COMPOSITIONS of functions!
+
+    Layer 1: h₁ = f₁(W₁x + b₁)    = ReLU(W₁x + b₁)
+    Layer 2: h₂ = f₂(W₂h₁ + b₂)   = ReLU(W₂h₂ + b₂)
+    Output:  ŷ = f₃(W₃h₂ + b₃)    = softmax(W₃h₂ + b₃)
+
+    Neural network = f₃ ∘ f₂ ∘ f₁ (composition of 3 functions)
+
+POLYNOMIAL FUNCTIONS:
+    f(x) = aₙxⁿ + aₙ₋₁xⁿ⁻¹ + ... + a₁x + a₀
+
+    Linear:      f(x) = ax + b        (degree 1)
+    Quadratic:   f(x) = ax² + bx + c  (degree 2)
+    Cubic:       f(x) = ax³ + ...     (degree 3)
+
+    ML CONNECTION: Polynomial regression uses higher-degree polynomials
+    to model non-linear relationships.
+
+================================================================================
+5. EXPONENTIAL FUNCTIONS
+================================================================================
+
+BASIC EXPONENTIAL:
+    f(x) = aˣ
+
+    where a > 0, a ≠ 1
+
+    EXAMPLE: f(x) = 2ˣ
+    f(0) = 1
+    f(1) = 2
+    f(2) = 4
+    f(3) = 8
+    f(10) = 1024
+
+    EXPONENTIAL GROWTH: Values increase faster and faster.
+
+EULER'S NUMBER (e):
+    e ≈ 2.71828...
+
+    The most important constant in ML.
+
+    eˣ is the natural exponential function.
+
+    WHY e IS IMPORTANT:
+    - eˣ is its OWN derivative: d/dx(eˣ) = eˣ
+    - eˣ is always positive
+    - eˣ grows smoothly
+    - Used in sigmoid, softmax, Gaussian distribution
+
+THE SIGMOID FUNCTION:
+    σ(z) = 1 / (1 + e⁻ᶻ)
+
+    ┌──────────────────────────────────────┐
+    │  σ(z) = 1 / (1 + e⁻ᶻ)              │
+    │                                      │
+    │  Input z: any real number            │
+    │  Output: between 0 and 1            │
+    │                                      │
+    │  z = -5: σ(-5) ≈ 0.007  (near 0)   │
+    │  z = 0:  σ(0)  = 0.5    (middle)   │
+    │  z = 5:  σ(5)  ≈ 0.993  (near 1)   │
+    └──────────────────────────────────────┘
+
+    ML CONNECTION:
+    - Logistic Regression uses sigmoid to convert scores to probabilities
+    - Binary neural network output uses sigmoid
+    - Gate mechanism in LSTM uses sigmoid
+
+    GRAPH:
+    σ(z)
+    1.0 ┤                          ·····
+        │                      ····
+    0.5 ┤              ·······
+        │         ·····
+    0.0 ┤·······
+        └─────────────────────────────── z
+       -5    -3    -1     1     3     5
+
+SOFTMAX FUNCTION:
+    softmax(zᵢ) = eᶻⁱ / Σⱼ eᶻʲ
+
+    Converts a vector of scores into probabilities that sum to 1.
+
+    EXAMPLE:
+    z = [2.0, 1.0, 0.5]
+    eᶻ = [7.389, 2.718, 1.649]
+    Σeᶻ = 11.756
+    softmax = [0.629, 0.231, 0.140]
+
+    ML CONNECTION:
+    - Multi-class classification output
+    - Attention mechanism in transformers
+    - Probability distributions
+
+================================================================================
+6. LOGARITHMS
+================================================================================
+
+WHAT IS A LOGARITHM?
+    Logarithm is the INVERSE of exponentiation.
+
+    If aˣ = y, then logₐ(y) = x
+
+    "To what power must we raise a to get y?"
+
+NATURAL LOGARITHM (ln):
+    ln(x) = logₑ(x)
+
+    ln(1) = 0        (because e⁰ = 1)
+    ln(e) = 1        (because e¹ = e)
+    ln(e²) = 2       (because e² = e²)
+    ln(10) ≈ 2.303
+
+PROPERTIES:
+    ln(a × b) = ln(a) + ln(b)
+    ln(a / b) = ln(a) - ln(b)
+    ln(aⁿ) = n × ln(a)
+    ln(e) = 1
+    ln(1) = 0
+
+WHY LOGARITHMS MATTER IN ML:
+
+1. LOG LOSS (Binary Cross-Entropy):
+   L = -[y × ln(p) + (1-y) × ln(1-p)]
+
+   where:
+   y = true label (0 or 1)
+   p = predicted probability
+
+   When y = 1: L = -ln(p)
+   - If p ≈ 1 (confident correct): L ≈ 0 (small loss)
+   - If p ≈ 0 (confident wrong): L → ∞ (huge loss)
+
+   When y = 0: L = -ln(1-p)
+   - If p ≈ 0 (confident correct): L ≈ 0
+   - If p ≈ 1 (confident wrong): L → ∞
+
+   WHY LOG?
+   - Log punishes confident wrong predictions heavily
+   - Log is monotonic (preserves order)
+   - Log makes the math cleaner (derivatives simplify)
+
+2. CROSS-ENTROPY (Multi-class):
+   L = -Σ yᵢ × ln(pᵢ)
+
+   ML CONNECTION: Used in every classification neural network.
+
+3. KL DIVERGENCE:
+   DKL(P || Q) = Σ P(x) × ln(P(x) / Q(x))
+
+   Measures how different two probability distributions are.
+   Used in VAEs, knowledge distillation.
+
+4. INFORMATION THEORY:
+   H(X) = -Σ P(x) × ln(P(x))
+
+   Entropy measures uncertainty.
+   Used in decision trees (information gain).
+
+================================================================================
+7. PRACTICAL EXAMPLES
+================================================================================
+
+EXAMPLE 1: Linear Regression (Algebra)
+
+    Given data points: (1, 3), (2, 5), (3, 7)
+    Model: y = wx + b
+
+    Using algebra:
+    3 = w(1) + b   → w + b = 3
+    5 = w(2) + b   → 2w + b = 5
+
+    Subtract: w = 2
+    Substitute: b = 1
+
+    Model: y = 2x + 1
+
+    Verify: x=3 → y = 2(3) + 1 = 7 ✓
+
+EXAMPLE 2: Sigmoid (Exponential)
+
+    A model outputs z = 2.5
+    Convert to probability:
+    σ(2.5) = 1 / (1 + e⁻²·⁵)
+           = 1 / (1 + 0.0821)
+           = 1 / 1.0821
+           = 0.924
+
+    Interpretation: 92.4% probability of positive class.
+
+EXAMPLE 3: Log Loss (Logarithm)
+
+    True label: y = 1
+    Predicted probability: p = 0.9
+    Loss = -ln(0.9) = 0.105
+
+    True label: y = 1
+    Predicted probability: p = 0.1
+    Loss = -ln(0.1) = 2.303
+
+    The wrong prediction has 22× more loss!
+
+================================================================================
+8. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Confusing eˣ with 10ˣ
+    In ML, we almost always use e (natural log), not log base 10.
+    ln(x) is the natural logarithm. log(x) in math means log base 10.
+    In Python: math.log(x) is ln(x). math.log10(x) is log base 10.
+
+MISTAKE 2: Forgetting that log(0) is undefined
+    ln(0) → -∞
+    This is why we add a small epsilon: ln(p + ε)
+    In code: np.log(p + 1e-15)
+
+MISTAKE 3: Not understanding function composition
+    f(g(x)) ≠ g(f(x))
+    neural_network(x) = layer3(layer2(layer1(x)))
+
+MISTAKE 4: Linear ≠ Simple
+    Linear models are algebraic but can be powerful with good features.
+    Non-linear models (trees, neural nets) compose simple functions.
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. In y = wx + b, what do w and b represent?
+2. What is the sigmoid function and why does it use e?
+3. Why does log loss heavily punish confident wrong predictions?
+4. What is the relationship between neural networks and function composition?
+5. What is the derivative of eˣ?
+
+================================================================================
+NEXT LESSON: 02_LINEAR_ALGEBRA/linear_algebra_for_ml.txt
+================================================================================

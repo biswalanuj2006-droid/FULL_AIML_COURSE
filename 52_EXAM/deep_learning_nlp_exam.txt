@@ -1,0 +1,153 @@
+# PART D: DEEP LEARNING + NLP EXAM
+# Time: 60 minutes | Questions: 30 | Passing: 70%
+
+---
+
+## SECTION 1: NEURAL NETWORKS (10 Questions)
+
+### Q1. What is the role of activation functions in neural networks?
+A) To introduce non-linearity so the network can learn complex patterns
+
+### Q2. What is the vanishing gradient problem?
+A) Gradients become very small in deep networks, preventing early layers from learning — solved by ReLU, skip connections, batch norm
+
+### Q3. What is the purpose of backpropagation?
+A) Compute gradients of the loss with respect to each weight using the chain rule — enables gradient descent optimization
+
+### Q4. What is the difference between ReLU and Sigmoid?
+A) ReLU: f(x) = max(0,x), doesn't saturate for positive values. Sigmoid: f(x) = 1/(1+e⁻ˣ), saturates at both ends.
+
+### Q5. What is batch normalization?
+A) Normalizing layer inputs to have mean 0 and variance 1 — stabilizes training, allows higher learning rates
+
+### Q6. What is dropout?
+A) Randomly setting a fraction of neurons to zero during training — prevents overfitting by reducing co-adaptation
+
+### Q7. What is the purpose of a learning rate scheduler?
+A) Adjust learning rate during training (e.g., warm-up, cosine decay) — helps converge to better minima
+
+### Q8. What is gradient clipping?
+A) Limiting the maximum gradient norm to prevent exploding gradients — important for RNNs
+
+### Q9. What is transfer learning?
+A) Using a pre-trained model as a starting point for a new task — leverages learned features
+
+### Q10. What is the difference between L1 and L2 weight regularization?
+A) L1: encourages sparsity (some weights → 0). L2: encourages small weights (weight decay).
+
+---
+
+## SECTION 2: CNN (5 Questions)
+
+### Q11. What does a convolution operation do?
+A) Applies learnable filters to extract local features (edges, textures, patterns) from input
+
+### Q12. What is the output size formula for a convolution layer?
+A) (W - K + 2P) / S + 1 where W=input size, K=kernel size, P=padding, S=stride
+
+### Q13. What is the purpose of pooling?
+A) Downsamples feature maps, reduces computation, provides translation invariance
+
+### Q14. What is the difference between max pooling and average pooling?
+A) Max pooling: takes maximum value (preserves strongest feature). Average pooling: takes mean (smoother).
+
+### Q15. What is a residual connection (skip connection)?
+A) Adds input directly to output: y = F(x) + x — enables training very deep networks by solving vanishing gradients
+
+---
+
+## SECTION 3: RNN / LSTM / GRU (5 Questions)
+
+### Q16. What is the key limitation of vanilla RNNs?
+A) Vanishing/exploding gradients make it hard to learn long-range dependencies
+
+### Q17. How does LSTM solve the vanishing gradient problem?
+A) Cell state acts as a "conveyor belt" — gradients flow through the cell state with minimal change via the forget gate
+
+### Q18. What are the three gates in an LSTM?
+A) Forget gate (what to discard), Input gate (what to store), Output gate (what to output)
+
+### Q19. How is GRU different from LSTM?
+A) GRU has 2 gates (update + reset) instead of 3, and combines cell/hidden state — simpler and faster
+
+### Q20. What is Bidirectional RNN?
+A) Processes sequence forward AND backward — captures both past and future context
+
+---
+
+## SECTION 4: ATTENTION & TRANSFORMERS (5 Questions)
+
+### Q21. What does the attention mechanism compute?
+A) Weighted sum of values where weights are determined by query-key similarity — allows focusing on relevant parts
+
+### Q22. What is the formula for scaled dot-product attention?
+A) Attention(Q,K,V) = softmax(QKᵀ/√dₖ)V — scaling prevents large dot products from saturating softmax
+
+### Q23. Why divide by √dₖ in attention?
+A) To prevent dot products from growing too large with dimension, which would push softmax into regions with tiny gradients
+
+### Q24. What is multi-head attention?
+A) Running multiple attention computations in parallel with different learned projections — captures different types of relationships
+
+### Q25. What is positional encoding?
+A) Adding position information to tokens since transformers process all positions in parallel (no inherent order)
+
+---
+
+## SECTION 5: NLP (5 Questions)
+
+### Q26. What is tokenization?
+A) Splitting text into tokens (words, subwords, or characters) — first step in any NLP pipeline
+
+### Q27. What is TF-IDF?
+A) Term Frequency × Inverse Document Frequency — weights words by importance (frequent in doc, rare in corpus)
+
+### Q28. What is word embedding?
+A) Dense vector representation of words where similar words have similar vectors — captures semantic meaning
+
+### Q29. What is the difference between BERT and GPT?
+A) BERT: encoder-only, bidirectional, good for understanding tasks. GPT: decoder-only, autoregressive, good for generation.
+
+### Q30. What is fine-tuning a pre-trained language model?
+A) Continuing training on task-specific data — adapts general language knowledge to specific tasks
+
+---
+
+## CODING CHALLENGES (Bonus)
+
+### Bonus Q1: Implement a single neuron forward pass.
+```python
+import numpy as np
+def neuron_forward(x, w, b):
+    z = np.dot(w, x) + b
+    a = 1 / (1 + np.exp(-z))  # sigmoid
+    return a
+```
+
+### Bonus Q2: Implement multi-class softmax.
+```python
+def softmax(z):
+    exp_z = np.exp(z - np.max(z))
+    return exp_z / np.sum(exp_z)
+```
+
+### Bonus Q3: Implement a simple attention layer.
+```python
+def attention(Q, K, V):
+    d_k = Q.shape[-1]
+    scores = np.dot(Q, K.T) / np.sqrt(d_k)
+    weights = np.exp(scores) / np.sum(np.exp(scores), axis=-1, keepdims=True)
+    return np.dot(weights, V)
+```
+
+---
+
+## SCORING
+
+| Score | Level |
+|-------|-------|
+| 28-30 | Expert |
+| 24-27 | Advanced |
+| 20-23 | Intermediate |
+| 15-19 | Beginner |
+| <15 | Novice |

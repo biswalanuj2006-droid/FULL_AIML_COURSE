@@ -1,0 +1,957 @@
+================================================================================
+ULTRA-DEEP LLM COURSE - COURSE.txt
+================================================================================
+A serious LLM curriculum: what happens INSIDE an LLM, how it is trained, how
+inference works, how models are fine-tuned/evaluated/served, and how they are
+built into production systems. Companion files: PRACTICE.txt (levels 1-8),
+PROJECT.txt (3 levels + capstone), EXAMPLE.py (54-section runnable lab).
+
+NO-HALLUCINATION RULE: vendor APIs and model specs change; anything
+provider-specific is marked "API MAY CHANGE". Every numerical claim here is
+checked in EXAMPLE.py or in PRACTICE.txt's verified answers.
+
+================================================================================
+DEPENDENCY GRAPH
+================================================================================
+Python -> NumPy -> Linear Algebra -> Probability -> Calculus -> Information
+Theory -> ML -> Deep Learning -> NLP -> Embeddings -> RNN/LSTM -> Attention
+-> Transformer -> Tokenization -> Language Modeling -> LLM Architecture ->
+Pretraining -> Scaling -> Instruction Tuning -> Alignment -> Fine-Tuning ->
+LoRA -> Quantization -> Inference -> KV Cache -> Serving -> Evaluation ->
+RAG -> Agents.
+
+LEARNING GATES (each: required knowledge + coding + practice + project + exit test)
+G1 Python+NumPy+Math   G2 DL+NLP   G3 Attention+Transformers   G4 Mini LLM
+G5 LLM Training        G6 Fine-Tuning+LoRA   G7 Inference+Optimization
+G8 Production LLM      G9 LLM+RAG   G10 LLM+AI Agents.
+
+================================================================================
+PART 0 - PREREQUISITES (Python / NumPy / PyTorch)
+================================================================================
+Python: typed functions, dataclasses, generators (token streaming),
+context managers, async for IO-bound API calls, logging over print.
+NumPy: ndarray, broadcasting, matmul, vectorization, numerical stability
+(always: subtract max before softmax; log-space products).
+PyTorch: tensor [B,T,D] ops, autograd (record the graph, backprop),
+nn.Module, Dataset/DataLoader, optim.AdamW, mixed precision (autocast),
+checkpointing (torch.save of model/optimizer/RNG/scheduler state).
+Engineering: env vars for keys, seeds everywhere for reproducibility,
+CUDA_VISIBLE_DEVICES for GPU selection.
+
+================================================================================
+PART 1 - MATHEMATICS FOR LLMs
+================================================================================
+Linear algebra: an LLM is matrix math + nonlinearities. Embeddings are
+lookup rows; attention is softmax(QK^T/sqrt(d))V; FFN is two matmuls.
+Useful identities: (AB)^T = B^T A^T; cosine similarity = normalized dot
+product; projections remove components orthogonal to a direction.
+
+Probability: P(A|B) = P(B|A)P(A)/P(B). An LLM is a probability
+distribution over tokens; MLE = choose weights maximizing log P(data).
+
+Calculus: backprop = chain rule on a computational graph. For loss L and
+weight w in a deep net, dL/dw = dL/dy * dy/dh * ... * dh/dw; the graph
+autograd walks in reverse multiplying Jacobians. Gradient descent:
+w <- w - lr * dL/dw.
+
+Information theory (the LLM loss family):
+  Entropy       H(p) = -sum_x p(x) log p(x)     (bits/nats of surprise)
+  Cross entropy H(p,q) = -sum_x p(x) log q(x)   (the training loss)
+  KL(p||q)      = H(p,q) - H(p)                 (extra cost of using q)
+  Perplexity    = exp(H(p,q))                   (mean "choices" per token)
+Numerical example (natural log): p=[.5,.5], q=[.9,.1]:
+  H(p)=0.693; H(p,q)=1.204; KL=0.511; ppl(0.9)=1.111, ppl(0.5)=2.0.
+Derivation to know: maximize log-likelihood == minimize cross entropy ==
+minimize KL(data || model) up to the constant H(data).
+
+================================================================================
+PART 2 - ML FOUNDATIONS
+================================================================================
+Supervised (labeled pairs), unsupervised (structure only), self-supervised
+(labels derived from data itself). LLM pretraining is self-supervised:
+next-token prediction needs no annotation. Train/val/test with no overlap
+(no benchmark leakage into pretraining data). Overfitting vs underfitting;
+bias-variance: a tiny LM memorizes style poorly (bias); an overtrained one
+memorizes exact text (variance, no generalization). Regularization:
+weight decay, dropout, label smoothing, dedup, early stopping on val loss.
+
+================================================================================
+PART 3 - DEEP LEARNING
+================================================================================
+Neuron = affine + nonlinearity; network = layers composed; loss = scalar.
+Activations: sigmoid/tanh (classic, saturate), ReLU (fast, dies), GELU
+(smooth, used in GPTs), SiLU/Swish (x*sigmoid(x), smooth, used in modern
+LLMs). Transformers favor GELU/SwiGLU feed-forwards: smooth gradients and,
+for SwiGLU (xW1 * sigmoid(xW3))W2, gating consistently beats plain MLPs at
+equal compute. Optimizers: SGD, Adam (per-param adaptive lr), AdamW
+(decoupled weight decay - standard). Initialization: scaled so activations
+keep unit variance across depth. Normalization (LayerNorm/RMSNorm),
+dropout, residuals. Backprop mathematically = reverse-mode autodiff.
+
+================================================================================
+PART 4 - NLP
+================================================================================
+Text -> vocabulary -> tokens. Bag-of-words/TF-IDF: frequency features, no
+order, no semantics. Word2Vec (predict neighbors -> dense vectors),
+GloVe (factorize co-occurrence). Static embeddings failed: one vector per
+word cannot carry context ("bank" = river vs money). Solution: contextual
+representations - tokens start from an embedding and are rewritten layer by
+layer using attention over their context.
+
+================================================================================
+PART 5 - SEQUENCE MODELS
+================================================================================
+RNN: h_t = f(W_h h_{t-1} + W_x x_t). Gradients multiply J_t...J_1 over
+time -> vanish/explode; LSTMs add forget/input/output gates to keep a
+stable cell path; GRUs simplify to two gates. Seq2seq encoder-decoder with
+teacher forcing (train decoder on true tokens, not its own outputs).
+Why Transformers replaced RNNs for LLMs: RNNs are sequential (T steps, no
+parallelism), suffer long-range dilution, and cannot attend directly to
+arbitrary past positions. Attention is O(1) steps, fully parallel, direct
+position-to-position access.
+
+================================================================================
+PART 6 - ATTENTION  (EXTREMELY DEEP)
+================================================================================
+Intuition: a token emits a QUERY ("what I need"), every token offers KEYS
+("what I contain") and VALUES ("what I pass along"). Output = weighted sum
+of values, weights from query-key similarity.
+
+Equation, every symbol:
+  Attention(Q,K,V) = softmax(Q K^T / sqrt(d_k)) V
+  Q = X W_q  [T, d_k]   query vectors for all T tokens
+  K = X W_k  [T, d_k]   keys
+  V = X W_v  [T, d_v]   values
+  Q K^T      [T, T]     score matrix; row i = how much token i wants each j
+  sqrt(d_k): scaling so dot products of d_k-dim vectors stay ~unit variance
+              (variance ~ d_k; without scaling softmax saturates -> tiny grads)
+  softmax    row-wise, rows sum to 1  -> weights
+  V          weighted sum -> each output token = mixture of values
+  W_q,W_k,W_v learned projections (per layer).
+
+Dimensions: input X [T, d_model]; with H heads the model reshapes to
+[B, H, T, d_h] where d_h = d_model/H; scores [B, H, T, T].
+
+Worked example (d_k=2, identity projections): X = [[1,0],[0,1],[1,1]],
+Q=K=X. Q K^T = [[1,0,1],[0,1,1],[1,1,2]]. Divide by sqrt(2) -> row 0
+[0.707,0,0.707]. softmax row 0: exp -> [2.028,1,2.028] / 5.056 =
+[0.401,0.198,0.401]. out_0 = 0.401 V_0 + 0.198 V_1 + 0.401 V_2.
+
+Complexity: O(T^2 d_k) time, O(T^2) memory for scores -> quadratic context.
+
+Masking: causal language models may not see future. In scores set
+s[i,j] = -inf for j>i BEFORE softmax (applying after softmax leaks).
+
+Why divide by sqrt(d_k) (interview answer): keeps dot-product variance ~1;
+softmax stays in the high-gradient regime; without it attention collapses
+toward one-hot for large d_k.
+
+Implement: numpy (EXAMPLE.py sec 13-16) then torch (F.softmax(Q@K^T/sqrt(d),-1) @ V).
+
+================================================================================
+PART 7 - SELF-ATTENTION
+================================================================================
+Self-attention: Q,K,V all derive from the SAME sequence -> every token
+attends to every token in its own context; output is contextualized.
+Why token A attends to B: A's query is similar to B's key (semantic/
+syntactic relevance) -> A incorporates B's value. Causal attention:
+token t attends only to j<=t; the model never sees the future during
+training (masked) or generation (mask + only past tokens exist).
+
+================================================================================
+PART 8 - MULTI-HEAD ATTENTION
+================================================================================
+H heads each project into a smaller space d_h = d_model/H, compute
+attention independently, concatenate, project with W_o. Why heads: each
+head can specialize (syntax, coreference, position, "attend to next token",
+"attend to verbs"); ensemble of subspaces > one head. Math:
+  head_h = softmax((X W_q^h)(X W_k^h)^T / sqrt(d_h)) (X W_v^h)
+  MHA(X) = concat(head_1..head_H) W_o
+Params per layer: 4 * d_model^2 (W_q,W_k,W_v,W_o). Example.py sec 16 shows
+shapes [B,H,T,d_h] -> concat -> [B,T,d_model].
+
+================================================================================
+PART 9 - POSITION INFORMATION
+================================================================================
+Attention is permutation-equivariant: without positions, "A B" == "B A".
+Sinusoidal encoding: PE[pos,2i] = sin(pos/10000^(2i/d)), PE[pos,2i+1] =
+cos(...); fixed pattern, extrapolates by construction. Learned embeddings:
+per-position vector, must truncate/extend for longer contexts.
+Relative positions: shift-invariant biases. RoPE (rotary): rotate pairs of
+embedding dims by pos*theta_i before the dot product so the score of two
+tokens depends only on their RELATIVE distance - mathematically elegant
+and what modern LLMs use: q_m^T k_n = f(m-n). ALiBi: add a linear bias
+proportional to distance - simple, strong long-context extrapolation.
+Long-context implication: all position schemes must define behavior past
+the trained length (RoPE scaling, NTK, YaRN, etc.).
+
+================================================================================
+PART 10 - TRANSFORMER  (DEEP)
+================================================================================
+Architecture (decoder-only):
+  INPUT -> TOKENIZE -> EMBED + POSITION -> [ x + MHA(LN(x)) ;
+  x + FFN(LN(x)) ] x N -> LN -> LM HEAD (linear to vocab) -> LOGITS
+Block parts:
+  Residuals  x + f(x): identity path lets gradients flow; f can start near 0.
+  LayerNorm  normalize features to zero mean/unit var, learnable scale+bias.
+  RMSNorm    normalize by RMS only (no centering): cheaper, widely used.
+  Pre-Norm   LN before sublayer (stable training, gradients don't vanish);
+  Post-Norm  LN after (original paper, needs warmup care).
+  FFN        Linear(d->4d) -> activation -> Linear(4d->d); ~2/3 of params.
+  Causal mask + output projection (LM head).
+Implement a block from scratch (EXAMPLE.py sec 17-22) - LayerNorm, RMSNorm,
+GELU/SwiGLU FFN, then stack into a MiniTransformer.
+
+================================================================================
+PART 11 - ENCODER vs DECODER
+================================================================================
+Encoder-only (BERT): bidirectional attention, masked-LM + next-sentence
+objectives -> understanding/embeddings. Decoder-only (GPT): causal
+attention + next-token -> generation; the dominant LLM form: single stack,
+single objective, scales predictably; any task becomes text-in-text-out.
+Encoder-decoder (T5): encoder full attention + decoder cross-attention ->
+translation/summarization; more params/compute for the same size.
+Why LLMs are decoder-only: generation subsumes most tasks; encoder stacks
+are redundant when the interface is autoregressive text.
+
+================================================================================
+PART 12 - TOKENIZATION  (DEEP)
+================================================================================
+Char: tiny vocab, long sequences. Word: big vocab, OOV. Subword:
+BPE - start with characters, iteratively merge the most frequent adjacent
+pair (greedy, GPT family); WordPiece - merge by likelihood gain (BERT);
+Unigram - probabilistic, keeps tokens that maximize corpus likelihood
+(SentencePiece); SentencePiece - raw text (no pretokenization), works
+multilingually incl. no-space scripts.
+Vocabulary: 32k-250k tokens + specials BOS/EOS/PAD/UNK.
+token<->id via a trained merges/vocab table.
+Effects: longer tokens = shorter context + cheaper + faster but worse
+generalization; languages with fewer merges consume more tokens per word.
+Common mistakes: train with one tokenizer, serve with another; no EOS in
+training -> model never stops.
+
+================================================================================
+PART 13 - LANGUAGE MODELING
+================================================================================
+A language model is a distribution over token sequences P(x_1..x_n).
+Chain-rule factorization (always true):
+  P(x_1..x_n) = prod_{t=1..n} P(x_t | x_1..x_{t-1})
+So modeling = learning next-token conditional distributions. The model
+outputs logits over vocab; softmax -> probabilities; cross entropy with the
+true next token is the loss; sampling from the distribution generates text.
+Numerical example: P(a)=0.6 after "the cat", P(b)=0.4 -> sequence
+"the cat a" has prob 0.6 under the model.
+
+================================================================================
+PART 14 - CAUSAL LANGUAGE MODELING
+================================================================================
+Training example: input tokens "The cat is"; target = the SAME sequence
+shifted left: at position t the model must predict token t+1. Labels for
+"The cat is" are "cat is [next]". Concretely: logits[t] predicts token
+t+1; loss = mean cross entropy over positions; causal mask prevents
+cheating (position t never sees t+1..). Teacher forcing = labels are the
+true next tokens, never the model's own (wrong) guesses. This is the exact
+setup in EXAMPLE.py's language-model training loop.
+
+================================================================================
+PART 15 - LOGITS
+================================================================================
+Flow: hidden state [B,T,d] -> linear LM head [B,T,V] -> logits -> softmax
+-> probabilities -> sample token. Logits are unnormalized scores; they can
+be any real number; they are NOT probabilities (no sum-to-1, may be
+negative). Numerics: softmax overflows for large logits -> subtract the
+max (invariant result); in training use log-softmax + NLL (stable,
+avoids log(0)). Sampling math: p_i = exp(l_i/T)/sum exp(l_j/T).
+
+================================================================================
+PART 16 - TEXT GENERATION  (DEEP)
+================================================================================
+greedy: argmax -> deterministic, repetitive, kills long-form quality.
+temperature T: divide logits by T before softmax. T->0 sharper, T=1 copy
+training distribution, T->inf uniform. Example logits [2,1,0.1]:
+T=1 -> [0.659,0.242,0.099]; T=0.5 -> [0.845,0.114,0.041]; T=2 ->
+[0.508,0.307,0.185]. top-k: keep top k logits, renormalize the rest to 0
+(EXAMPLE.py sec 28). top-p/nucleus: keep the smallest set with cumulative
+prob >= p (adaptive; EXAMPLE.py sec 29). repetition/frequency/presence
+penalties: subtract a penalty from logits of tokens already generated
+(presence: once per token; frequency: proportional to count). Deterministic
+seeding for tests. Contrastive/beam: beam keeps top-B complete sequences
+for tasks with a right answer; sampling suits open-ended text.
+
+================================================================================
+PART 17 - PERPLEXITY
+================================================================================
+Perplexity = exp(mean cross entropy) = exp(-mean log P(token)). It is the
+geometric mean of the "number of equally-likely choices" the model faces.
+Lower = better; a model assigning 0.9 average probability has ppl 1.111;
+assigning 0.5 -> ppl 2.0. ppl only compares models on the SAME tokenizer
+and corpus (different tokenizers -> different token counts -> not
+comparable). Limitations: low ppl does not mean factual/helpful/harmless;
+in-domain ppl can be low while the model still hallucinates. ppl of
+generated text can be computed from the model's own probabilities but says
+nothing about truth.
+
+================================================================================
+PART 18 - LLM ARCHITECTURE
+================================================================================
+Modern decoder-only LLM: token embedding table [V, d], positional scheme
+(RoPE), N transformer blocks, LM head. Hyperparameters: V (vocab), d
+(hidden), N (depth), H heads, d_h head dim (usually d/H), FFN width
+(often 4d or SwiGLU 8/3 d), context length. The residual stream view: each
+block reads and writes small deltas on a shared d-dim vector - attention
+moves information between tokens, FFN processes each token independently.
+
+================================================================================
+PART 19 - PARAMETER COUNTING
+================================================================================
+Per-block (d_model=D, FFN 4D, V vocab, tied/un-tied embeddings):
+  embeddings: V*D (un-tied LM head adds V*D again; tied shares it)
+  attention:  4*D^2        (W_q,W_k,W_v,W_o)
+  FFN:        2*D*(4D) = 8D^2  (two matmuls; SwiGLU uses 3 mats ~12D^2/2...)
+  norm:       2 norms * 2 params * D = 4D
+Example (verified in EXAMPLE.py sec 32): V=50k, D=768, N=12, tied:
+  emb 50k*768 = 38,400,000; attn 12*4*768^2 = 28,311,552;
+  ffn 12*8*768^2 = 56,623,104; norms 12*4*768 = 36,864
+  total 123,371,520 (~123M). 7B-class models: D~4096, N~32, V~32k+.
+
+================================================================================
+PART 20 - PRETRAINING
+================================================================================
+Pipeline: RAW -> FILTER (quality heuristics, language) -> CLEAN (HTML,
+dedup near-exact via hashing/MinHash) -> TOKENIZE -> PACK (concatenate to
+seq len) -> SHUFFLE (avoid correlated order) -> BATCH -> TRAIN -> VALIDATE
+(holdout) -> CHECKPOINT. Data mixture (web, books, code, math) determines
+capabilities; contamination (eval sets inside training data) invalidates
+benchmarks. Loss = next-token CE over the packed stream; monitor ppl on
+clean validation.
+
+================================================================================
+PART 21 - TRAINING OBJECTIVE
+================================================================================
+MLE: choose theta maximizing prod P(x_t | x_<t) -> equivalently minimizing
+-sum log P(x_t | x_<t) = cross entropy per token. That is the ONLY signal
+in pretraining: imitate the data distribution. It explains why data quality
+and dedup dominate: the model literally copies the training distribution.
+
+================================================================================
+PART 22 - TRAINING PIPELINE
+================================================================================
+Effective batch ~0.5-4M tokens (batch_size * seq_len * grad_accum).
+lr: warmup (linear 0->max over ~1-2% of steps) then cosine decay to ~0.1x.
+AdamW: lr ~3e-4 (7B), beta=(0.9,0.95), eps 1e-8, weight_decay 0.1,
+grad clip 1.0. Mixed precision BF16 (no loss scaling; range=FP32) or FP16
+(+ loss scaling, overflow guard). Checkpoints: model+optimizer+scheduler+
+RNG+step for exact resume; shard + save async.
+
+================================================================================
+PART 23 - OPTIMIZATION DEEPLY
+================================================================================
+SGD: w -= lr g. Momentum: v = beta v + g; w -= lr v (damp oscillations).
+Adam: m = b1 m + (1-b1)g ; v = b2 v + (1-b2)g^2; bias-correct
+mhat=m/(1-b1^t), vhat=v/(1-b2^t); w -= lr mhat/(sqrt(vhat)+eps).
+AdamW: same but weight decay applied directly to weights (not folded into
+the gradient) - decouples regularization from lr and generalizes better.
+Why AdamW for Transformers: per-parameter adaptive steps handle the wildly
+different gradient scales across layers/params; warmup compensates for the
+large early variance of the second moment estimate.
+
+================================================================================
+PART 24 - NORMALIZATION
+================================================================================
+BatchNorm: normalize per channel over batch; problematic for sequence
+lengths and small batches. LayerNorm: normalize per token over features
+(independent of batch) - the Transformer choice. RMSNorm: drop the mean,
+divide by sqrt(mean(x^2)) - cheaper, equally effective. Pre-Norm (LN
+before the sublayer): residual stream never normalized -> stable deep
+stacks, no warmup sensitivity; Post-Norm: original, needs careful lr.
+Modern LLMs: pre-RMSNorm.
+
+================================================================================
+PART 25 - RESIDUAL STREAM
+================================================================================
+x + f(x): the model can learn f=0 (skip a block); gradients flow along the
+identity path unchanged across N blocks - no multiplicative vanishing.
+Residual stream interpretation: blocks add deltas to a shared vector; the
+stream's norm grows slowly, which is why final LN exists and why
+hyperparameters must not push deltas too large.
+
+================================================================================
+PART 26 - FFN / MLP BLOCK
+================================================================================
+FFN: Linear(D->4D) -> act -> Linear(4D->D). GELU smooth variant; SwiGLU:
+(xW_gate) * sigmoid(xW_up... notation varies) effectively
+(xW1 * sigmoid(xW3)) W2 - gated, ~2/3 of param count lands here; storing
+the 4D intermediate is a big activation-memory cost in training.
+
+================================================================================
+PART 27 - SCALING LAWS
+================================================================================
+Empirically loss ~ a N^-alpha + b D^-beta + c C^-gamma + E (power laws in
+params N, data D, compute C; irreducible E = entropy of the data).
+Chinchilla/Kaplan: for a compute budget, params and tokens should grow
+together (roughly equal doubling); compute-optimal training means you are
+UNDER-trained on parameters if you only scale N with fixed tokens.
+Inference scaling: at serving time, quality is a function of model size,
+quantization, context, and test-time compute, not just parameter count.
+Implication: bigger is not always better - match model to data budget and
+latency.
+
+================================================================================
+PART 28 - DATA ENGINEERING
+================================================================================
+Sources: web (Common Crawl), books, code, academic, instruction data.
+Filters: language ID, quality classifiers (perplexity/domain), PII,
+boilerplate. Dedup: exact + MinHash near-dup (training on duplicates
+wastes capacity and amplifies memorization). Quality scoring: classifier
+or heuristic -> resample. Contamination: remove benchmark/sensitive
+documents; leakage check on eval sets. Mixture: ratios tuned empirically;
+the mixture (not just size) determines behavior (code improves reasoning,
+books improve prose).
+
+================================================================================
+PART 29 - DISTRIBUTED TRAINING
+================================================================================
+Data parallel: replicate model, split batch, all-reduce grads - simple,
+bounded by per-GPU memory. Model parallel: split layers across GPUs
+(sequential; bubbles). Tensor parallel: split weight matrices across GPUs
+(row/column shards) - needed beyond ~13B per GPU. Pipeline parallel:
+layer groups per stage, micro-batches to hide bubbles. Sequence parallel:
+split sequence dim for attention/FFN activations. ZeRO: shard optimizer
+state (1), + grads (2), + params (3); FSDP = PyTorch's ZeRO-3-style
+sharding with per-layer all-gather. Memory bottleneck: activations and
+optimizer states, not just weights.
+
+================================================================================
+PART 30 - GPU MEMORY  (with calculations)
+================================================================================
+Per parameter: FP32 4B, BF16/FP16 2B, INT8 1B, INT4 0.5B.
+Training 7B in BF16:
+  params 7e9*2 = 14GB; grads 14GB; AdamW states m,v = 2*7e9*4(fp32)=56GB
+  -> ~84GB before activations/KV. That is why >1 GPU or PEFT is required.
+Inference 7B BF16: weights 14GB + KV cache + activations.
+KV cache (LLaMA-7B-like L=32,H=32,dh=128, fp16): 2*L*H*dh = 262,144
+values/token *2B = 524,288 B = 0.5 MiB/token; at 4096 tokens ~2GiB;
+at 128k context ~64GiB - why long context is memory-hungry and GQA helps.
+Rule: training memory >> inference memory (gradients + optimizer states).
+
+================================================================================
+PART 31 - MIXED PRECISION
+================================================================================
+FP32 32-bit, range ~1e-38..3e38. FP16: 10-bit mantissa -> underflow/overflow
+risk in gradients (loss scaling multiplies loss to keep grads in range).
+BF16: 8-bit exponent (same range as FP32), 7-bit mantissa -> no overflow,
+slightly noisier; ideal for LLM training where gradient magnitudes are
+moderate and range matters more than mantissa. Use BF16 when hardware
+supports it (A100+); FP16+scaling otherwise.
+
+================================================================================
+PART 32 - CHECKPOINTING
+================================================================================
+Save: model weights, optimizer (m,v), scheduler, RNG states (Python +
+CUDA), step/epoch, data loader position. Resume = reload ALL of it, else
+training restarts with wrong lr schedule/optimizer. Storage: shard per
+rank, async save, keep last-k + best. Interrupted run without optimizer
+state = effectively restart.
+
+================================================================================
+PART 33 - INSTRUCTION TUNING
+================================================================================
+After pretraining: (prompt, response) pairs teach task behavior.
+Format: instruction in user turn; response in assistant turn; chat
+template (special tokens) must match serving. Loss masking: compute loss
+ONLY on response tokens (mask prompt) so the model is not graded on
+copying the instruction. Small data (10k-1M) but high quality dominates
+size. This is the SFT stage that makes base models usable.
+
+================================================================================
+PART 34 - ALIGNMENT
+================================================================================
+SFT = imitate good answers. Preference data = (x, y_w, y_l) pairs.
+Reward model = classifier trained on preferences. RLHF: optimize policy
+with PPO against reward while KL-penalizing drift from SFT policy.
+DPO: derive the optimal policy in closed form from the Bradley-Terry model
+- no reward model, no RL: loss = log sigma(beta * (log p(y_w) - log p_ref
+(y_w) - log p(y_l) + log p_ref(y_l))). Differences:
+  Pretraining (world knowledge) -> SFT (format/task) -> RLHF/DPO
+  (preferences/safety). Alignment changes behavior, not knowledge;
+  residual hallucination/sycophancy/refusal issues remain.
+
+================================================================================
+PART 35 - FINE-TUNING
+================================================================================
+Full FT: all weights (expensive, needs data + compute). SFT: instruction
+formatting on domain data. Domain adaptation: continue pretraining on
+domain corpus (best for vocab/format shifts). Instruction tuning: general
+obedience. WHEN: format/domain/tool reliability you cannot prompt your way
+into; WHEN NOT: <1k examples, fast-changing data (RAG instead), or the
+behavior is already achievable by prompting. Always eval against the base
++ prompt baseline first.
+
+================================================================================
+PART 36 - PEFT
+================================================================================
+PEFT = train a small set of parameters while freezing the base.
+Why: full FT of 7B needs ~84GB+ optimizer states; PEFT needs the frozen
+weights (14GB BF16) + tiny trainable states + activations - fits consumer
+GPUs, produces adapter files (MBs), and you keep one base + many adapters.
+Family: adapters (extra layers), prefix/prompt tuning (learned soft
+prompts), LoRA (low-rank updates), QLoRA (LoRA on a 4-bit base).
+
+================================================================================
+PART 37 - LoRA  (MATHEMATICALLY DEEP)
+================================================================================
+Idea: weight updates during fine-tuning have LOW rank. Instead of learning
+Delta W in full [d_out, d_in], learn two small matrices:
+  W' = W + (alpha/r) B A
+  W frozen [d_out, d_in]; B [d_out, r]; A [r, d_in]; r << d.
+Init: A ~ N(0, sigma^2) or 0, B = 0 -> at step 0 W' = W exactly (no
+distribution shift). Scaling: alpha/r controls step size; alpha=1..16
+tunable independent of r. Params: d_out*r + r*d_in vs d_out*d_in.
+Example: D=768, r=8: full = 768*768 = 589,824; LoRA = 768*8+8*768 =
+12,288 -> 48x fewer trainable params (EXAMPLE.py sec 33-36).
+Apply to W_q,W_k,W_v,W_o and FFN matrices (not embeddings/norms by default).
+Torch: freeze base, nn.Parameter A,B per target; forward = base(x) +
+(x @ A.T) @ B.T * (alpha/r); optimizer only touches A/B.
+Why it works: fine-tuning mostly lives on a low-rank subspace; empirically
+r=8-64 matches full FT on many tasks at a fraction of the memory.
+
+================================================================================
+PART 38 - QLoRA
+================================================================================
+QLoRA = 4-bit quantized base + LoRA adapters + paged optimizers.
+NF4 (normal float 4): information-theoretically optimal 4-bit grid for
+zero-mean normal weights; double quantization: quantize the quantization
+constants themselves (~0.4 bits/param extra); paged optimizers: evict
+optimizer states to CPU when GPU memory peaks. Memory: 7B base in 4-bit ~
+3.5-4GB + small adapter -> fine-tune on a single 24GB GPU. Cost: 4-bit
+forward is slightly slower; quality near full FT for many tasks.
+
+================================================================================
+PART 39 - QUANTIZATION  (DEEP)
+================================================================================
+Formats: FP32 (4B), FP16/BF16 (2B), INT8 (1B), INT4 (0.5B). Post-training
+quantization (PTQ): map weight ranges to integer grids
+  q = round(clamp(w/scale)) ; scale = max|w| / (2^(bits-1)-1) symmetric.
+Weight quantization (per-channel better than per-tensor); activation
+quantization (harder - activations vary per input); quantization error;
+calibration: choose scales on real data (activations) / weights only.
+GPTQ: layer-wise 4-bit using Hessian-based error compensation (one-shot).
+AWQ: protect the ~1% salient channels (keep FP16) -> better than round-to-
+nearest at same bits. GGUF: llama.cpp format (CPU/Apple, memory-mapped).
+Rule: always eval the quantized model on YOUR task; 4-bit 7B loses little,
+4-bit small models can degrade notably.
+
+================================================================================
+PART 40 - INFERENCE
+================================================================================
+Pipeline per token: USER -> TOKENIZE -> EMBEDS -> TRANSFORMER -> LOGITS ->
+SAMPLING -> TOKEN -> APPEND -> repeat until EOS/max.
+Two phases:
+  PREFILL: process the whole prompt at once. Compute-bound (many tokens in
+  parallel) -> high FLOP utilization; output = KV cache for the prompt.
+  DECODE: one token at a time, memory-bandwidth-bound (must stream all
+  weights per token; arithmetic per token is small). Latency = time to
+  first token (prefill) + per-token time (decode).
+Real-world consequence: batch multiple decode streams to amortize weight
+reads; decode throughput (tokens/s) is the serving currency.
+
+================================================================================
+PART 41 - KV CACHE  (DEEP)
+================================================================================
+Why: at decode step t the model needs attention over all t past tokens.
+Without a cache it recomputes K,V for EVERY past token at every step:
+O(t^2) total work and O(t^2 d) flops for generation of length t.
+With a cache: at step t compute K_t,V_t for the new token only, append:
+  cache = concat(cache, K_t)  -> attention over full prefix in O(t d).
+Memory: cache grows LINEARLY with context: per token 2*L*H*d_h*bytes
+(LLaMA-7B-like: 0.5 MiB/token fp16; see Part 30). Cost: generation is
+memory-bound BY THE KV CACHE size once the prompt is large. Trade: without
+cache you save memory but pay quadratic recompute (EXAMPLE.py sec 40 shows
+append + sizing math).
+
+================================================================================
+PART 42 - PREFILL / DECODE
+================================================================================
+Prefill: many tokens, matrix-matrix -> compute bound, high throughput,
+time ~ prompt length. Decode: one token, matrix-vector per layer ->
+bandwidth bound; time per token ~ model size / memory bandwidth. Example:
+a 7B model at ~1TB/s HBM: ~7GB weights /1TB/s ~ 7ms/token minimum just to
+read weights (before KV). Optimization directions differ: prefill wants
+FLOP efficiency (FlashAttention, quantization of compute); decode wants
+fewer bytes read (quantized weights, GQA KV, bigger batches, speculative
+decoding).
+
+================================================================================
+PART 43 - INFERENCE OPTIMIZATION
+================================================================================
+Batching: amortize weight reads across sequences (throughput up, latency
+per request up - schedule tradeoff). Continuous batching (vLLM): add/remove
+sequences per step (not per batch) -> +10x throughput on bursty traffic.
+KV cache: GQA/MQA, chunked prefill, prefix caching (share cached prompts).
+Quantization: fewer bytes/weight -> faster decode. Speculative decoding:
+small draft model proposes k tokens; big model verifies in ONE pass;
+identical output distribution, 2-3x decode speedup. Context management:
+trim/summarize to fit KV budget. Engines: vLLM (PagedAttention), 
+TensorRT-LLM (NVIDIA max perf), llama.cpp (CPU/edge GGUF). Architecture
+first, API second.
+
+================================================================================
+PART 44 - SERVING
+================================================================================
+Model server: load once, serve many. REST: /completions, /chat,
+/embeddings. Streaming: SSE - yield token chunks as generated (TTFT
+matters). WebSockets: bidirectional agent loops. Batching/concurrency:
+engine-level continuous batching; API-level async. Autoscaling: scale on
+GPU utilization + queue depth. GPU serving: keep model resident, batch to
+saturate, monitor tokens/s and p50/p95 latency. Failures: OOM (reduced
+max batch), slow prefill (chunked), drift after updates (canary).
+
+================================================================================
+PART 45 - HUGGING FACE ECOSYSTEM
+================================================================================
+transformers: AutoModel/AutoTokenizer/pipeline, from_pretrained,
+generate(params), save_pretrained. datasets: arrow format, map/batch,
+streaming for huge sets. tokenizers: fast BPE/Unigram, encode/decode,
+chat templates. accelerate: device placement, FSDP/DeepSpeed launchers,
+mixed precision. peft: LoraConfig, get_peft_model, TaskType, merge/save.
+trl: SFTTrainer (format + loss masking), DPOTrainer, GRPO.
+Skeleton (API MAY CHANGE - verify docs): load base in 4-bit -> LoRA config
+-> trainer -> save adapter; merge adapter into base for serving.
+
+================================================================================
+PART 46 - LLM EVALUATION
+================================================================================
+Perplexity (distribution quality; tokenizer-dependent, not factual).
+Task metrics: exact match, F1 (QA), BLEU/ROUGE (generation overlap -
+weak for open-ended), semantic similarity (embedding-based).
+Human eval: gold standard for helpfulness/truthfulness. LLM-as-judge:
+scale + cheap; MUST be validated against human labels on your task first.
+Benchmarks: MMLU/GSM8K/HumanEval/HELM-style suites - use for regression,
+not marketing. Limitations: contamination, benchmark overfitting, judge
+bias toward length/style. Always add YOUR task eval on top.
+
+================================================================================
+PART 47 - LLM HALLUCINATION
+================================================================================
+What: fluent statements unsupported by (a) the source/context or (b)
+reality. Why: LM maximizes likelihood of plausible text, not truth; no
+grounding; training mix memorizes + invents; knowledge cutoff;
+calibration is poor. Types: closed-book fabrication, source-mismatch,
+logic errors. Mitigations: RAG (ground in retrieved context), tool use
+(calculate/query instead of guessing), verification loops (self-check,
+second model), constrained outputs, fine-tuning on grounded data,
+evaluation + monitoring. There is no "cure"; reduce + detect + contain.
+
+================================================================================
+PART 48 - CONTEXT WINDOW
+================================================================================
+Context = max tokens in (prompt + generated). The KV cache and attention
+matrix both grow with T: attention O(T^2 d) flops, KV O(T) memory.
+Token budget: prompt + history + tools + output <= window; overflow ->
+truncate (lose info) or summarize. Cost scales with tokens sent each turn.
+Long-context approaches (Part 50) exist precisely because quadratic
+attention + linear KV make length expensive.
+
+================================================================================
+PART 49 - ATTENTION COMPLEXITY
+================================================================================
+Derivation: Q K^T is [T,T] entries; each entry is a d-length dot -> T^2 d
+multiply-adds. softmax over rows O(T^2). times V: T^2 d again. Total
+O(T^2 d) time, O(T^2) score-matrix memory per layer. With B batch, H
+heads: same per (b,h) -> B*H*T^2*d_h = B*T^2*D total (d_h*H=D). Scaling:
+double T -> 4x attention cost (quadratic), which is why context length is
+the scarce resource in LLM systems.
+
+================================================================================
+PART 50 - LONG CONTEXT
+================================================================================
+Levers: RoPE scaling / NTK / YaRN (extend trained positions); sliding
+window + local attention (banded mask, O(T) per token); sparse patterns
+(stride/global tokens); retrieval (only attend to relevant chunks);
+context compression (summarize old turns); recurrent/state memory (Mamba
+style linear attention - SSM, no KV matrix). Each trades recall of far
+tokens against cost; "long context" in production usually = retrieval +
+compression, not pure 1M-token attention.
+
+================================================================================
+PART 51 - MIXTURE OF EXPERTS (MoE)
+================================================================================
+Dense vs MoE: MoE replaces each FFN with E expert FFNs + a router.
+Router: g(x) = softmax(x W_r) -> top-k experts active (k=1-2 typical).
+Sparse activation: all E*params exist (memory) but only k compute per
+token (FLOPs ~ dense model). Load balancing: auxiliary loss encourages
+even expert use; expert capacity caps tokens per expert (overflow -> drop/
+recompute). Params vs active params: e.g. 8x7B-MoE ~= 47B total, ~13B
+active per token. Benefits: more capacity at same inference FLOPs; costs:
+routing overhead, memory of all experts, imbalance, harder batching.
+
+================================================================================
+PART 52 - MODEL DISTILLATION
+================================================================================
+Teacher (big) -> student (small): train student on teacher's soft outputs.
+Soft targets: probabilities (not hard labels) carry dark knowledge
+(which wrong answers teacher found plausible). Temperature T sharpens/
+softens: train on softmax(teacher_logits / T). Loss = CE(soft_student,
+soft_teacher) (possibly + hard labels). Result: small model approaches big
+model quality on the teacher's distribution at lower cost. Limits: student
+<= teacher; distillation needs good teacher and data coverage.
+
+================================================================================
+PART 53 - SYNTHETIC DATA
+================================================================================
+Generate data with a strong model (instruction pairs, reasoning traces,
+code tests), FILTER by quality (validators, dedup, difficulty), then train.
+Self-training: model generates -> filters own outputs -> retrains on them.
+Uses: instruction scaling, preference pairs, domain coverage. Risks:
+contamination (synthetic near-copies of benchmarks), model collapse
+(recursive synthetic loops narrow the distribution), inherited errors.
+Guard: keep human-written data in the mix, validate with held-out humans.
+
+================================================================================
+PART 54 - MODEL MERGING
+================================================================================
+Merge = combine weights of fine-tuned models into one. Parameter
+interpolation: average theta_a, theta_b (or SLERP). Task vectors:
+tau = theta_ft - theta_base; combine by adding scaled task vectors
+(theta_base + alpha tau_a + beta tau_b). Adapter merging: add LoRA deltas
+(alpha/r)BA into the base weights. Uses: combine skills (code + chat),
+no extra inference cost. Limits: same architecture/family only; merging
+two very different tasks can degrade both; no theoretical guarantee -
+always eval each merged model.
+
+================================================================================
+PART 55 - LLM SAFETY
+================================================================================
+Failure classes: harmful outputs (weapons, abuse), jailbreaks (adversarial
+prompts bypassing refusals), prompt injection (instructions from
+untrusted content), data leakage / training-data memorization (verbatim
+secrets), privacy (PII), copyright (long near-verbatim excerpts), model
+misuse (scams at scale). Safety layers: data filtering, refusal training
+(SFT/RLHF on safety data), input/output classifiers (moderation),
+sandboxing tools, usage monitoring. Safety is a system property: model +
+guardrails + policy, and it degrades under adversarial pressure - test it.
+
+================================================================================
+PART 56 - LLM SECURITY (API/system)
+================================================================================
+API security: authN (keys/JWT), authZ (per-user limits), TLS, rate limits,
+audit logs. Prompt injection: treat user and retrieved content as
+untrusted; delimit and instruct; never let it steer privileged tools.
+Output validation: schemas before executing actions. Secret leakage: keys
+never in prompts/logs; vault/env. Data exfiltration: an injected agent
+must not be able to read-and-send arbitrary data - least-privilege tools,
+egress allowlists. Model extraction: probing to steal a private model's
+behavior - rate + detect. DoS: unbounded context/tokens - cap by user,
+queue, timeout.
+
+================================================================================
+PART 57 - LLM OBSERVABILITY
+================================================================================
+Track per request: latency (TTFT, inter-token), tokens in/out, cost,
+errors, prompt + response (for replay), model/version, cache hits.
+Service level: throughput tokens/s, GPU utilization, queue depth, error
+rate, cache hit rate. Eval drift: nightly task evals vs production traffic.
+Why: silent quality regressions (prompt tweak, model swap) are the norm;
+you can only debug what you logged. Log prompts/responses with PII
+redaction + retention policy.
+
+================================================================================
+PART 58 - LLM COST
+================================================================================
+Cost = tokens_in * price_in + tokens_out * price_out (per model).
+Training cost: FLOPs ~ 6*N*D (N params, D tokens) - 7B on 1T tokens ~
+4.2e19 FLOPs; at ~150 TFLOP/s/GPU that is ~80k GPU-hours on one A100-class
+GPU, so pretraining is a hardware-budget decision. Inference cost: weights
+read per token (bandwidth) + KV memory + serving overhead.
+Levers: smaller model (routing), fewer tokens (prompt compression, cache
+semantic prefixes in Redis), batching/continuous batching, quantization,
+retrieval before generation (fewer rewrites), budget caps per user/agent.
+Routing (Part 47) is the highest-leverage cost control in production.
+
+================================================================================
+PART 59 - LLM SYSTEM DESIGN
+================================================================================
+Case matrix (architecture/components/bottlenecks/scaling/failures/
+security/monitoring/cost):
+  Chatbot: gateway -> router -> streaming engine. Bottleneck: decode
+  bandwidth. Scale: continuous batch.
+  LLM API: multi-tenant quotas, usage metering, keys. Failures: noisy
+  neighbors -> per-tenant queues.
+  RAG: ingest workers + vector DB + reranker. Bottleneck: retrieval
+  quality -> eval-driven.
+  Coding assistant: sandboxed executors + test loops. Security: code
+  execution isolation.
+  Research assistant: multi-step retrieval + synthesis. Cost: agent loops
+  -> budgets.
+  Customer support: tools + HITL escalation. Reliability: deterministic
+  paths for policy.
+  Enterprise platform: RBAC + audit + isolation. Compliance + secret
+  management.
+  High-throughput inference: vLLM-class engine + autoscaling + prefix
+  cache + quantized models.
+Every case: design for failure (fallback model, degraded retrieval),
+monitor (latency/cost/eval), and canary new models/prompts.
+
+================================================================================
+PART 60 - LLM + RAG
+================================================================================
+Interactions: embeddings (query + chunks in one space), retriever (ANN),
+vector DB (index + metadata filter + hybrid), reranker (cross-encoder on
+top-k), context construction (ordered, cited chunks within budget),
+generation (grounded prompt: answer only from context; cite; say "don't
+know"). Architecture:
+  INGEST: docs -> parse -> chunk(overlap) -> embed -> index(+metadata)
+  QUERY:  q -> (rewrite) -> embed -> retrieve k -> rerank -> context ->
+          grounded generation -> cite.
+Failures: retrieval gap invisible behind plausible answers -> instrument
+hit-rate separately; chunk splits answers; no rerank; query/doc embedding
+model mismatch. Always eval retrieval AND generation (RAG eval: hit-rate,
+MRR, faithfulness).
+
+================================================================================
+PART 61 - LLM + AI AGENTS
+================================================================================
+LLM -> Tool Calling -> Agent -> Memory -> Planning -> Execution ->
+Verification. Why an LLM alone is not an agent: one forward pass, no
+effects, no loop, no state, no termination. An agent = LLM brain + tools
+(schema + executor) + memory + a LOOP that decides (observe -> reason ->
+act -> observe) with stopping conditions. Tool calling turns language into
+actions (search, code, DB); the model emits structured tool_calls; your
+code validates + executes; results return as messages. Memory gives
+continuity; planning decomposes goals; verification gates completion.
+
+================================================================================
+PART 62 - LLM AGENT BRAIN
+================================================================================
+Components of agent reasoning: task decomposition (subgoals), planning
+(which tools, what order), tool selection (schema + few-shot), structured
+outputs (validate every action), memory (context + vector recall), state
+(messages + scratch), reflection (critique own output), verification
+(execute tests/checks), stopping conditions (success/max steps/budget).
+Failure modes to design for: loops (max steps + repetition detection),
+wrong tool (schema + eval), tool errors (return error text, recover),
+cost explosion (budgets), injection (untrusted tool results).
+
+================================================================================
+PART 63 - RESEARCH-LEVEL TOPICS
+================================================================================
+Reasoning models / test-time compute: spend extra tokens "thinking" before
+answering; RL over reasoning traces; self-consistency.
+Chain-of-thought: intermediate reasoning improves hard tasks; latent
+reasoning: think in hidden space, not tokens.
+Speculative decoding (Part 43). FlashAttention (Part 65). GQA/MQA.
+Sliding-window + sparse attention (Part 50). MoE. Long-context
+architectures. Multimodal LLMs (encoders + connector). Continual learning
+(update without forgetting). Synthetic data + distillation (52-53).
+Model compression. Efficient attention (linear/SSM). These are active
+research: read the papers, expect change.
+
+================================================================================
+PART 64 - MODERN ATTENTION VARIANTS
+================================================================================
+MHA (multi-head): each head has its own K,V -> KV memory H*d_h per token.
+MQA (multi-query): ALL heads share ONE K,V -> KV memory 1*d_h (Hx less);
+slight quality drop, big decode savings (PaLM).
+GQA (grouped-query): heads share K,V in G groups -> memory H/G of MHA;
+quality between MHA and MQA (LLaMA-2-70B/3 use GQA). KV per token:
+MHA: 2*L*H*d_h*B; GQA(G): 2*L*(H/G)*d_h*B. Because decode is
+bandwidth-bound and KV reads grow with context, GQA's memory cut directly
+improves long-context throughput at a small quality cost.
+
+================================================================================
+PART 65 - FLASHATTENTION
+================================================================================
+Concept: standard attention materializes the [T,T] score matrix in HBM
+(slow) -> softmax -> reads back. FlashAttention is IO-aware: tiles Q,K,V,
+computes softmax online per block (rescaling trick keeps running max/sum
+correct), never writes the full T x T matrix; writes O(T^2) less memory
+traffic. Result: same math, same outputs (bit-different, mathematically
+identical), 2-4x faster + linear-ish memory (O(T) extra). This is why
+long context became practical without changing the attention formula.
+
+================================================================================
+PART 66 - LLM PROJECT STACK
+================================================================================
+Projects use progressively: Python, NumPy, PyTorch, Transformers (HF),
+Tokenizers, PEFT/LoRA, FAISS, FastAPI, Docker, PostgreSQL, Redis - see
+PROJECT.txt levels 1-3. Cross-file: every major concept (attention, KV
+cache, LoRA, quantization, RAG, agents) has theory here, questions in
+PRACTICE.txt, a project in PROJECT.txt, and working code in EXAMPLE.py.
+
+================================================================================
+COMPARISONS (condensed, required set)
+================================================================================
+RNN vs LSTM vs Transformer: sequential+vanishing vs gated+longer vs
+parallel + direct attention. BERT vs GPT: bidirectional understanding vs
+causal generation. Encoder vs Decoder: full-context vs autoregressive.
+MHA vs MQA vs GQA: full KV vs 1 shared KV vs G-grouped KV (Part 64).
+LayerNorm vs RMSNorm: mean+var vs RMS only (cheaper, equal).
+Pre-Norm vs Post-Norm: stable deep vs original-fragile.
+Adam vs AdamW: coupled vs decoupled weight decay.
+FP32 vs FP16 vs BF16: precision vs range (BF16 = FP32 range).
+INT8 vs INT4: ~lossless vs small-loss + 2x memory.
+Full FT vs LoRA: all weights vs low-rank update (Part 37).
+LoRA vs QLoRA: FP16 base vs 4-bit base (Part 38).
+Pretraining vs SFT: world knowledge vs task format.
+SFT vs RLHF: imitate vs optimize preferences.
+RLHF vs DPO: reward model+RL vs closed-form preference loss.
+Training vs Inference: weights+grads+optimizer+activations vs weights+KV.
+Batching vs Continuous batching: fixed groups vs per-step admit/evict.
+Dense vs MoE: all params active vs top-k experts active (Part 51).
+
+================================================================================
+FINAL CAPSTONE - PRODUCTION LLM PLATFORM (details in PROJECT.txt)
+================================================================================
+USER -> API GATEWAY -> FASTAPI -> MODEL ROUTER (LLM1/2/3) -> CACHE(REDIS)
+-> DB(PostgreSQL) -> RAG(Vector DB) -> TOOLS -> AGENTS -> OBSERVABILITY ->
+MLflow -> Docker -> Cloud. Must include auth, routing, streaming, RAG,
+tools, agents, memory, eval, security, cost tracking, rate limits,
+retries, failure recovery.
+
+FINAL EXAM PLAN (in PRACTICE.txt): 50 conceptual + 20 mathematical + 20
+coding + 10 debugging + 10 Transformer + 10 training + 10 fine-tuning +
+10 inference + 10 system-design + 10 research questions.
+
+FINAL AUDIT CHECKLIST: every box in the master prompt maps to content in
+this COURSE.txt, questions in PRACTICE.txt, projects in PROJECT.txt, and
+running code in EXAMPLE.py (softmax, CE, positional encoding, attention,
+causal mask, MHA, block, mini transformer, tokenizer, LM training loop,
+generation, temperature/top-k/top-p, LoRA, KV cache).
+
+================================================================================
+LAB GUIDE - mini_gpt_lab.py (REAL end-to-end mini-GPT)
+================================================================================
+A runnable companion that trains an actual GPT on real text, so the theory
+in Parts 13-22 and Part 40 is backed by a live loss curve and generated
+samples.  Run it from anywhere (CPU only, numpy + torch):
+
+    python mini_gpt_lab.py            # default ~1000 steps, ~2-3 min
+    python mini_gpt_lab.py --max-steps 600
+
+What it does, and which parts it exercises:
+  1. Loads real prose (this course's lesson text; classic English fallback
+     if absent) and applies the Part 28 data-cleaning steps: ruler/table/
+     checkbox lines and code/math-heavy lines are filtered out.
+  2. Character-level tokenizer: encode/decode over the actual vocabulary.
+  3. A complete GPT built from scratch (Part 10 + 18): token + positional
+     embeddings, N causal self-attention blocks (Part 8/9: QKV split,
+     sqrt(head_dim) scaling, causal mask), LayerNorm + residual stream
+     (Parts 24-25), GELU MLP (Part 26), LM head.  Every tensor shape is
+     written in the code comments.
+  4. Next-token prediction with shifted labels (Parts 14/21) trained with
+     AdamW (Part 23) + warmup/cosine LR + gradient clipping (Part 22).
+  5. Prints train/val loss + perplexity (Part 17) every checkpoint and
+     GENERATES SAMPLES mid-training so you can watch language emerge.
+  6. Compares against a smoothed bigram baseline: the classic nanoGPT
+     signal - a working attention model must beat the bigram loss.
+
+Expected outcome on the default config (2 layers, 3 heads, embd 96, ~250k
+params): val loss ~2.67 nats (ppl ~14.5), clearly below the ~2.76 bigram
+baseline, with recognizable word fragments in the samples.
+
+This file is also the runnable reference for PROJECT.txt's "Mini GPT"
+project and for PRACTICE.txt Level 3 implementation tasks 7-11.
+
+================================================================================
+END OF COURSE.txt
+================================================================================

@@ -1,0 +1,121 @@
+================================================================================
+MODULE 02 — NUMPY
+LESSON 06: STATISTICAL FUNCTIONS
+================================================================================
+
+## What You Will Learn
+- Descriptive statistics with NumPy
+- Axis-based operations
+- Covariance and correlation
+- Percentiles and quantiles
+
+================================================================================
+1. BASIC STATISTICS
+================================================================================
+
+    data = np.array([14, 18, 20, 22, 25, 30, 35, 40, 50, 65])
+
+    np.mean(data)       # 31.9 — arithmetic mean
+    np.median(data)     # 27.5 — median
+    np.std(data)        # 14.2 — population standard deviation
+    np.var(data)        # 201.3 — population variance
+    np.min(data)        # 14
+    np.max(data)        # 65
+    np.sum(data)        # 319
+    np.prod(data)       # Product of all elements
+
+PERCENTILES AND QUARTILES:
+    np.percentile(data, 25)    # Q1 (25th percentile)
+    np.percentile(data, 50)    # Q2 (median)
+    np.percentile(data, 75)    # Q3 (75th percentile)
+    np.percentile(data, 75) - np.percentile(data, 25)  # IQR
+
+================================================================================
+2. AXIS-BASED OPERATIONS
+================================================================================
+
+    X = np.array([[1, 2, 3],
+                  [4, 5, 6],
+                  [7, 8, 9]])
+
+    # axis=0: operates along rows (for each COLUMN)
+    np.mean(X, axis=0)    # [4, 5, 6] — column means
+    np.sum(X, axis=0)     # [12, 15, 18]
+
+    # axis=1: operates along columns (for each ROW)
+    np.mean(X, axis=1)    # [2, 5, 8] — row means
+    np.sum(X, axis=1)     # [6, 15, 24]
+
+    # axis=None (default): operates on entire array
+    np.mean(X)             # 5.0
+
+ML USE — Feature Standardization:
+    # Standardize each feature (column)
+    mean = X.mean(axis=0)     # Mean of each feature
+    std = X.std(axis=0)       # Std of each feature
+    X_standardized = (X - mean) / std
+
+    # After standardization:
+    # Each feature has mean=0, std=1
+
+================================================================================
+3. COVARIANCE AND CORRELATION
+================================================================================
+
+    x = np.array([1, 2, 3, 4, 5])
+    y = np.array([2, 4, 5, 4, 5])
+
+    # Covariance matrix
+    np.cov(x, y)    # 2x2 matrix of covariances
+
+    # Correlation coefficient
+    np.corrcoef(x, y)[0, 1]    # ~0.87 (strong positive)
+
+    # For multiple features
+    X = np.random.randn(100, 5)    # 100 samples, 5 features
+    corr_matrix = np.corrcoef(X.T) # 5x5 correlation matrix
+
+ML USE:
+    # Find highly correlated features (remove redundant)
+    corr = np.corrcoef(X.T)
+    for i in range(corr.shape[0]):
+        for j in range(i+1, corr.shape[1]):
+            if abs(corr[i, j]) > 0.9:
+                print(f"Features {i} and {j}: r={corr[i, j]:.3f}")
+
+================================================================================
+4. WHERE AND CONDITIONAL STATISTICS
+================================================================================
+
+    data = np.array([1, 5, 3, 8, 2, 9, 4, 7])
+
+    # Conditional statistics
+    np.mean(data[data > 5])       # Mean of values > 5
+    np.std(data[data <= 4])       # Std of values <= 4
+    np.sum(data[data % 2 == 0])   # Sum of even values
+
+    # np.where — conditional selection
+    result = np.where(data > 5, "high", "low")
+    # ["low", "high", "low", "high", "low", "high", "low", "high"]
+
+    # Clip values (like clamping)
+    np.clip(data, 2, 7)    # [2, 5, 3, 7, 2, 7, 4, 7]
+
+ML USE:
+    # Winsorize outliers
+    q01, q99 = np.percentile(X, [1, 99])
+    X_clipped = np.clip(X, q01, q99)
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between axis=0 and axis=1?
+2. How do you standardize features using NumPy?
+3. How do you find the correlation between two arrays?
+
+================================================================================
+END OF MODULE 02: NUMPY
+================================================================================
+NEXT MODULE: 03_PANDAS — Complete Pandas Course
+================================================================================

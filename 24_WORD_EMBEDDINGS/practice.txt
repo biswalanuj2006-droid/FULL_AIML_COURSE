@@ -1,0 +1,34 @@
+================================================================================
+WORD EMBEDDINGS — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is a word embedding?
+Q2: What is the difference between Word2Vec and GloVe?
+Q3: What is CBOW vs Skip-gram?
+Q4: How do embeddings capture semantic meaning?
+Q5: What is cosine similarity?
+Q6: What is the embedding dimension?
+Q7: What is OOV (out-of-vocabulary)?
+Q8: What is the analogy task (king - man + woman)?
+
+MEDIUM (8)
+===========
+Q9: Train Word2Vec on custom corpus.
+Q10: Visualize embeddings with t-SNE.
+Q11: Compare pretrained embedding models.
+Q12: Build text classification with embeddings.
+Q13: Implement sentence embeddings.
+Q14: Build semantic search with embeddings.
+Q15: Compare Word2Vec vs GloVe vs FastText.
+Q16: Build embedding-based recommendation system.
+
+HARD (4)
+=========
+Q17: Train custom embeddings for domain-specific text.
+Q18: Build production embedding pipeline.
+Q19: Implement embedding evaluation metrics.
+Q20: Build multimodal embedding system.
+
+================================================================================

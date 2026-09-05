@@ -1,0 +1,248 @@
+================================================================================
+MODULE 36: FLASK — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Build web APIs and applications with Flask
+- Handle routing, requests, and responses
+- Build ML model serving APIs
+- Integrate databases with SQLAlchemy
+- Deploy Flask applications
+
+================================================================================
+1. WHAT IS FLASK?
+================================================================================
+
+INTUITION
+---------
+Flask is a lightweight Python web framework ("microframework").
+It gives you the essentials for web development without opinions
+on how to structure your app.
+
+Flask vs Django:
+- Flask: minimal, flexible, you choose your tools
+- Django: batteries-included, opinionated, built-in admin/ORM
+
+================================================================================
+2. BASIC FLASK APP
+================================================================================
+
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Hello, World!"
+
+@app.route('/api/greet', methods=['POST'])
+def greet():
+    data = request.get_json()
+    name = data.get('name', 'stranger')
+    return jsonify({"message": f"Hello, {name}!"})
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
+
+RUN:
+  flask --app app run
+  or: python app.py
+
+================================================================================
+3. ROUTING
+================================================================================
+
+@app.route('/users/<int:user_id>')
+def get_user(user_id):
+    return jsonify({"user_id": user_id})
+
+@app.route('/search')
+def search():
+    query = request.args.get('q', '')
+    page = request.args.get('page', 1, type=int)
+    return jsonify({"query": query, "page": page})
+
+METHODS
+-------
+@app.route('/resource', methods=['GET'])     # Read
+@app.route('/resource', methods=['POST'])    # Create
+@app.route('/resource/<id>', methods=['PUT'])# Update
+@app.route('/resource/<id>', methods=['DELETE'])# Delete
+
+================================================================================
+4. REQUEST & RESPONSE
+================================================================================
+
+GETTING DATA
+-------------
+# JSON body
+data = request.get_json()
+
+# Form data
+name = request.form.get('name')
+
+# Query parameters
+page = request.args.get('page', 1, type=int)
+
+# Headers
+auth = request.headers.get('Authorization')
+
+# File upload
+file = request.files.get('file')
+
+SENDING RESPONSES
+-----------------
+# JSON
+return jsonify({"key": "value"}), 200
+
+# With status code
+return jsonify({"error": "Not found"}), 404
+
+# With headers
+return jsonify(data), 200, {'X-Custom-Header': 'value'}
+
+================================================================================
+5. ML MODEL SERVING API
+================================================================================
+
+from flask import Flask, request, jsonify
+import joblib
+import numpy as np
+
+app = Flask(__name__)
+
+# Load trained model at startup
+model = joblib.load('model.pkl')
+scaler = joblib.load('scaler.pkl')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        data = request.get_json()
+        features = np.array(data['features']).reshape(1, -1)
+        features_scaled = scaler.transform(features)
+        prediction = model.predict(features_scaled)
+        probability = model.predict_proba(features_scaled).tolist()
+
+        return jsonify({
+            'prediction': int(prediction[0]),
+            'probability': probability[0]
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'healthy', 'model_loaded': True})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
+================================================================================
+6. BLUEPRINTS
+================================================================================
+
+INTUITION
+---------
+Organize routes into modular components.
+
+from flask import Blueprint
+
+api = Blueprint('api', __name__)
+
+@api.route('/users')
+def get_users():
+    return jsonify({"users": []})
+
+@api.route('/users/<int:user_id>')
+def get_user(user_id):
+    return jsonify({"user_id": user_id})
+
+# Register in main app
+app = Flask(__name__)
+app.register_blueprint(api, url_prefix='/api/v1')
+
+================================================================================
+7. ERROR HANDLING
+================================================================================
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({"error": "Resource not found"}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({"error": "Internal server error"}), 500
+
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({"error": "Bad request"}), 400
+
+================================================================================
+8. DATABASE WITH SQLALCHEMY
+================================================================================
+
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# Create tables
+with app.app_context():
+    db.create_all()
+
+# CRUD
+@app.route('/users', methods=['POST'])
+def create_user():
+    data = request.get_json()
+    user = User(name=data['name'], email=data['email'])
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"id": user.id, "name": user.name}), 201
+
+@app.route('/users', methods=['GET'])
+def list_users():
+    users = User.query.all()
+    return jsonify([{"id": u.id, "name": u.name} for u in users])
+
+================================================================================
+9. DEPLOYMENT
+================================================================================
+
+GUNICORN (Production Server)
+-----------------------------
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+
+DOCKER
+------
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+EXPOSE 5000
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+
+================================================================================
+10. SKILLS CHECKPOINT
+================================================================================
+
+Q1: When would you choose Flask over Django?
+Q2: How do you handle file uploads in Flask?
+Q3: What is a Blueprint and why use it?
+Q4: How do you serve an ML model with Flask?
+Q5: What is Gunicorn and why use it instead of Flask's dev server?
+
+================================================================================
+END OF MODULE 36: FLASK
+================================================================================

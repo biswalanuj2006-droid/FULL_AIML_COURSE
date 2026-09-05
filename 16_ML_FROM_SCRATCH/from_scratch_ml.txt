@@ -1,0 +1,265 @@
+================================================================================
+ML FROM SCRATCH — COMPLETE IMPLEMENTATIONS
+================================================================================
+
+Implement every important ML algorithm without scikit-learn.
+Then compare with sklearn.
+
+================================================================================
+1. LINEAR REGRESSION FROM SCRATCH
+================================================================================
+
+import numpy as np
+
+class LinearRegressionScratch:
+    def __init__(self, learning_rate=0.01, n_iterations=1000):
+        self.lr = learning_rate
+        self.n_iter = n_iterations
+
+    def fit(self, X, y):
+        n_samples, n_features = X.shape
+        self.weights = np.zeros(n_features)
+        self.bias = 0
+
+        for _ in range(self.n_iter):
+            y_pred = X @ self.weights + self.bias
+
+            # Gradients (MSE loss)
+            dw = (1/n_samples) * (X.T @ (y_pred - y))
+            db = (1/n_samples) * np.sum(y_pred - y)
+
+            # Update
+            self.weights -= self.lr * dw
+            self.bias -= self.lr * db
+
+    def predict(self, X):
+        return X @ self.weights + self.bias
+
+# Usage
+X = np.random.randn(100, 3)
+y = X @ np.array([1.5, -2.0, 3.0]) + 0.5
+
+model = LinearRegressionScratch(learning_rate=0.1, n_iterations=1000)
+model.fit(X, y)
+print(f"Weights: {model.weights}")
+print(f"Bias: {model.bias}")
+
+================================================================================
+2. LOGISTIC REGRESSION FROM SCRATCH
+================================================================================
+
+class LogisticRegressionScratch:
+    def __init__(self, learning_rate=0.01, n_iterations=1000):
+        self.lr = learning_rate
+        self.n_iter = n_iterations
+
+    def sigmoid(self, z):
+        return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+
+    def fit(self, X, y):
+        n_samples, n_features = X.shape
+        self.weights = np.zeros(n_features)
+        self.bias = 0
+
+        for _ in range(self.n_iter):
+            z = X @ self.weights + self.bias
+            y_pred = self.sigmoid(z)
+
+            # Gradients (binary cross-entropy loss)
+            dw = (1/n_samples) * (X.T @ (y_pred - y))
+            db = (1/n_samples) * np.sum(y_pred - y)
+
+            self.weights -= self.lr * dw
+            self.bias -= self.lr * db
+
+    def predict_proba(self, X):
+        return self.sigmoid(X @ self.weights + self.bias)
+
+    def predict(self, X, threshold=0.5):
+        return (self.predict_proba(X) >= threshold).astype(int)
+
+================================================================================
+3. KNN FROM SCRATCH
+================================================================================
+
+class KNNScratch:
+    def __init__(self, k=5):
+        self.k = k
+
+    def fit(self, X, y):
+        self.X_train = X
+        self.y_train = y
+
+    def predict(self, X):
+        return np.array([self._predict_single(x) for x in X])
+
+    def _predict_single(self, x):
+        distances = np.sqrt(np.sum((self.X_train - x) ** 2, axis=1))
+        k_indices = np.argsort(distances)[:self.k]
+        k_labels = self.y_train[k_indices]
+        # Majority vote
+        values, counts = np.unique(k_labels, return_counts=True)
+        return values[np.argmax(counts)]
+
+================================================================================
+4. K-MEANS FROM SCRATCH
+================================================================================
+
+class KMeansScratch:
+    def __init__(self, k=3, n_iterations=100):
+        self.k = k
+        self.n_iter = n_iterations
+
+    def fit(self, X):
+        n_samples = X.shape[0]
+        # Random initialization
+        indices = np.random.choice(n_samples, self.k, replace=False)
+        self.centroids = X[indices].copy()
+
+        for _ in range(self.n_iter):
+            # Assign clusters
+            distances = np.sqrt(
+                ((X[:, np.newaxis] - self.centroids) ** 2).sum(axis=2)
+            )
+            self.labels = np.argmin(distances, axis=1)
+
+            # Update centroids
+            new_centroids = np.array([
+                X[self.labels == i].mean(axis=0)
+                if np.sum(self.labels == i) > 0
+                else self.centroids[i]
+                for i in range(self.k)
+            ])
+
+            if np.allclose(self.centroids, new_centroids):
+                break
+            self.centroids = new_centroids
+
+    def predict(self, X):
+        distances = np.sqrt(
+            ((X[:, np.newaxis] - self.centroids) ** 2).sum(axis=2)
+        )
+        return np.argmin(distances, axis=1)
+
+================================================================================
+5. DECISION TREE FROM SCRATCH (Simplified)
+================================================================================
+
+class DecisionTreeScratch:
+    def __init__(self, max_depth=10, min_samples_split=2):
+        self.max_depth = max_depth
+        self.min_samples_split = min_samples_split
+
+    def gini(self, y):
+        classes = np.unique(y)
+        return 1 - sum((np.sum(y == c) / len(y)) ** 2 for c in classes)
+
+    def best_split(self, X, y):
+        best_gini = float('inf')
+        best_feature, best_threshold = None, None
+
+        for feature in range(X.shape[1]):
+            thresholds = np.unique(X[:, feature])
+            for threshold in thresholds:
+                left_mask = X[:, feature] <= threshold
+                right_mask = ~left_mask
+
+                if np.sum(left_mask) < 2 or np.sum(right_mask) < 2:
+                    continue
+
+                gini = (np.sum(left_mask) / len(y) * self.gini(y[left_mask]) +
+                        np.sum(right_mask) / len(y) * self.gini(y[right_mask]))
+
+                if gini < best_gini:
+                    best_gini = gini
+                    best_feature = feature
+                    best_threshold = threshold
+
+        return best_feature, best_threshold
+
+    def fit(self, X, y, depth=0):
+        if (depth >= self.max_depth or
+            len(np.unique(y)) == 1 or
+            len(y) < self.min_samples_split):
+            # Leaf node: majority class
+            values, counts = np.unique(y, return_counts=True)
+            self.prediction = values[np.argmax(counts)]
+            return self
+
+        feature, threshold = self.best_split(X, y)
+        if feature is None:
+            values, counts = np.unique(y, return_counts=True)
+            self.prediction = values[np.argmax(counts)]
+            return self
+
+        self.feature = feature
+        self.threshold = threshold
+
+        left_mask = X[:, feature] <= threshold
+        self.left = DecisionTreeScratch(self.max_depth, self.min_samples_split)
+        self.left.fit(X[left_mask], y[left_mask], depth + 1)
+
+        self.right = DecisionTreeScratch(self.max_depth, self.min_samples_split)
+        self.right.fit(X[~left_mask], y[~left_mask], depth + 1)
+
+        return self
+
+    def predict_single(self, x):
+        if hasattr(self, 'prediction'):
+            return self.prediction
+        if x[self.feature] <= self.threshold:
+            return self.left.predict_single(x)
+        return self.right.predict_single(x)
+
+    def predict(self, X):
+        return np.array([self.predict_single(x) for x in X])
+
+================================================================================
+6. COMPARISON WITH SKLEARN
+================================================================================
+
+# Compare from-scratch vs sklearn
+from sklearn.linear_model import LinearRegression as LR_sklearn
+from sklearn.linear_model import LogisticRegression as LogReg_sklearn
+from sklearn.neighbors import KNeighborsClassifier as KNN_sklearn
+from sklearn.cluster import KMeans as KMeans_sklearn
+from sklearn.tree import DecisionTreeClassifier as DT_sklearn
+from sklearn.metrics import accuracy_score
+
+# Generate data
+from sklearn.datasets import make_classification, make_blobs
+
+X_cls, y_cls = make_classification(n_samples=200, n_features=5, random_state=42)
+X_clust, y_clust = make_blobs(n_samples=200, centers=3, random_state=42)
+
+# Logistic Regression
+our_model = LogisticRegressionScratch(learning_rate=0.1, n_iterations=1000)
+our_model.fit(X_cls, y_cls)
+our_pred = our_model.predict(X_cls)
+
+sk_model = LogReg_sklearn(max_iter=1000)
+sk_model.fit(X_cls, y_cls)
+sk_pred = sk_model.predict(X_cls)
+
+print(f"Our accuracy: {accuracy_score(y_cls, our_pred):.4f}")
+print(f"Sklearn accuracy: {accuracy_score(y_cls, sk_pred):.4f}")
+
+================================================================================
+7. KEY TAKEAWAYS
+================================================================================
+
+From-scratch helps you understand:
+1. What each hyperparameter actually does
+2. How gradients flow during training
+3. Why certain algorithms are sensitive to scaling
+4. The mathematical foundations behind the API calls
+
+Sklearn is preferred for production because:
+1. Optimized C implementations
+2. Handles edge cases
+3. Extensive testing
+4. Consistent API
+
+================================================================================
+END OF FROM-SCRATCH ML
+================================================================================

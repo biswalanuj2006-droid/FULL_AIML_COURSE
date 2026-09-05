@@ -1,0 +1,119 @@
+# KNN — PRACTICE SET
+# 25 Questions + Coding + Debugging
+
+---
+
+## EASY (8 Questions)
+
+1. What is the time complexity of KNN prediction?
+   Answer: O(n × d) where n is training samples, d is feature dimension
+
+2. What is the space complexity of KNN?
+   Answer: O(n × d) — stores all training data
+
+3. Why is KNN called a lazy learner?
+   Answer: It doesn't learn a model during training — all computation happens at prediction time
+
+4. What happens when K=1 in KNN?
+   Answer: Model perfectly fits training data (overfitting likely)
+
+5. What happens when K=n (all data)?
+   Answer: Always predicts the majority class (underfitting)
+
+6. What is the curse of dimensionality in KNN?
+   Answer: In high dimensions, all points become roughly equidistant, making distance metrics meaningless
+
+7. Why should features be scaled for KNN?
+   Answer: KNN uses distance — features with larger ranges dominate the distance calculation
+
+8. What distance metrics can KNN use?
+   Answer: Euclidean, Manhattan, Minkowski, Cosine, Hamming
+
+---
+
+## MEDIUM (10 Questions)
+
+9. Implement KNN with Manhattan distance.
+   ```python
+   def manhattan_distance(x1, x2):
+       return np.sum(np.abs(x1 - x2))
+   ```
+
+10. Implement weighted KNN (closer neighbors have more vote weight).
+    ```python
+    def weighted_predict(self, x):
+        distances = [self._distance(x, x_train) for x_train in self.X_train]
+        k_indices = np.argsort(distances)[:self.k]
+        weights = 1 / (np.array(distances)[k_indices] + 1e-8)
+        k_labels = self.y_train[k_indices]
+        weighted_votes = {}
+        for label, weight in zip(k_labels, weights):
+            weighted_votes[label] = weighted_votes.get(label, 0) + weight
+        return max(weighted_votes, key=weighted_votes.get)
+    ```
+
+11. How do you choose the optimal K?
+    Answer: Cross-validation — try different K values and pick the one with best validation accuracy
+
+12. What is the bias-variance tradeoff in KNN?
+    Answer: Small K: low bias, high variance. Large K: high bias, low variance.
+
+13. How can you speed up KNN?
+    Answer: KD-tree (O(log n) average), Ball tree, dimensionality reduction, approximate nearest neighbors
+
+14. Implement KD-Tree search concept.
+
+15. What is approximate nearest neighbor (ANN)?
+    Answer: Algorithms that find "close enough" neighbors much faster than exact search (LSH, HNSW)
+
+16. KNN for regression — what is the prediction?
+    Answer: Mean (or weighted mean) of K nearest neighbors' values
+
+17. How does KNN handle missing values?
+    Answer: Not natively — must impute before applying KNN
+
+18. What are the pros and cons of KNN?
+    Pros: Simple, no training, non-parametric. Cons: Slow prediction, memory intensive, sensitive to irrelevant features
+
+---
+
+## HARD (5 Questions)
+
+19. Implement KD-Tree from scratch.
+20. Implement ball tree from scratch.
+21. Analyze KNN with different distance metrics on the same dataset.
+22. Compare KNN with logistic regression on non-linear datasets.
+23. Implement KNN with feature weighting.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: KNN not scaling features
+knn = KNNClassifier(k=5)
+knn.fit(X_train, y_train)  # X_train not scaled!
+# Fix: X_train = (X_train - mean) / std
+
+# Debug 2: Off-by-one in distance calculation
+def predict_one(self, x):
+    distances = [np.linalg.norm(x - xt) for xt in self.X_train]
+    k_indices = np.argsort(distances)[:self.k]  # Correct: [:k]
+    # If using self.k+1, that's wrong (would include more neighbors)
+
+# Debug 3: KNN with even K and tie-breaking
+def _predict_single(self, x):
+    distances = [self._distance(x, xt) for xt in self.X_train]
+    k_indices = np.argsort(distances)[:self.k]
+    k_labels = self.y_train[k_indices]
+    # Bug: Counter.most_common(1) returns first if tie
+    # Fix: Handle ties explicitly or use weighted voting
+
+# Debug 4: KNN memory error on large dataset
+# All training data stored in memory
+# Fix: Use approximate nearest neighbors (ANN) or dimensionality reduction
+
+# Debug 5: KNN slow on high-dimensional data
+# Distance computation is O(n × d)
+# Fix: Use PCA to reduce dimensions, or use KD-tree for low dimensions
+```

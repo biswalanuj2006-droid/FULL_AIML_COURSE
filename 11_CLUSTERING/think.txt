@@ -1,0 +1,41 @@
+================================================================================
+THINK.TXT - 11 CLUSTERING
+================================================================================
+
+1. Clustering is "unsupervised" yet every algorithm optimizes SOMETHING.
+   State the objective of K-Means, DBSCAN, hierarchical (Ward), and GMM,
+   and explain how choosing an algorithm is choosing an assumption.
+2. K-Means minimizes within-cluster variance, which is equivalent to
+   assuming spherical Gaussian clusters. What happens with elongated
+   clusters and why does standardization not fully fix it?
+3. The elbow method is subjective. Derive a more principled k-selection
+   criterion (silhouette, gap statistic) and explain when it still fails.
+4. Two moons dataset: K-Means fails, spectral clustering succeeds. Explain
+   what "cluster" means in each and why the geometry matters.
+5. DBSCAN has no "cluster center". What does eps control exactly, and
+   what is the failure mode when clusters have very different densities?
+   (This is why HDBSCAN exists - explain.)
+6. You cluster customers and get 5 groups, but a stakeholder says group 2
+   is "not actionable". What does actionability mean for clustering
+   validation, and how does it conflict with purely internal metrics?
+7. Clustering stability: run K-Means twice with different seeds and get
+   different labels. How do you measure stability and what does
+   instability tell you about the data?
+8. GMM gives soft assignments - a probability per cluster. When would
+   those probabilities be more useful than hard labels, and what
+   assumption about the data-generating process do they make?
+9. Scale matters: clustering on raw vs standardized vs PCA-transformed
+   features can give entirely different clusters. Construct a rule for
+   when each is defensible.
+10. How do you know a clustering is "good" when you have NO ground truth?
+    Enumerate the internal metrics, what each assumes, and their failure
+    modes (silhouette loves convex clusters - why?).
+11. Anomaly detection as clustering: how do isolation forest, one-class
+    SVM, and GMM's density threshold each define "normal"? Which is best
+    when anomalies are rare and heterogeneous?
+12. OPEN PROBLEM: the "right number of clusters" has no objective answer
+    without a downstream task. Formalize clustering as a decision problem
+    with a utility function and discuss what is still unsolved.
+================================================================================
+END
+================================================================================

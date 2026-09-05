@@ -1,0 +1,356 @@
+================================================================================
+                     AI/ML ENGINEERING COURSE
+                     COMPLETE COURSE OVERVIEW
+================================================================================
+
+FROM BEGINNER TO PRODUCTION-READY AI ENGINEER
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. Course Philosophy
+2. Who This Course Is For
+3. What You Will Learn
+4. Course Stages and Progression
+5. How to Use This Course
+6. Prerequisites
+7. Tools and Environment
+8. Time Commitment
+9. Certification of Completion
+
+================================================================================
+1. COURSE PHILOSOPHY
+================================================================================
+
+This course follows a strict learning progression:
+
+    UNDERSTAND
+        ↓
+    CALCULATE
+        ↓
+    CODE
+        ↓
+    VISUALIZE
+        ↓
+    EXPERIMENT
+        ↓
+    EVALUATE
+        ↓
+    BUILD
+        ↓
+    DEPLOY
+        ↓
+    MAINTAIN
+
+For every concept, you will go through:
+
+    1. What is it?           — Intuition and definition
+    2. Why does it exist?    — Problem it solves
+    3. How does it work?     — Theory and mathematics
+    4. Can I calculate it?   — Manual numerical examples
+    5. Can I code it?        — From-scratch Python implementation
+    6. Can I use the library?— Professional library (sklearn, PyTorch, etc.)
+    7. Can I visualize it?   — Graphs and diagrams
+    8. Can I experiment?     — Hands-on labs with real datasets
+    9. Can I evaluate it?    — Metrics and analysis
+    10. Can I debug it?      — Common errors and fixes
+    11. Can I deploy it?     — API, Docker, Cloud
+    12. Can I design with it?— System design and architecture
+
+This is NOT a definition-dump course. You will not just read — you will DO.
+
+================================================================================
+2. WHO THIS COURSE IS FOR
+================================================================================
+
+PRIMARY AUDIENCE:
+    - Aspiring AI/ML Engineers
+    - Software Engineers transitioning to AI/ML
+    - Data Scientists wanting production skills
+    - Students wanting industry-ready ML skills
+    - Backend Engineers adding AI capabilities
+
+NO PRIOR ML EXPERIENCE REQUIRED.
+The course starts from zero and builds systematically.
+
+================================================================================
+3. WHAT YOU WILL LEARN
+================================================================================
+
+STAGE 1: FOUNDATIONS (Weeks 1-8)
+    - Python programming for data science
+    - NumPy for numerical computing
+    - Pandas for data manipulation
+    - Data visualization (Matplotlib, Seaborn, Plotly)
+    - Complete mathematics for ML (Algebra, Linear Algebra,
+      Calculus, Probability, Statistics, Optimization)
+
+STAGE 2: CLASSICAL MACHINE LEARNING (Weeks 9-18)
+    - ML fundamentals and terminology
+    - Data preprocessing and feature engineering
+    - Exploratory Data Analysis (EDA)
+    - Classification algorithms (Logistic Regression, KNN,
+      Naive Bayes, Decision Trees, SVM, XGBoost, etc.)
+    - Regression algorithms (Linear, Polynomial, Ridge, Lasso, etc.)
+    - Clustering (K-Means, DBSCAN, Hierarchical)
+    - Dimensionality Reduction (PCA, t-SNE, UMAP)
+    - Ensemble Learning (Bagging, Boosting, Stacking)
+    - Model evaluation and selection
+    - Hyperparameter optimization
+    - Time series analysis
+
+STAGE 3: DEEP LEARNING (Weeks 19-26)
+    - Artificial Neural Networks from scratch
+    - Deep learning concepts (initialization, batch norm, dropout)
+    - Convolutional Neural Networks (CNN)
+    - Recurrent Neural Networks (RNN)
+    - LSTM and GRU architectures
+    - Computer Vision foundations
+
+STAGE 4: NLP & TRANSFORMERS (Weeks 27-32)
+    - Natural Language Processing (tokenization, TF-IDF, etc.)
+    - Word Embeddings (Word2Vec, GloVe, FastText)
+    - Attention Mechanism
+    - Transformer Architecture
+    - BERT, GPT, and modern architectures
+    - Hugging Face ecosystem
+
+STAGE 5: GENERATIVE AI (Weeks 33-38)
+    - Generative AI foundations
+    - Large Language Model fundamentals
+    - Retrieval-Augmented Generation (RAG)
+    - Vector Databases (FAISS, Chroma, Qdrant)
+    - Prompt Engineering
+    - Fine-Tuning (LoRA, PEFT)
+
+STAGE 6: ENGINEERING & DEPLOYMENT (Weeks 39-46)
+    - FastAPI for ML APIs
+    - Flask for ML APIs
+    - Django for AI backends
+    - REST API design
+    - Authentication and Authorization
+    - Databases (PostgreSQL, SQLite, MongoDB)
+    - Docker containerization
+    - Git and GitHub
+    - Testing strategies
+    - Cloud deployment (AWS, Azure, GCP)
+    - MLOps (MLflow, DVC, experiment tracking)
+    - AI/ML System Design
+    - Production AI Engineering
+
+STAGE 7: PROJECTS & CAPSTONE (Weeks 47-52)
+    - Level 1 projects (beginner)
+    - Level 2 projects (intermediate)
+    - Level 3 projects (advanced/production)
+    - Capstone projects (end-to-end systems)
+
+================================================================================
+4. COURSE STAGES AND PROGRESSION
+================================================================================
+
+The course is organized into 49 modules (00-48).
+
+STAGE 0: ORIENTATION
+    Module 00 - Course Overview and Diagnostic
+
+STAGE 1: PYTHON & DATA TOOLS
+    Module 01 - Python for AI/ML
+    Module 02 - NumPy
+    Module 03 - Pandas
+    Module 04 - Data Visualization
+
+STAGE 2: MATHEMATICS
+    Module 05 - Mathematics for ML
+        - Algebra
+        - Linear Algebra
+        - Calculus
+        - Probability
+        - Statistics
+        - Optimization
+
+STAGE 3: MACHINE LEARNING
+    Module 06  - ML Fundamentals
+    Module 07  - Data Preprocessing
+    Module 08  - Exploratory Data Analysis
+    Module 09  - Classification
+    Module 10  - Regression
+    Module 11  - Clustering
+    Module 12  - Dimensionality Reduction
+    Module 13  - Ensemble Learning
+    Module 14  - Model Evaluation
+    Module 15  - Feature Engineering
+    Module 16  - Time Series
+
+STAGE 4: DEEP LEARNING
+    Module 17 - Computer Vision Foundations
+    Module 18 - Artificial Neural Networks
+    Module 19 - Deep Learning
+    Module 20 - CNN
+    Module 21 - RNN
+    Module 22 - LSTM / GRU
+
+STAGE 5: NLP & TRANSFORMERS
+    Module 23 - Natural Language Processing
+    Module 24 - Word Embeddings
+    Module 25 - Attention Mechanism
+    Module 26 - Transformers
+
+STAGE 6: GENERATIVE AI
+    Module 27 - Generative AI Foundations
+    Module 28 - LLM Fundamentals
+    Module 29 - RAG
+    Module 30 - Vector Databases
+    Module 31 - Prompt Engineering
+    Module 32 - Fine-Tuning
+
+STAGE 7: ENGINEERING
+    Module 33 - MLOps
+    Module 34 - Model Deployment
+    Module 35 - FastAPI
+    Module 36 - Flask
+    Module 37 - Django
+    Module 38 - REST APIs
+    Module 39 - Authentication & Authorization
+    Module 40 - Databases
+    Module 41 - Docker
+    Module 42 - Git & GitHub
+    Module 43 - Testing
+    Module 44 - Cloud Deployment
+    Module 45 - AI/ML System Design
+    Module 46 - Production AI Engineering
+
+STAGE 8: PROJECTS & CAPSTONE
+    Module 47 - Projects (Level 1-3)
+    Module 48 - Capstone Projects
+
+================================================================================
+5. HOW TO USE THIS COURSE
+================================================================================
+
+STEP 1: Complete the Diagnostic Assessment
+    File: 00_ORIENTATION/diagnostic_assessment.txt
+    This identifies your starting level.
+
+STEP 2: Follow the learning path
+    File: ROADMAP.md
+    Follow modules in order (00 → 48).
+
+STEP 3: For each module:
+    a) Read the theory (notes/)
+    b) Study the mathematics (math/)
+    c) Study the diagrams (diagrams/)
+    d) Run the code examples (code/)
+    e) Complete the exercises (exercises/)
+    f) Work through the labs (labs/)
+    g) Complete the project (projects/)
+
+STEP 4: Track your progress
+    Use ROADMAP.md checkboxes to mark completed items.
+
+STEP 5: Review cheat sheets
+    Use cheat_sheets/ for quick reference after completing modules.
+
+STEP 6: Build your portfolio
+    Complete Level 1-3 projects and capstone projects.
+
+================================================================================
+6. PREREQUISITES
+================================================================================
+
+REQUIRED:
+    - Basic computer literacy
+    - Willingness to learn
+    - Internet access for datasets
+    - Computer with 8GB+ RAM recommended
+
+HELPFUL (but not required — we teach it):
+    - Basic programming experience
+    - High school mathematics
+
+THE COURSE TEACHES:
+    - Python programming
+    - All necessary mathematics
+    - All necessary libraries
+
+================================================================================
+7. TOOLS AND ENVIRONMENT
+================================================================================
+
+REQUIRED:
+    - Python 3.9+ (3.10 or 3.11 recommended)
+    - pip (Python package manager)
+    - Code editor (VS Code recommended)
+    - Web browser
+
+RECOMMENDED:
+    - Jupyter Notebook / JupyterLab
+    - Git and GitHub
+    - Terminal / Command Line
+
+OPTIONAL:
+    - GPU (for deep learning modules 18+)
+    - CUDA toolkit (for GPU acceleration)
+    - Docker (for deployment modules)
+    - Cloud account (for cloud deployment modules)
+
+INSTALLATION:
+    See: 00_ORIENTATION/setup_guide.txt
+
+================================================================================
+8. TIME COMMITMENT
+================================================================================
+
+RECOMMENDED PACE: 30 hours/week
+    Total duration: ~52 weeks (1 year)
+
+INTENSIVE PACE: 40+ hours/week
+    Total duration: ~30 weeks (7.5 months)
+
+RELAXED PACE: 15-20 hours/week
+    Total duration: ~78 weeks (18 months)
+
+MINIMUM COMMITMENT: 10 hours/week
+    Total duration: ~156 weeks (3 years)
+
+The course is self-paced. Quality of understanding matters more than speed.
+
+================================================================================
+9. WHAT MAKES THIS COURSE DIFFERENT
+================================================================================
+
+1. MATHEMATICS FIRST
+   Every algorithm is taught with its mathematical foundation.
+   You don't just use the library — you understand WHY it works.
+
+2. FOUR-LAYER IMPLEMENTATION
+   Every algorithm is implemented:
+       - By hand (manual calculation)
+       - From scratch (Python/NumPy)
+       - Professional library (sklearn, PyTorch, etc.)
+       - Production system (API, Docker, deploy)
+
+3. CONTINUOUS DATASETS
+   The same datasets are reused across modules, so you see how
+   a real project evolves from EDA to deployment.
+
+4. PROJECT GATE SYSTEM
+   Before every project, you must complete:
+       Theory → Practice → Mini exercise → Quiz → Coding challenge
+
+5. PRODUCTION FOCUS
+   Every major topic eventually connects to production:
+       Model → API → Database → Docker → Cloud → Monitoring
+
+6. COMPARISON TABLES
+   You learn not just one algorithm but WHY to choose one over another.
+
+7. COMMON MISTAKES
+   Every module includes real debugging exercises and common errors.
+
+8. INTERVIEW PREPARATION
+   Every major module includes interview questions.
+
+================================================================================
+CONTINUE TO: diagnostic_assessment.txt
+================================================================================

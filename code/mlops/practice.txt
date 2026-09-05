@@ -1,0 +1,47 @@
+================================================================================
+CODE PRACTICE - code/mlops (experiment tracking with MLflow)
+Companion: 01_mlflow_example.py
+================================================================================
+RUN & OBSERVE
+1. Run the example; open the mlruns/ directory and find the recorded
+   params, metrics, and artifacts on disk (no UI needed to verify).
+2. Note the run id: how would two runs of the same script differ?
+
+MODIFY
+3. Wrap your model choice in a loop over 3 hyperparameter configs;
+   log each as its own run and write a 10-line script that compares
+   their test metrics from the tracking store (the HPO-in-practice
+   loop from the 14 lesson).
+4. Log a matplotlib figure (loss curve) as an artifact and confirm it
+   is stored with the run.
+5. Add the git commit hash + a dataset checksum (md5 of the data file)
+   to each run's tags - the reproducibility manifest from 33_MLOPS.
+6. Register the best model in the MLflow model registry with a version
+   and stage tag; load it back from the registry in a fresh process.
+
+DEBUG
+7. Run the experiment twice with a random forest that has no fixed seed
+   and show the metric spread; then set random_state and show the runs
+   are identical - the reproducibility demo in one script.
+8. Your logged metric is NaN for one config: add autolog-style error
+   capture or a try/except that logs the failure as a run with status
+   FAILED instead of silently skipping.
+9. The mlruns/ folder is 5GB because artifacts include the full
+   training data: fix by logging only the model + small artifacts and
+   excluding data via artifact_path discipline.
+
+BUILD (mini)
+10. Create a tracking wrapper: a function train_and_log(name, params)
+    that always logs params, metrics, model artifact, and returns the
+    run id - then call it for 5 experiments and produce a comparison
+    table from the store.
+11. Model registry promotion flow: train two models, register both,
+    "promote" the better one to Production by stage, and write a guard
+    that refuses to promote a model whose metric regressed vs the
+    current Production model (the rollback discipline).
+
+RELATE
+12. Which failure class in 33_MLOPS/real_problem.txt (reproducibility,
+    wrong metrics, retrain regressions) does each exercise prevent?
+13. (Interview) What belongs in a run manifest and why is the dataset
+    checksum the most skipped-but-most-valuable field?

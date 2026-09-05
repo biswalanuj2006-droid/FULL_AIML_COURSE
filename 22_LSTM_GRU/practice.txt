@@ -1,0 +1,34 @@
+================================================================================
+LSTM/GRU MODULE — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What are the 3 gates in LSTM?
+Q2: What is cell state?
+Q3: What is the difference between LSTM and GRU?
+Q4: Why is LSTM better than vanilla RNN?
+Q5: What is the update gate in GRU?
+Q6: When use GRU over LSTM?
+Q7: What is bidirectional LSTM?
+Q8: What is stacked LSTM?
+
+MEDIUM (8)
+===========
+Q9: Implement LSTM from scratch.
+Q10: Build LSTM time-series forecaster.
+Q11: Compare LSTM vs GRU on same dataset.
+Q12: Build LSTM text classifier.
+Q13: Implement bidirectional LSTM.
+Q14: Build LSTM with attention.
+Q15: Compare LSTM vs Transformer for sequence tasks.
+Q16: Implement LSTM with multiple input features.
+
+HARD (4)
+=========
+Q17: Build production LSTM forecasting system.
+Q18: Implement LSTM with custom cell.
+Q19: Build LSTM autoencoder for anomaly detection.
+Q20: Implement hierarchical LSTM.
+
+================================================================================

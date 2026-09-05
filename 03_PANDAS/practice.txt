@@ -1,0 +1,62 @@
+================================================================================
+PANDAS MODULE — PRACTICE SET (50+ Questions)
+================================================================================
+
+EASY (15)
+=========
+Q1: How do you load a CSV file into a DataFrame?
+Q2: What is the difference between loc and iloc?
+Q3: How do you check for missing values?
+Q4: How do you select a single column?
+Q5: How do you filter rows based on a condition?
+Q6: How do you sort a DataFrame?
+Q7: What is the difference between merge and join?
+Q8: How do you handle duplicate rows?
+Q9: How do you rename columns?
+Q10: How do you get basic statistics with describe()?
+Q11: How do you select multiple columns?
+Q12: How do you create a new column?
+Q13: How do you drop rows with NaN?
+Q14: How do you fill NaN values?
+Q15: How do you get DataFrame shape and info?
+
+MEDIUM (15)
+============
+Q16: Implement groupby with multiple aggregations.
+Q17: Merge two DataFrames on a common column.
+Q18: Create a pivot table from sales data.
+Q19: Handle missing values with different strategies per column.
+Q20: Implement rolling window calculations.
+Q21: Parse and manipulate datetime columns.
+Q22: Apply a function to every row/column.
+Q23: Implement conditional column creation.
+Q24: Concatenate multiple DataFrames.
+Q25: Implement melt to reshape wide to long.
+Q26: Handle categorical data efficiently.
+Q27: Implement string operations on text column.
+Q28: Create a correlation matrix and find top correlations.
+Q29: Implement outlier detection using IQR method.
+Q30: Write efficient pandas operations (avoid loops).
+
+HARD (10)
+==========
+Q31: Build complete EDA pipeline for a real dataset.
+Q32: Implement feature engineering pipeline using pandas.
+Q33: Handle large datasets with chunked reading.
+Q34: Implement time-series resampling and aggregation.
+Q35: Build data validation pipeline.
+Q36: Optimize memory usage for large DataFrame.
+Q37: Implement custom groupby aggregation.
+Q38: Handle multi-index operations.
+Q39: Build automated data profiling report.
+Q40: Compare pandas vs polars performance.
+
+DEBUGGING (5)
+==============
+D1: Why is append deprecated in pandas?
+D2: Fix: SettingWithCopyWarning.
+D3: Why does merge produce unexpected rows?
+D4: Fix: Memory error with large DataFrame.
+D5: Why is groupby().transform() needed instead of apply()?
+
+================================================================================

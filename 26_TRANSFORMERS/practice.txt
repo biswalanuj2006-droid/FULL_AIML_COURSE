@@ -1,0 +1,72 @@
+================================================================================
+TRANSFORMERS MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (15 Questions)
+================================
+Q1: What is self-attention and why is it powerful?
+Q2: What is the difference between Q, K, and V in attention?
+Q3: Why do we scale attention scores by sqrt(d_k)?
+Q4: What is multi-head attention?
+Q5: What is positional encoding and why is it needed?
+Q6: What is the difference between BERT and GPT?
+Q7: What is a tokenizer in the context of Transformers?
+Q8: What is the [CLS] token used for?
+Q9: What is masked language modeling?
+Q10: What is next token prediction?
+Q11: What is transfer learning in Transformers?
+Q12: What is fine-tuning vs pretraining?
+Q13: What is the Hugging Face Transformers library?
+Q14: What is a pipeline in Hugging Face?
+Q15: What is the difference between encoder and decoder?
+
+SECTION B — MEDIUM (15 Questions)
+==================================
+Q16: Implement scaled dot-product attention from scratch.
+Q17: Implement multi-head attention in PyTorch.
+Q18: Use Hugging Face pipeline for text classification.
+Q19: Fine-tune BERT for sentiment analysis.
+Q20: Implement positional encoding from scratch.
+Q21: Compare BERT vs RoBERTa on the same task.
+Q22: Build a text generation system with GPT-2.
+Q23: Implement a simple transformer block from scratch.
+Q24: Use Hugging Face for named entity recognition.
+Q25: Build a question answering system with Transformers.
+Q26: Implement tokenization comparison (BPE vs WordPiece).
+Q27: Fine-tune a model for custom text classification.
+Q28: Implement attention visualization for a trained model.
+Q29: Build a text similarity system using sentence embeddings.
+Q30: Compare different pre-trained models for the same task.
+
+SECTION C — HARD (8 Questions)
+================================
+Q31: Implement a complete transformer encoder from scratch.
+Q32: Build a production text classification API with Transformers.
+Q33: Implement distributed fine-tuning with Accelerate.
+Q34: Build a multi-model inference pipeline.
+Q35: Implement custom tokenizer training for domain-specific text.
+Q36: Build a text generation system with controllable outputs.
+Q37: Implement LoRA fine-tuning for memory efficiency.
+Q38: Build a transformer-based search engine.
+
+SECTION D — DEBUGGING (6 Problems)
+====================================
+D1: Why is tokenizer output different from expected?
+D2: Fix: Tokenizer mismatch between training and inference.
+D3: Why is fine-tuning making the model worse?
+D4: Fix: GPU out of memory with large transformer model.
+D5: Why is attention mask not working correctly?
+D6: Fix: Model predictions are random after fine-tuning.
+
+SECTION E — INTERVIEW (8 Questions)
+=====================================
+I1: Explain the Transformer architecture in 2 minutes.
+I2: What is the computational complexity of self-attention?
+I3: How does BERT handle out-of-vocabulary words?
+I4: What are the trade-offs between BERT and GPT?
+I5: How would you fine-tune a model with limited data?
+I6: What is knowledge distillation and when is it useful?
+I7: How do you handle long documents with Transformers?
+I8: What are the latest advances in Transformer efficiency?
+
+================================================================================

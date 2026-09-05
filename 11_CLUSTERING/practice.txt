@@ -1,0 +1,39 @@
+================================================================================
+CLUSTERING MODULE — PRACTICE SET (30+ Questions)
+================================================================================
+
+EASY (10)
+=========
+Q1: What is the difference between supervised and unsupervised learning?
+Q2: What does K-Means optimize?
+Q3: What is the elbow method?
+Q4: What is the silhouette score?
+Q5: How does DBSCAN differ from K-Means?
+Q6: What is hierarchical clustering?
+Q7: What is the difference between agglomerative and divisive?
+Q8: What is GMM?
+Q9: How do you choose the number of clusters?
+Q10: What is feature scaling importance for clustering?
+
+MEDIUM (10)
+============
+Q11: Implement K-Means from scratch.
+Q12: Compare K-Means vs DBSCAN on different datasets.
+Q13: Implement silhouette analysis for cluster selection.
+Q14: Build customer segmentation pipeline.
+Q15: Implement hierarchical clustering with dendrogram.
+Q16: Compare clustering metrics systematically.
+Q17: Implement GMM clustering.
+Q18: Build clustering visualization pipeline.
+Q19: Implement cluster profiling.
+Q20: Build dimensionality reduction + clustering pipeline.
+
+HARD (5)
+=========
+Q21: Implement mini-batch K-Means for large datasets.
+Q22: Build anomaly detection using clustering.
+Q23: Implement clustering evaluation framework.
+Q24: Build real-time clustering system.
+Q25: Implement clustering with constraints.
+
+================================================================================

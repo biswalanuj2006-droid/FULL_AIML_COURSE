@@ -1,0 +1,247 @@
+================================================================================
+PROJECT.txt - LLM COURSE PROJECT ROADMAP
+Three levels + one final capstone. Grading rubric applies to all.
+================================================================================
+
+GRADING: 10% Architecture | 15% Code quality | 15% Functionality | 10%
+Testing | 10% Evaluation | 10% Security | 10% Performance | 10%
+Documentation | 10% Deployment (Level 1 re-weights Security/Deployment
+into Code/Testing).
+
+================================================================================
+LEVEL 1 - FOUNDATION
+================================================================================
+
+PROJECT 1. Tokenizer from Scratch
+Objective: implement BPE (or WordPiece) on a real corpus; encode/decode.
+Theory: Part 12. Tech: Python only.
+Steps: 1) char vocab 2) pair counting 3) merge loop to target vocab
+4) encode/decode incl. unknown handling 5) unit tests round-trip.
+Expected: tokenizes 100k chars; encode(decode(x)) == x for in-vocab text.
+Extensions: unigram via EM; special tokens; compare tokens/word vs
+whitespace.
+Interview: why subword over word; what breaks on a new language.
+
+PROJECT 2. Word Embedding Explorer
+Objective: train Word2Vec-style embeddings on a small corpus, explore
+similarity/analogy structure.
+Theory: Part 4. Tech: numpy or gensim.
+Steps: build co-occurrence/skip-gram objective, train, kNN by cosine,
+t-SNE/UMAP plot, analogy checks.
+Expected: king-queen/man-woman directionality demo or honest failure doc.
+Interview: why static embeddings fail on polysemy.
+
+PROJECT 3. Attention Visualizer
+Objective: tiny transformer forward + heatmap of attention weights.
+Theory: Parts 6-10. Tech: numpy (EXAMPLE.py 13-16) + matplotlib.
+Steps: attention, causal mask, one block, mini-GPT; run a prompt; plot
+head-by-head weight heatmaps; annotate which tokens attend to which.
+Expected: figures + written interpretation per head.
+Interview: what does an attention head "mean" and why is that question
+subtle?
+
+PROJECT 4. Transformer From Scratch
+Objective: MiniGPT with training loop on a tiny corpus, no HF.
+Theory: Parts 10-22. Tech: numpy or torch.
+Steps: block -> stack -> LM head -> CE loop with shifted labels -> sample.
+Expected: trains a char-level LM; loss falls; coherent short samples.
+Testing: forward/backward shapes, mask correctness, label shift.
+Interview: walk the data flow of one training step end to end.
+
+PROJECT 5. Mini GPT
+Objective: the Level-4 model + greedy/temperature/top-k/top-p sampling.
+Theory: Parts 14-16. Tech: torch (or numpy).
+Runnable reference: mini_gpt_lab.py in this folder trains a real Mini GPT
+end to end (corpus -> char tokenizer -> GPT -> AdamW -> samples) and
+prints a bigram-baseline comparison.  Steal its Block/MiniGPT/generate
+classes as the starting point for your own project code.
+Steps: sampling UI/CLI, seeded determinism, repetition penalties.
+Expected: configurable sampler with measured diversity vs quality.
+Interview: temperature 0 vs 0.8 vs 2 - what changes and why.
+
+PROJECT 6. Text Generation Engine
+Objective: pack MiniGPT into a reusable generate() with KV-cache-style
+incremental decoding simulation.
+Theory: Parts 40-42. Tech: python.
+Runnable reference: mini_gpt_lab.py's generate() shows the autoregressive
+loop; EXAMPLE.py section 40-42 shows the KV-cache math to build on.
+Steps: tokenize prompt -> incremental decode -> decode ids; timing
+prefill vs decode; report tokens/s.
+Expected: generated text with timing breakdown.
+Interview: where would a real KV cache live and what does it store?
+
+================================================================================
+LEVEL 2 - ADVANCED
+================================================================================
+
+PROJECT 1. Mini LLM Training Pipeline
+Objective: from raw text to trained small LM with a real pipeline.
+Theory: Parts 20-32. Tech: torch, datasets.
+Steps: text -> filter/dedup -> tokenize -> pack -> shuffle -> train
+(AdamW, warmup, cosine, clip, BF16 if available) -> checkpoint/resume ->
+eval ppl.
+Expected: reproducible run config; ppl curve; checkpoint resume test.
+Interview: what did dedup/seed/lr-schedule each contribute - measured?
+
+PROJECT 2. Hugging Face LLM Fine-Tuning System
+Objective: SFT a small open model on instruction data.
+Theory: Parts 33-35, 45. Tech: HF transformers, datasets, trl.
+Steps: dataset format -> chat template -> loss masking -> SFTTrainer ->
+eval vs base on your task set.
+Expected: adapter + metrics showing task improvement over the base.
+Interview: how do you know SFT helped and not just memorized?
+
+PROJECT 3. LoRA Fine-Tuning Platform
+Objective: parameter-efficient fine-tuning with a clean config layer.
+Theory: Parts 36-37. Tech: peft + torch.
+Steps: target modules config, rank/alpha sweep, adapter save/load/merge,
+eval matrix (rank x alpha).
+Expected: rank/alpha ablation table with a recommendation.
+Interview: which layers did you adapt and why - show the ablation.
+
+PROJECT 4. QLoRA Training Pipeline
+Objective: fine-tune the largest model your GPU fits, in 4-bit.
+Theory: Parts 38-39. Tech: bitsandbytes + peft + trl.
+Steps: NF4 base, double-quant, paged optimizer, adapter training, merge.
+Expected: trains on a single consumer GPU; memory log; quality report.
+Interview: walk the memory budget of your run exactly.
+
+PROJECT 5. Local LLM Inference Server
+Objective: serve a local model over HTTP with streaming.
+Theory: Parts 40-44. Tech: vLLM or HF pipeline + FastAPI.
+Steps: load -> /generate (streaming) -> batching -> metrics (TTFT,
+tokens/s) -> load test.
+Expected: benchmark report + graceful degradation under load.
+Interview: decode is bandwidth-bound - what did your numbers show?
+
+PROJECT 6. LLM Evaluation Platform
+Objective: reusable eval harness with ppl, task metrics, LLM-as-judge.
+Theory: Parts 46-47. Tech: HF + your task sets.
+Steps: eval registry, judge validation vs humans, regression reporting.
+Expected: score cards per model version; CI hook.
+Interview: how do you validate an LLM judge on YOUR data?
+
+PROJECT 7. Document + LLM System
+Objective: RAG over a private document set with honest evals.
+Theory: Parts 46-47, 60. Tech: embedding model, vector store, HF LLM.
+Steps: chunk -> embed -> hybrid retrieve -> rerank -> grounded generate ->
+faithfulness check; eval retrieval + answer separately.
+Expected: retrieval and answer scorecards; error analysis.
+Interview: prove the answer came from the document.
+
+PROJECT 8. LLM-powered Coding Assistant
+Objective: repo-aware Q&A + edit suggestions (read-only).
+Theory: Parts 61-62. Tech: code indexer + LLM.
+Steps: chunk code with symbols -> retrieve -> answer with file:line cites.
+Expected: answers cite the exact code location.
+Interview: why does naive prose chunking fail on code?
+
+================================================================================
+LEVEL 3 - INDUSTRY / RESEARCH
+================================================================================
+
+PROJECT 1. Distributed LLM Training System
+Objective: FSDP/DeepSpeed training of a 1-7B model across 2+ GPUs.
+Theory: Parts 29-32. Tech: accelerate/FSDP.
+Steps: sharded config, activation checkpointing, BF16, resume from
+sharded checkpoint, scaling table.
+Expected: scaling + memory report; clean crash-resume.
+Interview: where does the memory actually go on your nodes?
+
+PROJECT 2. Production LLM Serving Platform
+Objective: multi-model, multi-tenant, continuous-batching server.
+Theory: Parts 42-44, 47. Tech: vLLM, FastAPI, Redis, Docker.
+Steps: model router, streaming, quota/rate limits, usage metering,
+autoscaling, canary swaps.
+Expected: SLO report (TTFT, ITL, tokens/s) + cost per request.
+Interview: how do you canary a new model without user-visible regressions?
+
+PROJECT 3. Enterprise LLM Platform
+Objective: tenant-isolated chat/API product.
+Theory: Parts 55-59. Tech: FastAPI, Postgres, Redis, vector DB, vLLM.
+Steps: authN/Z, per-tenant keys, RBAC, audit log, PII redaction, budget
+caps.
+Expected: security review doc + compliance checklist done.
+Interview: tenant A's prompt must never reach tenant B - every layer?
+
+PROJECT 4. High-Performance Inference Engine
+Objective: squeeze throughput: quantization + batching + prefix cache.
+Theory: Parts 43-44, 64-65. Tech: vLLM + quantization.
+Steps: FP16 vs INT8/INT4 benchmarks, GQA model KV comparison, prefix
+caching, speculative decoding if feasible.
+Expected: benchmark matrix with a deployment recommendation.
+Interview: why did INT4 help decode but not prefill?
+
+PROJECT 5. LLM Fine-Tuning Platform
+Objective: self-serve fine-tuning with data + job + eval management.
+Theory: Parts 33-38. Tech: HF + orchestration + Postgres.
+Steps: dataset upload -> validation -> QLoRA job -> eval -> registry.
+Expected: platform that tunes 2-3 models and ranks them on your evals.
+Interview: how do you prevent bad data from silently poisoning jobs?
+
+PROJECT 6. Multi-Model Router
+Objective: quality/cost/latency-aware routing with fallbacks.
+Theory: Part 47, 58. Tech: FastAPI + classifier + LLMs.
+Steps: route features, cost model, fallback chain, per-route evals,
+quality regression alarms.
+Expected: routing report: cost -X% at quality parity (measured).
+Interview: how do you detect the cheap model silently failing a class?
+
+PROJECT 7. LLM Evaluation and Observability Platform
+Objective: one place for evals + traces + metrics.
+Theory: Parts 46, 57. Tech: eval runner + tracing + dashboard.
+Steps: trace every request (prompt/response/latency/tokens/cost), nightly
+eval runs, drift alerts, prompt-version comparison.
+Expected: dashboards that caught one real regression during the project.
+Interview: trace or log - when do you need spans?
+
+PROJECT 8. Enterprise Knowledge LLM
+Objective: RBAC-scoped RAG at scale with freshness.
+Theory: Parts 60, 55-56. Tech: ingest workers, vector DB, reranker.
+Steps: document ACL at retrieval, nightly ingest, eval gates, audit.
+Expected: doc-level access enforced and tested with an ACL attack suite.
+Interview: ACL after ANN search leaks - how do you filter before?
+
+PROJECT 9. Coding Agent powered by LLM
+Objective: agent that edits code and runs tests in a sandbox.
+Theory: Parts 61-62. Tech: sandboxed executor + LLM tool calling.
+Steps: repo toolset, plan->edit->test loop, bounded retries, patch
+verification, sandbox security.
+Expected: fixes a benchmark of ~50 issues; security writeup.
+Interview: sandbox escape scenarios and your mitigations.
+
+PROJECT 10. Production AI Agent Brain
+Objective: an LLM agent with memory, planning, reflection, verification.
+Theory: Parts 61-62 + genai_agents_course parts 24-30.
+Steps: tool registry, memory (conv + vector), planner, reflection gate,
+eval suite + cost caps.
+Expected: task success + cost/task report vs a no-reflection baseline.
+Interview: show the ablation that justifies each brain component.
+
+================================================================================
+FINAL CAPSTONE - PRODUCTION LLM PLATFORM
+================================================================================
+Architecture: USER -> API GATEWAY -> FASTAPI -> MODEL ROUTER (LLM1/2/3)
+-> CACHE (Redis) -> DATABASE (PostgreSQL) -> RAG (Vector DB) -> TOOLS ->
+AGENTS -> OBSERVABILITY -> MLflow -> Docker -> Cloud.
+Requirements: authN/authZ, model routing, streaming, RAG, tool calling,
+agent with memory, evaluation, security, cost tracking, rate limiting,
+retries, failure recovery.
+Database schema: users, keys, sessions, conversations, messages, usage,
+cost_buckets, eval_runs, model_versions.
+API: /chat (SSE), /models, /admin/routes, /healthz, /readyz, /metrics.
+Router policy: cost/latency/quality routing + fallback + canary.
+RAG: hybrid retrieval, rerank, grounded generation, faithfulness check,
+ACL-scoped corpus.
+Agents: bounded loops, least-privilege tools, sandboxed execution.
+Observability: per-request traces + nightly evals + drift alerts.
+Security: TLS, keys in vault, rate limits, PII redaction, audit logs.
+Deployment: Docker Compose -> k8s; blue-green; rollback < 5 min.
+Milestones: M1 chat + auth + streaming; M2 router + usage metering;
+M3 RAG + evals; M4 tools + agent; M5 security suite; M6 observability +
+cost dashboards; M7 deploy + CI gates.
+Acceptance: eval scorecard gates every deploy; p95 TTFT < 2s; cost/user
+under budget; injection + ACL suites pass; rollback practiced.
+
+END OF PROJECT.txt
+================================================================================

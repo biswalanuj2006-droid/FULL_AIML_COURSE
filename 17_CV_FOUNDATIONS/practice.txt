@@ -1,0 +1,245 @@
+# COMPUTER VISION FOUNDATIONS — PRACTICE SET
+# 50 Questions + Debugging + Interview
+
+---
+
+## EASY (15 Questions)
+
+1. What is the shape of a grayscale image with resolution 640×480?
+   Answer: (480, 640) — height × width
+
+2. What pixel value represents pure white in grayscale?
+   Answer: 255
+
+3. What is the default color space in OpenCV?
+   Answer: BGR (not RGB)
+
+4. What does cv2.imread() return if the file doesn't exist?
+   Answer: None
+
+5. What is the difference between cv2.resize() and cv2.scale()?
+   Answer: cv2.resize() takes exact dimensions; scale factors require fx, fy parameters
+
+6. What kernel size is used in GaussianBlur((5,5), 1.5)?
+   Answer: 5×5 kernel, sigma=1.5
+
+7. What does cv2.Canny() return?
+   Answer: Binary image with edges as white pixels
+
+8. What is a morphological operation?
+   Answer: Operations that process images based on shape, using a structuring element
+
+9. What is the difference between erosion and dilation?
+   Answer: Erosion shrinks bright regions; dilation expands them
+
+10. What does histogram equalization do?
+    Answer: redistributes pixel intensities to improve contrast
+
+11. What is a pixel?
+    Answer: The smallest element of a digital image, holding intensity/color values
+
+12. What are the three channels in a color image?
+    Answer: Red, Green, Blue (RGB) or Blue, Green, Red (BGR in OpenCV)
+
+13. What is image thresholding?
+    Answer: Converting grayscale to binary based on a threshold value
+
+14. What does cv2.cvtColor() do?
+    Answer: Converts an image from one color space to another
+
+15. What is a kernel in image processing?
+    Answer: A small matrix used for convolution operations like blurring or edge detection
+
+---
+
+## MEDIUM (20 Questions)
+
+16. Write code to convert an image to HSV and detect blue objects.
+    ```python
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    lower_blue = np.array([100, 50, 50])
+    upper_blue = np.array([130, 255, 255])
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    ```
+
+17. What is the difference between cv2.blur() and cv2.GaussianBlur()?
+    Answer: blur uses uniform weights; GaussianBlur uses bell-curve weights (center pixel weighted more)
+
+18. Explain the difference between RETR_TREE and RETR_EXTERNAL.
+    Answer: RETR_TREE returns all contours with hierarchy; RETR_EXTERNAL returns only outermost contours
+
+19. What is CLAHE and why is it preferred over standard histogram equalization?
+    Answer: CLAHE applies equalization locally, preventing over-amplification of noise
+
+20. How do you calculate the aspect ratio of a bounding box?
+    Answer: aspect_ratio = width / height
+
+21. What is non-maximum suppression in edge detection?
+    Answer: Removing edge pixels that are not local maxima in gradient direction
+
+22. What is the difference between SIFT and ORB?
+    Answer: SIFT is patented, scale-invariant, slower; ORB is free, faster, rotation-invariant
+
+23. How does adaptive thresholding differ from global thresholding?
+    Answer: Adaptive computes threshold per pixel neighborhood; global uses single threshold for entire image
+
+24. What is the purpose of cv2.warpAffine()?
+    Answer: Apply affine transformation (rotation, scaling, shearing, translation)
+
+25. What is the difference between warpAffine and warpPerspective?
+    Answer: warpAffine uses 2×3 matrix (affine); warpPerspective uses 3×3 matrix (perspective)
+
+26. Explain the concept of a structuring element.
+    Answer: A small shape (kernel) that defines the neighborhood for morphological operations
+
+27. What is image binarization?
+    Answer: Converting a grayscale image to black and white using a threshold
+
+28. How do you extract a single color channel from a BGR image?
+    Answer: b, g, r = cv2.split(img) or channel = img[:, :, 0] for blue
+
+29. What is the difference between cv2.THRESH_BINARY and cv2.THRESH_BINARY_INV?
+    Answer: BINARY: pixels > threshold → 255, else → 0; BINARY_INV: pixels > threshold → 0, else → 255
+
+30. What does the ksize parameter do in cv2.Sobel()?
+    Answer: Specifies the size of the Sobel kernel (must be odd: 1, 3, 5, 7...)
+
+31. What is the time complexity of applying a k×k filter to an H×W image?
+    Answer: O(H × W × k²) for direct convolution
+
+32. How do you create a custom kernel for convolution?
+    Answer: kernel = np.array([[...]], dtype=np.float32) then cv2.filter2D(img, -1, kernel)
+
+33. What is the purpose of cv2.findContours()?
+    Answer: Detects boundaries of objects in a binary image
+
+34. What is contour approximation?
+    Answer: Reducing the number of points in a contour while preserving its shape (cv2.approxPolyDP)
+
+35. Explain the difference between image sharpening and edge detection.
+    Answer: Sharpening enhances edges to make image crisper; edge detection outputs only the edges
+
+---
+
+## HARD (10 Questions)
+
+36. Implement a 2D convolution function from scratch using NumPy.
+    ```python
+    def conv2d(image, kernel):
+        h, w = image.shape
+        kh, kw = kernel.shape
+        pad_h, pad_w = kh // 2, kw // 2
+        padded = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant')
+        output = np.zeros_like(image, dtype=np.float64)
+        for i in range(h):
+            for j in range(w):
+                region = padded[i:i+kh, j:j+kw]
+                output[i, j] = np.sum(region * kernel)
+        return output
+    ```
+
+37. Build a complete edge detection pipeline: grayscale → Gaussian blur → Sobel → threshold → morphological cleanup → output.
+
+38. Implement SIFT feature matching between two images and compute the homography.
+
+39. Create a panoramic image stitcher using feature detection, matching, and warping.
+
+40. Build a real-time color tracker using HSV segmentation, contour detection, and centroid tracking.
+
+41. Implement Otsu's thresholding algorithm from scratch.
+
+42. Build a lane detection system: grayscale → blur → Canny → Hough lines → overlay on original image.
+
+43. Implement a template matching system that finds objects regardless of scale.
+
+44. Create a background subtraction system for motion detection.
+
+45. Build a document edge detector using Canny + contour analysis + perspective correction.
+
+---
+
+## DEBUGGING (10 Problems)
+
+```python
+# Debug 1: Image loads as None
+img = cv2.imread('photo.jpg')
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Crashes!
+# Fix: Check if img is not None first
+
+# Debug 2: Wrong color detection
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+# Detecting "red" but using RGB ranges
+lower = np.array([0, 0, 200])  # Wrong!
+# Fix: HSV range for red: [0,100,100] to [10,255,255]
+
+# Debug 3: Edges too noisy
+edges = cv2.Canny(gray, 10, 250)  # thresholds too close together
+# Fix: Use wider gap: Canny(gray, 50, 150)
+
+# Debug 4: Contours not found
+contours, _ = cv2.findContours(color_img, ...)
+# Fix: Convert to grayscale → threshold → findContours
+
+# Debug 5: Rotated image is cropped
+M = cv2.getRotationMatrix2D(center, 45, 1.0)
+rotated = cv2.warpAffine(img, M, (w, h))  # Original dimensions
+# Fix: Calculate new bounding box dimensions
+
+# Debug 6: Blur too aggressive
+blur = cv2.GaussianBlur(img, (99, 99), 0)  # Kernel way too large
+# Fix: Use reasonable kernel: (5,5) or (7,7)
+
+# Debug 7: Threshold not working
+_, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV)
+# Image is already mostly white
+# Fix: Check histogram first, adjust threshold or use Otsu
+
+# Debug 8: Feature matching gives wrong results
+matches = bf.match(desc1, desc2)
+# No distance filtering
+# Fix: Filter matches by distance threshold
+
+# Debug 9: Perspective transform is skewed
+pts1 = np.float32([[56,65],[368,52],[28,387],[389,390]])
+pts2 = np.float32([[0,0],[300,0],[300,300],[0,300]])
+# Order of points matters!
+# Fix: Ensure pts1 and pts2 correspond correctly
+
+# Debug 10: Memory error on large image
+huge_img = cv2.imread('giga_image.tiff')  # 10000×10000
+# Fix: Process in tiles or resize first
+```
+
+---
+
+## INTERVIEW QUESTIONS (10)
+
+1. **Q:** What is the computational advantage of using separable filters?
+   **A:** A 2D k×k filter can be decomposed into two 1D filters (k operations each), reducing O(k²) to O(2k) per pixel.
+
+2. **Q:** How would you design a real-time face detection system?
+   **A:** Use Haar cascades or DNN-based detectors (SSD/MTCNN). Optimize with image pyramids, ROI extraction, and GPU acceleration.
+
+3. **Q:** What is the difference between semantic and instance segmentation?
+   **A:** Semantic: labels each pixel by class (all cars = "car"). Instance: distinguishes individual objects (car1, car2, car3).
+
+4. **Q:** Why do CNNs outperform traditional CV methods?
+   **A:** CNNs learn hierarchical features automatically; traditional methods require hand-crafted features that don't generalize as well.
+
+5. **Q:** How do you handle varying lighting conditions in CV?
+   **A:** Use HSV/LAB color spaces, histogram equalization, CLAHE, normalization, or data augmentation.
+
+6. **Q:** What is the receptive field and why does it matter?
+   **A:** The region of the input image that influences a particular feature. Larger receptive fields capture more context but lose fine detail.
+
+7. **Q:** Explain the vanishing gradient problem in deep CNNs.
+   **A:** Gradients shrink as they backpropagate through many layers, making early layers hard to train. Solved by skip connections (ResNet), batch norm, and proper initialization.
+
+8. **Q:** How would you handle class imbalance in image classification?
+   **A:** Oversampling, undersampling, class weights, data augmentation, focal loss, or synthetic data generation.
+
+9. **Q:** What is transfer learning in computer vision?
+   **A:** Using a model pre-trained on a large dataset (ImageNet) as a feature extractor or fine-tuning it for a new task.
+
+10. **Q:** Compare sliding window vs region-based approaches for object detection.
+    **A:** Sliding window: exhaustive, slow. Region-based (R-CNN): proposes candidate regions first, much faster and more accurate.

@@ -1,0 +1,106 @@
+# FINE-TUNING — PROJECTS
+
+---
+
+## PROJECT 1 — IMAGE CLASSIFIER FINE-TUNING (Level 2)
+
+### Problem Statement
+Fine-tune a pre-trained ResNet-50 to classify images into custom categories.
+
+### Requirements
+- Load pre-trained ResNet-50 from torchvision
+- Replace classification head for custom classes
+- Implement layer freezing strategy
+- Fine-tune with discriminative learning rates
+- Evaluate with classification report and confusion matrix
+- Save best model checkpoint
+
+### Architecture
+```
+Pre-trained ResNet-50
+    ↓
+Freeze early layers (conv1, layer1, layer2)
+    ↓
+Unfreeze layer3, layer4 with lr=1e-5
+    ↓
+New classifier head: Linear(2048, num_classes)
+    ↓
+Train with CrossEntropyLoss + AdamW
+    ↓
+Evaluate + Save
+```
+
+### Dataset
+- Oxford Flowers 102 (or custom dataset)
+
+### Expected Output
+- Training/validation loss curves
+- Classification report
+- Confusion matrix visualization
+- Saved model checkpoint
+
+---
+
+## PROJECT 2 — SENTIMENT ANALYSIS FINE-TUNING (Level 2)
+
+### Problem Statement
+Fine-tune a pre-trained BERT model for sentiment classification.
+
+### Requirements
+- Load pre-trained bert-base-uncased
+- Tokenize text data
+- Fine-tune for binary/multi-class sentiment
+- Evaluate on test set
+- Export model for inference
+
+### Implementation
+```python
+from transformers import BertTokenizer, BertForSequenceClassification, Trainer
+
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = BertForSequenceClassification.from_pretrained(
+    'bert-base-uncased', num_labels=3
+)
+# Fine-tune with Trainer API
+```
+
+### Dataset
+- IMDB Reviews or Yelp Reviews
+
+### Expected Output
+- Accuracy: > 90% on test set
+- Saved model + tokenizer
+- Inference script
+
+---
+
+## PROJECT 3 — LORA FINE-TUNING FOR TEXT GENERATION (Level 3)
+
+### Problem Statement
+Fine-tune a language model using LoRA for a specific domain.
+
+### Requirements
+- Load pre-trained model (GPT-2 or LLaMA)
+- Apply LoRA adapters to attention layers
+- Fine-tune on domain-specific text
+- Compare LoRA vs full fine-tuning
+- Evaluate generation quality
+
+### Architecture
+```
+Pre-trained LLM (frozen)
+    ↓
+LoRA Adapters (rank=8, alpha=16)
+    ↓
+Applied to: q_proj, v_proj, k_proj, out_proj
+    ↓
+Train only LoRA parameters (~0.1% of total)
+    ↓
+Merge LoRA weights into base model
+```
+
+### Expected Output
+- Training logs
+- Generated text samples
+- Parameter count comparison (base vs LoRA)
+- Merged model for deployment

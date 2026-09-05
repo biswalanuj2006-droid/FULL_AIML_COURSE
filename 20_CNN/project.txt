@@ -1,0 +1,56 @@
+================================================================================
+CNN MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: MNIST DIGIT CLASSIFIER (Beginner)
+==============================================
+Problem: Build CNN for handwritten digit recognition.
+Requirements:
+- Load MNIST dataset
+- Build CNN with PyTorch/Keras
+- Train and evaluate
+- Achieve > 98% accuracy
+- Visualize predictions
+- Confusion matrix
+Evaluation: > 98% test accuracy
+
+PROJECT 2: IMAGE CLASSIFICATION PIPELINE (Intermediate)
+========================================================
+Problem: Build complete image classification system.
+Requirements:
+- Custom dataset (flowers/cats-dogs)
+- Data augmentation
+- Transfer learning (ResNet)
+- Training with validation
+- Model evaluation
+- Inference script
+- Streamlit demo
+Evaluation: > 90% accuracy, working demo
+
+PROJECT 3: OBJECT DETECTION SYSTEM (Advanced)
+===============================================
+Problem: Build object detection for custom objects.
+Requirements:
+- YOLO for detection
+- Custom dataset annotation
+- Training pipeline
+- Real-time inference
+- Web interface
+- Performance evaluation
+Evaluation: mAP > 0.5, real-time capable
+
+PROJECT 4: PRODUCTION CV API (Expert)
+=======================================
+Problem: Build production computer vision service.
+Requirements:
+- FastAPI inference API
+- Multiple model support
+- Image preprocessing pipeline
+- Batch processing
+- Caching
+- Monitoring
+- Docker deployment
+- Load testing
+Evaluation: Handles concurrent requests, < 100ms latency
+
+================================================================================

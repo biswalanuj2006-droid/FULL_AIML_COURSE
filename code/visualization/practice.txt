@@ -1,0 +1,40 @@
+================================================================================
+CODE PRACTICE - code/visualization (plotting for ML)
+Companion: 01_matplotlib_basics.py (saves PNGs to diagrams/graphs/)
+================================================================================
+RUN & OBSERVE
+1. Run the example; check each saved PNG for correctness of axes
+   labels, titles, and legends (no missing-label plots).
+2. Open the confusion-matrix plot: is the colorbar direction intuitive?
+   Note one change you would make for a non-technical reader.
+
+MODIFY
+3. Recreate the same figures with a consistent style: use a seaborn
+   theme, a shared figure size, and dpi=150; re-save.
+4. Add a second subplot column showing the SAME data with a log y-axis
+   and annotate why the two views tell different stories (outliers).
+5. Plot model training curves (loss vs epoch) for two runs with
+   mean +/- std shading - the honest comparison style used in the DL
+   modules.
+
+DEBUG
+6. A saved figure is blank/cropped: diagnose savefig bbox_inches vs
+   plt.show() and the Agg backend on headless runs (matplotlib.use).
+7. Two lines have identical colors in a loop: set an explicit color
+   cycle and confirm with ax.get_lines_legend_labels().
+8. Data plotted but axis limits hide it: add margins/autoscale; find
+   the case with plt.ylim(0, ...) truncating negatives.
+
+BUILD (mini)
+9. Generate a 3-panel diagnostic figure for a regression model
+   (residuals vs fitted, Q-Q of residuals, residuals vs a feature) -
+   the 10_REGRESSION diagnostic set.
+10. ROC + PR curves for a classifier at two thresholds; annotate AUC.
+11. Time-series forecast plot with train/test split shading and the
+    forecast + confidence band (used by 56_TIME_SERIES).
+
+RELATE
+12. Recreate one figure from 04_VISUALIZATION lesson 05
+    (ml_visualizations) from scratch and explain each encoding choice.
+13. (Interview) When do you choose a bar chart over a histogram over a
+    box plot for one continuous feature - and what does each hide?

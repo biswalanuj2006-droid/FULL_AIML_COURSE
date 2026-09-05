@@ -1,0 +1,64 @@
+================================================================================
+PRACTICE - GRADIENT DESCENT FROM SCRATCH (code/ml/gradient_descent_from_scratch.py)
+================================================================================
+
+CONCEPTUAL
+ 1. Write the GD update rule and name every symbol.
+ 2. What does the gradient tell you about the loss surface at a point?
+ 3. Batch vs stochastic vs mini-batch: what changes in the update and
+    in the loss curve's noisiness?
+ 4. Why can SGD escape shallow local minima that full-batch GD cannot?
+ 5. What problem does momentum solve and what does beta control?
+ 6. What is a saddle point and why does plain GD stall there?
+ 7. Why is convexity important for guarantees? Is MSE + linear model
+    convex?
+ 8. What happens when lr exceeds 2/L (L = Lipschitz constant of the
+    gradient) for a quadratic? Try it in code and observe.
+
+NUMERICAL
+ 9. Loss f(w) = (w-3)^2. Gradient = 2(w-3). Start w=0, lr=0.1: compute
+    w after 3 updates by hand.
+10. Same f, lr=1.0: compute 3 steps. Describe the behavior.
+11. MSE loss with two points (1,2),(2,3), model y = w*x. Derive
+    dMSE/dw and compute one GD step from w=0 at lr=0.1.
+
+CODE (write and run)
+12. Plot loss-vs-iteration for batch GD, SGD, mini-batch (16) on the
+    same problem; describe the noise/rate trade-off you see.
+13. Implement momentum and Nesterov momentum; compare iterations to
+    reach tol=1e-6.
+14. Implement AdaGrad and RMSProp updates from their formulas; compare
+    with plain GD on a poorly scaled problem (features differing by
+    1e6).
+15. Implement a learning-rate schedule: decay lr by 0.5 every 100 iters;
+    show the benefit on a noisy loss.
+16. Run all variants from the same init and print final parameters vs
+    the closed-form solution of linear regression - report errors.
+
+DEBUGGING
+17. Loss explodes to inf from step 2. List 4 possible causes and how to
+    test each.
+18. Loss decreases but parameters never reach the optimum - which
+    stopping criterion is wrong and what is the fix?
+19. Mini-batch gradient direction correct but estimate noisy - which
+    two knobs do you turn and in what order?
+20. Momentum implementation adds beta*v twice (once in update, once in
+    recompute) - write the correct two lines and explain the bug's
+    symptom.
+
+CHALLENGES
+21. Find lr_max by binary search for a given quadratic (divergence
+    threshold). Verify the theory bound 2/L numerically.
+22. Implement Adam from the paper's update rules (biased-corrected
+    moments) and verify against torch.optim.Adam on the same problem.
+23. Visualize GD paths on a 2D non-convex surface (e.g., Rosenbrock)
+    for batch GD vs Adam - which reaches the valley floor and why?
+
+REAL-WORLD SCENARIO
+24. Training a neural net: loss plateaus for 200 epochs at a high
+    value. Give a decision tree of diagnostics (lr, batch, momentum,
+    normalization, schedule) with the order you would try them and why.
+
+================================================================================
+END
+================================================================================

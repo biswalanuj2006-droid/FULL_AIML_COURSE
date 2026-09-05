@@ -1,0 +1,47 @@
+================================================================================
+EDA MODULE — PRACTICE SET (35+ Questions)
+================================================================================
+
+EASY (10)
+=========
+Q1: What are the 3 first things to check in EDA?
+Q2: How do you check data types and missing values?
+Q3: What is the difference between describe() for numerical vs categorical?
+Q4: How do you detect class imbalance?
+Q5: What plot shows the distribution of a single variable?
+Q6: What is correlation and when is it misleading?
+Q7: How do you check for duplicates?
+Q8: What is the difference between univariate and bivariate analysis?
+Q9: How do you identify categorical features?
+Q10: What is the first step before modeling?
+
+MEDIUM (15)
+============
+Q11: Perform complete EDA on Titanic dataset.
+Q12: Identify and handle mixed data types.
+Q13: Create correlation heatmap and interpret it.
+Q14: Detect and visualize outliers in multiple features.
+Q15: Analyze feature-target relationships for classification.
+Q16: Analyze feature-target relationships for regression.
+Q17: Identify multicollinearity between features.
+Q18: Create automated EDA summary report.
+Q19: Analyze time patterns in temporal data.
+Q20: Detect data quality issues systematically.
+Q21: Compare distributions of features across classes.
+Q22: Identify feature interactions.
+Q23: Create comprehensive EDA notebook.
+Q24: Analyze missing data patterns (MCAR/MAR/MNAR).
+Q25: Build EDA pipeline for new dataset.
+
+HARD (8)
+=========
+Q26: Build automated EDA tool that generates report.
+Q27: Implement statistical tests in EDA.
+Q28: Build EDA comparison between train and test sets (detect leakage).
+Q29: Create interactive EDA dashboard.
+Q30: Build EDA pipeline for streaming data.
+Q31: Implement data drift detection in EDA.
+Q32: Build EDA for image dataset.
+Q33: Build EDA for text dataset.
+
+================================================================================

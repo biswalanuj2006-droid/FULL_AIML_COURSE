@@ -1,0 +1,178 @@
+================================================================================
+DSA MODULE 4: LINKED LISTS — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Implement singly and doubly linked lists
+- Solve reversal, cycle detection, and merge problems
+- Apply fast/slow pointer technique
+- Solve 10+ linked list LeetCode problems
+
+================================================================================
+1. LINKED LIST FUNDAMENTALS
+================================================================================
+
+SINGLY LINKED LIST
+-------------------
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+Traversal:      O(n)
+Search:          O(n)
+Insert at head: O(1)
+Insert at tail: O(n) — O(1) with tail pointer
+Delete at head: O(1)
+Delete at tail: O(n)
+Access by index: O(n)
+
+WHEN TO USE over arrays:
+- Frequent insertions/deletions at head
+- Unknown size
+- Need to reverse frequently
+- Implementing stacks/queues
+
+================================================================================
+2. CORE OPERATIONS
+================================================================================
+
+REVERSE A LINKED LIST
+----------------------
+def reverse_list(head):
+    prev = None
+    current = head
+    while current:
+        next_temp = current.next  # save next
+        current.next = prev       # reverse link
+        prev = current             # move prev forward
+        current = next_temp        # move current forward
+    return prev
+
+DRY RUN: 1 → 2 → 3 → None
+  Step 1: prev=None, cur=1 → 1→None, prev=1, cur=2
+  Step 2: prev=1, cur=2   → 2→1, prev=2, cur=3
+  Step 3: prev=2, cur=3   → 3→2→1→None, prev=3, cur=None
+  Return prev=3 ✓
+
+CYCLE DETECTION (Floyd's Algorithm)
+------------------------------------
+def has_cycle(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast:
+            return True
+    return False
+
+FIND CYCLE START
+-----------------
+def detect_cycle_start(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast:
+            # Find start: move one pointer to head
+            slow = head
+            while slow != fast:
+                slow = slow.next
+                fast = fast.next
+            return slow
+    return None
+
+WHY IT WORKS:
+  When slow enters cycle at position a, fast is at position 2a.
+  Distance between them = cycle_length - a.
+  They meet after (cycle_length - a) steps.
+  Then moving one to head and both at same speed → meet at cycle start.
+
+================================================================================
+3. MERGE TWO SORTED LISTS
+================================================================================
+
+def merge_two_lists(l1, l2):
+    dummy = ListNode(0)
+    current = dummy
+    while l1 and l2:
+        if l1.val <= l2.val:
+            current.next = l1
+            l1 = l1.next
+        else:
+            current.next = l2
+            l2 = l2.next
+        current = current.next
+    current.next = l1 or l2
+    return dummy.next
+
+================================================================================
+4. FAST/SLOW POINTER TECHNIQUES
+================================================================================
+
+FIND MIDDLE OF LINKED LIST
+----------------------------
+def find_middle(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+    return slow  # slow is at middle
+
+CHECK PALINDROME
+-----------------
+def is_palindrome(head):
+    # Find middle
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+
+    # Reverse second half
+    prev = None
+    while slow:
+        next_temp = slow.next
+        slow.next = prev
+        prev = slow
+        slow = next_temp
+
+    # Compare
+    left, right = head, prev
+    while right:
+        if left.val != right.val:
+            return False
+        left = left.next
+        right = right.next
+    return True
+
+================================================================================
+5. LEETCODE PROBLEMS
+================================================================================
+
+EASY
+----
+1. Reverse Linked List (LC #206)
+2. Merge Two Sorted Lists (LC #21)
+3. Linked List Cycle (LC #141)
+4. Middle of the Linked List (LC #876)
+5. Remove Nth Node From End (LC #19)
+
+MEDIUM
+------
+6. Add Two Numbers (LC #2)
+7. Reorder List (LC #143)
+8. Swap Nodes in Pairs (LC #24)
+9. Rotate List (LC #61)
+10. Copy List with Random Pointer (LC #138)
+
+HARD
+----
+11. Merge K Sorted Lists (LC #23)
+12. Reverse Nodes in k-Group (LC #25)
+13. LRU Cache (LC #146)
+
+================================================================================
+END OF MODULE 4
+================================================================================

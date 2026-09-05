@@ -1,0 +1,29 @@
+================================================================================
+PRODUCTION AI — PRACTICE SET (15 Questions)
+================================================================================
+
+EASY (6)
+=========
+Q1: What is model monitoring?
+Q2: What is data drift?
+Q3: What is concept drift?
+Q4: What is a health check?
+Q5: What is logging?
+Q6: What is observability?
+
+MEDIUM (6)
+===========
+Q7: Implement model monitoring pipeline.
+Q8: Build drift detection system.
+Q9: Implement production logging.
+Q10: Build model performance dashboard.
+Q11: Implement automated retraining.
+Q12: Build incident response system.
+
+HARD (3)
+=========
+Q13: Build complete production monitoring system.
+Q14: Implement model rollback automation.
+Q15: Build production AI observability platform.
+
+================================================================================

@@ -1,0 +1,153 @@
+================================================================================
+MODULE 03 — PANDAS
+LESSON 01: SERIES AND DATAFRAME
+================================================================================
+
+## What You Will Learn
+- Pandas Series (1D labeled array)
+- Pandas DataFrame (2D labeled table)
+- Creating DataFrames from various sources
+- Basic DataFrame properties
+- Index and columns
+
+================================================================================
+1. PANDAS SERIES
+================================================================================
+
+A Series is a ONE-DIMENSIONAL labeled array.
+
+    import pandas as pd
+
+    # From list
+    s = pd.Series([10, 20, 30, 40, 50])
+    print(s)
+    # 0    10
+    # 1    20
+    # 2    30
+    # 3    40
+    # 4    50
+
+    # With custom index
+    s = pd.Series([10, 20, 30], index=["a", "b", "c"])
+    print(s["b"])    # 20
+
+    # From dictionary
+    s = pd.Series({"age": 25, "income": 50000, "score": 85})
+
+    SERIES PROPERTIES:
+    s.index          # Index labels
+    s.values         # NumPy array of values
+    s.dtype          # Data type
+    s.shape          # (n,)
+    s.size           # n
+    s.mean()         # Mean
+    s.sum()          # Sum
+    s.describe()     # Summary statistics
+
+    SERIES ARE LIKE:
+    - Enhanced NumPy arrays with labels
+    - Single column of a DataFrame
+    - Dictionary with NumPy performance
+
+================================================================================
+2. PANDAS DATAFRAME
+================================================================================
+
+A DataFrame is a TWO-DIMENSIONAL labeled table (like a spreadsheet).
+
+    # From dictionary
+    df = pd.DataFrame({
+        "name": ["Alice", "Bob", "Charlie", "Diana"],
+        "age": [25, 30, 35, 28],
+        "income": [50000, 75000, 90000, 60000],
+        "churn": ["No", "Yes", "No", "Yes"]
+    })
+
+    print(df)
+        name  age  income churn
+    0    Alice   25   50000    No
+    1      Bob   30   75000   Yes
+    2  Charlie   35   90000    No
+    3    Diana   28   60000   Yes
+
+    FROM LISTS:
+    df = pd.DataFrame(
+        [["Alice", 25, 50000], ["Bob", 30, 75000]],
+        columns=["name", "age", "income"]
+    )
+
+    FROM NUMPY:
+    data = np.random.randn(5, 3)
+    df = pd.DataFrame(data, columns=["feature_1", "feature_2", "feature_3"])
+
+    FROM CSV:
+    df = pd.read_csv("data.csv")
+
+    FROM DICTIONARY OF LISTS:
+    df = pd.DataFrame({
+        "model": ["LR", "RF", "XGB"],
+        "accuracy": [0.82, 0.87, 0.89],
+        "f1": [0.79, 0.85, 0.87]
+    })
+
+================================================================================
+3. DATAFRAME PROPERTIES
+================================================================================
+
+    df.shape          # (4, 4) — (rows, columns)
+    df.dtypes         # Column data types
+    df.columns        # Column names
+    df.index          # Row indices
+    df.values         # NumPy array
+    df.size           # Total number of cells
+    df.ndim           # 2 (always 2 for DataFrame)
+
+    # Quick inspection
+    df.head()         # First 5 rows
+    df.tail()         # Last 5 rows
+    df.sample(5)      # Random 5 rows
+    df.info()         # Column types, non-null counts
+    df.describe()     # Summary statistics for numeric columns
+    df.describe(include='all')  # Include non-numeric
+
+ML USE:
+    # First thing to do with any dataset
+    print(f"Shape: {df.shape}")
+    print(f"\nColumn types:\n{df.dtypes}")
+    print(f"\nMissing values:\n{df.isnull().sum()}")
+    print(f"\nStatistics:\n{df.describe()}")
+
+================================================================================
+4. INDEX AND COLUMNS
+================================================================================
+
+RENAME COLUMNS:
+    df.columns = ["Name", "Age", "Income", "Status"]
+    # OR
+    df.rename(columns={"name": "Name", "age": "Age"}, inplace=True)
+
+SET INDEX:
+    df.set_index("name", inplace=True)
+
+RESET INDEX:
+    df.reset_index(inplace=True)
+
+SORT BY INDEX:
+    df.sort_index(inplace=True)
+
+ML USE:
+    # Clean column names
+    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between a Series and a DataFrame?
+2. How do you check for missing values?
+3. What does df.describe() show?
+4. How do you get the shape of a DataFrame?
+
+================================================================================
+NEXT LESSON: 02_data_reading.txt
+================================================================================

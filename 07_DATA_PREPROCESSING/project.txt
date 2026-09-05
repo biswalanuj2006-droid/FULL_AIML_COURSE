@@ -1,0 +1,17 @@
+================================================================================
+DATA PREPROCESSING MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: DATA CLEANING PIPELINE (Beginner)
+==============================================
+Build pipeline that handles: missing values, duplicates, outliers, type conversions.
+
+PROJECT 2: PRODUCTION PREPROCESSING (Intermediate)
+====================================================
+Build sklearn-compatible custom transformers, save pipeline with joblib, handle new data at inference.
+
+PROJECT 3: DATA QUALITY FRAMEWORK (Advanced)
+==============================================
+Build automated data quality checker: validates schema, detects anomalies, generates quality report.
+
+================================================================================

@@ -1,0 +1,47 @@
+================================================================================
+DATA PREPROCESSING MODULE — PRACTICE SET (40+ Questions)
+================================================================================
+
+EASY (10)
+=========
+Q1: How do you handle missing values with mean imputation?
+Q2: What is one-hot encoding?
+Q3: What is the difference between StandardScaler and MinMaxScaler?
+Q4: How do you detect duplicates?
+Q5: What is train/test split and why use it?
+Q6: What is the IQR method for outlier detection?
+Q7: What is stratified split?
+Q8: How do you encode categorical variables?
+Q9: What is data leakage?
+Q10: Why scale features for KNN but not for Random Forest?
+
+MEDIUM (15)
+============
+Q11: Build complete preprocessing pipeline with sklearn.
+Q12: Handle mixed data types (numerical + categorical) with ColumnTransformer.
+Q13: Implement robust scaling for data with outliers.
+Q14: Build preprocessing pipeline that prevents data leakage.
+Q15: Handle high-cardinality categorical features.
+Q16: Implement feature imputation strategies comparison.
+Q17: Build outlier detection and removal pipeline.
+Q18: Implement text preprocessing pipeline.
+Q19: Handle datetime features in preprocessing.
+Q20: Build missing value analysis and imputation.
+Q21: Implement ordinal encoding for ordinal features.
+Q22: Compare encoding methods impact on model performance.
+Q23: Build preprocessing pipeline for mixed data types.
+Q24: Implement target encoding safely.
+Q25: Build complete data validation pipeline.
+
+HARD (8)
+=========
+Q26: Build production preprocessing pipeline with joblib.
+Q27: Implement custom transformer for domain-specific preprocessing.
+Q28: Build preprocessing pipeline that handles new categories at inference.
+Q29: Implement data leakage detection in pipeline.
+Q30: Build preprocessing comparison framework.
+Q31: Implement feature hashing for high-cardinality features.
+Q32: Build streaming data preprocessing pipeline.
+Q33: Implement data validation with Great Expectations concept.
+
+================================================================================

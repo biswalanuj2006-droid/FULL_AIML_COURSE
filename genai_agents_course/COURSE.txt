@@ -1,0 +1,948 @@
+================================================================================
+ULTRA-DEEP GENERATIVE AI + LLM + AI AGENTS COURSE
+================================================================================
+Learner journey: AI/ML Engineer -> GenAI Engineer -> AI Agent Engineer ->
+Production AI Engineer.
+
+Every module follows the same contract:
+  WHAT it is -> WHY it exists -> HOW it works -> MATHEMATICS -> PYTHON ->
+  WHEN to use / WHEN NOT to -> FAILURES -> COMMON MISTAKES -> INTERVIEW ->
+  PRACTICE -> PROJECT -> CHECKPOINT.
+
+NO-HALLUCINATION RULE: library APIs, model names, benchmarks and pricing
+change fast. Anything provider-specific is marked "API MAY CHANGE - verify
+current documentation". Stable concepts are separated from vendor APIs.
+
+================================================================================
+DEPENDENCY GRAPH
+================================================================================
+Python
+  v
+Math (linear algebra, probability, calculus, information theory)
+  v
+Machine Learning -> Deep Learning -> NLP
+  v
+Attention -> Transformers -> Tokenization -> LLMs
+  v
+LLM APIs -> Embeddings -> Vector Databases -> RAG -> Advanced RAG
+  v
+Fine-Tuning (PEFT/LoRA/QLoRA) -> Quantization -> Inference -> Structured Outputs
+  v
+Tool Calling -> AI Agents -> Memory -> Planning -> Multi-Agent
+  v
+Agentic RAG -> Evaluation -> Security -> Observability
+  v
+FastAPI -> PostgreSQL -> Redis -> Docker -> MLflow -> Cloud
+  v
+Production AI Agent Systems
+
+================================================================================
+LEARNING ROADMAPS
+================================================================================
+BEGINNER      : Parts 0-7. Build: LLM chat app, prompt playground.
+INTERMEDIATE  : Parts 8-17. Build: semantic search, basic + advanced RAG.
+ADVANCED      : Parts 18-23. Build: fine-tune with LoRA, tool calling.
+EXPERT        : Parts 24-38. Build: agents, memory, planning, multi-agent,
+                evaluation, security, observability.
+AGENT ENGINEER: Parts 39-50. Build: FastAPI backend, DBs, Docker, MLOps,
+                production agent platform, final capstone.
+
+PROJECT GATES
+GATE 1: Python + ML + DL            -> exit test: build a small NN, explain backprop
+GATE 2: NLP + Attention + Transformers -> exit test: implement attention + a block
+GATE 3: LLM + Embeddings + RAG      -> exit test: RAG answers from private docs
+GATE 4: Tool Calling + Agents       -> exit test: agent that uses 3 tools correctly
+GATE 5: Advanced Agents + Evaluation -> exit test: eval harness with success rate
+GATE 6: Production Engineering      -> exit test: Dockerized API + monitoring
+GATE 7: Industry-Level AI Agent     -> exit test: final capstone passes acceptance
+
+================================================================================
+PART 0 - PREREQUISITES
+================================================================================
+0.1 Python for AI Engineering
+Objectives: write typed, modular, testable Python; async where latency matters.
+Prerequisites: none.
+
+Theory:
+- Functions/classes/OOP/dataclasses: data containers with behaviour.
+- Decorators: wrap functions (retry, timing, auth) without editing them.
+- Generators/iterators: lazily stream tokens instead of materializing lists.
+- Context managers: guarantee cleanup (DB connections, files, locks).
+- Type hints + Pydantic: the contract layer between your code and the LLM.
+- async/await: concurrency for IO-bound work (HTTP calls to LLM APIs).
+- Logging over print: structured, levels, correlation ids.
+
+Why each library:
+- NumPy: vector math that underlies everything (tensors).
+- Pandas: tabular data for datasets and evals.
+- PyTorch: autograd + nn.Module -> the model stack.
+- scikit-learn: classical ML for retrieval features.
+- requests/httpx: calling APIs.
+- Pydantic: schema + validation for structured outputs and config.
+
+Common mistakes:
+- Blocking the event loop with sync API calls inside async handlers.
+- Hardcoding API keys (use env vars).
+- print() debugging in long-running services.
+
+Interview: "Why generators for streaming LLM output?" -> token-by-token yield
+keeps memory O(1) and lets the client render progressively.
+
+Checkpoint: you can write a typed dataclass, a decorator with arguments, an
+async retry wrapper, and a context manager.
+
+0.2 Math refresher
+Cover: vectors, matrices, matmul, dot product, norms, cosine similarity,
+probability, conditional probability, Bayes, expectation, variance, gradients,
+chain rule. The single most-used objects in GenAI:
+  dot(q,k) = sum_i q_i k_i          # unnormalized similarity
+  cos(q,k) = dot(q,k)/(||q|| ||k||) # normalized similarity
+  softmax(z)_i = exp(z_i) / sum_j exp(z_j)
+  cross_entropy(p,q) = -sum_i p_i log q_i
+  perplexity = exp(cross_entropy)   # mean tokens per "surprise"
+Numerical stability: softmax(z) = softmax(z - max(z)).
+
+================================================================================
+PART 1 - MACHINE LEARNING FOUNDATIONS
+================================================================================
+Topics: supervised/unsupervised/self-supervised learning; representation
+learning; train/val/test; overfitting/underfitting; bias-variance; loss;
+optimization; regularization; dimensionality reduction; probability; metrics.
+
+WHY LLM PRETRAINING IS SELF-SUPERVISED: labels are free. Given a text
+sequence, hide the next token; the "label" is the token itself. No human
+annotation - that is what makes internet-scale training possible. SFT later
+adds human/curated labels in small quantity; RLHF/DPO adds preference labels.
+
+Bias-variance for GenAI: a small model underfits (high bias, generic text);
+an over-trained model memorizes (high variance, poor generalization).
+Regularization analogues in LLMs: weight decay, dropout, label smoothing,
+dataset dedup, early stopping via val loss.
+
+Common mistake: evaluating on the training distribution and concluding the
+model "understands" - contamination and memorization fake this.
+
+================================================================================
+PART 2 - DEEP LEARNING
+================================================================================
+Neurons -> layers -> activations -> forward -> backprop (chain rule through
+the computational graph) -> optimizers (SGD, Adam; AdamW is standard for
+Transformers) -> initialization -> normalization -> dropout -> residuals ->
+embeddings (learned lookup tables: token_id -> vector).
+
+Key numbers: a linear layer y = xW + b with x:[B,T,D], W:[D,D'] costs
+B*T*D*D' multiply-adds and stores D*D' parameters.
+
+Activation focus for Transformers:
+- GELU(x) ~ x*Phi(x); smooth ReLU, used in many LLMs.
+- SwiGLU(x) = (xW1) * sigmoid(xW3) @ W2: a gated MLP that consistently
+  outperforms plain ReLU MLPs at equal compute - most modern LLMs use it.
+
+Common mistakes:
+- Wrong init -> vanishing/exploding gradients; use scaled init for LLMs.
+- No gradient clipping -> loss spikes to NaN.
+- BatchNorm breaks with small batches and sequence data -> LayerNorm/RMSNorm.
+
+================================================================================
+PART 3 - NLP FOUNDATIONS
+================================================================================
+Text preprocessing -> vocabulary -> one-hot -> TF-IDF -> word embeddings
+(Word2Vec: predict neighbor words; GloVe: factorize co-occurrence) ->
+contextual representations.
+
+Why static embeddings failed: "bank" has one vector for river-bank and
+money-bank. Context must change the meaning. That is exactly what attention +
+Transformer layers do: each layer rewrites every token's vector using its
+context. Static embeddings are the input; contextualization happens above.
+
+Sequence models: RNNs suffer vanishing/exploding gradients (multiplication of
+Jacobians over time). LSTMs add gates to fix vanishing gradients partially.
+Still sequential (O(n) steps, no parallel), and long-range dependencies leak.
+This is why Transformers (parallel, O(1) steps per layer) replaced them for
+large-scale language modeling. Teacher forcing: train decoder on true previous
+token, not its own (wrong) prediction - stabilizes training.
+
+================================================================================
+PART 4 - ATTENTION  (EXTREMELY DEEP - the heart of everything)
+================================================================================
+A (intuition): attention lets the model decide which tokens matter for each
+output token, instead of compressing everything into one fixed vector.
+
+B (mechanism): each token emits a QUERY "what am I looking for", a KEY "what
+I contain", and a VALUE "what I pass along". A token's output is a weighted
+sum of VALUES, weighted by how well its QUERY matches other tokens' KEYS.
+
+C (mathematics). Inputs X:[T,D]. Learn Wq,Wk,Wv each [D,Dk]:
+  Q = X Wq   [T,Dk]
+  K = X Wk   [T,Dk]
+  V = X Wv   [T,Dv]
+  scores  = Q K^T            [T,T]   (row i = similarity of token i to all)
+  scaled  = Q K^T / sqrt(Dk)          (why: variance of dot products grows
+                                       with Dk; dividing keeps softmax
+                                       gradients alive, avoids saturation)
+  weights = softmax(scaled, dim=-1)   [T,T]  rows sum to 1
+  out     = weights V                [T,Dv]
+
+Numerical example (Dk=2, T=3):
+  X = [[1,0],[0,1],[1,1]];  Wq=Wk=I (identity) so Q=K=X.
+  Q K^T = [[1,0,1],[0,1,1],[1,1,2]]
+  scale by 1/sqrt(2)=0.707:
+    [[0.707,0,0.707],[0,0.707,0.707],[0.707,0.707,1.414]]
+  softmax row 1 (tokens [0.707,0,0.707]): exp: [2.028,1,2.028] sum 5.056
+    -> [0.401,0.198,0.401]  (token 0 attends ~40% to itself, ~40% to token 2)
+  out row 1 = 0.401*V0 + 0.198*V1 + 0.401*V2.  Done - that is the whole idea.
+
+Dimensions recap: Q,K,V [T,Dk]; scores [T,T]; weights [T,T]; out [T,Dv].
+Complexity: O(T^2 Dk) time, O(T^2) memory for the score matrix - the famous
+quadratic cost that limits context length.
+
+Causal masking: in a decoder, token t may only attend to tokens <= t. Set
+scores[i,j] = -inf for j > i so softmax gives them weight 0.
+Mask = tril(ones(T,T)) * -inf (upper triangle -inf).
+
+PyTorch implementation (educational):
+  def attention(Q,K,V, mask=None):
+      d = Q.shape[-1]
+      s = Q @ K.transpose(-2,-1) / math.sqrt(d)   # [B,H,T,T]
+      if mask is not None: s = s.masked_fill(mask==0, -float('inf'))
+      w = F.softmax(s, dim=-1)
+      return w @ V
+
+Common mistakes:
+- Forgetting the /sqrt(dk) -> softmax saturates, gradients vanish.
+- Masking after softmax instead of before (leaks future).
+- Forgetting masks have shape [T,T] not [B,T,T] when broadcasting.
+
+Interview: "Why divide by sqrt(dk)?" -> keep dot-product variance ~1 so
+softmax stays in its linear regime; without it gradients vanish for large dk.
+
+================================================================================
+PART 5 - TRANSFORMERS
+================================================================================
+Stack of blocks; each block (decoder-style):
+  x = x + MHA(LN(x))          # pre-norm, residual
+  x = x + FFN(LN(x))          # or SwiGLU variant
+LN = LayerNorm: normalize over features, learnable scale/shift.
+RMSNorm: normalize by RMS only (no mean subtraction) - cheaper, works as well.
+Residuals: identity path lets gradients flow and the model learn f(x)=0
+easily; deeper nets train stably (pre-norm keeps residual stream bounded).
+
+Encoder-only (BERT): bidirectional attention, masked-LM objective -> best for
+understanding/embeddings. Decoder-only (GPT): causal attention, next-token
+objective -> best for generation; why LLMs are decoder-only: one objective,
+one stack, scales predictably, and generation is the hardest task - an encoder
+is not needed if every task is autoregressive text-to-text. Encoder-decoder
+(T5): full attention in encoder + cross-attention in decoder; good for
+translation/summarization but heavier.
+
+ASCII architecture (decoder-only):
+INPUT -> TOKENIZER -> TOKEN EMBEDS + POSITION -> [ x + MHA(LN(x)) ;
+x + FFN(LN(x)) ] * N -> LN -> LM HEAD -> LOGITS -> SOFTMAX -> NEXT TOKEN
+
+================================================================================
+PART 6 - TOKENIZATION
+================================================================================
+Char (tiny vocab, long sequences), word (huge vocab, OOV problem), subword:
+BPE (merge most frequent byte pairs; GPT), WordPiece (likelihood-based merges;
+BERT), Unigram (probabilistic, removes tokens; SentencePiece), SentencePiece
+(treats text as raw, works for any language incl. no-space scripts).
+
+Vocabulary ~32k-250k; special tokens: BOS, EOS, PAD, UNK.
+Token economics: context window, cost, latency all count TOKENS not words;
+~0.75 tokens/word English, up to 2+ for some languages - multilingual models
+with the same token budget see less content per token in those languages.
+
+Common mistakes: training the model with one tokenizer then serving with
+another; forgetting EOS during training -> model never learns to stop.
+
+================================================================================
+PART 7 - LARGE LANGUAGE MODELS
+================================================================================
+An LLM is a probability distribution over token sequences learned by
+next-token prediction. Autoregressive factorization (chain rule):
+  P(x1..xn) = prod_t P(x_t | x_<t)
+Pretraining = maximum likelihood over web-scale text.
+Generation: logits -> softmax -> sample:
+  greedy: argmax (deterministic, repetitive)
+  temperature: softmax(logits/T); T->0 greedy, T->inf uniform
+  top-k: keep k highest logits, renormalize
+  top-p (nucleus): keep smallest set whose cumulative prob >= p
+  repetition/frequency/presence penalties: subtract from logits of seen tokens
+  beam search: keep top-B complete sequences (better for tasks with a
+  "right" answer, worse for open-ended creativity)
+
+Numerical example, temperature:
+  logits=[2.0,1.0,0.1]. T=1 -> softmax: exp:[7.39,2.72,1.11] sum 11.21 ->
+  [0.659,0.242,0.099].  T=0.5 -> logits*2=[4,2,0.2] -> [0.845,0.114,0.041].
+  T=2 -> logits*0.5=[1,0.5,0.05] -> [0.508,0.307,0.185]. Higher T flattens.
+
+Common mistakes: sampling with top-k=1 (same as greedy) and expecting
+diversity; no repetition penalty -> degenerate loops.
+
+================================================================================
+PART 8 - LLM TRAINING
+================================================================================
+Pipeline: RAW DATA -> FILTER -> CLEAN -> DEDUPLICATE -> TOKENIZE -> PACK
+-> SHUFFLE -> BATCH -> TRAIN -> VALIDATE -> CHECKPOINT.
+Objective: minimize cross entropy of next-token prediction (max log
+likelihood). Loss ~ perplexity: ppl = exp(loss).
+Hyperparams: batch ~0.5-4M tokens; seq len 2048-8192; AdamW lr ~3e-4 with
+warmup + cosine decay; weight decay; gradient clipping 1.0; gradient
+accumulation to reach effective batch; mixed precision BF16 (range matches
+FP32, no loss scaling needed) or FP16 (needs loss scaling).
+GPU memory (training vs inference): training stores params + gradients +
+optimizer states (AdamW: 2x params for moments + master copy) + activations;
+inference only params + KV cache. Rule of thumb: full training of a 7B model
+in FP32 needs >56GB just for optimizer state; hence mixed precision,
+sharding (ZeRO/FSDP), and PEFT.
+
+Pretraining vs fine-tuning vs inference: pretraining = general language
+ability (massive compute); fine-tuning = task/domain adaptation (small);
+inference = forward pass only.
+
+================================================================================
+PART 9 - LLM ALIGNMENT
+================================================================================
+SFT: imitate good instruction-response pairs (format, tone, task).
+Preference learning: given (x, y_w, y_l), teach the model to prefer y_w.
+RLHF: train reward model r(x,y), optimize policy with PPO against r while
+penalizing drift from the SFT model (KL).
+DPO: closed-form - derive the optimal policy from the Bradley-Terry
+preference model; no reward model, no RL loop; loss on (y_w,y_l) pairs.
+Alignment limits: hallucination (fluent but false), sycophancy (agreeing to
+please), over-refusal, and jailbreaks persist - alignment shifts the
+distribution, it does not create a guarantee.
+
+================================================================================
+PART 10 - PROMPT ENGINEERING (one component, not the course)
+================================================================================
+Zero-shot, few-shot (examples in-context), system vs user roles, delimiters,
+structured output constraints, decomposition, chain-of-thought (reason
+before answer), self-consistency (sample multiple CoTs, majority vote),
+critique/verify loops, prompt versioning, prompt injection awareness.
+WHERE PROMPTING FAILS: no amount of prompting adds knowledge the model never
+saw (use RAG/tools); prompting cannot fix model-level inability; prompts
+drift silently - version and eval them like code.
+
+================================================================================
+PART 11 - LLM APIs
+================================================================================
+Provider-agnostic interface: an LLMClient protocol (complete/stream) behind
+which providers (OpenAI, Anthropic, local vLLM, llama.cpp) plug in.
+Must-haves: env-var keys, retries with backoff, timeouts, rate-limit
+handling, streaming (SSE), structured outputs (JSON schema), tool-call
+support, error taxonomy, cost + token logging.
+"API MAY CHANGE - verify current documentation."
+
+================================================================================
+PART 12 - EMBEDDINGS
+================================================================================
+Embeddings: dense vectors where cosine similarity ~ semantic similarity.
+  cos(a,b) = a.b / (|a||b|)
+Pipeline: texts -> embedding model -> vectors [n,d]. Search: brute force
+O(n*d) or ANN. Implement cosine search from scratch in numpy (one line:
+  sims = X @ q / (norms(X)*norm(q))
+Quality: dimension, domain fit, multilingual coverage matter more than
+absolute numbers; eval on your retrieval task, not the leaderboard.
+
+================================================================================
+PART 13 - VECTOR DATABASES
+================================================================================
+Exact kNN is O(n*d) per query - fine to ~1M vectors, not beyond. ANN
+approaches: HNSW (navigable small-world graph; great recall/speed tradeoff,
+in-memory), IVF (inverted index over clusters), PQ (compress vectors into
+codes; huge memory savings, approximate scores). Metadata filtering + hybrid
+search (dense + BM25) are table stakes for production RAG.
+FAISS: library (index types, GPU); Chroma: embedded, simple, good for
+prototypes; production-grade: Qdrant/Weaviate/Pinecone/Milvus (servers,
+filtering, replication). Choose: prototype -> Chroma; <1M vectors -> FAISS or
+server; >10M + filtering + HA -> server.
+
+================================================================================
+PART 14 - RAG  (DEEP)
+================================================================================
+WHY: LLM knowledge is frozen at training; RAG injects fresh/private/factual
+context at query time. WHEN NOT: if the corpus is small and static and you
+can fine-tune cheaply, or if retrieval quality is worse than the model's own
+knowledge - measure before assuming.
+
+Architecture:
+  INGEST: documents -> parse -> clean -> chunk -> embed -> index (+ metadata)
+  QUERY:  user q -> (rewrite) -> embed -> retrieve top-k -> rerank -> build
+          context -> prompt -> generate -> cite sources
+
+Chunking: recursive character splitter with overlap (~15-20%), respect
+document structure (headings/paragraphs), 300-800 tokens typical; semantic
+chunking groups by embedding similarity breakpoints. Parent-child: retrieve
+small chunks, feed parent sections.
+
+Retrieval quality levers (in order of effort):
+  1. better chunks + metadata filters (cheapest wins)
+  2. hybrid dense + BM25
+  3. reranker (cross-encoder) on top-50 -> top-5
+  4. query rewriting / multi-query / HyDE
+  5. eval-driven iteration - ALWAYS measure before adding machinery
+
+Grounded generation: prompt = "Answer ONLY from the context; if absent,
+say you don't know; cite [n]." Then a faithfulness/groundedness check
+verifies claims appear in context (see real_problem.txt in 29_RAG).
+
+Common mistakes: retrieval gap invisible (you only see final answer) -
+instrument retrieval hit-rate separately; chunking that splits answers;
+no metadata; embedding + query on different models; no rerank; no eval set.
+
+================================================================================
+PART 15 - DOCUMENT PROCESSING
+================================================================================
+PDFs: pypdf/pdfplumber for text, OCR (tesseract) for scans, layout models
+for complex pages. DOCX/TXT/HTML/MD/CSV/JSON each need format-specific
+parsers; extract metadata (title, date, section path, source URL) at ingest -
+metadata is the cheapest filter in retrieval. Recursive chunking with
+overlap; keep hierarchy for parent-child retrieval. Tables: keep as
+structured rows (markdown) so the LLM can read them.
+
+================================================================================
+PART 16 - ADVANCED RAG
+================================================================================
+Query-side: rewriting (compress conversation to standalone), expansion
+(synonyms, sub-questions), multi-query (ask k variants, merge), HyDE
+(generate a hypothetical answer, embed that).
+Retrieval-side: hybrid BM25+dense, parent-child, contextual compression
+(summarize each chunk with its document title), metadata filtering.
+Routing: decide search strategy per query (keyword vs semantic vs graph).
+Corrective RAG: low retrieval confidence -> rewrite or fall back to web.
+Agentic RAG: the AGENT decides whether to retrieve, what to query, whether
+the result suffices, whether to retry - retrieval becomes a tool.
+Graph RAG: build entity-relation graph from corpus; retrieve by traversing
+relations - wins when answers need multi-hop connections across documents
+that vector similarity cannot see.
+
+================================================================================
+PART 17 - RAG EVALUATION
+================================================================================
+Retrieval metrics: hit rate@k (relevant chunk in top-k), recall@k, MRR,
+NDCG. Generation metrics: faithfulness (claims supported by context),
+answer relevance (answer addresses the question), hallucination rate.
+Build an eval set: 50-200 realistic questions with known gold chunks +
+gold answers; run nightly; track retrieval gap vs answer gap (the classic
+"retrieval broken but answers look fine" bug). Human eval for taste;
+LLM-as-judge for scale (validate the judge against humans first).
+
+================================================================================
+PART 18 - FINE-TUNING
+================================================================================
+WHEN: task format can't be prompted (style, domain vocab, tool-calling
+reliability), latency/cost demands a smaller model that only fine-tuning
+can push to quality. WHEN NOT: you have <1k examples, or RAG/prompting
+already solves it, or you need frequent updates (retrain cost).
+SFT: instruction dataset (prompt, response[, sources]); format with chat
+template; mask prompt tokens from the loss so only responses teach.
+PEFT/LoRA/QLoRA: freeze base weights, train low-rank adapters.
+
+================================================================================
+PART 19 - HUGGING FACE ECOSYSTEM
+================================================================================
+transformers (AutoModel/AutoTokenizer/pipelines), datasets (arrow, streaming,
+mapping), tokenizers (fast BPE/Unigram), accelerate (device placement,
+zero/fsdp launcher), peft (LoRA/QLoRA adapters), trl (SFTTrainer, DPOTrainer,
+GRPO). Loading: AutoTokenizer.from_pretrained, AutoModelForCausalLM.
+Fine-tune skeleton: load 4-bit base + peft LoRA config -> SFTTrainer ->
+save adapter -> merge or serve adapter on base. "API MAY CHANGE".
+
+================================================================================
+PART 20 - QUANTIZATION
+================================================================================
+FP32 4 bytes, FP16/BF16 2 bytes, INT8 1 byte, INT4 0.5 byte/param.
+Post-training: map weight ranges to int grids; symmetric per-channel.
+NF4 (normal float 4): non-uniform 4-bit grid, used by QLoRA.
+Double quantization: quantize the quantization constants (another ~0.4
+bits/param). GPTQ: layer-wise 4-bit with Hessian-based error compensation.
+AWQ: keep the 1% salient channels in FP16. GGUF: llama.cpp format, CPU/Apple
+friendly. Tradeoff: INT8 ~no loss; INT4 small loss for 7B+, more for small
+models; always eval the quantized model, not the FP16 one.
+
+================================================================================
+PART 21 - LLM INFERENCE
+================================================================================
+Prefill: process the whole prompt in parallel (compute-bound, high
+throughput). Decode: generate tokens one at a time (memory-bandwidth-bound -
+the bottleneck is loading weights, not math). KV cache makes decode O(1)
+per token instead of re-encoding the whole prefix.
+Batching: serve multiple sequences per step; continuous batching (vLLM)
+admit/evict sequences per step instead of per batch -> big throughput gains.
+Engines: vLLM (PagedAttention, continuous batching), TensorRT-LLM (max
+perf, NVIDIA), llama.cpp (CPU/Mac, GGUF). Latency vs throughput:
+single-user latency wants small batches + quantization; revenue workloads
+want continuous batching + good scheduling.
+
+================================================================================
+PART 22 - STRUCTURED OUTPUTS
+================================================================================
+Free text -> JSON: schema definition (Pydantic), prompt with schema +
+example, then validate; retry with the validation error appended; repair
+pass (ask model to fix invalid JSON). Constrained decoding (grammar-guided,
+e.g. outlines/JSON modes) guarantees syntax. Never trust free-form output
+into code/DB - always validate.
+
+================================================================================
+PART 23 - TOOL CALLING  (CRITICAL FOR AGENTS)
+================================================================================
+A tool = name + description + JSON schema for arguments + a function.
+The LLM outputs a tool_call (name, args); your code validates, executes,
+returns a result string into the conversation; the LLM continues.
+Build: calculator, web-search abstraction, DB query (read-only by default!),
+file search, weather API, code execution (sandboxed!), email (permissioned).
+Error handling: catch tool exceptions -> return error text to the LLM so it
+can recover; retries with limits; tool timeouts.
+Permissions: every tool is a capability boundary; never give a tool more
+privilege than the agent needs. Tool selection is learned (few-shot +
+fine-tune); reliability comes from schemas + validation, not prompting.
+
+Common mistakes: allowing the LLM to pick arbitrary SQL (SQL injection by
+prompt); no sandbox for code tools; infinite tool loops (cap iterations);
+treating tool output as trusted.
+
+================================================================================
+PART 24 - AI AGENTS  (DEEP)
+================================================================================
+Definitions:
+- LLM: next-token machine. No goals, no tools, no state.
+- Chatbot: LLM + conversation memory. Passive.
+- Workflow: fixed code path (if A -> do B). Deterministic.
+- Agent: LLM + tools + memory + a LOOP that decides actions until the task
+  is done. Non-deterministic by design.
+- Autonomous agent: runs with minimal supervision for long horizons.
+
+Agent loop: OBSERVE (user + tool results + memory) -> REASON (what is the
+state, what is the next action) -> ACT (call a tool or answer) -> OBSERVE...
+-> TERMINATE (task complete, max steps, or ask user).
+Architecture:
+  USER -> AGENT(ORCHESTRATOR) -> LLM -> DECISION -> TOOL -> OBSERVATION ->
+  LLM -> ACTION -> FINAL RESPONSE
+
+Why an LLM alone is not an agent: no loop (one forward pass), no tools
+(no effect on the world), no memory (no continuity), no termination
+criterion. The loop + tools + memory IS the agent; the LLM is the brain.
+
+================================================================================
+PART 25 - AGENT MEMORY
+================================================================================
+Short-term: current context window (tokens in the conversation).
+Long-term: persisted knowledge. Semantic memory: vector store of facts.
+Episodic: past task trajectories ("I solved X like this"). Procedural: tool
+policies ("always verify before deleting"). Conversation memory: rolling
+history + compression (summarize old turns) to fit the window.
+Retrieval: memory-as-tool (agent queries its own vector memory).
+WHEN NOT: memory adds latency/cost; trivial stateless tasks don't need it;
+over-eager recall pollutes context with irrelevant history.
+
+================================================================================
+PART 26 - AGENT PLANNING
+================================================================================
+Task decomposition: split into subgoals (plan-and-execute: plan once, then
+execute steps with verification). ReAct: interleave Reasoning and Acting
+in one loop (think -> act -> observe). Reflection: after each attempt,
+critique output, then retry. Self-critique: LLM reviews its own work.
+Tree-of-Thought (concept): explore multiple reasoning branches.
+Graph-based workflows (LangGraph): nodes = steps, edges = transitions,
+conditional edges = decisions, cycles = retry loops, checkpoints =
+persistence + resume; human-in-the-loop interrupts for approval.
+Stopping conditions: success verified, max steps, budget exhausted,
+user abort. ALWAYS bound the loop.
+
+================================================================================
+PART 27 - AGENT FRAMEWORKS
+================================================================================
+Frameworks are conveniences, not magic. Under every framework:
+  - a loop you could write in 30 lines (Part 24)
+  - tool registry: name -> schema -> callable
+  - message list with roles
+  - a state object threaded through the loop
+LangChain: broad integrations, high abstraction (Runnable/LCEL).
+LangGraph: explicit graph state machines - cycles, checkpoints, HITL.
+LlamaIndex: data/RAG-centric (ingest -> index -> query engines).
+HF agents: code-interpreter style (writes/executes Python).
+RULE: first implement the loop yourself (EXAMPLE.py), then adopt a framework
+so you can debug what it hides.
+
+================================================================================
+PART 28 - LANGGRAPH (deep dive)
+================================================================================
+State: a typed object shared across nodes (the conversation + scratch).
+Nodes: Python functions taking state, returning state updates.
+Edges: normal (always) and conditional (branch on state).
+Cycles: agent loops = edges that go back (LangGraph permits cycles; classic
+DAG tools do not). Checkpoints: persist state after every step -> resume,
+time-travel, retry. Interrupts: pause before a node for human approval.
+Build: ResearchAgent graph with nodes [plan, retrieve, critique, finalize]
+and conditional edge (critique fails -> retrieve again, max 3 loops).
+
+================================================================================
+PART 29 - MULTI-AGENT SYSTEMS
+================================================================================
+WHY: divide complex work into specialized agents (researcher, coder,
+reviewer) with clear handoffs; parallelism for independent subtasks.
+WHEN UNNECESSARY: single agent + tools usually suffices; multi-agent adds
+cost, latency, and failure modes (miscommunication, deadlock, cost
+explosion - an agent loop that spins up agents that spin up agents).
+Architectures: supervisor (one agent delegates to workers), peer-to-peer
+(direct messages), hierarchical (teams), sequential pipeline (handoff
+chain). Shared state + explicit message contracts prevent chaos.
+Evaluate: task success vs number of agent turns vs total tokens - often a
+well-prompted single agent beats a 5-agent system.
+
+================================================================================
+PART 30 - AGENTIC RAG
+================================================================================
+Retrieval as a tool the agent calls when it decides it needs facts:
+  - should I retrieve? (simple questions -> answer directly)
+  - what query? (rewrite)
+  - which source? (vector DB / web / knowledge graph)
+  - are results sufficient? (confidence check; if not -> retry/new source)
+  - cite sources in the answer
+Contrast with static RAG (always retrieve k chunks): agentic RAG spends
+tokens deciding, saves them when retrieval is unnecessary, and handles
+multi-hop (retrieve -> learn entity -> retrieve related).
+Build: agent with tools [search_knowledge, web_search, verify_claims].
+
+================================================================================
+PART 31 - CODE AGENTS
+================================================================================
+Capabilities: read/understand repo, generate patches, run tests, debug loop
+(run -> see error -> fix -> rerun, bounded), verify before finishing.
+Tools: file read/write (scoped to workspace!), shell (sandboxed, read-only
+where possible), test runner, git diff.
+SECURITY FIRST: never run arbitrary agent-generated shell in production;
+sandbox (docker/gVisor), allowlists, output review, resource limits.
+The loop: understand -> plan -> edit -> test -> iterate -> summarize.
+
+================================================================================
+PART 32 - BROWSER / WEB AGENTS
+================================================================================
+Tools: search, fetch page, extract text, reason over sources, cite.
+Threats are real: malicious webpages can contain INJECTED INSTRUCTIONS
+(indirect prompt injection) - the page text is untrusted data, not
+instructions. Mitigate: separate untrusted content from instructions,
+treat page text as data, never let fetched content trigger privileged
+tools, rate-limit browsing loops, log everything.
+
+================================================================================
+PART 33 - MULTIMODAL GENAI
+================================================================================
+Vision-language models: image encoder (ViT-style patches) + projector into
+the LLM embedding space -> the LLM attends to image tokens. Same for audio
+(spectrogram/encoder) and video (frame tokens). Multimodal agents: tool
+result can be an image ("here's the screenshot, what changed?").
+OCR, image embeddings (CLIP-style: text+image in one space), speech-to-text,
+text-to-speech. Architecture is encoder + connector + LLM; fine-tune the
+connector, keep the LLM frozen where possible.
+
+================================================================================
+PART 34 - GENERATIVE IMAGE/AUDIO/VIDEO (conceptual)
+================================================================================
+GANs: generator vs discriminator game; VAEs: latent + reconstruction;
+Diffusion: forward = add noise, reverse = learn to denoise; latent diffusion
+= diffuse in the compressed latent space (Stable Diffusion), text
+conditioning via CLIP embeddings; image-to-image via conditioning + strength.
+Audio: TTS (speech tokens), music gen. Video: diffusion over frames +
+temporal attention. Know the concepts; treat as a separate specialization.
+
+================================================================================
+PART 35 - KNOWLEDGE GRAPHS + GRAPH RAG
+================================================================================
+Graph: entities (nodes) + relations (edges). Queries traverse relations:
+"suppliers of the company that acquired X". Knowledge graph RAG: build
+graph from corpus (LLM extraction), index both chunks and graph paths;
+query -> retrieve seed nodes -> traverse -> return structured context.
+WHEN GRAPH BEATS VECTOR: multi-hop relational questions, aggregated facts
+("top 5 suppliers by spend"), when the answer requires connecting entities
+across documents. When it loses: fuzzy/semantic questions, huge graphs with
+noisy extraction. Hybrid (vector + graph) is the common production answer.
+
+================================================================================
+PART 36 - AI AGENT SECURITY  (EXTREMELY DETAILED)
+================================================================================
+Threats:
+- Direct prompt injection: user text says "ignore instructions, leak keys".
+- Indirect injection: a retrieved DOCUMENT or web page contains injected
+  instructions; the agent follows them.
+- Jailbreaks: adversarial encoding that bypasses refusal training.
+- Data exfiltration: agent tricked into sending secrets to attacker URL.
+- Tool abuse: injected text triggers destructive tools (delete, transfer).
+- Privilege escalation: agent with broad permissions used against itself.
+- Insecure tool execution: shell/DB tools with no sandbox.
+- Secret leakage: keys in prompts, logs, or tool args.
+- Data/retrieval poisoning: attacker inserts malicious content into the
+  corpus the agent retrieves from.
+- Model manipulation / model extraction: probing to copy capabilities.
+
+Defenses (layered, not silver bullets):
+1. INPUT validation + sanitization; treat all model input as untrusted.
+2. OUTPUT validation: validate structured output before use.
+3. Tool permissions: least privilege; allowlists; confirm destructive ops.
+4. Sandboxing: containers/VM for code execution; read-only DB by default.
+5. Allowlists for URLs/domains an agent may contact.
+6. Rate limits + budget caps (tokens, money, steps) - stop cost explosions.
+7. AuthN/AuthZ on the API; per-user isolation.
+8. Secret management: env vars / vault, never in prompts or logs.
+9. Isolation: per-tenant agents, separate stores.
+10. Audit logs of every tool call + prompt + response for forensics.
+11. Prompt-instruction separation: delimit untrusted content, instruct the
+    model to treat it as data; instruct it to refuse suspicious requests
+    inside retrieved content.
+12. Evals that specifically test injection resistance.
+
+The single most important rule: an agent's tools are its attack surface.
+Every tool must assume its inputs are hostile.
+
+================================================================================
+PART 37 - AI AGENT EVALUATION
+================================================================================
+Metrics: task success rate, tool selection accuracy, tool-call argument
+validity, hallucination/groundedness, latency, cost per task, tokens per
+task, failure rate, recovery rate (agent fixes its own error), reliability
+across runs (deterministic tasks should be stable).
+Build an eval harness: golden tasks with expected outcomes -> run N times ->
+report table. Regression-test agent prompts/configs like code: CI runs the
+suite on every change. Human review for taste/quality; LLM-as-judge for
+scale (validate the judge).
+
+================================================================================
+PART 38 - OBSERVABILITY
+================================================================================
+For every turn capture: prompt, response, tool calls (+args, +results),
+latency, tokens, cost, errors, and the full agent trajectory (sequence of
+steps - you cannot debug a loop without the trace). Logs for humans, traces
+(spans per tool call) for latency analysis, metrics (throughput, error rate,
+cache hit) for dashboards. Store traces in a queryable store; replay
+trajectories to debug failures. Include prompt/response versions in traces.
+
+================================================================================
+PART 39 - AI APPLICATION BACKEND (FastAPI)
+================================================================================
+FastAPI: async Python web framework; Pydantic models = request/response
+schemas + validation. Endpoints: /chat (streaming SSE - yield tokens),
+/agent/run (async task + status), /health. AuthN: API keys/JWT; AuthZ:
+per-user permissions. Background tasks + job queue for long agent runs.
+WebSockets for bidirectional streaming. Error handling: structured error
+codes, retries, idempotency keys. NEVER block the event loop with sync
+LLM calls - use async clients or run in thread pool.
+
+================================================================================
+PART 40 - DATABASE ENGINEERING
+================================================================================
+PostgreSQL: relational core - users, sessions, conversations, tool-call
+logs, eval results. Schema design: normalize entities, JSONB for flexible
+agent state, indexes on hot query paths, transactions for atomic updates.
+Connection pooling (pgbouncer). Redis: cache (prompt prefixes, LLM
+responses), session state, queues (agent jobs), rate limiting (INCR+TTL),
+pub/sub for streaming fan-out. Vector data goes to the vector DB; SQL is
+for structured/relational; Redis for hot cache - pick the right store.
+
+================================================================================
+PART 41 - AI APPLICATION FRONTEND (conceptual)
+================================================================================
+HTML/CSS/JS -> React: chat UI, streaming token rendering (SSE), tool-call
+visualization (show "Searching..."), abort/cancel, retry, auth flows.
+Communication: REST for setup, SSE/WebSocket for streaming LLM + agent
+execution. The frontend is a thin client; ALL security lives server-side.
+
+================================================================================
+PART 42 - MLOPS FOR GENAI
+================================================================================
+Version EVERYTHING: models, prompts (prompt versioning!), datasets,
+evals, agent code. MLflow: track runs (params, metrics, artifacts, model
+registry). CI/CD: lint + tests + eval suite on every change; deploy prompts
+and adapters like code (reviewable diffs). Monitoring: latency, tokens,
+cost, error rate, drift in input distribution, eval scores over time.
+Rollback: prompt + model + config are versioned -> one-click revert.
+
+================================================================================
+PART 43 - DOCKER
+================================================================================
+Images/containers: package app + deps + config. Dockerfile: python base,
+copy code, pip install, non-root user, HEALTHCHECK. Volumes: persistent
+stores. Networks: compose networking between services. Compose stack:
+api + postgres + redis + vector-db (+ worker). Env via environment,
+secrets via secrets/env files. Multi-stage builds to slim images; pin base
+images; scan for CVEs.
+
+================================================================================
+PART 44 - CLOUD DEPLOYMENT
+================================================================================
+Compute (CPU/GPU instances), object storage (S3 for docs/models), managed
+DBs (RDS), Redis (ElastiCache/Valkey), vector DB as managed service or
+self-host, secrets manager, container registry, autoscaling (CPU/memory/
+queue depth), load balancing, health checks + readiness probes, monitoring
+alerts. Deployment strategies: blue-green (zero-downtime), canary
+(traffic shift), rollback. GPU: instance types, spot vs on-demand for
+training, inference autoscaling on GPU utilization.
+
+================================================================================
+PART 45 - PRODUCTION AI SYSTEM DESIGN
+================================================================================
+Design dimensions: scalability (more users/tokens), reliability (no silent
+failures), availability (uptime), latency (budgets: <2s chat first token,
+<100ms retrieval), cost, security, observability.
+Case sketches:
+- ChatGPT-like: gateway -> auth -> router -> inference (continuous batch)
+  -> streaming -> usage metering.
+- RAG: ingest workers -> vector DB; query path with rerank + eval feedback.
+- Customer-support agent: retrieval tool + policy tools + HITL escalate.
+- Coding agent: sandboxed executor + test runner + review gate.
+- Multi-agent: supervisor + workers + shared state + budget caps.
+Failure modes to design for: LLM timeout, retriever outage (degrade
+gracefully), prompt regression (eval gate), cost spike (budget caps).
+
+================================================================================
+PART 46 - COST ENGINEERING
+================================================================================
+Token math: cost = (prompt_tokens + completion_tokens) x price. Levers:
+smaller models for easy tasks (routing), prompt compression (context is
+billed per token every turn), caching (prefix/semantic cache in Redis),
+batching (inference throughput), retrieval before generation (fewer
+hallucination retries), quantization (cheaper serving), context management
+(summarize old turns), agent budget caps (steps, tokens, dollars).
+WHY AGENTS GET EXPENSIVE: every tool call = full context re-sent; a 20-step
+loop with a 4k context costs ~20x a single answer. Track cost per task
+religiously.
+
+================================================================================
+PART 47 - MODEL ROUTING
+================================================================================
+Router: classify/score each request -> pick model (tiny/medium/flagship),
+fallback on errors (flagship -> medium), specialized models per task
+(summarization vs code vs math). Cost-aware, latency-aware, quality-aware:
+route easy queries to small fast models, hard ones to big slow ones; monitor
+quality per route; keep an eval that catches routing mistakes (cheap model
+degrades a class of queries silently).
+
+================================================================================
+PART 48 - ADVANCED RESEARCH TOPICS (conceptual intros)
+================================================================================
+- Mixture of Experts: sparse activation, router picks top-k experts; more
+  params, same active FLOPs.
+- Speculative decoding: small draft model proposes, big model verifies in
+  parallel -> 2-3x faster decode, identical output.
+- Long context: RoPE scaling, sparse/local attention, retrieval, compression.
+- State-space models (Mamba): linear-time sequence modeling alternative.
+- RAG research: self-RAG (model critiques its own retrieval), adaptive
+  retrieval, continual knowledge updates.
+- Reasoning models / test-time compute: spend extra tokens "thinking"
+  before answering; RL on reasoning traces.
+- Synthetic data: generate, filter, self-train; contamination risk.
+- Distillation: small model learns from big model logits.
+- Model merging: interpolate parameters / task vectors.
+- Agent learning: optimize the loop itself (RL over tool use).
+- World models / neuro-symbolic: hybrid learned + symbolic reasoning.
+
+================================================================================
+PART 49 - AI AGENT DESIGN PATTERNS
+================================================================================
+1. Single Agent: one loop, many tools.
+2. Tool Agent: agent whose tools are its identity (calculator, search...).
+3. RAG Agent: retrieval as a tool with confidence-gated answering.
+4. Planner Agent: plan -> execute -> verify.
+5. Reflection Agent: generate -> critique -> revise (loop bounded).
+6. Router Agent: classify request -> dispatch to specialized agent.
+7. Supervisor Agent: delegates to workers, collects, synthesizes.
+8. Multi-Agent: role specialization + shared state.
+9. Human-in-the-Loop: interrupt for approval on risky actions.
+10. Parallel Agent: fan-out independent subtasks -> merge.
+11. Sequential Agent: handoff chain (pipeline).
+12. Hierarchical Agent: team-of-teams.
+13. Critic Agent: separate reviewer that never writes.
+14. Evaluator Agent: scores outputs against rubric.
+15. Autonomous Agent: long-horizon, minimal supervision, strict budgets.
+Choose the SIMPLEST pattern that meets requirements; add complexity only
+when evals show a specific failure.
+
+================================================================================
+PART 50 - CAPSTONE ARCHITECTURE
+================================================================================
+Production-grade AI Agent platform (final project target):
+  FRONTEND -> API GATEWAY -> FASTAPI (auth) -> AGENT ORCHESTRATOR ->
+  PLANNER -> LLM ROUTER -> TOOLS [web search, RAG, DB, calculator,
+  code executor, external APIs] -> MEMORY [PostgreSQL, Redis, Vector DB]
+  -> EVALUATION -> OBSERVABILITY -> MLflow -> Docker -> Cloud.
+Every component must handle: failure recovery (retries, fallbacks),
+scaling, security (least privilege, sandboxing), cost caps, and
+observability (traces of every step).
+
+================================================================================
+LIBRARY DEEP-DIVES (11-point format for the core stack)
+================================================================================
+For each: what / why / install / core API / example / real use / alternatives
+/ pros / cons / when / when-not.
+
+NUMPY - vector math engine. pip install numpy. Core: np.array, @, .dot,
+broadcasting. Real use: attention math, embeddings, metrics.
+TORCH - autograd + GPU. nn.Module, optim.AdamW, DataLoader.
+TRANSFORMERS - model zoo + pipelines. AutoModel, pipeline.
+DATASETS/TOKENIZERS - data + tokenization. map(), encode_batch.
+PEFT - LoRA adapters. LoraConfig, get_peft_model.
+FAISS - ANN search. IndexFlatIP, IndexHNSWFlat.
+CHROMA - embedded vector store. add, query, metadata filters.
+LANGCHAIN - integrations + abstractions. Runnable.
+LANGGRAPH - graph state machines. StateGraph, checkpointer.
+LLAMAINDEX - data/RAG framework. VectorStoreIndex, query_engine.
+PYDANTIC - schemas/validation. BaseModel, model_validate_json.
+FASTAPI - async web. APIRouter, StreamingResponse.
+POSTGRESQL / REDIS - relational + cache/queue. psycopg/asyncpg; redis-py.
+DOCKER - packaging. Dockerfile, compose.
+MLFLOW - experiment tracking + registry. mlflow.start_run, log_metric.
+
+================================================================================
+COMPARISON TABLES (condensed)
+================================================================================
+RAG vs Fine-Tuning        : freshness/private data + no retrain        vs
+                            format/style/behavior, costly to update
+Prompting vs Fine-Tuning  : zero cost, drift risk                      vs
+                            reliability for narrow formats
+BERT vs GPT               : bidirectional, understanding               vs
+                            causal, generation
+Encoder vs Decoder        : full context, no generation loop           vs
+                            autoregressive, universal text-out
+FAISS vs Chroma           : library, fast, no filtering                vs
+                            embedded, metadata, simple
+Dense vs Sparse retrieval : semantic, needs embeddings                 vs
+                            lexical BM25 exact-match, no training
+LangChain vs LangGraph    : broad integrations, implicit flow          vs
+                            explicit graph, cycles, checkpoints
+Single vs Multi-Agent     : simple, cheap, single bottleneck           vs
+                            specialized, costly, coordination risk
+SQL vs Vector DB          : exact relational, joins                    vs
+                            similarity, ranking
+Short vs Long-term memory : context window, volatile                   vs
+                            persisted, retrievable
+LoRA vs QLoRA             : 4-bit-free base, faster                     vs
+                            4-bit base, less VRAM
+FP16 vs BF16 vs INT8/4    : precision range                            vs
+                            memory + speed
+Workflow vs Agent         : fixed code path                            vs
+                            model-decided loop
+
+================================================================================
+FINAL EXAM (in PRACTICE.txt)
+================================================================================
+50 conceptual + 20 mathematical + 20 coding + 10 debugging + 10 RAG +
+10 AI Agent + 10 system design + 10 security + 10 MLOps.
+Rubric: 90-100 Expert readiness; 80-89 Advanced; 70-79 Strong
+intermediate; 60-69 Intermediate; <60 revise prerequisites.
+
+================================================================================
+FINAL QUALITY AUDIT CHECKLIST
+================================================================================
+Python/ML/DL/NLP/Attention/Transformers/Tokenization/LLM architecture/LLM
+training/Alignment/Prompting/APIs/Embeddings/Vector DBs/RAG/Advanced RAG/
+RAG eval/Fine-tuning/LoRA/QLoRA/HF/Quantization/Inference/Structured
+outputs/Tool calling/Agents/Memory/Planning/Reflection/LangChain/LangGraph/
+Multi-agent/Agentic RAG/Coding agents/Web agents/Multimodal/Graph RAG/
+Security/Evaluation/Observability/FastAPI/PostgreSQL/Redis/Docker/MLOps/
+MLflow/Cloud/System design/Cost/Routing/Research/Projects/Practice/Code/
+Final capstone. Every checked box maps to COURSE.txt content, PRACTICE.txt
+questions, PROJECT.txt projects, and EXAMPLE.py sections below.
+
+================================================================================
+END OF COURSE.txt
+================================================================================

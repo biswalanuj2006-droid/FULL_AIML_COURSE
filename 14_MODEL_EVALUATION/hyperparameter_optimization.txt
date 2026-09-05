@@ -1,0 +1,188 @@
+================================================================================
+MODULE 14 (MODEL EVALUATION) - LESSON: HYPERPARAMETER OPTIMIZATION (HPO)
+Finding good hyperparameters without fooling yourself
+================================================================================
+
+CONTENTS
+  1. Hyperparameters vs parameters
+  2. The selection trap (why you need nested/held-out discipline)
+  3. Grid search and why random search beats it
+  4. Bayesian optimization (TPE) and Optuna
+  5. Multi-fidelity: successive halving, Hyperband, early stopping
+  6. Search spaces and priors that matter per model family
+  7. Practical workflow with sklearn + Optuna code
+  8. When HPO is NOT the answer
+  9. Common mistakes and debugging
+ 10. Practice
+================================================================================
+
+1. HYPERPARAMETERS VS PARAMETERS
+================================================================================
+- Parameters: LEARNED from data (weights, split thresholds).
+- Hyperparameters: set BEFORE learning (learning rate, n_estimators,
+  max_depth, regularization strength, kernel params...).
+
+HPO = finding hyperparameters that maximize VALIDATION performance. It is
+itself a search problem whose cost is "train a model" per trial.
+
+2. THE SELECTION TRAP (READ THIS TWICE)
+================================================================================
+Every hyperparameter choice that touches validation data leaks: tune on
+validation 200 times and the best config is partly chosen because it
+lucked out on THAT validation set.
+
+Discipline:
+  - Train/validation/test. Tune on VALIDATION only. Touch TEST once.
+  - Inside CV: use nested CV when you need an honest performance
+    estimate (outer folds estimate performance; inner folds tune).
+  - Report the tuning procedure, not just the final score.
+
+  from sklearn.model_selection import cross_val_score, KFold
+  # honest-ish estimate:
+  # outer CV: for each fold -> run your whole tuning (inner CV) on the
+  # fold's train, evaluate the best config on the fold's val.
+
+3. GRID SEARCH VS RANDOM SEARCH
+================================================================================
+Grid: try every combination of a fixed list.
+  - Cost: product of sizes (5x5x5 = 125 runs)
+  - Wasteful: most of the grid is uninformative.
+
+Random search: sample combinations from distributions.
+  - Bergstra & Bengio: random search finds configs as good as grid with
+    ~1/10 the trials, because most hyperparameters matter little - random
+    sampling covers the important dimensions more evenly.
+  - Rule: for anything beyond ~2 hyperparameters, use random or
+    Bayesian, not grid.
+
+4. BAYESIAN OPTIMIZATION (TPE) AND OPTUNA
+================================================================================
+Idea: instead of blind sampling, build a model of
+score = f(hyperparameters) from past trials and propose the next trial
+where improvement is likely (exploration/exploitation trade-off).
+
+Optuna implements TPE (Tree-structured Parzen Estimator):
+  - defines a trial as a Python function
+  - suggests params via trial.suggest_*(name, lo, hi, log=True...)
+  - prunes bad trials early (median pruner)
+
+  import optuna
+  from sklearn.ensemble import RandomForestClassifier
+  from sklearn.model_selection import cross_val_score
+
+  def objective(trial):
+      n = trial.suggest_int("n_estimators", 50, 500, log=True)
+      depth = trial.suggest_int("max_depth", 3, 30)
+      mss = trial.suggest_int("min_samples_split", 2, 20)
+      cw = trial.suggest_categorical("class_weight", [None, "balanced"])
+      model = RandomForestClassifier(n_estimators=n, max_depth=depth,
+                                     min_samples_split=mss,
+                                     class_weight=cw, n_jobs=-1,
+                                     random_state=42)
+      return cross_val_score(model, X, y, cv=5, scoring="roc_auc",
+                             n_jobs=-1).mean()
+
+  study = optuna.create_study(direction="maximize",
+                              sampler=optuna.samplers.TPESampler(seed=1))
+  study.optimize(objective, n_trials=50)
+  best = study.best_params
+  print(study.best_value)      # expected CV AUC of the best config
+
+  # refit the best config on the FULL training data for deployment,
+  # then evaluate ONCE on the untouched test set.
+
+5. MULTI-FIDELITY: SUCCEED FASTER
+================================================================================
+Idea: most bad configs are bad early. Stop them cheaply instead of
+training to completion.
+
+  - Successive halving: run N configs for 1 epoch/budget, keep the best
+    half, double their budget, repeat.
+  - Hyperband: brackets over (number of configs, budget) - robust when
+    you don't know the right budget.
+  - Optuna pruners: MedianPruner stops a trial whose intermediate score
+    is below the running median.
+  - Early stopping inside each trial (n_estimators via
+    early_stopping_rounds, NN via EarlyStopping) makes trials cheaper.
+
+6. SEARCH SPACES THAT MATTER (per family)
+================================================================================
+Trees/GB (XGB/LGBM/CatBoost), typical order of importance:
+  1. n_estimators (set via early stopping instead of searching)
+  2. learning_rate / max_depth / min_child_weight
+  3. subsample / colsample (regularization-ish)
+  4. L1/L2 regularization, min_split_loss
+Logistic/linear: regularization strength C/alpha (log scale), penalty
+  type, solver.
+SVM (RBF): C and gamma - BOTH on log scale, gamma = 1/(d * var(X)) as
+  reference.
+NN: learning rate (log), batch size (powers of 2), layers/units
+  (coarse first), weight decay, dropout.
+KNN: k small grid; metric choice.
+Clustering: k via silhouette (this is model selection, not tuning).
+
+Practical: log-scale anything that spans orders of magnitude
+(lr, C, alpha, gamma). Ints for counts. Start coarse, then refine around
+the best region (Optuna does this implicitly).
+
+7. WORKFLOW (10 STEPS)
+================================================================================
+1. Fix data + preprocessing + a fixed CV split (stratified).
+2. Choose a metric tied to the business (PR-AUC for imbalance).
+3. Baseline with sensible defaults. Record it.
+4. Set up Optuna objective with the small search space above.
+5. Run 30-100 trials; watch the objective history plateau.
+6. Verify the best config generalizes: score vs default on VALIDATION
+   with the SAME folds (fair comparison).
+7. Check feature importance/partial dependence of the final model -
+   does the improvement make sense?
+8. Refit on full train (optionally with slightly more n_estimators/
+   epochs).
+9. Test ONCE. Report: default vs tuned on test, plus the tuning budget.
+10. Version the best config + its validation history (MLflow - module
+    33).
+
+8. WHEN HPO IS NOT THE ANSWER
+================================================================================
+- The model is underfitting: fix features/data/model class first; tuning
+  a weak model gives you the best weak model.
+- The gap is variance: add data/regularization, not more trials.
+- Tiny data: HPO overfits the validation set; use default/domain priors.
+- You have no stable validation signal: fix evaluation before tuning.
+- Cost > value: if default is within noise of tuned, ship the default.
+
+9. COMMON MISTAKES & DEBUGGING
+================================================================================
+1. Tuning on the test set (or tuning then re-tuning after peeking) ->
+   inflated scores. Fix: touch test once.
+2. Grid on 5 hyperparameters -> 3,000 runs -> you stopped early and
+   picked the best SO FAR (selection bias). Use fewer trials + random/TPE.
+3. Different folds per trial (no fixed CV) -> noisy comparisons. Fix:
+   fixed fold indices passed to every trial.
+4. Scoring on accuracy for imbalance. Fix metric first.
+5. Log-scale not used for lr/C -> search wasted on the wrong end.
+6. Tuned model evaluated on the same data used to pick it (no nested/
+   holdout) -> deploy-time disappointment.
+7. Optuna objective returns mean over CV but trials are not
+   deterministic (no seed) -> noise dominates signal. Fix: seed model
+   and fix folds.
+8. "Best trial" picked by best_value but refit accidentally uses
+   different preprocessing -> train/serve skew. Fix: pipeline includes
+   preprocessing; tune the pipeline.
+
+10. PRACTICE (mini)
+================================================================================
+  1. Reproduce random-beats-grid: 3 params, budget of 20 trials, show
+     random reaches comparable score.
+  2. Build an Optuna study for a GB classifier on imbalanced data
+     (scoring = PR-AUC); log-scale learning_rate; 40 trials.
+  3. Nested-CV honesty experiment: compare (a) tune+score on same
+     validation vs (b) nested CV - quantify the optimism.
+  4. Debug: objective improves over trials but the final model is worse
+     than the default on the test set. List the 3 most likely causes in
+     order and how to confirm each.
+
+Full practice: 14_MODEL_EVALUATION/practice.txt.
+================================================================================
+END OF LESSON
+================================================================================

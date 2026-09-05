@@ -1,0 +1,49 @@
+================================================================================
+THINK.TXT - 15 FEATURE ENGINEERING
+================================================================================
+
+1. Two data scientists build the same model; one spends a week on
+   features and gets +0.05 ROC-AUC over the other. Where did that
+   improvement come from, and how do you know it will generalize rather
+   than overfit the validation set?
+2. Log transformation: explain when it helps (skew, multiplicative
+   effects) and when it distorts (zeros, bounded variables). What does a
+   log transform do to interactions?
+3. One-hot encoding 100-cardinality column: 100 columns. Target encoding
+   gives 1 column but leaks. For a tree model, derive when ordinal or
+   target encoding actually changes the tree's power.
+4. Polynomial/interaction features: degree-2 on 50 features adds 1,275
+   columns. Argue for and against, with reference to linear vs tree
+   models and regularization.
+5. Binning a continuous feature is usually worse than keeping it. When is
+   binning actually correct (monotonicity, missingness, business rules)?
+6. Time features: you engineer day-of-week, hour, lag-1, rolling-mean-7,
+   and "days since last purchase". Classify each by leakage risk and
+   explain which breaks at prediction time for a customer who has no
+   history yet.
+7. Frequency encoding a categorical column replaces categories by counts.
+   Under what condition does this leak, and how do you compute counts
+   safely for serving-time unseen categories?
+8. Feature selection: filter (mutual information) vs wrapper (RFE) vs
+   embedded (Lasso, tree importance). For 10,000 features and 1,000
+   rows, which is computationally feasible and statistically sound?
+9. You discover a feature with mutual information 0 but which, combined
+   with another feature, is the strongest signal (e.g., XOR). Which
+   selection method finds it and which misses it, and why?
+10. Domain features: a physicist adds "energy = mass * c^2" derived from
+    two raw columns. How do you validate that a domain feature is
+    genuinely predictive and not just correlated with something already
+    present?
+11. Tree feature importance is biased toward high-cardinality features.
+    Explain the bias mechanism and the fixes (permutation importance,
+    drop-column importance).
+12. Feature engineering is a form of inductive bias. Argue that aggressive
+    feature engineering and deep representation learning are two ends of
+    one spectrum, and say when each is preferable.
+13. OPEN PROBLEM: automated feature engineering (e.g., genetic, deep
+    feature synthesis) explores a search space of derived features.
+    Discuss why it has not replaced human domain knowledge and what a
+    better theory of "useful features" would need.
+================================================================================
+END
+================================================================================

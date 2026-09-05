@@ -1,0 +1,74 @@
+================================================================================
+LEETCODE PATTERN: TRIE — 15 PROBLEMS
+================================================================================
+
+================================================================================
+EASY (5 Problems)
+================================================================================
+
+1. IMPLEMENT TRIE (LC #208)
+   class Trie:
+       def __init__(self):
+           self.children = {}
+           self.is_end = False
+
+       def insert(self, word):
+           node = self
+           for c in word:
+               if c not in node.children:
+                   node.children[c] = Trie()
+               node = node.children[c]
+           node.is_end = True
+
+       def search(self, word):
+           node = self._find(word)
+           return node is not None and node.is_end
+
+       def startsWith(self, prefix):
+           return self._find(prefix) is not None
+
+       def _find(self, word):
+           node = self
+           for c in word:
+               if c not in node.children:
+                   return None
+               node = node.children[c]
+           return node
+
+2. LONGEST COMMON PREFIX (LC #14)
+3. REPLACE WORDS (LC #648)
+4. MAP SUM PAIRS (LC #677)
+5. SEARCH SUGGESTIONS SYSTEM (LC #1268)
+
+================================================================================
+MEDIUM (7 Problems)
+================================================================================
+
+6. ADD AND SEARCH WORD (LC #211)
+7. IMPLEMENT MAGIC DICTIONARY (LC #676)
+8. MAXIMUM XOR OF TWO NUMBERS (LC #421)
+9. PALINDROME PAIRS (LC #336)
+10. WORD BREAK (LC #139)
+11. LONGEST WORD IN DICTIONARY (LC #720)
+12. SEARCH WORD II (LC #212)
+
+================================================================================
+HARD (3 Problems)
+================================================================================
+
+13. WORD SEARCH II (LC #212)
+14. STREAM OF CHARACTERS (LC #1032)
+15. CONCATENATED WORDS (LC #472)
+
+================================================================================
+WHEN TO USE TRIE
+=================
+- Prefix matching
+- Autocomplete
+- Word games (Boggle, Scrabble)
+- IP routing
+- String matching with multiple patterns
+
+================================================================================
+END OF TRIE PATTERN
+================================================================================

@@ -1,0 +1,56 @@
+================================================================================
+PROJECTS - 60 GRAPH MACHINE LEARNING (3 LEVELS)
+================================================================================
+
+--------------------------------------------------------------------------------
+PROJECT 1 - LEVEL 1: NODE CLASSIFICATION ON KARATE/CORA (Beginner)
+--------------------------------------------------------------------------------
+PROBLEM: classify nodes (community / paper topic) from structure.
+REQUIREMENTS
+  - Build adjacency + feature matrix from a public graph dataset
+    (Zachary karate club or Cora).
+  - Implement a 2-layer GCN yourself in numpy OR PyTorch (no
+    torch-geometric needed - sparse matmul is enough).
+  - Baselines: majority class, feature-only MLP, DeepWalk embeddings.
+  - Report accuracy with 5, 10, 20 labeled nodes per class.
+DELIVERABLES: script + accuracy table + 5-line explanation of when
+structure helps.
+RUBRIC: correct GCN math 40%, honest baselines 30%, analysis 30%.
+
+--------------------------------------------------------------------------------
+PROJECT 2 - LEVEL 2: LINK PREDICTION + GNN COMPARISON (Intermediate)
+--------------------------------------------------------------------------------
+PROBLEM: predict missing edges (citations / friendships).
+REQUIREMENTS
+  - Build positive/negative edge sets with a TIME or edge-based split
+    (no leakage - practice #15).
+  - Score edges from embeddings via dot product and a trained scorer.
+  - Compare: common neighbors / Adamic-Adar heuristics, DeepWalk,
+    GCN, and (if available) GAT.
+  - Report AUC and Hits@10 per method with seeds and std.
+  - Diagnose the best method's failures on low-degree nodes.
+DELIVERABLES: pipeline, comparison table, error analysis by node degree.
+RUBRIC: leakage-free eval 30%, method comparison 30%, error analysis 25%,
+write-up 15%.
+
+--------------------------------------------------------------------------------
+PROJECT 3 - LEVEL 3: GRAPH RAG or FRAUD-STYLE DETECTION (Advanced)
+--------------------------------------------------------------------------------
+Choose A or B.
+A) GRAPH RAG SERVICE: build a knowledge graph from a small document set
+   (entity extraction -> triples), implement graph retrieval (seed
+   entities -> k-hop expansion) + vector retrieval, and answer
+   relationship questions ("which companies share a director with X?")
+   with an LLM API or the RAG demo's grounded stub. Compare against
+   vector-only RAG on a question set where relations matter.
+B) FRAUD-RING DETECTION: synthesize a transaction graph with planted
+   fraud rings; train a GNN node classifier with class imbalance;
+   report recall@k on the ring members and compare against a
+   feature-only model; add negative-sample/class-weight fixes.
+DELIVERABLES: architecture + code + evaluation + post-mortem (what
+failed and why).
+RUBRIC: problem framing 20%, method + math correctness 30%, eval
+honesty 25%, engineering/API quality 25%.
+INTERVIEW QUESTIONS TO PREPARE: GCN update derivation; inductive vs
+transductive; link-prediction leakage; over-smoothing; graph RAG
+retrieval path.

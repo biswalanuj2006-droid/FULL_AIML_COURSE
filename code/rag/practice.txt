@@ -1,0 +1,49 @@
+================================================================================
+CODE PRACTICE - code/rag (retrieval + grounded generation)
+Companions: 01_rag_minimal.py, 02_rag_fail_fix_demo.py (run both first)
+================================================================================
+RUN & OBSERVE
+1. Run the fail/fix demo and confirm the diagnosis output: which golden
+   question fails under naive retrieval and why (chunking vs wording)?
+2. Explain to yourself why the demo can prove the failure is RETRIEVAL:
+   what does the grounded-generator stub guarantee?
+
+MODIFY
+3. In 02, change the chunk size (e.g. 20 and 80 words) and re-run:
+   record retrieval hit-rates. Which size wins and why (answer split vs
+   noise)?
+4. Remove the overlap parameter (set 0) and observe which questions
+   start failing - the evidence for chunk overlap.
+5. Swap the reranker: use pure-BM25 ordering instead of hybrid and
+   report which questions flip. Explain when lexical beats dense.
+6. Add a 5th document with CONTRADICTORY facts (e.g. two different
+   hotel limits) and show how the [Source: ...] titles let you (or a
+   real LLM) disambiguate.
+
+DEBUG
+7. Introduce the OOV bug class from the demo's fix (query word missing
+   from the vocabulary) and show the crash; explain the idf_of fallback
+   that fixed it - then break it again on purpose and describe the
+   symptom.
+8. Duplicate a document (same text twice) and show duplicate chunks
+   polluting top-k - dedupe by content hash and re-measure.
+9. Make chunk boundaries cut a sentence mid-number ("12" / "0 dollars")
+   and show retrieval hit-rate collapse - the PDF-table extraction
+   lesson in miniature.
+
+BUILD (mini)
+10. Extend the eval harness to 20 golden questions with a mix of exact
+    and paraphrased wording; compute hit-rate@1, @3, @5 and pick the
+    top_k that balances precision vs recall.
+11. Add a real embedder if available (sentence-transformers) OR keep
+    TF-IDF and add a cross-encoder-style rerank score; compare against
+    the demo's hybrid on your 20-question set.
+12. Wire the PROPER_GENERATOR stub shape (bottom of 02) into a mock
+    client object and verify the faithfulness-gate logic rejects an
+    ungrounded answer.
+
+RELATE
+13. Map each of your findings to a stage in the diagnostic tree in
+    29_RAG/real_problem.txt (retrieval vs chunking vs generation).
+14. (Interview) Walk someone through: "my RAG gives wrong answers" -
+    what do you measure first and what does each outcome imply?

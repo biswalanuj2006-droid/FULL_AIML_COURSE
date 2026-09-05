@@ -1,0 +1,17 @@
+================================================================================
+MODEL DEPLOYMENT — PROJECTS
+================================================================================
+
+PROJECT 1: MODEL API (Beginner)
+==================================
+Serve trained model via FastAPI endpoint.
+
+PROJECT 2: MODEL SERVING PLATFORM (Intermediate)
+==================================================
+Build multi-model serving with versioning and monitoring.
+
+PROJECT 3: PRODUCTION ML SERVICE (Advanced)
+=============================================
+Complete deployment: model → API → Docker → monitoring → logging.
+
+================================================================================

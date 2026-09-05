@@ -1,0 +1,219 @@
+# COMPLEXITY ANALYSIS — PRACTICE SET
+# 35 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is Big-O notation?
+   Answer: An upper bound on the growth rate of an algorithm's time/space usage as input size increases
+
+2. What is the time complexity of accessing an element in an array by index?
+   Answer: O(1) — constant time
+
+3. What is the time complexity of searching for an element in an unsorted array?
+   Answer: O(n) — must check every element
+
+4. What is the time complexity of searching for an element in a sorted array using binary search?
+   Answer: O(log n)
+
+5. What is the difference between O(n) and O(n²)?
+   Answer: O(n) scales linearly with input; O(n²) scales quadratically — much slower for large inputs
+
+6. What is space complexity?
+   Answer: The amount of memory an algorithm uses relative to input size
+
+7. What is the time complexity of pushing to a stack?
+   Answer: O(1) — constant time
+
+8. What is amortized analysis?
+   Answer: Average time per operation over a sequence of operations, accounting for rare expensive operations
+
+9. What is the difference between best, average, and worst case?
+   Answer: Best: optimal input. Average: typical input. Worst: most unfavorable input
+
+10. What is the time complexity of Python's dict lookup?
+    Answer: O(1) average, O(n) worst case (hash collisions)
+
+---
+
+## MEDIUM (15 Questions)
+
+11. What is the time complexity of the following code?
+    ```python
+    for i in range(n):
+        for j in range(n):
+            print(i, j)
+    ```
+    Answer: O(n²)
+
+12. What is the time complexity?
+    ```python
+    for i in range(n):
+        for j in range(i):
+            print(i, j)
+    ```
+    Answer: O(n²) — sum of 1+2+...+(n-1) = n(n-1)/2
+
+13. What is the time complexity?
+    ```python
+    while n > 1:
+        n = n // 2
+    ```
+    Answer: O(log n) — halving each iteration
+
+14. What is the Master Theorem?
+    Answer: A formula for solving recurrences of form T(n) = aT(n/b) + f(n), where a≥1, b>1
+
+15. Solve: T(n) = 2T(n/2) + n using Master Theorem.
+    Answer: a=2, b=2, f(n)=n. log_b(a) = 1. f(n) = Θ(n^1). Case 2: T(n) = Θ(n log n)
+
+16. What is the difference between O(n) and Θ(n)?
+    Answer: O(n) is an upper bound. Θ(n) is a tight bound (both upper and lower)
+
+17. What is Ω(n)?
+    Answer: Lower bound notation — the algorithm takes at least O(n) time
+
+18. What is the space complexity of merge sort?
+    Answer: O(n) — requires auxiliary array for merging
+
+19. What is the space complexity of quicksort?
+    Answer: O(log n) average (recursion stack), O(n) worst case
+
+20. What is the time complexity of BFS on a graph with V vertices and E edges?
+    Answer: O(V + E)
+
+21. What is the time complexity of Dijkstra's algorithm with a min-heap?
+    Answer: O((V + E) log V)
+
+22. What is the time complexity of building a heap from an array?
+    Answer: O(n) — not O(n log n) as commonly assumed
+
+23. What is the time complexity of heap sort?
+    Answer: O(n log n) — O(n) to build heap + O(n log n) for n extract-min operations
+
+24. What is the recurrence for binary search?
+    Answer: T(n) = T(n/2) + O(1) → O(log n)
+
+25. What is the time complexity of matrix multiplication (naive)?
+    Answer: O(n³)
+
+---
+
+## HARD (5 Questions)
+
+26. Analyze the time complexity of the following:
+    ```python
+    def mystery(n):
+        if n <= 1: return
+        for i in range(n):
+            print(i)
+        mystery(n // 2)
+        mystery(n // 2)
+    ```
+    Answer: T(n) = 2T(n/2) + O(n) → O(n log n) by Master Theorem
+
+27. What is the time complexity of finding the median of two sorted arrays?
+    Answer: O(log(min(m,n))) using binary search
+
+28. Prove that comparison-based sorting has a lower bound of O(n log n).
+    Answer: Decision tree has n! leaves, height must be ≥ log₂(n!) = Ω(n log n)
+
+29. What is the time complexity of the Fibonacci recursive algorithm?
+    Answer: O(2^n) — exponential, can be reduced to O(n) with memoization
+
+30. What is the amortized time complexity of dynamic array insertion (like Python list append)?
+    Answer: O(1) amortized — occasional O(n) resize, but average is constant
+
+---
+
+## CODING (10 Problems)
+
+31. Write a function to determine if a string has all unique characters. Analyze complexity.
+    ```python
+    def is_unique(s):
+        seen = set()
+        for c in s:
+            if c in seen:
+                return False
+            seen.add(c)
+        return True
+    # Time: O(n), Space: O(n)
+    ```
+
+32. Implement binary search and prove its O(log n) complexity.
+    ```python
+    def binary_search(arr, target):
+        lo, hi = 0, len(arr) - 1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if arr[mid] == target: return mid
+            elif arr[mid] < target: lo = mid + 1
+            else: hi = mid - 1
+        return -1
+    ```
+
+33. Write a function that runs in O(n) time and O(1) space to find the majority element.
+    ```python
+    def majority_element(nums):
+        candidate, count = None, 0
+        for num in nums:
+            if count == 0:
+                candidate = num
+            count += 1 if num == candidate else -1
+        return candidate
+    ```
+
+34. Analyze the space complexity of printing all subsets of a set of size n.
+    Answer: 2^n subsets, each up to size n. Total output: O(n × 2^n). If just counting: O(n) recursion depth.
+
+35. Write a function to check if two strings are permutations of each other. Optimize for space.
+    ```python
+    def is_permutation(s1, s2):
+        if len(s1) != len(s2): return False
+        count = [0] * 256
+        for c in s1: count[ord(c)] += 1
+        for c in s2: count[ord(c)] -= 1
+        return all(x == 0 for x in count)
+    ```
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Infinite loop
+def search(arr, target):
+    lo, hi = 0, len(arr)
+    while lo < hi:  # Bug: should be <= or handle differently
+        mid = (lo + hi) // 2
+        if arr[mid] == target: return mid
+        elif arr[mid] < target: lo = mid  # Bug: doesn't advance
+        else: hi = mid
+    return -1
+# Fix: lo = mid + 1
+
+# Debug 2: Stack overflow
+def fib(n):
+    if n <= 1: return n
+    return fib(n-1) + fib(n-2)  # O(2^n) time, stack overflow for large n
+# Fix: Use memoization or iterative approach
+
+# Debug 3: Wrong complexity
+def has_duplicate(arr):
+    for i in range(len(arr)):
+        for j in range(len(arr)):  # O(n²) but includes self-comparison
+            if i != j and arr[i] == arr[j]:
+                return True
+    return False
+# Fix: Use set: return len(arr) != len(set(arr)) → O(n)
+
+# Debug 4: Incorrect Master Theorem application
+# T(n) = 3T(n/3) + n → a=3, b=3, f(n)=n
+# log_3(3) = 1, f(n) = Θ(n^1) → Case 2: T(n) = Θ(n log n)
+# NOT Θ(n) as someone might think
+
+# Debug 5: Amortized analysis error
+# Claiming that dynamic array push is always O(1)
+# Actual: O(1) amortized, O(n) worst case during resize
+```

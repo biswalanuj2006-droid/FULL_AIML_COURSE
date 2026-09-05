@@ -1,0 +1,331 @@
+================================================================================
+PYTORCH DEEP DIVE — THE DEEP LEARNING STANDARD
+================================================================================
+
+## What You Will Learn
+- Tensors and operations
+- Autograd and computational graphs
+- nn.Module, layers, and models
+- Datasets and DataLoaders
+- Training loops
+- GPU acceleration
+- Model saving/loading
+
+## Why PyTorch?
+PyTorch is the dominant deep learning framework for research and increasingly
+for production. Its dynamic computation graph makes debugging easy, and its
+Pythonic API makes it intuitive.
+
+pip install torch torchvision
+
+================================================================================
+1. TORSO — THE BASIC DATA STRUCTURE
+================================================================================
+
+A tensor is a multi-dimensional array (like NumPy array, but GPU-capable).
+
+    import torch
+
+    # Creation
+    x = torch.tensor([1, 2, 3])                # From list
+    x = torch.zeros(3, 4)                       # Zeros
+    x = torch.ones(3, 4)                        # Ones
+    x = torch.randn(3, 4)                       # Random normal
+    x = torch.arange(0, 10)                     # Range
+    x = torch.linspace(0, 1, 5)                 # Evenly spaced
+
+    # Properties
+    x.shape          # torch.Size([3, 4])
+    x.dtype          # torch.float32
+    x.ndim           # 2
+    x.device         # cpu or cuda:0
+
+    # NumPy conversion
+    arr = x.numpy()              # Tensor → NumPy
+    t = torch.from_numpy(arr)    # NumPy → Tensor
+
+    # GPU
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    x_gpu = x.to(device)
+    x_cpu = x_gpu.cpu()
+
+OPERATIONS:
+    # Same as NumPy
+    x + y, x * y, x @ y         # Element-wise and matmul
+    x.mean(), x.sum(), x.std()  # Aggregation
+    x.reshape(3, -1)             # Reshape
+    x.T                          # Transpose
+
+================================================================================
+2. AUTOGRAD — AUTOMATIC DIFFERENTIATION
+================================================================================
+
+PyTorch tracks operations and can compute gradients automatically.
+
+    x = torch.tensor(2.0, requires_grad=True)
+    y = x ** 2 + 3 * x + 1    # y = x² + 3x + 1
+    y.backward()               # Compute gradients
+    print(x.grad)              # dy/dx = 2x + 3 = 7.0
+
+HOW IT WORKS:
+    torch builds a COMPUTATION GRAPH in the forward pass.
+    During .backward(), it traverses the graph backwards
+    computing gradients using the chain rule.
+
+    This is EXACTLY backpropagation in neural networks.
+
+FOR GRADIENT DESCENT:
+    x = torch.tensor(5.0, requires_grad=True)
+    lr = 0.01
+
+    for step in range(100):
+        y = (x - 3) ** 2          # Loss: we want x → 3
+        y.backward()
+        x.data -= lr * x.grad     # Update x
+        x.grad.zero_()            # Reset gradients
+
+    print(f"x = {x.item():.4f}")  # Should be close to 3
+
+================================================================================
+3. NN.MODULE — BUILDING MODELS
+================================================================================
+
+class LinearRegression(nn.Module):
+    def __init__(self, input_dim):
+        super().__init__()
+        self.linear = nn.Linear(input_dim, 1)
+
+    def forward(self, x):
+        return self.linear(x)
+
+class MLP(nn.Module):
+    """Multi-layer perceptron for classification."""
+
+    def __init__(self, input_dim, hidden_dim, num_classes):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(hidden_dim, num_classes)
+        )
+
+    def forward(self, x):
+        return self.network(x)
+
+COMMON LAYERS:
+    nn.Linear(in, out)           # Fully connected
+    nn.Conv2d(in_ch, out_ch, k)  # 2D convolution
+    nn.Conv1d(in_ch, out_ch, k)  # 1D convolution
+    nn.LSTM(input_size, hidden)  # LSTM
+    nn.GRU(input_size, hidden)   # GRU
+    nn.Embedding(vocab, dim)     # Word embeddings
+    nn.BatchNorm1d(num_features) # Batch normalization
+    nn.Dropout(p)                # Dropout
+    nn.LayerNorm(normalized_shape) # Layer normalization
+
+ACTIVATION FUNCTIONS:
+    nn.ReLU()
+    nn.Sigmoid()
+    nn.Tanh()
+    nn.Softmax(dim=-1)
+    nn.GELU()                    # Used in transformers
+
+LOSS FUNCTIONS:
+    nn.MSELoss()                 # Regression
+    nn.CrossEntropyLoss()        # Multi-class classification
+    nn.BCELoss()                 # Binary classification
+    nn.BCEWithLogitsLoss()       # Binary (numerically stable)
+    nn.NLLLoss()                 # Negative log likelihood
+
+OPTIMIZERS:
+    torch.optim.SGD(model.parameters(), lr=0.01)
+    torch.optim.Adam(model.parameters(), lr=0.001)
+    torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.01)
+
+================================================================================
+4. DATASET AND DATALOADER
+================================================================================
+
+from torch.utils.data import Dataset, DataLoader
+
+class CustomDataset(Dataset):
+    def __init__(self, X, y):
+        self.X = torch.FloatTensor(X)
+        self.y = torch.LongTensor(y)
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, idx):
+        return self.X[idx], self.y[idx]
+
+# Create dataset and dataloader
+dataset = CustomDataset(X_train, y_train)
+dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+
+# Iterate
+for batch_X, batch_y in dataloader:
+    # batch_X: (32, n_features)
+    # batch_y: (32,)
+    pass
+
+BUILT-IN DATASETS:
+    from torchvision import datasets, transforms
+
+    train_dataset = datasets.MNIST(
+        root='./data', train=True,
+        transform=transforms.ToTensor(),
+        download=True
+    )
+    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+
+================================================================================
+5. COMPLETE TRAINING LOOP
+================================================================================
+
+def train_model(model, train_loader, val_loader, epochs=10, lr=0.001):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+    history = {"train_loss": [], "val_loss": [], "val_acc": []}
+
+    for epoch in range(epochs):
+        # Training
+        model.train()
+        train_loss = 0
+        for batch_X, batch_y in train_loader:
+            batch_X, batch_y = batch_X.to(device), batch_y.to(device)
+
+            optimizer.zero_grad()           # Reset gradients
+            outputs = model(batch_X)        # Forward pass
+            loss = criterion(outputs, batch_y)  # Compute loss
+            loss.backward()                 # Backward pass
+            optimizer.step()                # Update weights
+
+            train_loss += loss.item()
+
+        train_loss /= len(train_loader)
+
+        # Validation
+        model.eval()
+        val_loss = 0
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for batch_X, batch_y in val_loader:
+                batch_X, batch_y = batch_X.to(device), batch_y.to(device)
+                outputs = model(batch_X)
+                loss = criterion(outputs, batch_y)
+                val_loss += loss.item()
+                _, predicted = outputs.max(1)
+                total += batch_y.size(0)
+                correct += predicted.eq(batch_y).sum().item()
+
+        val_loss /= len(val_loader)
+        val_acc = correct / total
+
+        history["train_loss"].append(train_loss)
+        history["val_loss"].append(val_loss)
+        history["val_acc"].append(val_acc)
+
+        print(f"Epoch {epoch+1}/{epochs}: "
+              f"train_loss={train_loss:.4f}, val_loss={val_loss:.4f}, "
+              f"val_acc={val_acc:.4f}")
+
+    return history
+
+================================================================================
+6. SAVING AND LOADING MODELS
+================================================================================
+
+# Save model weights only (RECOMMENDED)
+torch.save(model.state_dict(), "model_weights.pth")
+model.load_state_dict(torch.load("model_weights.pth"))
+model.eval()    # Set to evaluation mode
+
+# Save entire model (less flexible)
+torch.save(model, "model_full.pth")
+model = torch.load("model_full.pth")
+
+# Save checkpoint (for resuming training)
+checkpoint = {
+    'epoch': epoch,
+    'model_state_dict': model.state_dict(),
+    'optimizer_state_dict': optimizer.state_dict(),
+    'loss': loss,
+}
+torch.save(checkpoint, "checkpoint.pth")
+
+# Load checkpoint
+checkpoint = torch.load("checkpoint.pth")
+model.load_state_dict(checkpoint['model_state_dict'])
+optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+start_epoch = checkpoint['epoch']
+
+================================================================================
+7. TRANSFER LEARNING
+================================================================================
+
+from torchvision import models
+
+# Load pretrained ResNet
+model = models.resnet18(pretrained=True)
+
+# Replace final layer for your task
+num_features = model.fc.in_features
+model.fc = nn.Linear(num_features, num_classes)
+
+# Freeze early layers (optional)
+for param in model.parameters():
+    param.requires_grad = False
+model.fc.weight.requires_grad = True    # Only train new layer
+
+# Fine-tune
+model = model.to(device)
+history = train_model(model, train_loader, val_loader, epochs=5, lr=0.0001)
+
+================================================================================
+8. GPU AND PERFORMANCE
+================================================================================
+
+CHECK GPU:
+    print(torch.cuda.is_available())
+    print(torch.cuda.get_device_name(0))
+
+MOVE TO GPU:
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+    data = data.to(device)
+
+MIXED PRECISION (faster training):
+    from torch.cuda.amp import autocast, GradScaler
+
+    scaler = GradScaler()
+    for batch_X, batch_y in train_loader:
+        batch_X, batch_y = batch_X.to(device), batch_y.to(device)
+        optimizer.zero_grad()
+        with autocast():
+            outputs = model(batch_X)
+            loss = criterion(outputs, batch_y)
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between model.train() and model.eval()?
+2. Why do we call optimizer.zero_grad() before each step?
+3. What does torch.no_grad() do?
+4. When should you use BCEWithLogitsLoss vs BCELoss?
+5. How do you freeze layers for transfer learning?
+
+================================================================================

@@ -1,0 +1,17 @@
+================================================================================
+ENSEMBLE LEARNING — PROJECTS
+================================================================================
+
+PROJECT 1: MODEL COMPARISON STUDY (Beginner)
+==============================================
+Compare RF, XGBoost, LightGBM, CatBoost on same dataset.
+
+PROJECT 2: STACKING ENSEMBLE PIPELINE (Intermediate)
+======================================================
+Build stacking ensemble with cross-validation and evaluation.
+
+PROJECT 3: PRODUCTION GRADIENT BOOSTING (Advanced)
+====================================================
+End-to-end: data → XGBoost → API → Docker → monitoring.
+
+================================================================================

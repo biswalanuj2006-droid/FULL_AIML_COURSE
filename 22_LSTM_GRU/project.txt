@@ -1,0 +1,17 @@
+================================================================================
+LSTM/GRU MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: TIME SERIES FORECASTER (Beginner)
+==============================================
+LSTM forecasting for energy consumption data.
+
+PROJECT 2: TEXT GENERATION (Intermediate)
+==========================================
+Character-level LSTM text generation.
+
+PROJECT 3: ANOMALY DETECTION SYSTEM (Advanced)
+================================================
+LSTM autoencoder for detecting anomalies in time-series data.
+
+================================================================================

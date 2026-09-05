@@ -1,0 +1,288 @@
+# LEETCODE — LINKED LIST PATTERN
+# 25 Problems: 10 Easy, 10 Medium, 5 Hard
+
+---
+
+## EASY (10 Problems)
+
+### 1. Reverse Linked List
+```python
+def reverse_list(head):
+    prev, curr = None, head
+    while curr:
+        nxt = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nxt
+    return prev
+```
+**Time:** O(n), **Space:** O(1)
+
+### 2. Merge Two Sorted Lists
+```python
+def merge_two_lists(l1, l2):
+    dummy = ListNode(0)
+    curr = dummy
+    while l1 and l2:
+        if l1.val <= l2.val:
+            curr.next = l1; l1 = l1.next
+        else:
+            curr.next = l2; l2 = l2.next
+        curr = curr.next
+    curr.next = l1 or l2
+    return dummy.next
+```
+
+### 3. Linked List Cycle
+```python
+def has_cycle(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast: return True
+    return False
+```
+
+### 4. Middle of the Linked List
+```python
+def middle_node(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+    return slow
+```
+
+### 5. Remove Duplicates from Sorted List
+```python
+def delete_duplicates(head):
+    curr = head
+    while curr and curr.next:
+        if curr.val == curr.next.val:
+            curr.next = curr.next.next
+        else:
+            curr = curr.next
+    return head
+```
+
+### 6. Valid Parentheses (using stack)
+```python
+def is_valid(s):
+    stack = []
+    mapping = {')': '(', ']': '[', '}': '{'}
+    for c in s:
+        if c in mapping:
+            if not stack or stack[-1] != mapping[c]:
+                return False
+            stack.pop()
+        else:
+            stack.append(c)
+    return not stack
+```
+
+### 7. Reverse String
+```python
+def reverse_string(s):
+    left, right = 0, len(s) - 1
+    while left < right:
+        s[left], s[right] = s[right], s[left]
+        left += 1; right -= 1
+```
+
+### 8. First Unique Character
+```python
+def first_uniq_char(s):
+    count = {}
+    for c in s:
+        count[c] = count.get(c, 0) + 1
+    for i, c in enumerate(s):
+        if count[c] == 1: return i
+    return -1
+```
+
+### 9. Maximum Subarray
+```python
+def max_sub_array(nums):
+    max_sum = current = nums[0]
+    for num in nums[1:]:
+        current = max(num, current + num)
+        max_sum = max(max_sum, current)
+    return max_sum
+```
+
+### 10. Climbing Stairs
+```python
+def climb_stairs(n):
+    if n <= 2: return n
+    a, b = 1, 2
+    for _ in range(3, n + 1):
+        a, b = b, a + b
+    return b
+```
+
+---
+
+## MEDIUM (10 Problems)
+
+### 11. Add Two Numbers
+```python
+def add_two_numbers(l1, l2):
+    dummy = ListNode(0)
+    curr = dummy
+    carry = 0
+    while l1 or l2 or carry:
+        val = carry
+        if l1: val += l1.val; l1 = l1.next
+        if l2: val += l2.val; l2 = l2.next
+        carry = val // 10
+        curr.next = ListNode(val % 10)
+        curr = curr.next
+    return dummy.next
+```
+
+### 12. Remove Nth Node From End
+```python
+def remove_nth_from_end(head, n):
+    dummy = ListNode(0, head)
+    fast = slow = dummy
+    for _ in range(n + 1):
+        fast = fast.next
+    while fast:
+        fast = fast.next
+        slow = slow.next
+    slow.next = slow.next.next
+    return dummy.next
+```
+
+### 13. Reorder List
+```python
+def reorder_list(head):
+    if not head: return
+    # Find middle
+    slow, fast = head, head
+    while fast.next and fast.next.next:
+        slow = slow.next
+        fast = fast.next.next
+    # Reverse second half
+    prev, curr = None, slow.next
+    slow.next = None
+    while curr:
+        nxt = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nxt
+    # Merge two lists
+    first, second = head, prev
+    while second:
+        tmp1, tmp2 = first.next, second.next
+        first.next = second
+        second.next = tmp1
+        first = tmp1
+        second = tmp2
+```
+
+### 14. Swap Nodes in Pairs
+```python
+def swap_pairs(head):
+    dummy = ListNode(0, head)
+    prev = dummy
+    while prev.next and prev.next.next:
+        a = prev.next
+        b = a.next
+        prev.next = b
+        a.next = b.next
+        b.next = a
+        prev = a
+    return dummy.next
+```
+
+### 15. Copy List with Random Pointer
+```python
+def copy_random_list(head):
+    if not head: return None
+    mapping = {}
+    curr = head
+    while curr:
+        mapping[curr] = Node(curr.val)
+        curr = curr.next
+    curr = head
+    while curr:
+        if curr.next: mapping[curr].next = mapping[curr.next]
+        if curr.random: mapping[curr].random = mapping[curr.random]
+        curr = curr.next
+    return mapping[head]
+```
+
+### 16. Intersection of Two Linked Lists
+```python
+def getIntersectionNode(headA, headB):
+    a, b = headA, headB
+    while a != b:
+        a = a.next if a else headB
+        b = b.next if b else headA
+    return a
+```
+
+### 17. Flatten a Multilevel Doubly Linked List
+### 18. Rotate List
+### 19. Partition List
+### 20. Odd Even Linked List
+
+---
+
+## HARD (5 Problems)
+
+### 21. Reverse Nodes in k-Group
+```python
+def reverse_k_group(head, k):
+    # Check if k nodes remain
+    curr = head
+    count = 0
+    while curr and count < k:
+        curr = curr.next
+        count += 1
+    if count < k: return head
+    # Reverse k nodes
+    prev, curr = None, head
+    for _ in range(k):
+        nxt = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nxt
+    head.next = reverse_k_group(curr, k)
+    return prev
+```
+
+### 22. Merge k Sorted Lists
+```python
+import heapq
+def merge_k_lists(lists):
+    heap = []
+    for i, l in enumerate(lists):
+        if l: heapq.heappush(heap, (l.val, i, l))
+    dummy = ListNode(0)
+    curr = dummy
+    while heap:
+        val, i, node = heapq.heappop(heap)
+        curr.next = node
+        curr = curr.next
+        if node.next:
+            heapq.heappush(heap, (node.next.val, i, node.next))
+    return dummy.next
+```
+
+### 23. Sort List (Merge Sort on Linked List)
+### 24. LRU Cache
+### 25. Binary Tree Maximum Path Sum
+
+---
+
+## INTERVIEW EXPLANATIONS
+
+### Key Linked List Patterns:
+1. **Fast/Slow Pointer:** Cycle detection, middle element, palindrome
+2. **Dummy Node:** Simplifies edge cases (insertion/deletion at head)
+3. **Two Pointers:** Merge sorted lists, remove nth from end
+4. **Reversal:** Reverse list, reverse in groups, reorder list
+5. **Hashing:** Copy with random pointer, intersection detection

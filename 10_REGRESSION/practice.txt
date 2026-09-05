@@ -1,0 +1,47 @@
+================================================================================
+REGRESSION MODULE — PRACTICE SET (40+ Questions)
+================================================================================
+
+EASY (10)
+=========
+Q1: What is the difference between linear and logistic regression?
+Q2: What is R² score and what does it mean?
+Q3: What is RMSE?
+Q4: When do you use Lasso vs Ridge?
+Q5: What is the normal equation?
+Q6: What is polynomial regression?
+Q7: Why might linear regression underfit?
+Q8: What assumptions does linear regression make?
+Q9: What is the residual?
+Q10: When would you use MAE instead of RMSE?
+
+MEDIUM (15)
+============
+Q11: Implement linear regression from scratch with gradient descent.
+Q12: Compare Linear vs Ridge vs Lasso on same dataset.
+Q13: Implement polynomial regression pipeline.
+Q14: Build regression evaluation framework.
+Q15: Implement elastic net from scratch.
+Q16: Compare Random Forest vs XGBoost for regression.
+Q17: Build residual analysis pipeline.
+Q18: Implement feature importance for regression.
+Q19: Compare different regression models systematically.
+Q20: Build regression pipeline with feature engineering.
+Q21: Implement SVR and compare with linear models.
+Q22: Build regression with cross-validation.
+Q23: Implement gradient boosting regression from scratch.
+Q24: Build housing price prediction pipeline.
+Q25: Implement custom regression metric.
+
+HARD (8)
+=========
+Q26: Build end-to-end regression system with API.
+Q27: Implement model stacking for regression.
+Q28: Build regression with uncertainty quantification.
+Q29: Implement online learning for regression.
+Q30: Build regression comparison dashboard.
+Q31: Implement calibration for regression models.
+Q32: Build production regression pipeline.
+Q33: Implement regression with concept drift detection.
+
+================================================================================

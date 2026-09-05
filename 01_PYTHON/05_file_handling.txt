@@ -1,0 +1,367 @@
+================================================================================
+MODULE 01 — PYTHON FOR AI/ML
+LESSON 05: FILE HANDLING
+================================================================================
+
+## What You Will Learn
+- Reading and writing text files
+- Context managers (with statement)
+- CSV file handling
+- JSON file handling
+- File paths and os module
+- Working with large files
+
+## Why You Need It
+Every ML project involves reading datasets (CSV, JSON, text), saving
+models, loading configurations, and writing results. File handling is
+a fundamental skill for data engineering and ML pipelines.
+
+================================================================================
+1. READING AND WRITING TEXT FILES
+================================================================================
+
+READING A FILE:
+
+    # Method 1: Using 'with' (RECOMMENDED)
+    with open("data.txt", "r") as f:
+        content = f.read()
+    print(content)
+
+    # Method 2: Read line by line
+    with open("data.txt", "r") as f:
+        for line in f:
+            print(line.strip())
+
+    # Method 3: Read all lines into a list
+    with open("data.txt", "r") as f:
+        lines = f.readlines()
+    # lines = ["line1\n", "line2\n", "line3\n"]
+
+WRITING A FILE:
+
+    # Overwrite existing file (or create new)
+    with open("output.txt", "w") as f:
+        f.write("Hello, World!\n")
+        f.write("Second line\n")
+
+    # Append to existing file
+    with open("log.txt", "a") as f:
+        f.write("New log entry\n")
+
+FILE MODES:
+    "r"   Read (default) — file must exist
+    "w"   Write — creates or OVERWRITES file
+    "a"   Append — creates or adds to file
+    "x"   Exclusive create — error if file exists
+    "r+"  Read and write
+    "rb"  Read binary
+    "wb"  Write binary
+
+WHY USE 'with' STATEMENT?
+
+    # WITHOUT 'with' (BAD)
+    f = open("data.txt")
+    content = f.read()
+    f.close()     # Must remember to close!
+
+    # WITH 'with' (GOOD)
+    with open("data.txt") as f:
+        content = f.read()
+    # Automatically closed, even if an error occurs!
+
+    The 'with' statement is a CONTEXT MANAGER that ensures the file
+    is properly closed after the block of code.
+
+================================================================================
+2. WORKING WITH LARGE FILES
+================================================================================
+
+DON'T LOAD ENTIRE FILE INTO MEMORY:
+
+    # BAD: Loads entire file
+    with open("huge_file.csv") as f:
+        content = f.read()     # Could use GB of RAM!
+
+    # GOOD: Process line by line
+    with open("huge_file.csv") as f:
+        for line in f:
+            process(line)
+
+USING GENERATORS FOR LAZY LOADING:
+
+    def read_large_file(filepath):
+        """Generator that yields lines one at a time."""
+        with open(filepath) as f:
+            for line in f:
+                yield line.strip()
+
+    for line in read_large_file("huge_file.csv"):
+        process(line)
+
+CHUNKED READING:
+
+    def read_in_chunks(filepath, chunk_size=1024):
+        with open(filepath) as f:
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
+                yield chunk
+
+================================================================================
+3. CSV FILE HANDLING
+================================================================================
+
+USING PYTHON'S csv MODULE:
+
+    import csv
+
+    # Reading CSV
+    with open("data.csv", "r") as f:
+        reader = csv.reader(f)
+        header = next(reader)      # First row as header
+        for row in reader:
+            print(row)             # Each row is a list
+
+    # Writing CSV
+    with open("output.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["name", "age", "score"])    # Header
+        writer.writerow(["Alice", 25, 95])
+        writer.writerow(["Bob", 30, 87])
+
+    # DictReader/DictWriter (more convenient)
+    with open("data.csv", "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            print(row["name"], row["age"])    # Access by column name
+
+USING PANDAS (RECOMMENDED FOR ML):
+
+    import pandas as pd
+
+    # Read CSV
+    df = pd.read_csv("data.csv")
+
+    # Read with options
+    df = pd.read_csv("data.csv",
+                      usecols=["name", "age"],      # Only these columns
+                      dtype={"age": int},             # Column types
+                      nrows=1000,                     # First 1000 rows
+                      na_values=["N/A", "missing"])   # Values to treat as NaN
+
+    # Write CSV
+    df.to_csv("output.csv", index=False)
+
+ML USE:
+    # Load dataset
+    df = pd.read_csv("customer_churn.csv")
+
+    # Quick inspection
+    print(df.head())
+    print(df.shape)
+    print(df.dtypes)
+
+================================================================================
+4. JSON FILE HANDLING
+================================================================================
+
+JSON = JavaScript Object Notation
+Maps directly to Python dicts and lists.
+
+    import json
+
+    # Reading JSON
+    with open("config.json", "r") as f:
+        config = json.load(f)
+
+    config = {
+        "model": "Random Forest",
+        "params": {"n_estimators": 100, "max_depth": 5},
+        "features": ["age", "income", "score"]
+    }
+
+    # Writing JSON
+    with open("config.json", "w") as f:
+        json.dump(config, f, indent=2)
+
+    # Pretty print
+    print(json.dumps(config, indent=2))
+
+    OUTPUT:
+    {
+      "model": "Random Forest",
+      "params": {
+        "n_estimators": 100,
+        "max_depth": 5
+      },
+      "features": [
+        "age",
+        "income",
+        "score"
+      ]
+    }
+
+    # Parsing JSON string
+    json_string = '{"name": "Alice", "age": 25}'
+    data = json.loads(json_string)
+
+ML USE:
+    # Save model configuration
+    config = {
+        "model_type": "XGBoost",
+        "hyperparameters": {
+            "n_estimators": 500,
+            "max_depth": 7,
+            "learning_rate": 0.1
+        },
+        "features": ["feature_1", "feature_2"],
+        "target": "churn"
+    }
+
+    with open("model_config.json", "w") as f:
+        json.dump(config, f, indent=2)
+
+    # Load configuration later
+    with open("model_config.json") as f:
+        config = json.load(f)
+
+    model = XGBoost(**config["hyperparameters"])
+
+================================================================================
+5. FILE PATHS
+================================================================================
+
+USING os.path:
+
+    import os
+
+    # Join paths (works on all operating systems)
+    filepath = os.path.join("data", "train", "dataset.csv")
+
+    # Get absolute path
+    abs_path = os.path.abspath("data.csv")
+
+    # Get directory name
+    dirname = os.path.dirname("/home/user/data.csv")    # "/home/user"
+
+    # Get filename
+    basename = os.path.basename("/home/user/data.csv")  # "data.csv"
+
+    # Split path
+    root, ext = os.path.splitext("data.csv")  # ("data", ".csv")
+
+    # Check if file exists
+    if os.path.exists("data.csv"):
+        print("File found!")
+
+    # List files in directory
+    files = os.listdir("data/")
+
+    # Create directory
+    os.makedirs("output/plots", exist_ok=True)
+
+USING pathlib (Python 3.4+, PREFERRED):
+
+    from pathlib import Path
+
+    # Create path
+    data_dir = Path("data")
+    filepath = data_dir / "train" / "dataset.csv"
+
+    # Operations
+    filepath.exists()          # True/False
+    filepath.is_file()        # True/False
+    filepath.is_dir()         # True/False
+    filepath.name              # "dataset.csv"
+    filepath.stem              # "dataset"
+    filepath.suffix            # ".csv"
+    filepath.parent            # Path("data/train")
+
+    # Read/write
+    content = filepath.read_text()
+    filepath.write_text("Hello")
+
+    # Create directories
+    Path("output/plots").mkdir(parents=True, exist_ok=True)
+
+    # Find files
+    csv_files = list(Path("data").glob("*.csv"))
+    all_files = list(Path("data").rglob("*.csv"))  # Recursive
+
+================================================================================
+6. PRACTICAL ML EXAMPLES
+================================================================================
+
+EXAMPLE 1: Loading Multiple CSV Files
+
+    import pandas as pd
+    from pathlib import Path
+
+    data_dir = Path("datasets")
+    csv_files = list(data_dir.glob("*.csv"))
+
+    dfs = []
+    for filepath in csv_files:
+        df = pd.read_csv(filepath)
+        df["source"] = filepath.stem    # Track which file each row came from
+        dfs.append(df)
+
+    combined = pd.concat(dfs, ignore_index=True)
+    print(f"Loaded {len(combined)} rows from {len(csv_files)} files")
+
+EXAMPLE 2: Configuration Management
+
+    import json
+    from pathlib import Path
+
+    class Config:
+        def __init__(self, config_path):
+            with open(config_path) as f:
+                self._config = json.load(f)
+
+        def get(self, key, default=None):
+            return self._config.get(key, default)
+
+        def __getitem__(self, key):
+            return self._config[key]
+
+        def save(self, path):
+            with open(path, "w") as f:
+                json.dump(self._config, f, indent=2)
+
+    config = Config("experiment_config.json")
+    lr = config.get("learning_rate", 0.001)
+    model = config["model_type"]
+
+EXAMPLE 3: Logging to File
+
+    import json
+    from datetime import datetime
+
+    def log_experiment(name, metrics, filepath="experiment_log.jsonl"):
+        """Append experiment results to JSON Lines file."""
+        entry = {
+            "timestamp": datetime.now().isoformat(),
+            "name": name,
+            "metrics": metrics
+        }
+        with open(filepath, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+
+    log_experiment("rf_v1", {"accuracy": 0.87, "f1": 0.85})
+    log_experiment("xgb_v1", {"accuracy": 0.89, "f1": 0.87})
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. Why should you always use 'with' when opening files?
+2. What is the difference between 'w' and 'a' modes?
+3. How do you read a CSV file into a pandas DataFrame?
+4. What is the difference between json.load() and json.loads()?
+5. Why use pathlib instead of os.path?
+
+================================================================================
+NEXT LESSON: 06_error_handling.txt — Exceptions, Error Handling
+================================================================================

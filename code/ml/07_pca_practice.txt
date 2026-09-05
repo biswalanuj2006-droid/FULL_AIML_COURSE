@@ -1,0 +1,63 @@
+================================================================================
+PRACTICE - PCA FROM SCRATCH (code/ml/pca_from_scratch.py)
+================================================================================
+
+CONCEPTUAL
+ 1. What does PCA maximize mathematically (variance of projections)?
+ 2. Write the eigen-decomposition used by PCA and name every symbol.
+ 3. Why center (subtract mean) before PCA but NOT scale automatically?
+ 4. What is the relationship between the covariance matrix's
+    eigenvectors and the data's principal directions?
+ 5. Why does PCA assume linearity and what does that mean for
+    non-linear data?
+ 6. What is explained variance ratio and why does it guide k?
+ 7. PCA via SVD vs covariance eigendecomposition: when is each
+    preferable numerically?
+ 8. What does the reconstruction error measure and when is it useful?
+
+NUMERICAL (by hand on 2D data)
+ 9. Points: (0,0),(1,0),(0,1),(1,1). Compute the covariance matrix
+    (after centering).
+10. Find the eigenvectors/eigenvalues of that covariance (for 2x2,
+    solve det(C - lambda I) = 0).
+11. Which eigenvector explains more variance and what is its ratio?
+
+CODE (write and run)
+12. Implement PCA with covariance eigendecomposition and with SVD;
+    verify both return the same components on random data.
+13. Plot explained-variance ratio and cumulative ratio for a real
+    dataset (e.g., digits or wine from sklearn). Choose k at 95%.
+14. Project MNIST digits to 2D and scatter colored by label - which
+    digits overlap and why?
+15. Reconstruct images from k=10, 50, 200 components; plot originals
+    vs reconstructions and report mean squared error per k.
+16. Compare your PCA vs sklearn PCA: same sign-adjusted components and
+    same explained variance (report max abs difference).
+17. Show the damage of NOT standardizing before PCA when features have
+    wildly different scales.
+
+DEBUGGING
+18. Components come back in arbitrary sign (flipped) - why, and what
+    is the standard fix for comparing two PCA implementations?
+19. Explained variance sums to > 1.0 - what went wrong?
+20. PCA fit on the whole dataset then used inside CV - describe the
+    leak and the correct pipeline placement (cross-ref lesson 08).
+21. Data contains NaNs; covariance is all NaN and no error raised -
+    how would you detect it, and why might sklearn not raise either?
+
+CHALLENGES
+22. Implement whitening (scale components by 1/sqrt(eigenvalues)) and
+    compare its scatter plot vs raw PCA.
+23. Implement PCA via the power iteration method for the top-1 component
+    and verify against the analytic solution.
+24. Use PCA-50 features to train logistic regression on MNIST vs raw
+    784 features - report accuracy and training time both ways.
+
+REAL-WORLD SCENARIO
+25. Your team embeds 1M user vectors (300 dims) for search. Propose a
+    PCA-based dimensionality plan: target dims, validation of recall
+    after reduction, and the trade-off you accept.
+
+================================================================================
+END
+================================================================================

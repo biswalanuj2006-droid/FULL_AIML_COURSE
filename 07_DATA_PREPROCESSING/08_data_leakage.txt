@@ -1,0 +1,180 @@
+================================================================================
+MODULE 07: DATA PREPROCESSING - LESSON 8: DATA LEAKAGE
+What it is, the forms it takes, and how to prevent it
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able to:
+- Define leakage and explain why it produces fake performance
+- Recognize the three major leakage sources
+- Avoid target/statistics leakage in preprocessing
+- Split time-series and grouped data correctly
+- Audit a pipeline for leakage before trusting its score
+
+================================================================================
+1. WHAT LEAKAGE IS
+================================================================================
+
+DEFINITION: information from the target (or from the future/test set)
+reaches the model during training, so training-time "accuracy" is inflated
+and real-world performance collapses.
+
+INTUITION
+---------
+A student who secretly sees the exam answers will score 100% on the mock
+exam - then fail the real one, because the real exam has different
+questions. Leakage is exactly that: the model looked at answers during
+study time.
+
+THE DAMAGE
+----------
+- Spectacular validation scores (0.99 AUC on tabular data is a red flag)
+- Disastrous production performance
+- Wasted months: the model was never learning the real pattern
+
+================================================================================
+2. SOURCE 1: TARGET LEAKAGE (features that contain the answer)
+================================================================================
+
+A feature that encodes information only known AFTER the outcome.
+
+Examples:
+  - Predicting fraud, feature "customer_was_flagged_by_investigator"
+    (the flag happens because fraud was found)
+  - Predicting disease, feature "patient_was_referred_to_specialist"
+  - Predicting churn, feature "number_of_support_tickets_after_cancellation"
+  - Predicting loan default, feature "bank_internal_risk_note_written_at
+    default time"
+
+CHECK: for every feature ask
+  "Would I know this value at prediction time, before the outcome?"
+
+If the answer is no - the feature leaks.
+
+================================================================================
+3. SOURCE 2: STATISTICS LEAKAGE (fitting transforms on full data)
+================================================================================
+
+Any transform that learns statistics (mean, min/max, categories, PCA axes,
+target encoding) MUST learn them from TRAINING DATA ONLY.
+
+Wrong:
+  scaler = StandardScaler().fit(X)          # X = whole dataset
+  X_s = scaler.transform(X)                 # test info inside training
+  X_train_s, X_test_s = train_test_split(X_s, ...)
+
+Right:
+  X_train, X_test = train_test_split(X, ...)
+  scaler = StandardScaler().fit(X_train)    # test never seen
+  X_train_s = scaler.transform(X_train)
+  X_test_s = scaler.transform(X_test)
+
+The most common real-world leaks:
+  - Scaling/normalizing before the split
+  - Imputing with medians computed on the full dataset
+  - Target/mean encoding a categorical column before CV splits
+  - PCA/feature-selection fit on full data, then CV
+  - SMOTE/oversampling BEFORE the split (synthetic samples leak across folds)
+
+The reliable fix is Pipelines (lesson 07) - transforms fit per-fold inside
+cross-validation automatically.
+
+================================================================================
+4. SOURCE 3: GROUP/PROXIMITY LEAKAGE (same entity in train AND test)
+================================================================================
+
+When rows are not independent, random splits put near-copies of the same
+entity into both train and test. The model memorizes the entity instead of
+learning the pattern.
+
+Examples:
+  - Patient data: multiple hospital visits per patient -> split by PATIENT
+    (group), not by visit row
+  - Photos: near-duplicate frames of the same scene -> split by scene
+  - User activity: same user in train and test -> split by user
+  - Medical imaging from the same machine/patient -> split by patient/site
+
+Fix: GroupKFold / GroupShuffleSplit or a manual group-aware split.
+
+  from sklearn.model_selection import GroupKFold
+  GroupKFold(n_splits=5).split(X, y, groups=patient_ids)
+
+================================================================================
+5. TIME-SERIES LEAKAGE (using the future to predict the past)
+================================================================================
+
+For ordered data a random split is leakage by definition: rows near the
+boundary in the future appear in training for past rows in validation.
+
+  - Never shuffle time data
+  - Train on the past, validate on the future (walk-forward / expanding
+    window)
+  - Lag features must be computed BEFORE splitting (a "t+1 target" cannot
+    use t+1 values as features)
+
+  from sklearn.model_selection import TimeSeriesSplit
+
+================================================================================
+6. THE AUDIT CHECKLIST (use before trusting any score)
+================================================================================
+
+  [ ] No feature is knowable only after the target
+  [ ] Every scaler/imputer/encoder/PCA was fit on TRAIN only
+  [ ] Splits respect groups (patient/user/scene)
+  [ ] Time data is split chronologically
+  [ ] Oversampling/synthetic data applied INSIDE CV folds
+  [ ] Hyperparameter search uses nested/valid splitting, never the final
+      test set
+  [ ] The final test set was touched at most ONCE (last step)
+  [ ] Serving pipeline is the SAME object as training pipeline (dump the
+      whole pipeline, not the model alone)
+
+================================================================================
+7. DETECTION HEURISTICS
+================================================================================
+
+Suspicion triggers:
+  - Validation AUC/R² implausibly high for the data (e.g., 1.0 on noisy
+    real-world data)
+  - A "weak" feature (customer id, timestamp, row number) shows huge
+    importance
+  - Model perfect on validation, mediocre in a shadow deployment
+  - Score drops when you move from random split to GroupKFold or
+    TimeSeriesSplit
+
+Investigation: train on X minus the suspicious feature and watch the score
+collapse - that feature was carrying the leak.
+
+================================================================================
+8. COMMON MISTAKES (and their fixes)
+================================================================================
+
+1. fit_transform on full data before split
+   -> pipeline + split first
+2. Random split on grouped/user/time data
+   -> GroupKFold / TimeSeriesSplit
+3. Target encoding without fold isolation
+   -> CV or smoothing computed inside each fold only
+4. Reusing the test set for model selection repeatedly
+   -> carve a separate validation set or nested CV
+5. Preprocessing by hand in a notebook, model served by a DIFFERENT script
+   -> dump one pipeline object and reuse it at serving time
+6. Belonging to "the leak doesn't apply here" because data "looks random"
+   -> always audit groups and time anyway
+
+================================================================================
+9. MINI CHALLENGE (do this now, code it)
+================================================================================
+
+Take a dataset with a timestamp or user id (or synthesize one):
+  1. Compute CV AUC with a random split and with GroupKFold/TimeSeriesSplit
+     - observe the gap and explain it.
+  2. Build a deliberately leaking pipeline (fit scaler on all X, then CV)
+     vs the correct pipeline. Record both scores.
+  3. Write the audit checklist as a comment block in your final notebook
+     and fill every box honestly.
+
+================================================================================
+END OF LESSON 8 - data preprocessing complete
+================================================================================

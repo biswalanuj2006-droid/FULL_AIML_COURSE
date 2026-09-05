@@ -1,0 +1,251 @@
+================================================================================
+MODULE 02 — NUMPY
+LESSON 04: LINEAR ALGEBRA
+================================================================================
+
+## What You Will Learn
+- Dot product
+- Matrix multiplication
+- Transpose
+- Matrix inverse
+- Determinant
+- Eigenvalues and eigenvectors
+- Matrix decomposition
+- How linear algebra powers ML
+
+================================================================================
+1. DOT PRODUCT
+================================================================================
+
+The dot product measures how similar two vectors are.
+
+    a = np.array([1, 2, 3])
+    b = np.array([4, 5, 6])
+
+    # Method 1: np.dot
+    np.dot(a, b)    # 1*4 + 2*5 + 3*6 = 32
+
+    # Method 2: @ operator (PREFERRED)
+    a @ b            # 32
+
+    # Method 3: np.inner
+    np.inner(a, b)   # 32
+
+ML USE:
+    # Linear combination: z = w·x + b
+    weights = np.array([0.5, 0.3, 0.2])
+    features = np.array([100, 50, 80])
+    z = weights @ features + 1.0   # = 50 + 15 + 16 + 1 = 82
+
+    # Cosine similarity (common in NLP/embeddings)
+    def cosine_similarity(a, b):
+        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+    # Similarity between word embeddings
+    vec_king = np.random.randn(300)
+    vec_queen = np.random.randn(300)
+    sim = cosine_similarity(vec_king, vec_queen)
+
+================================================================================
+2. MATRIX MULTIPLICATION
+================================================================================
+
+    A = np.array([[1, 2],
+                  [3, 4]])    # (2, 2)
+
+    B = np.array([[5, 6],
+                  [7, 8]])    # (2, 2)
+
+    # Method 1: @ operator
+    C = A @ B    # or np.matmul(A, B) or np.dot(A, B)
+    # C = [[1*5+2*7, 1*6+2*8], [3*5+4*7, 3*6+4*8]]
+    #   = [[19, 22], [43, 50]]
+
+    DIMENSION REQUIREMENT:
+    A: (m, k) @ B: (k, n) = C: (m, n)
+    Inner dimensions must match!
+
+    A = np.array([[1, 2, 3],      # (2, 3)
+                  [4, 5, 6]])
+    B = np.array([[7, 8],          # (3, 2)
+                  [9, 10],
+                  [11, 12]])
+    C = A @ B    # (2, 2) = [[58, 64], [139, 154]]
+
+ML USE:
+    # Forward pass in neural network: z = W @ x + b
+    W = np.random.randn(4, 3)    # 3 input features, 4 neurons
+    x = np.array([1.0, 2.0, 3.0])  # Input features
+    b = np.zeros(4)               # Bias
+    z = W @ x + b                 # (4,)
+
+    # Batch forward pass
+    X = np.random.randn(100, 3)   # 100 samples, 3 features
+    Z = X @ W.T + b               # (100, 4)
+
+================================================================================
+3. TRANSPOSE
+================================================================================
+
+    A = np.array([[1, 2, 3],
+                  [4, 5, 6]])
+
+    A.T              # [[1, 4], [2, 5], [3, 6]]
+    A.shape           # (2, 3)
+    A.T.shape         # (3, 2)
+
+    For 1D arrays, transpose does nothing:
+    a = np.array([1, 2, 3])
+    a.T.shape         # (3,) — still 1D!
+    a.reshape(1, -1).T.shape  # (3, 1) — this gives a column vector
+
+ML USE:
+    # X: (n_samples, n_features)
+    # W: (n_features, n_outputs)
+    # Output: X @ W — (n_samples, n_outputs)
+
+    X = np.random.randn(100, 10)   # 100 samples, 10 features
+    W = np.random.randn(10, 5)     # 10 features → 5 outputs
+    output = X @ W                  # (100, 5)
+
+================================================================================
+4. MATRIX INVERSE
+================================================================================
+
+    A = np.array([[1, 2],
+                  [3, 4]])
+
+    A_inv = np.linalg.inv(A)
+    # A @ A_inv ≈ Identity matrix
+
+    # Verify
+    I = A @ A_inv
+    print(np.round(I, 10))    # [[1, 0], [0, 1]]
+
+    WHEN TO USE:
+    - Solving linear equations: Ax = b → x = A⁻¹b
+    - Normal equation in linear regression: w = (XᵀX)⁻¹Xᵀy
+
+    WARNING:
+    - Not all matrices have inverses (singular matrices)
+    - Use np.linalg.pinv() for pseudo-inverse (handles singular matrices)
+
+ML USE — Linear Regression from Scratch:
+    def linear_regression_normal(X, y):
+        """Solve linear regression using normal equation."""
+        # Add bias column
+        X_b = np.c_[np.ones((X.shape[0], 1)), X]
+        # w = (XᵀX)⁻¹Xᵀy
+        w = np.linalg.inv(X_b.T @ X_b) @ X_b.T @ y
+        return w
+
+================================================================================
+5. DETERMINANT
+================================================================================
+
+    A = np.array([[1, 2],
+                  [3, 4]])
+
+    det = np.linalg.det(A)    # 1*4 - 2*3 = -2
+
+    INTERPRETATION:
+    - |det| ≈ 0: Matrix is near-singular (almost not invertible)
+    - |det| >> 0: Matrix is well-conditioned
+    - det = 0: Matrix is singular (not invertible)
+
+ML USE:
+    - Gaussian Naive Bayes uses determinants
+    - Checking matrix conditioning in optimization
+    - Computing multivariate Gaussian densities
+
+================================================================================
+6. EIGENVALUES AND EIGENVECTORS
+================================================================================
+
+    A = np.array([[4, 2],
+                  [1, 3]])
+
+    eigenvalues, eigenvectors = np.linalg.eig(A)
+
+    print("Eigenvalues:", eigenvalues)     # [5, 2]
+    print("Eigenvectors:", eigenvectors)
+
+    WHAT THEY MEAN:
+    An eigenvector v satisfies: Av = λv
+    (Matrix A just scales the eigenvector by λ)
+
+    - Eigenvalue λ: How much the eigenvector is stretched
+    - Eigenvector v: Direction that doesn't change under transformation
+
+ML USE — PCA (Principal Component Analysis):
+    # Covariance matrix of data
+    X_centered = X - X.mean(axis=0)
+    cov_matrix = np.cov(X_centered.T)
+
+    # Eigendecomposition
+    eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
+
+    # Sort by eigenvalue (descending)
+    idx = np.argsort(eigenvalues)[::-1]
+    eigenvalues = eigenvalues[idx]
+    eigenvectors = eigenvectors[:, idx]
+
+    # Top 2 principal components
+    W = eigenvectors[:, :2]    # Projection matrix
+    X_pca = X_centered @ W     # Reduced data
+
+================================================================================
+7. SINGULAR VALUE DECOMPOSITION (SVD)
+================================================================================
+
+    A = np.array([[1, 2, 3],
+                  [4, 5, 6]])
+
+    U, S, Vt = np.linalg.svd(A, full_matrices=False)
+
+    # A ≈ U @ diag(S) @ Vt
+    # U: (2, 2), S: (2,), Vt: (2, 3)
+
+    WHAT IT MEANS:
+    Any matrix can be decomposed into:
+    - U: Left singular vectors (input directions)
+    - S: Singular values (importance of each direction)
+    - Vt: Right singular vectors (output directions)
+
+ML USE:
+    # Dimensionality reduction (similar to PCA)
+    U, S, Vt = np.linalg.svd(X_centered, full_matrices=False)
+    X_reduced = U[:, :k] * S[:k]    # Keep top k components
+
+    # Matrix factorization for recommendation systems
+    # Latent factor model
+
+================================================================================
+8. USEFUL LINALG FUNCTIONS
+================================================================================
+
+    np.linalg.norm(a)          # Euclidean norm (magnitude)
+    np.linalg.norm(a, ord=1)   # L1 norm (Manhattan distance)
+    np.linalg.norm(a - b)      # Euclidean distance between a and b
+    np.linalg.solve(A, b)      # Solve Ax = b
+    np.linalg.matrix_rank(A)   # Rank of matrix
+    np.linalg.cond(A)          # Condition number
+
+ML USE:
+    # L2 regularization: penalty = np.linalg.norm(w, ord=2)**2
+    # L1 regularization: penalty = np.linalg.norm(w, ord=1)
+    # Distance calculation: dist = np.linalg.norm(x1 - x2)
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What does a @ b compute for 1D arrays? For 2D arrays?
+2. What is the shape requirement for matrix multiplication?
+3. How do you compute the pseudo-inverse?
+4. What does an eigenvector represent?
+5. How is SVD used in PCA?
+
+================================================================================
+NEXT LESSON: 05_random.txt
+================================================================================

@@ -1,0 +1,57 @@
+================================================================================
+PROJECTS - 61 REINFORCEMENT LEARNING FOUNDATIONS (3 LEVELS)
+================================================================================
+
+--------------------------------------------------------------------------------
+PROJECT 1 - LEVEL 1: TABULAR AGENT FROM SCRATCH (Beginner)
+--------------------------------------------------------------------------------
+PROBLEM: teach an agent a small maze/gridworld with no libraries.
+REQUIREMENTS
+  - Implement the environment (state, actions, stochastic transition,
+    rewards, terminal states).
+  - Implement value iteration AND Q-learning with epsilon-greedy.
+  - Compare their learned value functions against the Bellman-optimal
+    solution (you can compute V* exactly for a small grid).
+  - Plot episode returns and the final policy.
+DELIVERABLES: environment + both solvers + comparison plots + 5-line
+explanation of any difference (e.g. on-policy safety under noise).
+RUBRIC: correct Bellman math 40%, working code 30%, analysis 30%.
+
+--------------------------------------------------------------------------------
+PROJECT 2 - LEVEL 2: DQN AND ITS ABLATIONS (Intermediate)
+--------------------------------------------------------------------------------
+PROBLEM: scale to a function-approximation setting (CartPole via
+gymnasium if installable, else a bigger gridworld with raw state
+features).
+REQUIREMENTS
+  - DQN with replay buffer + target network; report return curves.
+  - Run the ablations: no replay, no target net, sync target every step.
+  - Show that the ablations break learning and explain WHY in Bellman/
+    i.i.d. terms.
+  - Report over 3 seeds with mean +/- std and a training curve figure.
+DELIVERABLES: code, ablation results, 1-page explanation of the deadly
+triad with your evidence.
+RUBRIC: correct DQN mechanics 40%, honest ablations 30%, write-up 30%.
+
+--------------------------------------------------------------------------------
+PROJECT 3 - LEVEL 3: POLICY GRADIENTS TO PPO (Advanced/Expert)
+--------------------------------------------------------------------------------
+PROBLEM: implement the policy-gradient family and reach a stable,
+seed-robust learner.
+REQUIREMENTS
+  - REINFORCE with baseline (measure the variance reduction).
+  - Advantage actor-critic (critic = value regression, actor = policy
+    gradient with A = return - V).
+  - Clipped PPO with the min/clip objective; tune only the essentials
+    (clip range, LR, entropy bonus).
+  - Report sample-efficiency curves (return vs environment steps) for
+    all three, mean +/- std over 5 seeds.
+  - One failure post-mortem: pick a real instability you hit and
+    explain it with the concepts from the lesson (bootstrapping,
+    non-stationarity, entropy collapse).
+DELIVERABLES: three learners, comparison, post-mortem.
+RUBRIC: correct math 30%, stability evidence 30%, ablations 20%,
+post-mortem quality 20%.
+INTERVIEW QUESTIONS TO PREPARE: Bellman equations; SARSA vs Q-learning;
+why replay + target nets; policy gradient derivation + baseline; PPO
+clip rationale; RLHF three-stage pipeline.

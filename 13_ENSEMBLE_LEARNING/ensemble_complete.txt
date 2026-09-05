@@ -1,0 +1,315 @@
+================================================================================
+MODULE 13 — ENSEMBLE LEARNING
+COMPLETE GUIDE: BAGGING, BOOSTING, STACKING, VOTING
+================================================================================
+
+## What You Will Learn
+- Why ensembles work
+- Bagging (Bootstrap Aggregating)
+- Random Forest
+- Boosting (AdaBoost, Gradient Boosting)
+- Stacking
+- Voting classifiers
+- When to use each method
+
+## Why You Need It
+Ensemble methods combine multiple models to produce better predictions than
+any single model. They consistently WIN Kaggle competitions and are the
+backbone of production ML systems.
+
+================================================================================
+1. WHY ENSEMBLES WORK
+================================================================================
+
+THE WISDOM OF CROWDS:
+    Many weak models > One strong model
+
+    Individual predictions may be wrong, but errors are often different.
+    Combining them averages out the errors.
+
+MATHEMATICAL INTUITION:
+    If each model has accuracy > 50% (better than random),
+    combining them through voting/averaging increases accuracy.
+
+    For N independent models each with accuracy p:
+    Ensemble accuracy = Σ C(N,k) × pᵏ × (1-p)^(N-k) for k > N/2
+
+    With N=11 models each 60% accurate:
+    Ensemble accuracy ≈ 76%!
+
+TWO MAIN STRATEGIES:
+    1. Reduce VARIANCE (Bagging): Average many complex models
+    2. Reduce BIAS (Boosting): Sequentially improve weak models
+
+================================================================================
+2. BAGGING — BOOTSTRAP AGGREGATING
+================================================================================
+
+INTUITION:
+    1. Create N random samples (with replacement) from training data
+    2. Train a model on each sample
+    3. Average their predictions
+
+    ┌──────────┐     ┌──────────┐     ┌──────────┐
+    │ Sample 1 │     │ Sample 2 │     │ Sample 3 │
+    │ → Model 1│     │ → Model 2│     │ → Model 3│
+    └────┬─────┘     └────┬─────┘     └────┬─────┘
+         │                │                │
+         └────────┬───────┴────────┬───────┘
+                  │                │
+              Average/ Vote → Final Prediction
+
+WHY IT REDUCES VARIANCE:
+    Individual models overfit differently (high variance).
+    Averaging smooths out the overfitting.
+
+IMPLEMENTATION:
+    from sklearn.ensemble import BaggingClassifier
+    from sklearn.tree import DecisionTreeClassifier
+
+    bagging = BaggingClassifier(
+        estimator=DecisionTreeClassifier(),
+        n_estimators=100,
+        max_samples=0.8,        # 80% of data per bootstrap sample
+        max_features=0.8,       # 80% of features per model
+        random_state=42
+    )
+    bagging.fit(X_train, y_train)
+    score = bagging.score(X_test, y_test)
+
+================================================================================
+3. RANDOM FOREST
+================================================================================
+
+INTUITION:
+    Bagging + Random feature selection at each split.
+
+    At each node:
+    - Standard Decision Tree: Consider ALL features for best split
+    - Random Forest: Consider RANDOM subset of features for best split
+
+    This decorrelates the trees, making the ensemble more effective.
+
+IMPLEMENTATION:
+    from sklearn.ensemble import RandomForestClassifier
+
+    rf = RandomForestClassifier(
+        n_estimators=100,
+        max_depth=10,
+        min_samples_split=5,
+        min_samples_leaf=2,
+        max_features='sqrt',     # sqrt(n_features) per split
+        random_state=42,
+        n_jobs=-1                # Use all CPU cores
+    )
+    rf.fit(X_train, y_train)
+
+    # Feature importance
+    importances = rf.feature_importances_
+    for name, imp in sorted(zip(feature_names, importances), key=lambda x: -x[1]):
+        print(f"{name}: {imp:.4f}")
+
+KEY PARAMETERS:
+    - n_estimators: Number of trees (more = better, but slower)
+    - max_depth: Depth of each tree (None = grow until pure)
+    - min_samples_split: Min samples to split a node
+    - min_samples_leaf: Min samples in a leaf
+    - max_features: Features considered per split ('sqrt', 'log2', float)
+
+PROS:
+    - Handles missing values natively
+    - Built-in feature importance
+    - Robust to outliers
+    - Parallel training (fast)
+    - Little hyperparameter tuning needed
+
+CONS:
+    - Less interpretable than single tree
+    - Can overfit on noisy data
+    - Memory-intensive with many trees
+
+================================================================================
+4. GRADIENT BOOSTING
+================================================================================
+
+INTUITION:
+    Build trees SEQUENTIALLY. Each tree corrects the errors of the previous.
+
+    ┌──────────┐     ┌──────────┐     ┌──────────┐
+    │ Tree 1   │     │ Tree 2   │     │ Tree 3   │
+    │ (errors) │ →   │ (fixes)  │ →   │ (fixes)  │ → Final
+    └──────────┘     └──────────┘     └──────────┘
+
+ALGORITHM:
+    1. Start with simple prediction (mean for regression, log-odds for classification)
+    2. Compute residuals (errors)
+    3. Fit a small tree to residuals
+    4. Add this tree's prediction (scaled by learning rate) to the ensemble
+    5. Repeat
+
+MATHEMATICS:
+    F₀(x) = initial prediction (e.g., mean of y)
+    Fₘ(x) = Fₘ₋₁(x) + η × hₘ(x)
+
+    where:
+    η = learning rate (shrinkage)
+    hₘ = new tree fitting residuals
+
+IMPLEMENTATION:
+    from sklearn.ensemble import GradientBoostingClassifier
+
+    gb = GradientBoostingClassifier(
+        n_estimators=100,
+        learning_rate=0.1,
+        max_depth=3,
+        subsample=0.8,
+        random_state=42
+    )
+    gb.fit(X_train, y_train)
+
+KEY PARAMETERS:
+    - n_estimators: Number of boosting rounds
+    - learning_rate: Shrinkage (smaller = needs more trees)
+    - max_depth: Depth of each tree (usually 3-8, shallow!)
+    - subsample: Row sampling (like bagging)
+    - min_samples_split/leaf: Regularization
+
+LEARNING RATE TRADEOFF:
+    High LR (0.3): Faster training, may overfit
+    Low LR (0.01): Slower, better generalization, needs more trees
+
+    Rule: When you reduce LR, increase n_estimators proportionally.
+
+================================================================================
+5. ADABOOST
+================================================================================
+
+INTUITION:
+    Assign weights to samples. Misclassified samples get higher weights.
+    Next model focuses on hard examples.
+
+IMPLEMENTATION:
+    from sklearn.ensemble import AdaBoostClassifier
+
+    ada = AdaBoostClassifier(
+        n_estimators=50,
+        learning_rate=1.0,
+        random_state=42
+    )
+    ada.fit(X_train, y_train)
+
+WHEN TO USE:
+    - Quick prototyping
+    - When you want interpretable boosting
+    - NOTE: Gradient Boosting usually outperforms AdaBoost
+
+================================================================================
+6. STACKING
+================================================================================
+
+INTUITION:
+    Train multiple DIFFERENT models. Use their predictions as features
+    for a final "meta-learner."
+
+    ┌──────────┐ ┌──────────┐ ┌──────────┐
+    │ Model 1  │ │ Model 2  │ │ Model 3  │
+    │ (RF)     │ │ (SVM)    │ │ (KNN)    │
+    └────┬─────┘ └────┬─────┘ └────┬─────┘
+         │            │            │
+         └─────┬──────┴──────┬─────┘
+               │             │
+         ┌─────┴─────┐       │
+         │ Meta-Learner│ ←────┘
+         │ (Logistic) │
+         └─────┬─────┘
+               │
+         Final Prediction
+
+IMPLEMENTATION:
+    from sklearn.ensemble import StackingClassifier
+    from sklearn.linear_model import LogisticRegression
+
+    estimators = [
+        ('rf', RandomForestClassifier(n_estimators=100)),
+        ('svm', SVC(probability=True)),
+        ('knn', KNeighborsClassifier())
+    ]
+
+    stacking = StackingClassifier(
+        estimators=estimators,
+        final_estimator=LogisticRegression(),
+        cv=5    # Use cross-validated predictions for meta-features
+    )
+    stacking.fit(X_train, y_train)
+
+PROS:
+    - Combines strengths of different algorithms
+    - Often achieves best performance
+    - Flexible (any combination of models)
+
+CONS:
+    - Complex to implement and debug
+    - Slow to train
+    - Risk of overfitting on small datasets
+
+================================================================================
+7. VOTING
+================================================================================
+
+HARD VOTING (Majority):
+    from sklearn.ensemble import VotingClassifier
+
+    voting = VotingClassifier(
+        estimators=[
+            ('rf', RandomForestClassifier()),
+            ('svm', SVC()),
+            ('knn', KNeighborsClassifier())
+        ],
+        voting='hard'
+    )
+
+SOFT VOTING (Average probabilities):
+    voting = VotingClassifier(
+        estimators=[
+            ('rf', RandomForestClassifier()),
+            ('gb', GradientBoostingClassifier()),
+        ],
+        voting='soft'    # Average predict_proba
+    )
+
+WHEN TO USE:
+    - Quick ensemble of diverse models
+    - When models are very different (diversity helps)
+
+================================================================================
+8. ENSEMBLE COMPARISON
+================================================================================
+
+┌──────────────┬──────────┬──────────┬──────────────┬────────────────┐
+│ Method       │ Strategy │ Reduces  │ Sequential   │ Best For       │
+├──────────────┼──────────┼──────────┼──────────────┼────────────────┤
+│ Bagging      │ Parallel │ Variance │ No           │ Reduce overfit │
+│ Random Forest│ Parallel │ Variance │ No           │ Default choice │
+│ Gradient Boost│Sequential│ Bias    │ Yes          │ Best accuracy  │
+│ AdaBoost     │Sequential│ Bias    │ Yes          │ Quick boosting │
+│ Stacking     │ Meta     │ Both     │ Partially    │ Best performance│
+│ Voting       │ Parallel │ Both     │ No           │ Quick ensemble │
+└──────────────┴──────────┴──────────┴──────────────┴────────────────┘
+
+DECISION GUIDE:
+    - Default: Random Forest (fast, robust)
+    - Best accuracy: Gradient Boosting (XGBoost/LightGBM)
+    - Best performance: Stacking (but complex)
+    - Quick test: Voting
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. How does bagging reduce variance?
+2. What makes Random Forest different from regular bagging?
+3. How does gradient boosting reduce bias?
+4. What is the learning rate tradeoff?
+5. What is stacking and when should you use it?
+
+================================================================================

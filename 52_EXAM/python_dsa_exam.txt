@@ -1,0 +1,234 @@
+# PART A: PYTHON + DSA EXAM
+# Time: 60 minutes | Questions: 30 | Passing: 70%
+
+---
+
+## SECTION 1: PYTHON FUNDAMENTALS (10 Questions)
+
+### Q1. What is the time complexity of the following code?
+```python
+def mystery(n):
+    result = 0
+    for i in range(n):
+        for j in range(i, n):
+            result += 1
+    return result
+```
+A) O(n)  B) O(n²)  C) O(n³)  D) O(n log n)
+
+<details><summary>Answer</summary>B) O(n²) — Sum of (n-i) for i=0 to n-1 = n(n-1)/2 = O(n²)</details>
+
+### Q2. What does the following output?
+```python
+a = [1, 2, 3]
+b = a
+b.append(4)
+print(a)
+```
+A) [1, 2, 3]  B) [1, 2, 3, 4]  C) Error  D) None
+
+<details><summary>Answer</summary>B) [1, 2, 3, 4] — b references the same list as a</details>
+
+### Q3. What is the output?
+```python
+print(2 ** 3 ** 2)
+```
+A) 64  B) 512  C) 36  D) Error
+
+<details><summary>Answer</summary>B) 512 — Right-associative: 3**2=9, then 2**9=512</details>
+
+### Q4. What is a decorator in Python?
+A) A comment  B) A function that modifies another function  C) A class method  D) A variable
+
+<details><summary>Answer</summary>B) A function that takes a function and returns a modified function</details>
+
+### Q5. What is the difference between `is` and `==`?
+A) No difference  B) `is` checks identity, `==` checks equality  C) `is` is faster  D) `==` checks type
+
+<details><summary>Answer</summary>B) `is` checks if two variables point to the same object in memory; `==` checks if values are equal</details>
+
+### Q6. What is the output?
+```python
+x = [1, 2, 3]
+y = [x] * 3
+y[0][0] = 99
+print(x[0])
+```
+A) 1  B) 99  C) Error  D) [99, 2, 3]
+
+<details><summary>Answer</summary>B) 99 — [x]*3 creates 3 references to the same list x</details>
+
+### Q7. What is a generator?
+A) A function that returns a list  B) A function that yields values lazily  C) A class  D) A loop
+
+<details><summary>Answer</summary>B) A function using `yield` that produces values one at a time, saving memory</details>
+
+### Q8. What is the time complexity of Python dict lookup?
+A) O(1) average  B) O(n)  C) O(log n)  D) O(n²)
+
+<details><summary>Answer</summary>A) O(1) average, O(n) worst case due to hash collisions</details>
+
+### Q9. What is `__slots__` used for?
+A) Defining methods  B) Restricting attributes and saving memory  C) Creating constructors  D) Inheritance
+
+<details><summary>Answer</summary>B) `__slots__` prevents dynamic attribute creation and reduces memory usage per instance</details>
+
+### Q10. What is the GIL?
+A) Global Integer Lock  B) Global Interpreter Lock  C) General Interface Layer  D) None of these
+
+<details><summary>Answer</summary>B) Global Interpreter Lock — prevents multiple threads from executing Python bytecode simultaneously</details>
+
+---
+
+## SECTION 2: DATA STRUCTURES (10 Questions)
+
+### Q11. Implement a stack using a Python list. What is the time complexity of push and pop?
+```python
+class Stack:
+    def __init__(self):
+        self.items = []
+    def push(self, item):
+        self.items.append(item)  # O(1) amortized
+    def pop(self):
+        return self.items.pop()  # O(1)
+```
+
+### Q12. What is the time complexity of inserting at the beginning of a Python list?
+A) O(1)  B) O(log n)  C) O(n)  D) O(n²)
+
+<details><summary>Answer</summary>C) O(n) — must shift all elements right</details>
+
+### Q13. Implement BFS on a graph. What data structure does it use?
+```python
+from collections import deque
+def bfs(graph, start):
+    visited = set([start])
+    queue = deque([start])
+    while queue:
+        node = queue.popleft()
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+```
+
+### Q14. What is the time complexity of finding an element in a balanced BST?
+A) O(n)  B) O(log n)  C) O(1)  D) O(n log n)
+
+<details><summary>Answer</summary>B) O(log n) — each comparison eliminates half the remaining nodes</details>
+
+### Q15. What is the difference between a min-heap and a BST?
+A) No difference  B) Min-heap: parent ≤ children; BST: left < root < right  C) BST is faster  D) Heap is sorted
+
+<details><summary>Answer</summary>B) Min-heap ensures min at root but not fully sorted; BST maintains sorted order</details>
+
+### Q16. What is the time complexity of building a heap from an array?
+A) O(n log n)  B) O(n)  C) O(n²)  D) O(log n)
+
+<details><summary>Answer</summary>B) O(n) — not O(n log n) as commonly assumed</details>
+
+### Q17. What collision resolution technique does Python dict use?
+A) Chaining  B) Open addressing (linear probing)  C) Double hashing  D) Robin Hood
+
+<details><summary>Answer</summary>B) Open addressing with perturbation</details>
+
+### Q18. What is the difference between DFS and BFS?
+A) DFS uses queue, BFS uses stack  B) DFS uses stack/recursion, BFS uses queue  C) No difference  D) DFS is faster
+
+<details><summary>Answer</summary>B) DFS: depth-first using stack/recursion. BFS: breadth-first using queue</details>
+
+### Q19. When would you use a trie over a hash map?
+A) Always  B) For prefix searching  C) For exact match only  D) Never
+
+<details><summary>Answer</summary>B) Trie excels at prefix-based operations (autocomplete, prefix matching)</details>
+
+### Q20. What is the time complexity of quicksort in the worst case?
+A) O(n log n)  B) O(n²)  C) O(n)  D) O(log n)
+
+<details><summary>Answer</summary>B) O(n²) — occurs when pivot is always the smallest or largest element</details>
+
+---
+
+## SECTION 3: ALGORITHMS (10 Questions)
+
+### Q21. Implement binary search. What is its time complexity?
+```python
+def binary_search(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == target: return mid
+        elif arr[mid] < target: lo = mid + 1
+        else: hi = mid - 1
+    return -1
+```
+<details><summary>Answer</summary>O(log n) — halves search space each iteration</details>
+
+### Q22. What is the time complexity of Dijkstra's algorithm with a min-heap?
+A) O(V²)  B) O((V+E) log V)  C) O(V log V)  D) O(E²)
+
+<details><summary>Answer</summary>B) O((V+E) log V) with binary heap, O(V²) with array</details>
+
+### Q23. Solve: What is the longest common subsequence of "ABCBDAB" and "BDCAB"?
+A) 3  B) 4  C) 5  D) 2
+
+<details><summary>Answer</summary>B) 4 — "BCAB" is one LCS</details>
+
+### Q24. What is the recurrence relation for merge sort?
+A) T(n) = T(n-1) + O(n)  B) T(n) = 2T(n/2) + O(n)  C) T(n) = T(n/2) + O(1)  D) T(n) = nT(n-1)
+
+<details><summary>Answer</summary>B) T(n) = 2T(n/2) + O(n) → O(n log n) by Master Theorem</details>
+
+### Q25. What is the time complexity of the 0/1 knapsack problem?
+A) O(n)  B) O(n × W)  C) O(2^n)  D) O(n²)
+
+<details><summary>Answer</summary>B) O(n × W) using dynamic programming</details>
+
+### Q26. When does greedy algorithm work for optimization?
+A) Always  B) When problem has optimal substructure and greedy choice property  C) Never  D) Only for sorting
+
+<details><summary>Answer</summary>B) Greedy works when local optimum leads to global optimum</details>
+
+### Q27. What is the space complexity of DFS on a graph with V vertices?
+A) O(V)  B) O(V + E)  C) O(1)  D) O(V²)
+
+<details><summary>Answer</summary>A) O(V) — visited set + recursion stack</details>
+
+### Q28. What is topological sort used for?
+A) Finding shortest path  B) Ordering tasks with dependencies  C) Finding cycles  D) Sorting arrays
+
+<details><summary>Answer</summary>B) Linear ordering of vertices such that all edges go from earlier to later</details>
+
+### Q29. Implement Kadane's algorithm.
+```python
+def max_subarray(nums):
+    max_sum = current = nums[0]
+    for num in nums[1:]:
+        current = max(num, current + num)
+        max_sum = max(max_sum, current)
+    return max_sum
+```
+What is its time and space complexity?
+<details><summary>Answer</summary>O(n) time, O(1) space</details>
+
+### Q30. What is the time complexity of the following?
+```python
+def mystery(n):
+    if n <= 1: return 1
+    return mystery(n-1) + mystery(n-1)
+```
+A) O(n)  B) O(n²)  C) O(2^n)  D) O(log n)
+
+<details><summary>Answer</summary>C) O(2^n) — each call branches into 2 recursive calls</details>
+
+---
+
+## SCORING
+
+| Score | Level |
+|-------|-------|
+| 28-30 | Expert |
+| 24-27 | Advanced |
+| 20-23 | Intermediate |
+| 15-19 | Beginner |
+| <15 | Novice |

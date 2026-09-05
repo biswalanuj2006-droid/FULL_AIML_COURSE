@@ -1,0 +1,185 @@
+================================================================================
+ADVANCED PYTHON: OOP DEEP DIVE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Master inheritance, polymorphism, and multiple inheritance
+- Implement descriptors, metaclasses, and abstract base classes
+- Use dataclasses and slots for performance
+- Understand Python's object model deeply
+
+================================================================================
+1. INHERITANCE DEEP DIVE
+================================================================================
+
+MULTIPLE INHERITANCE & MRO
+----------------------------
+class A:
+    def hello(self): print("A")
+
+class B(A):
+    def hello(self): print("B")
+
+class C(A):
+    def hello(self): print("C")
+
+class D(B, C):  # D inherits from B and C
+    pass
+
+d = D()
+d.hello()  # B — follows C3 linearization (MRO)
+print(D.mro())  # D → B → C → A → object
+
+MRO RULE: Left to right, depth first, no class visited twice.
+
+SOLID PRINCIPLES
+-----------------
+S — Single Responsibility: one class, one job
+O — Open/Closed: open for extension, closed for modification
+L — Liskov Substitution: subtypes must be substitutable for base types
+I — Interface Segregation: many specific interfaces > one general interface
+D — Dependency Inversion: depend on abstractions, not concretions
+
+================================================================================
+2. DESCRIPTORS
+================================================================================
+
+INTUITION
+---------
+Descriptors let you customize attribute access behavior.
+@property is built on descriptors!
+
+class Validated:
+    def __init__(self, min_val=None, max_val=None):
+        self.min_val = min_val
+        self.max_val = max_val
+
+    def __set_name__(self, owner, name):
+        self.name = name
+
+    def __get__(self, obj, objtype=None):
+        if obj is None: return self
+        return getattr(obj, f'_{self.name}', None)
+
+    def __set__(self, obj, value):
+        if self.min_val is not None and value < self.min_val:
+            raise ValueError(f"{self.name} must be >= {self.min_val}")
+        if self.max_val is not None and value > self.max_val:
+            raise ValueError(f"{self.name} must be <= {self.max_val}")
+        setattr(obj, f'_{self.name}', value)
+
+class Student:
+    age = Validated(min_val=0, max_val=150)
+    gpa = Validated(min_val=0.0, max_val=4.0)
+
+    def __init__(self, name, age, gpa):
+        self.name = name
+        self.age = age
+        self.gpa = gpa
+
+s = Student("Alice", 20, 3.8)
+# s.age = -5  → ValueError!
+
+================================================================================
+3. METACLASSES
+================================================================================
+
+INTUITION
+---------
+Metaclasses control how classes are created.
+Type is the default metaclass for all classes.
+
+class SingletonMeta(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+class Database(metaclass=SingletonMeta):
+    def __init__(self):
+        self.connection = "connected"
+
+db1 = Database()
+db2 = Database()
+print(db1 is db2)  # True — same instance!
+
+================================================================================
+4. DATACLASSES
+================================================================================
+
+from dataclasses import dataclass, field
+from typing import List
+
+@dataclass
+class Student:
+    name: str
+    age: int
+    grades: List[float] = field(default_factory=list)
+
+    @property
+    def gpa(self):
+        return sum(self.grades) / len(self.grades) if self.grades else 0.0
+
+    def __post_init__(self):
+        if self.age < 0:
+            raise ValueError("Age cannot be negative")
+
+s = Student("Alice", 20, [3.5, 3.8, 4.0])
+print(s)  # Student(name='Alice', age=20, grades=[3.5, 3.8, 4.0])
+
+SLOTS (Memory Optimization)
+-----------------------------
+@dataclass(slots=True)  # Python 3.10+
+class Point:
+    x: float
+    y: float
+
+# Uses ~40% less memory than regular classes
+
+================================================================================
+5. ABSTRACT BASE CLASSES
+================================================================================
+
+from abc import ABC, abstractmethod
+
+class Shape(ABC):
+    @abstractmethod
+    def area(self) -> float: pass
+
+    @abstractmethod
+    def perimeter(self) -> float: pass
+
+    def describe(self):
+        return f"Area: {self.area():.2f}, Perimeter: {self.perimeter():.2f}"
+
+class Circle(Shape):
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        return 3.14159 * self.radius ** 2
+
+    def perimeter(self):
+        return 2 * 3.14159 * self.radius
+
+# shape = Shape()  # TypeError: Can't instantiate abstract class
+
+================================================================================
+6. COMMON MISTAKES
+================================================================================
+
+1. Using mutable default arguments:
+   WRONG: def f(x, items=[]):
+   RIGHT: def f(x, items=None): items = items or []
+
+2. Not using __slots__ for memory-heavy classes
+3. Deep inheritance chains (prefer composition)
+4. Forgetting __repr__ and __str__
+5. Not implementing __eq__ and __hash__ for custom objects
+
+================================================================================
+END OF MODULE
+================================================================================

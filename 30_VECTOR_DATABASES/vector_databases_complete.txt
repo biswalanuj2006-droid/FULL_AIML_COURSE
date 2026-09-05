@@ -1,0 +1,268 @@
+================================================================================
+MODULE 30: VECTOR DATABASES — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand what vector databases are and why they exist
+- Compare FAISS, Chroma, Qdrant, Weaviate, and pgvector
+- Implement vector search operations
+- Choose the right vector database for your use case
+- Optimize vector search performance
+
+================================================================================
+1. WHAT ARE VECTOR DATABASES?
+================================================================================
+
+INTUITION
+---------
+Traditional databases search by exact match (SQL WHERE name = 'John').
+Vector databases search by SEMANTIC SIMILARITY (find documents similar
+to this concept).
+
+"Find documents about machine learning" → finds docs about
+"deep learning", "neural networks", "AI" (even without exact match)
+
+KEY OPERATIONS
+--------------
+1. INSERT: Store vectors with metadata
+2. SEARCH: Find K most similar vectors to a query
+3. FILTER: Search within a subset (by metadata)
+4. UPDATE: Modify vectors or metadata
+5. DELETE: Remove vectors
+
+================================================================================
+2. VECTOR INDEX TYPES
+================================================================================
+
+FLAT (EXHAUSTIVE SEARCH)
+-------------------------
+Compare query against ALL vectors.
+Guaranteed correct, but slow for large datasets.
+
+IVF (INVERTED FILE INDEX)
+--------------------------
+Partition vectors into clusters (Voronoi cells).
+At search time, only search nearest clusters.
+Faster, slight accuracy loss.
+
+HNSW (HIERARCHICAL NAVIGABLE SMALL WORLD)
+------------------------------------------
+Build a graph where similar vectors are connected.
+Navigate the graph to find nearest neighbors.
+Fast and accurate, higher memory usage.
+
+PRODUCT QUANTIZATION (PQ)
+--------------------------
+Compress vectors to reduce memory.
+Useful when dataset is very large and memory is limited.
+
+================================================================================
+3. FAISS (Facebook AI Similarity Search)
+================================================================================
+
+PROS: Fastest, supports GPU, battle-tested
+CONS: No metadata filtering, standalone library (no built-in DB features)
+
+import faiss
+import numpy as np
+
+# Create index
+dimension = 384
+index = faiss.IndexFlatL2(dimension)  # brute force, exact search
+
+# Add vectors (must be float32)
+vectors = np.random.random((10000, dimension)).astype('float32')
+index.add(vectors)
+
+# Search
+query = np.random.random((1, dimension)).astype('float32')
+distances, indices = index.search(query, k=5)
+print(f"Indices: {indices[0]}")
+print(f"Distances: {distances[0]}")
+
+# IVF index (faster for large datasets)
+nlist = 100  # number of clusters
+quantizer = faiss.IndexFlatL2(dimension)
+index = faiss.IndexIVFFlat(quantizer, dimension, nlist)
+index.train(vectors)  # need to train IVF index
+index.add(vectors)
+
+# HNSW index (fast and accurate)
+index = faiss.IndexHNSWFlat(dimension, 32)  # 32 = HNSW parameter
+index.add(vectors)
+
+# GPU acceleration
+res = faiss.StandardGpuResources()
+index_gpu = faiss.index_cpu_to_gpu(res, 0, index)
+
+================================================================================
+4. CHROMA
+================================================================================
+
+PROS: Simple API, built-in embedding, metadata filtering
+CONS: Slower than FAISS for very large datasets
+
+import chromadb
+from sentence_transformers import SentenceTransformer
+
+# Create client (persistent)
+client = chromadb.PersistentClient(path="./chroma_db")
+
+# Create collection with embedding function
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+def embedding_function(texts):
+    return model.encode(texts).tolist()
+
+collection = client.create_collection(
+    name="documents",
+    embedding_function=embedding_function
+)
+
+# Add documents
+collection.add(
+    documents=["Document 1", "Document 2", "Document 3"],
+    metadatas=[
+        {"source": "website", "category": "tech"},
+        {"source": "pdf", "category": "science"},
+        {"source": "wiki", "category": "tech"}
+    ],
+    ids=["doc1", "doc2", "doc3"]
+)
+
+# Search
+results = collection.query(
+    query_texts=["artificial intelligence"],
+    n_results=2
+)
+
+# Search with metadata filter
+results = collection.query(
+    query_texts=["artificial intelligence"],
+    n_results=2,
+    where={"category": "tech"}
+)
+
+================================================================================
+5. QDRANT
+================================================================================
+
+PROS: Production-ready, metadata filtering, scalability
+CONS: Requires running server
+
+from qdrant_client import QdrantClient
+from qdrant_client.models import (VectorParams, Distance, PointStruct,
+                                    Filter, FieldCondition, MatchValue)
+
+# Connect
+client = QdrantClient(":memory:")  # or URL for server
+
+# Create collection
+client.create_collection(
+    collection_name="documents",
+    vectors_config=VectorParams(size=384, distance=Distance.COSINE)
+)
+
+# Insert points
+client.upsert(
+    collection_name="documents",
+    points=[
+        PointStruct(id=1, vector=embedding1.tolist(),
+                    payload={"text": "Doc 1", "source": "web"}),
+        PointStruct(id=2, vector=embedding2.tolist(),
+                    payload={"text": "Doc 2", "source": "pdf"}),
+    ]
+)
+
+# Search
+results = client.search(
+    collection_name="documents",
+    query_vector=query_embedding.tolist(),
+    limit=5
+)
+
+# Search with filter
+from qdrant_client.models import Filter, FieldCondition, MatchValue
+
+results = client.search(
+    collection_name="documents",
+    query_vector=query_embedding.tolist(),
+    query_filter=Filter(must=[
+        FieldCondition(key="source", match=MatchValue(value="web"))
+    ]),
+    limit=5
+)
+
+================================================================================
+6. PINECONE / WEAVIATE / OTHERS
+================================================================================
+
+PINECONE: Managed cloud vector database, easy to use
+WEAVIATE: Open-source, supports hybrid search
+MILVUS: Open-source, distributed, GPU support
+SUPABASE + PGVECTOR: PostgreSQL extension for vectors
+
+================================================================================
+7. COMPARISON TABLE
+================================================================================
+
+| DATABASE    | TYPE     | SCALABILITY | METADATA | EASE  | COST     |
+|-------------|----------|-------------|----------|-------|----------|
+| FAISS       | Library  | High (GPU)  | No       | Medium| Free     |
+| Chroma      | Embedded | Medium      | Yes      | Easy  | Free     |
+| Qdrant      | Server   | High        | Yes      | Medium| Free/Paid|
+| Weaviate    | Server   | High        | Yes      | Medium| Free/Paid|
+| Pinecone    | Cloud    | Very High   | Yes      | Easy  | Paid     |
+| pgvector    | Extension| Medium      | Yes      | Easy  | Free     |
+| Milvus      | Server   | Very High   | Yes      | Medium| Free     |
+
+CHOOSING GUIDE
+--------------
+Learning/Prototyping: Chroma (simplest)
+Production (small): pgvector (if already using PostgreSQL)
+Production (medium): Qdrant (balanced)
+Production (large-scale): FAISS + custom, or Pinecone/Milvus
+
+================================================================================
+8. PERFORMANCE OPTIMIZATION
+================================================================================
+
+1. CHUNK SIZE MATTERS
+   - Smaller chunks → more precise retrieval
+   - Larger chunks → more context per retrieval
+
+2. EMBEDDING MODEL SELECTION
+   - all-MiniLM-L6-v2: fast, 384 dimensions
+   - text-embedding-3-small: OpenAI, 1536 dimensions
+   - BGE-large: high quality, 1024 dimensions
+
+3. INDEX TYPE
+   - Flat: exact, slow for > 100K vectors
+   - IVF: good balance for > 100K
+   - HNSW: best quality/speed tradeoff
+   - PQ: when memory is limited
+
+4. METADATA FILTERING
+   - Filter before vector search (reduces search space)
+   - Use structured filters for categorical attributes
+
+5. BATCH OPERATIONS
+   - Insert documents in batches, not one-by-one
+   - Batch size: 100-1000 depending on document size
+
+================================================================================
+9. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What makes vector databases different from traditional databases?
+Q2: What is HNSW and why is it popular?
+Q3: When would you use Chroma vs Qdrant vs FAISS?
+Q4: How does metadata filtering improve retrieval?
+Q5: What is the trade-off between index types (Flat vs IVF vs HNSW)?
+Q6: How do you choose the right embedding model?
+
+================================================================================
+END OF MODULE 30: VECTOR DATABASES
+================================================================================

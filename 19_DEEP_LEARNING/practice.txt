@@ -1,0 +1,72 @@
+================================================================================
+DEEP LEARNING MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (15 Questions)
+================================
+Q1: What is the difference between shallow and deep learning?
+Q2: What is a computational graph?
+Q3: What is the chain rule and how is it used in backpropagation?
+Q4: What is gradient descent and its variants?
+Q5: What is batch normalization?
+Q6: What is dropout and why does it work?
+Q7: What is weight initialization and why does it matter?
+Q8: What is the difference between epoch, batch, and iteration?
+Q9: What is learning rate scheduling?
+Q10: What is early stopping?
+Q11: What is transfer learning?
+Q12: What is fine-tuning vs feature extraction?
+Q13: What is mixed precision training?
+Q14: What is gradient accumulation?
+Q15: What is data parallelism?
+
+SECTION B — MEDIUM (15 Questions)
+==================================
+Q16: Implement a deep MLP with batch norm in PyTorch.
+Q17: Implement learning rate scheduling (cosine annealing).
+Q18: Build an image classifier with transfer learning.
+Q19: Implement custom training loop with gradient clipping.
+Q20: Compare different weight initialization methods.
+Q21: Implement early stopping with model checkpointing.
+Q22: Build a deep network and analyze overfitting.
+Q23: Implement label smoothing loss.
+Q24: Compare Adam vs SGD on the same problem.
+Q25: Implement mixed precision training concept.
+Q26: Build a model with residual connections.
+Q27: Implement a learning rate finder.
+Q28: Compare different regularization techniques.
+Q29: Build a deep learning model with data augmentation.
+Q30: Implement model ensembling in deep learning.
+
+SECTION C — HARD (8 Questions)
+================================
+Q31: Implement distributed training concept.
+Q32: Build a deep learning model with custom architecture search.
+Q33: Implement knowledge distillation.
+Q34: Build a production deep learning pipeline.
+Q35: Implement gradient accumulation for large batch simulation.
+Q36: Build a model with mixed precision and gradient clipping.
+Q37: Implement a deep learning experiment tracking system.
+Q38: Build a deep learning model with multiple input modalities.
+
+SECTION D — DEBUGGING (6 Problems)
+====================================
+D1: Why is my deep network not learning?
+D2: Fix: Vanishing gradients in deep network.
+D3: Why is training loss decreasing but validation loss increasing?
+D4: Fix: Model predictions are all the same class.
+D5: Why is training NaN after a few epochs?
+D6: Fix: GPU memory keeps growing during training.
+
+SECTION E — INTERVIEW (8 Questions)
+=====================================
+I1: Explain backpropagation mathematically.
+I2: What is the vanishing gradient problem and solutions?
+I3: How does batch normalization help training?
+I4: Compare different optimization algorithms.
+I5: When would you use transfer learning vs training from scratch?
+I6: How do you debug a neural network that isn't learning?
+I7: What are the trade-offs of different regularization methods?
+I8: How do you choose a deep learning architecture?
+
+================================================================================

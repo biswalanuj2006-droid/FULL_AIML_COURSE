@@ -1,0 +1,177 @@
+================================================================================
+ULTRA-DEEP RAG COURSE  -  PROJECT.txt
+================================================================================
+Every project must be delivered with: problem statement, architecture,
+data, technologies, folder structure, implementation stages, testing,
+evaluation numbers, failure analysis, security notes, README, resume
+bullet, and interview questions. Ladder: E -> D -> C -> B -> A -> S -> S+.
+
+================================================================================
+PROJECT E - NUMPY RAG FROM SCRATCH (NO FRAMEWORKS, NO DOWNLOADS)
+================================================================================
+Objective: prove you understand every RAG stage by building it by hand.
+Build:
+  1. Load a small corpus (10-30 docs you write or collect - public
+     domain only).
+  2. Clean + chunk (recursive splitter, ~150-300 tokens, overlap).
+  3. Dense embeddings trained IN-FILE: co-occurrence matrix -> PPMI ->
+     truncated SVD (see EXAMPLE.py S3-S4). This is a real embedding,
+     not a stub.
+  4. Cosine search over the embedding matrix (numpy).
+  5. BM25 baseline (implement the formula; see S6).
+  6. Prompt builder with numbered evidence + abstain rule + stub
+     generator that selects sentences from the top chunk.
+Deliverables:
+  - hit@k comparison: dense vs BM25 vs hybrid on 10 labeled queries.
+  - A query where each system fails and why.
+  - Architecture diagram + README.
+Resume bullet: "Built a retrieval-augmented generation pipeline from
+scratch (NumPy PPMI-SVD embeddings + BM25 + hybrid fusion), beating
+lexical search on paraphrase queries."
+Interview prep: be ready to derive BM25 and explain why SVD embeddings
+capture semantics.
+
+================================================================================
+PROJECT D - CHUNKER + EMBEDDER + INDEX SERVICE
+================================================================================
+Objective: engineering-grade ingestion.
+Build:
+  1. A document model (doc_id, title, meta, sections) and parsers for
+     2 formats (markdown + HTML) with cleaning + normalization.
+  2. A chunker library: recursive splitter + structure-aware mode with
+     overlap; token-size measured by a real tokenizer; unit tests on
+     adversarial inputs.
+  3. An embedder abstraction with two backends: the in-file SVD
+     embedder and (when available offline) a cached HF model.
+  4. Index with metadata (tenant, date, section path, hash) and
+     idempotent ingestion (content-hash manifest).
+Tests: chunker determinism, idempotent re-ingest (no duplicates),
+embedder-version tag in index metadata.
+Deliverables: chunking quality report (where boundaries break),
+README, test suite.
+
+================================================================================
+PROJECT C - HYBRID RETRIEVAL + TWO-STAGE FUNNEL
+================================================================================
+Objective: build the retrieval core properly.
+Build:
+  1. BM25 from scratch + dense cosine + RRF fusion (weights/dedup).
+  2. Query rewriting: expand identifiers, decompress conversational
+     references (deterministic first, LLM stub second).
+  3. Rerank stage: start with the overlap-feature stand-in (S8), then
+     plug in a real cross-encoder if one is available offline.
+  4. Latency instrumentation per stage.
+Eval (on a labeled set you create): hit@5 / MRR for dense, BM25,
+hybrid, hybrid+rerank; latency budget p95 < 300ms per stage.
+Deliverables: the ablation table (which stage adds what), a query
+class-by-class breakdown (identifiers vs paraphrases vs multi-hop).
+
+================================================================================
+PROJECT B - ADVANCED RAG (PARENT-CHILD + REWRITE + GRADE-RETRY)
+================================================================================
+Objective: add the high-leverage advanced stages, each justified by
+measurement.
+Build:
+  1. Parent-child indexing: small search units, parent sections as
+     context; dedupe parents on retrieval.
+  2. Multi-query + HyDE (LLM stub -> real model when available).
+  3. Grade-retry loop: relevance grader on retrieved chunks; retry
+     with rewritten query when nothing passes; abstain after 2 tries.
+Ablate every stage on the eval: naive vs +parent-child vs +rewrite vs
++grade-retry. Show the eval rows where each stage helps and where it
+hurts.
+Deliverables: ablation report + per-query traces for 3 failures.
+
+================================================================================
+PROJECT A - RAG EVALUATION HARNESS (THE GATE)
+================================================================================
+Objective: evaluation as a product.
+Build:
+  1. qrels format + loader; hit@k/recall@k/precision@k/MRR/NDCG from
+     scratch (unit-tested).
+  2. Generation metrics: claim extraction + groundedness check
+     (overlap stand-in -> NLI/LLM judge when available) with a rubric.
+  3. Eval set builder: paraphrase/identifier/multi-hop/abstain/
+     adversarial classes.
+  4. A runner that executes any pipeline config and prints a
+     before/after diff table; wire as a CI gate.
+Deliverables: the harness, a documented eval set, and a regression
+report showing it caught a real change (e.g. chunker edit).
+Interview: 'How do you know a RAG change is an improvement?' - you now
+answer with the harness.
+
+================================================================================
+PROJECT S - PRODUCTION RAG SERVER
+================================================================================
+Objective: the serving layer (see genai_agents_course/
+rag_agent_server_prod.py as the reference build).
+Build (FastAPI):
+  - Auth (API keys/roles) + per-key token-bucket rate limits + quotas
+    (401/403/429/402 paths exercised through TestClient).
+  - Query lane: rewrite -> retrieve (tenant-filtered) -> rerank ->
+    prompt (numbered evidence + abstain) -> generate (stub offline;
+    provider adapter online) -> citation check.
+  - Response cache with TTL + LRU AND versioned keys (index version +
+    model) + invalidation on doc update; tenant-isolated cache.
+  - SQL request log (SQLite, PostgreSQL-compatible SQL) with per-user
+    usage reports.
+  - Ingestion API: upload -> validate (type/size/sanitize) -> parse ->
+    chunk -> embed -> index; idempotent.
+  - Health/ready endpoints, structured logging, metrics (p95 per
+    stage, abstain rate, cache hit).
+Security tests: tenant isolation (B never retrieves A), injection
+suite, upload sanitization, cache isolation.
+Deliverables: runbook, the numbers (latency p95, cache hit rate,
+abstain rate on a traffic replay), security test report.
+
+================================================================================
+PROJECT S+ - ENTERPRISE RAG PLATFORM (CAPSTONE)
+================================================================================
+Architecture:
+    USER
+      |
+   API GATEWAY (auth/RBAC, rate limits, quotas)
+      |
+   FASTAPI  (query lane + ingestion lane)
+      |            |
+   RAG BRAIN    INGEST PIPELINE
+   rewrite/       parse -> clean -> chunk
+   retrieve/      -> embed -> index
+   rerank/
+   prompt/
+   generate
+      |
+   VECTOR STORE (tenant-partitioned) + PostgreSQL (meta + logs)
+      + Redis (cache + quotas) + eval/observability stack
+Requirements (each is a deliverable):
+  1. Multi-tenant isolation: index partitions, cache, logs, quotas -
+     with an isolation test suite as proof.
+  2. Ingestion: idempotent, incremental, content-hash manifest,
+     index/model versioning with rollback.
+  3. Freshness: doc update propagates to index AND invalidates cache;
+     tested end to end.
+  4. Abstain + verification: no empty-context answers; per-claim
+     citation check; fabricated citations == failed CI.
+  5. Eval: retrieval + generation metrics per tenant on a labeled set;
+     every change regression-gated.
+  6. Security: injection suite, upload sanitization, RBAC at retrieval,
+     audit log of queries + citations, secret scanning.
+  7. Ops: p95 per stage, cost per tenant, drift alerts (retrieval
+     score, abstain rate, query topics), runbooks, rollback drills.
+Deliverables: architecture doc + tech decisions with rationale; the
+numbers (eval before/after each stage, latency, cost); failure
+analysis of 3 real failing query classes; security report; README;
+resume bullets; system-design interview answers.
+Exit criteria (GATE 4 of COURSE.txt): the security suite passes, cache
+invalidation is proven, and the abstain path is exercised in tests.
+
+================================================================================
+PROJECT CHECKLIST (every project)
+  [ ] Problem + objective   [ ] Architecture diagram
+  [ ] Dataset + source      [ ] Prereqs + tech
+  [ ] Folder structure      [ ] Implementation stages
+  [ ] Tests                 [ ] Evaluation numbers (before/after)
+  [ ] Failure analysis      [ ] Security notes
+  [ ] README                [ ] Resume bullets
+  [ ] Interview questions   [ ] Possible extensions
+END OF PROJECT.txt

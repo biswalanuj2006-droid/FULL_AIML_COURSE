@@ -1,0 +1,105 @@
+================================================================================
+MODULE 03 — PANDAS
+LESSON 06: MERGE, JOIN, AND CONCATENATION
+================================================================================
+
+## What You Will Learn
+- Merge (SQL-style joins)
+- Concatenation (stacking DataFrames)
+- Join (index-based)
+- Common merge patterns
+
+================================================================================
+1. MERGE
+================================================================================
+
+    # Sample DataFrames
+    customers = pd.DataFrame({
+        "customer_id": [1, 2, 3, 4],
+        "name": ["Alice", "Bob", "Charlie", "Diana"]
+    })
+
+    orders = pd.DataFrame({
+        "customer_id": [2, 3, 3, 5],
+        "product": ["A", "B", "A", "C"],
+        "amount": [100, 200, 150, 300]
+    })
+
+    INNER JOIN (only matching rows):
+    pd.merge(customers, orders, on="customer_id", how="inner")
+
+    LEFT JOIN (all from left):
+    pd.merge(customers, orders, on="customer_id", how="left")
+
+    RIGHT JOIN (all from right):
+    pd.merge(customers, orders, on="customer_id", how="right")
+
+    OUTER JOIN (all from both):
+    pd.merge(customers, orders, on="customer_id", how="outer")
+
+    MERGE ON DIFFERENT COLUMN NAMES:
+    pd.merge(df1, df2, left_on="emp_id", right_on="employee_id")
+
+    MERGE ON INDEX:
+    pd.merge(df1, df2, left_index=True, right_index=True)
+
+================================================================================
+2. CONCATENATION
+================================================================================
+
+    # Stack DataFrames vertically (same columns)
+    pd.concat([df1, df2], ignore_index=True)
+
+    # Stack horizontally (same rows)
+    pd.concat([df1, df2], axis=1)
+
+    # With keys (track source)
+    pd.concat([df1, df2], keys=["train", "test"])
+
+ML USE:
+    # Combine train and test for preprocessing
+    df_all = pd.concat([train_df, test_df], ignore_index=True)
+    # Preprocess...
+    train_df = df_all.iloc[:len(train_df)]
+    test_df = df_all.iloc[len(train_df):]
+
+================================================================================
+3. JOIN
+================================================================================
+
+    # Join on index
+    df1.join(df2)
+
+    # Similar to merge but uses index by default
+
+================================================================================
+PRACTICAL ML PATTERNS
+================================================================================
+
+MERGE FEATURES WITH TARGET:
+    features_df = pd.DataFrame({
+        "user_id": [1, 2, 3],
+        "feature_1": [0.5, 0.7, 0.3]
+    })
+    labels_df = pd.DataFrame({
+        "user_id": [1, 2, 3],
+        "target": [0, 1, 0]
+    })
+    df = pd.merge(features_df, labels_df, on="user_id")
+
+MULTIPLE TABLE MERGE:
+    df = (pd.merge(users, orders, on="user_id")
+          .merge(products, on="product_id")
+          .merge(reviews, on="order_id"))
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between merge and concat?
+2. What is the difference between inner and outer join?
+3. When would you use left join?
+
+================================================================================
+NEXT LESSON: 07_advanced_operations.txt
+================================================================================

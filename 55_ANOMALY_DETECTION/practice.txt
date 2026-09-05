@@ -1,0 +1,78 @@
+================================================================================
+PRACTICE - 11 ANOMALY DETECTION
+================================================================================
+
+CONCEPTUAL (2-3 sentences each)
+ 1. Why is anomaly detection usually unsupervised even when fraud labels
+    exist for a small past window?
+ 2. Point vs contextual vs collective anomaly: give one example of each
+    from server monitoring.
+ 3. What is "masking" and which methods resist it?
+ 4. Why does Isolation Forest not need to model the normal distribution?
+ 5. What does the LOF > 1 mean in words?
+ 6. Why is contamination a guess, and what happens if you set it too
+    high vs too low?
+ 7. When would you pick a supervised classifier over anomaly detection?
+ 8. Why must features be scaled before distance/density methods but it
+    matters less for tree-based IF?
+
+NUMERICAL
+ 9. Data [5, 6, 5, 7, 6, 60]: compute plain z-score of 60 and the
+    robust z (MAD) of 60. Show masking.
+10. Boxplot rule: Q1=4, Q3=10. Which values are flagged?
+11. Mahalanobis: x=(0,0), mu=(1,1), Sigma=[[2,0],[0,2]]. Compute D^2 by
+    hand.
+12. IF anomaly score: E[h(x)] = 3 for n=256. c(256) = 2*ln(255)+1.1544-
+    2*255/256 ~ 10.4. Compute s(x) = 2^(-3/10.4) and interpret.
+13. A normal point has E[h(x)] = c(n). What is s(x)? Show the math.
+
+CODE (write and run)
+14. Implement robust z-score with NumPy (median + MAD, 0.6745 factor)
+    and compare flags vs plain z-score on the Q9 data.
+15. Build a kNN-distance anomaly scorer (mean distance to k neighbors)
+    and rank the top-5 on a 2D blob + 3 injected outliers.
+16. Implement a MINI Isolation Forest: 50 random trees, average path
+    length, compute s(x). Rank points and compare Spearman rank
+    correlation with sklearn IsolationForest's decision_function.
+17. On sklearn's make_blobs (2-3 blobs) compare: EllipticEnvelope,
+    LOF, IsolationForest, OneClassSVM. Report each one's top-10 flagged
+    points and overlay on a scatter.
+18. Multimodal data (2 well-separated blobs): show why a single Gaussian
+    (Elliptic Envelope) flags the FAR blob's normal edge points, while
+    LOF/GMM do not. This is the multimodal lesson.
+19. Autoencoder (Keras): reconstruct normal data; flag by MSE; show the
+    error distribution and threshold at p99 on a clean set.
+20. Time series (generate yearly + weekly seasonality + noise): flag
+    anomalies with rolling z-score BEFORE vs AFTER deseasonalizing
+    (simple: subtract weekly means). Compare false alarm counts.
+
+DEBUGGING (find the bug)
+21. z-score flags nothing on [1..10, 1000] - explain and fix.
+22. IsolationForest predicts -1 for ~half the data although
+    contamination=0.01 - what parameter/API mistake?
+23. LOF on data with units in millions vs thousandths flags everything -
+    what is the fix and where does it belong in a pipeline?
+24. Autoencoder reconstruction error is ~0 for EVERYTHING including
+    injected outliers - what did training do wrong?
+25. Anomaly scores are stable across runs but the flagged ID set changes
+    completely - what is happening and which scores do you trust?
+
+CHALLENGES
+26. Build an unsupervised detector and evaluate honestly: 100 labeled
+    audit rows only for threshold + PR-AUC - no detector training on
+    labels. Write the evaluation protocol as a function.
+27. Compare IF, LOF, EE on high-dim data (100 features, 50 informative):
+    which degrades and why? Use synthetic + report AUROC on synthetic
+    labels.
+28. Fraud-style data (sklearn make_classification with 0.5% positives):
+    treat positives as anomalies; rank by each detector; report
+    precision@k for k = expected positives. Which detector wins?
+
+REAL-WORLD SCENARIO
+29. A NOC wants alerts for a fleet of 5,000 servers, 200 metrics each.
+    Walk through: data shape, scaling, method choice, threshold, alert
+    volume control, and how you avoid alert fatigue. What metrics would
+    you watch to know the detector is still working after 6 months?
+================================================================================
+END
+================================================================================

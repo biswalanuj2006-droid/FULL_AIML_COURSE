@@ -1,0 +1,129 @@
+================================================================================
+PYTORCH CHEAT SHEET
+================================================================================
+
+TENSORS
+-------
+import torch
+x = torch.tensor([1, 2, 3])
+x = torch.zeros(3, 4)
+x = torch.ones(3, 4)
+x = torch.randn(3, 4)
+x = torch.rand(3, 4)
+
+OPERATIONS
+----------
+x + y, x * y, x @ y      # element-wise, matmul
+x.sum(), x.mean()         # aggregation
+x.view(2, 3)              # reshape
+x.T                        # transpose
+x.unsqueeze(0)            # add dimension
+x.squeeze()               # remove dimension
+
+GPU
+---
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+x = x.to(device)
+model = model.to(device)
+
+DATASET & DATALOADER
+---------------------
+from torch.utils.data import Dataset, DataLoader
+
+class MyDataset(Dataset):
+    def __init__(self, X, y):
+        self.X = torch.FloatTensor(X)
+        self.y = torch.FloatTensor(y)
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, idx):
+        return self.X[idx], self.y[idx]
+
+dataset = MyDataset(X_train, y_train)
+loader = DataLoader(dataset, batch_size=32, shuffle=True)
+
+NEURAL NETWORK
+--------------
+import torch.nn as nn
+
+class MyModel(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Linear(input_size, hidden_size),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(hidden_size, output_size)
+        )
+
+    def forward(self, x):
+        return self.network(x)
+
+LOSS & OPTIMIZER
+-----------------
+criterion = nn.CrossEntropyLoss()    # classification
+criterion = nn.MSELoss()             # regression
+criterion = nn.BCELoss()             # binary classification
+
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+
+TRAINING LOOP
+--------------
+for epoch in range(num_epochs):
+    model.train()
+    for batch_X, batch_y in loader:
+        batch_X, batch_y = batch_X.to(device), batch_y.to(device)
+
+        # Forward
+        outputs = model(batch_X)
+        loss = criterion(outputs, batch_y)
+
+        # Backward
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    # Validation
+    model.eval()
+    with torch.no_grad():
+        val_loss = 0
+        for batch_X, batch_y in val_loader:
+            outputs = model(batch_X)
+            val_loss += criterion(outputs, batch_y).item()
+
+SAVE & LOAD
+------------
+torch.save(model.state_dict(), 'model.pth')
+model.load_state_dict(torch.load('model.pth'))
+
+CNN
+---
+nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding)
+nn.MaxPool2d(kernel_size, stride)
+nn.AdaptiveAvgPool2d(output_size)
+
+RNN / LSTM
+----------
+nn.RNN(input_size, hidden_size, batch_first=True)
+nn.LSTM(input_size, hidden_size, batch_first=True, bidirectional=True)
+nn.GRU(input_size, hidden_size, batch_first=True)
+
+TRANSFORMER
+-----------
+nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)
+nn.TransformerEncoderLayer(d_model, nhead, batch_first=True)
+nn.TransformerEncoder(encoder_layer, num_layers)
+
+GRADIENT CLIPPING
+------------------
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
+LEARNING RATE SCHEDULER
+------------------------
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
+scheduler.step(val_loss)
+
+================================================================================

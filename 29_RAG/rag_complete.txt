@@ -1,0 +1,358 @@
+================================================================================
+MODULE 29: RETRIEVAL-AUGMENTED GENERATION (RAG) — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand the RAG pipeline end-to-end
+- Load, chunk, embed, and index documents
+- Build retrieval systems with vector databases
+- Construct effective RAG prompts
+- Evaluate and improve RAG systems
+- Handle common RAG failure modes
+
+================================================================================
+1. WHAT IS RAG?
+================================================================================
+
+INTUITION
+---------
+RAG = Retrieval-Augmented Generation
+
+Instead of relying solely on the LLM's training data:
+1. RETRIEVE relevant documents from a knowledge base
+2. AUGMENT the prompt with those documents
+3. GENERATE an answer based on the retrieved context
+
+Like a student who can look up answers in a textbook
+during an exam — much more accurate than memory alone!
+
+THE RAG PIPELINE
+----------------
+Documents → Load → Clean → Chunk → Embed → Store in Vector DB
+                                                         ↓
+User Query → Embed → Search Vector DB → Retrieve Top-K Documents
+                                                         ↓
+                      Construct Prompt: "Answer based on: [docs]"
+                                                         ↓
+                                        LLM → Generated Answer
+                                                         ↓
+                                        Return answer + sources
+
+================================================================================
+2. DOCUMENT LOADING
+================================================================================
+
+PDF DOCUMENTS
+-------------
+from langchain_community.document_loaders import PyPDFLoader
+
+loader = PyPDFLoader("document.pdf")
+documents = loader.load()
+print(f"Loaded {len(documents)} pages")
+
+WEB PAGES
+---------
+from langchain_community.document_loaders import WebBaseLoader
+
+loader = WebBaseLoader("https://example.com/article")
+documents = loader.load()
+
+TEXT FILES
+----------
+from langchain_community.document_loaders import TextLoader
+
+loader = TextLoader("document.txt")
+documents = loader.load()
+
+DIRECTORY LOADER
+----------------
+from langchain_community.document_loaders import DirectoryLoader
+
+loader = DirectoryLoader("./docs", glob="**/*.pdf", loader_cls=PyPDFLoader)
+documents = loader.load()
+
+================================================================================
+3. DOCUMENT CHUNKING
+================================================================================
+
+WHY CHUNK?
+----------
+- LLMs have context window limits
+- Smaller chunks → more precise retrieval
+- Too small → loses context
+
+CHUNKING STRATEGIES
+-------------------
+
+3.1 FIXED-SIZE CHUNKING
+------------------------
+from langchain.text_splitter import CharacterTextSplitter
+
+splitter = CharacterTextSplitter(
+    chunk_size=1000,
+    chunk_overlap=200,
+    separator="\n"
+)
+chunks = splitter.split_documents(documents)
+
+3.2 RECURSIVE CHARACTER SPLITTING
+----------------------------------
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1000,
+    chunk_overlap=200,
+    separators=["\n\n", "\n", ". ", " ", ""]
+)
+chunks = splitter.split_documents(documents)
+
+3.3 SEMANTIC CHUNKING
+----------------------
+Split based on meaning rather than fixed size.
+
+3.4 STRUCTURED CHUNKING
+------------------------
+Split by sections, paragraphs, or headings.
+
+CHUNK SIZE GUIDELINES
+---------------------
+- 256-512 tokens: good for most use cases
+- 100-200 tokens: for precise Q&A
+- 1000-2000 tokens: for summarization
+- Always include overlap (10-20%) to maintain context
+
+================================================================================
+4. EMBEDDINGS
+================================================================================
+
+INTUITION
+---------
+Convert text into numerical vectors that capture semantic meaning.
+Similar texts get similar vectors.
+
+USING SENTENCE TRANSFORMERS
+-----------------------------
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+# Embed documents
+texts = [doc.page_content for doc in chunks]
+embeddings = model.encode(texts)
+print(embeddings.shape)  # (num_chunks, 384)
+
+# Embed query
+query = "What is machine learning?"
+query_embedding = model.encode([query])
+
+USING OPENAI EMBEDDINGS
+------------------------
+from openai import OpenAI
+
+client = OpenAI(api_key="your-key")
+
+response = client.embeddings.create(
+    input="What is machine learning?",
+    model="text-embedding-ada-002"
+)
+embedding = response.data[0].embedding
+
+================================================================================
+5. VECTOR DATABASES
+================================================================================
+
+5.1 CHROMA (Simple, Local)
+----------------------------
+import chromadb
+
+# Create collection
+client = chromadb.Client()
+collection = client.create_collection("my_documents")
+
+# Add documents
+collection.add(
+    documents=["Document 1 text", "Document 2 text"],
+    metadatas=[{"source": "doc1"}, {"source": "doc2"}],
+    ids=["doc1", "doc2"]
+)
+
+# Query
+results = collection.query(
+    query_texts=["What is AI?"],
+    n_results=5
+)
+
+5.2 FAISS (Fast, Facebook)
+----------------------------
+import faiss
+import numpy as np
+
+# Create index
+dimension = 384
+index = faiss.IndexFlatL2(dimension)
+
+# Add vectors
+index.add(np.array(embeddings).astype('float32'))
+
+# Search
+query_vec = model.encode(["What is ML?"]).astype('float32')
+distances, indices = index.search(query_vec, k=5)
+
+5.3 QDRANT (Production-ready)
+------------------------------
+from qdrant_client import QdrantClient
+from qdrant_client.models import VectorParams, Distance
+
+client = QdrantClient(":memory:")
+client.create_collection(
+    collection_name="docs",
+    vectors_config=VectorParams(size=384, distance=Distance.COSINE)
+)
+
+================================================================================
+6. RETRIEVAL
+================================================================================
+
+SIMILARITY SEARCH
+-----------------
+Most basic: find the K most similar documents to the query.
+
+HYBRID SEARCH
+-------------
+Combine semantic search (embeddings) with keyword search (BM25).
+
+from langchain.retrievers import EnsembleRetriever
+
+# Semantic search
+vector_retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+
+# Keyword search (BM25)
+from langchain.retrievers import BM25Retriever
+bm25_retriever = BM25Retriever.from_documents(documents)
+bm25_retriever.k = 5
+
+# Combine
+ensemble_retriever = EnsembleRetriever(
+    retrievers=[vector_retriever, bm25_retriever],
+    weights=[0.5, 0.5]
+)
+
+RERANKING
+---------
+After retrieval, use a cross-encoder to rerank results for better relevance.
+
+from sentence_transformers import CrossEncoder
+
+reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
+
+# Score each retrieved document against query
+pairs = [(query, doc.page_content) for doc in retrieved_docs]
+scores = reranker.predict(pairs)
+
+# Sort by score
+ranked_docs = [doc for _, doc in sorted(zip(scores, retrieved_docs),
+                                         reverse=True)]
+
+================================================================================
+7. RAG PIPELINE
+================================================================================
+
+USING LANGCHAIN
+---------------
+from langchain_openai import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema import StrOutputParser
+from langchain.schema.runnable import RunnablePassthrough
+
+# RAG prompt template
+template = """Answer the question based only on the following context:
+{context}
+
+Question: {question}
+
+Answer:"""
+
+prompt = ChatPromptTemplate.from_template(template)
+
+# Setup
+llm = ChatOpenAI(model="gpt-4", temperature=0)
+retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
+# Chain
+rag_chain = (
+    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+# Use
+answer = rag_chain.invoke("What is machine learning?")
+
+================================================================================
+8. RAG EVALUATION
+================================================================================
+
+METRICS
+-------
+1. RETRIEVAL ACCURACY: Are the right documents retrieved?
+2. ANSWER RELEVANCE: Does the answer address the question?
+3. FAITHFULNESS: Does the answer use only retrieved information?
+4. CONTEXT PRECISION: How relevant are retrieved docs?
+
+USING RAGAS
+-----------
+from ragas import evaluate
+from ragas.metrics import faithfulness, answer_relevancy, context_precision
+
+# Prepare evaluation dataset
+eval_dataset = {
+    "question": ["What is ML?"],
+    "answer": ["Machine learning is..."],
+    "contexts": [["ML is a subset of AI..."]],
+    "ground_truth": ["Machine learning is a branch of AI..."]
+}
+
+result = evaluate(eval_dataset, metrics=[
+    faithfulness, answer_relevancy, context_precision
+])
+print(result)
+
+================================================================================
+9. COMMON FAILURE MODES
+================================================================================
+
+1. POOR RETRIEVAL: Right answer exists but isn't retrieved
+   → Improve chunking, use hybrid search, add metadata filtering
+
+2. IRRELEVANT CONTEXT: Retrieved docs don't contain the answer
+   → Better embeddings, increase k, add reranking
+
+3. HALLUCINATION DESPITE CONTEXT: Model ignores context
+   → Stronger prompt ("Answer ONLY from context"), lower temperature
+
+4. LOSS OF CONTEXT: Important info split across chunks
+   → Increase chunk overlap, use parent-document retrieval
+
+5. STALE INFORMATION: Documents outdated
+   → Regular re-indexing, timestamp metadata
+
+================================================================================
+10. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What are the three steps in RAG?
+Q2: Why do we chunk documents?
+Q3: What is the difference between vector search and BM25?
+Q4: When would you use reranking?
+Q5: How do you prevent hallucination in RAG systems?
+Q6: What is the trade-off between chunk size and retrieval precision?
+
+================================================================================
+END OF MODULE 29: RAG
+================================================================================

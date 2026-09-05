@@ -1,0 +1,173 @@
+# ML FROM SCRATCH — PRACTICE SET
+# 30 Questions + Coding Challenges
+
+---
+
+## CODING CHALLENGES (15 Problems)
+
+### 1. Implement Linear Regression from scratch
+- Use NumPy for matrix operations
+- Implement gradient descent
+- Compute MSE loss
+- Plot loss curve
+- Compare with sklearn LinearRegression
+
+### 2. Implement Logistic Regression from scratch
+- Implement sigmoid function
+- Implement binary cross-entropy loss
+- Implement gradient descent
+- Add L2 regularization
+- Compare with sklearn LogisticRegression
+
+### 3. Implement KNN from scratch
+- Implement Euclidean distance
+- Implement classification mode
+- Implement regression mode
+- Handle tie-breaking
+- Compare with sklearn KNeighborsClassifier
+
+### 4. Implement K-Means from scratch
+- Initialize centroids randomly
+- Assign points to clusters
+- Update centroids
+- Handle empty clusters
+- Implement elbow method
+
+### 5. Implement Decision Tree from scratch
+- Implement Gini impurity
+- Implement information gain
+- Implement recursive tree building
+- Handle continuous features
+- Compare with sklearn DecisionTreeClassifier
+
+### 6. Implement Random Forest from scratch
+- Implement bagging
+- Implement random feature selection
+- Implement majority voting
+- Compare with sklearn RandomForestClassifier
+
+### 7. Implement Naive Bayes from scratch
+- Implement Gaussian Naive Bayes
+- Compute class priors
+- Compute feature likelihoods
+- Implement prediction
+- Compare with sklearn GaussianNB
+
+### 8. Implement PCA from scratch
+- Compute covariance matrix
+- Compute eigenvalues/eigenvectors
+- Project data to principal components
+- Visualize explained variance
+- Compare with sklearn PCA
+
+### 9. Implement Gradient Descent variants
+- Batch Gradient Descent
+- Stochastic Gradient Descent
+- Mini-batch Gradient Descent
+- Add momentum
+- Compare convergence
+
+### 10. Implement Softmax function from scratch
+- Handle numerical stability
+- Compute cross-entropy loss
+- Compute gradients
+- Test on multi-class problem
+
+### 11. Implement Confusion Matrix from scratch
+- Compute TP, TN, FP, FN
+- Compute accuracy, precision, recall, F1
+- Compare with sklearn metrics
+
+### 12. Implement Cross-Validation from scratch
+- Implement K-fold CV
+- Implement stratified K-fold
+- Compute mean and std of scores
+- Compare with sklearn cross_val_score
+
+### 13. Implement ROC-AUC from scratch
+- Compute TPR and FPR at different thresholds
+- Plot ROC curve
+- Compute AUC using trapezoidal rule
+- Compare with sklearn roc_auc_score
+
+### 14. Implement Feature Scaling from scratch
+- StandardScaler (z-score normalization)
+- MinMaxScaler (0-1 scaling)
+- RobustScaler (median/IQR based)
+- Compare with sklearn scalers
+
+### 15. Implement Linear Regression with Regularization
+- Ridge (L2)
+- Lasso (L1)
+- Elastic Net (L1 + L2)
+- Compare with sklearn implementations
+
+---
+
+## COMPARISON EXERCISES (5 Problems)
+
+### 16. Compare your implementations with sklearn
+For each algorithm:
+- Run on the same dataset
+- Compare accuracy/score
+- Compare prediction time
+- Document any differences
+
+### 17. Time complexity analysis
+For each implementation:
+- Measure training time vs dataset size
+- Measure prediction time vs dataset size
+- Plot time complexity curves
+- Verify theoretical complexity
+
+### 18. Visualization comparison
+- Plot decision boundaries (your impl vs sklearn)
+- Plot training curves
+- Plot feature importance
+- Create comparison charts
+
+### 19. Edge case testing
+- Empty dataset
+- Single class
+- Perfect separation
+- All same features
+- Very large dataset
+
+### 20. Memory usage analysis
+- Measure memory usage for each implementation
+- Compare with sklearn
+- Optimize where possible
+
+---
+
+## THEORY QUESTIONS (10 Questions)
+
+21. Why implement ML algorithms from scratch?
+    Answer: Deep understanding of internals, better debugging, ability to customize
+
+22. What are the limitations of from-scratch implementations?
+    Answer: Not optimized, missing edge cases, no GPU support, less tested
+
+23. When would you use from-scratch vs library?
+    Answer: Learning/custom research → from-scratch. Production → library.
+
+24. What is the most important thing to verify in from-scratch implementations?
+    Answer: Correctness — compare output with established library on same input
+
+25. How do you handle numerical stability in from-scratch implementations?
+    Answer: Clip values, add epsilon to denominators, use stable algorithms
+
+26. What is vectorization and why is it important?
+    Answer: Replacing loops with matrix operations — much faster in NumPy
+
+27. How do you test ML implementations?
+    Answer: Unit tests for components, integration tests on known datasets, comparison with library
+
+28. What are common bugs in ML implementations?
+    Answer: Off-by-one errors, wrong gradient formulas, forgetting to normalize, data leakage
+
+29. How do you optimize from-scratch implementations?
+    Answer: Vectorize with NumPy, minimize memory allocation, use efficient algorithms
+
+30. What is the value of implementing from scratch vs using library?
+    Answer: From scratch builds understanding; library builds production capability. Both are important.

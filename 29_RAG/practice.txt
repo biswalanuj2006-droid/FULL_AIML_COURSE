@@ -1,0 +1,88 @@
+================================================================================
+RAG MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (15 Questions)
+================================
+
+Q1: What does RAG stand for and why was it created?
+Q2: What is the difference between RAG and fine-tuning?
+Q3: What is a vector embedding?
+Q4: What is cosine similarity?
+Q5: What is chunking and why is it necessary?
+Q6: Name 3 vector databases and their key difference.
+Q7: What is the difference between dense and sparse retrieval?
+Q8: What is reranking in RAG?
+Q9: What is metadata filtering?
+Q10: What is hallucination in LLMs?
+Q11: Why does RAG help reduce hallucination?
+Q12: What is a document loader?
+Q13: What is the context window of an LLM?
+Q14: What is semantic search vs keyword search?
+Q15: What is hybrid search?
+
+SECTION B — MEDIUM (20 Questions)
+==================================
+
+Q16: Build a basic RAG pipeline using LangChain and Chroma.
+Q17: Implement document chunking with overlap.
+Q18: Compare different embedding models on retrieval quality.
+Q19: Implement hybrid search (semantic + BM25).
+Q20: Build a RAG system that cites its sources.
+Q21: Implement chunk size optimization experiment.
+Q22: Compare FAISS vs Chroma on retrieval accuracy.
+Q23: Build a RAG evaluation pipeline using RAGAS.
+Q24: Implement reranking with a cross-encoder.
+Q25: Create a RAG system with metadata filtering.
+Q26: Implement multi-query retrieval.
+Q27: Build a RAG system for PDF documents.
+Q28: Implement contextual compression in retrieval.
+Q29: Compare different chunking strategies (fixed, recursive, semantic).
+Q30: Build a RAG system with conversation history.
+Q31: Implement a custom embedding function.
+Q32: Create a RAG system that handles tables and images.
+Q33: Implement retrieval evaluation metrics.
+Q34: Build a RAG system with pgvector backend.
+Q35: Implement document versioning and incremental indexing.
+
+SECTION C — HARD (10 Questions)
+================================
+
+Q36: Build a production RAG platform with FastAPI + authentication.
+Q37: Implement graph RAG for structured knowledge.
+Q38: Build a multimodal RAG system (text + images).
+Q39: Implement RAG with real-time document updates.
+Q40: Design a multi-tenant RAG system.
+Q41: Implement RAG with cross-lingual retrieval.
+Q42: Build a RAG system with automatic evaluation and improvement.
+Q43: Implement advanced query rewriting strategies.
+Q44: Design a RAG system for code documentation.
+Q45: Build a RAG system with feedback loop for continuous improvement.
+
+SECTION D — DEBUGGING (8 Problems)
+====================================
+
+D1: Why are retrieval results irrelevant even though documents exist?
+D2: Fix: LLM ignores the provided context and hallucinates.
+D3: Why is chunk size too small causing fragmented answers?
+D4: Fix: Embedding dimension mismatch between model and database.
+D5: Why does the RAG system return different answers for the same query?
+D6: Fix: Slow retrieval — optimization needed for 100K+ documents.
+D7: Why is metadata filtering not working correctly?
+D8: Fix: Token limit exceeded when constructing the prompt.
+
+SECTION E — INTERVIEW (10 Questions)
+======================================
+
+I1: Design a RAG system for a legal document Q&A system.
+I2: How do you evaluate RAG quality?
+I3: What are the failure modes of RAG?
+I4: When would you fine-tune instead of using RAG?
+I5: How do you handle documents with tables and figures?
+I6: Explain the trade-off between chunk size and retrieval accuracy.
+I7: How would you scale RAG to millions of documents?
+I8: How do you handle multi-hop reasoning in RAG?
+I9: What is the role of the embedding model in RAG quality?
+I10: How would you implement access control in a multi-user RAG system?
+
+================================================================================

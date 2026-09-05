@@ -1,0 +1,169 @@
+# RECURSION — PRACTICE SET
+# 35 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is recursion?
+   Answer: A function that calls itself, breaking the problem into smaller subproblems
+
+2. What is a base case?
+   Answer: The condition that stops recursion, preventing infinite calls
+
+3. What is the call stack?
+   Answer: The stack that stores function calls; each recursive call pushes a frame
+
+4. What is the time complexity of naive Fibonacci?
+   Answer: O(2^n) — exponential, many redundant calculations
+
+5. What is memoization?
+   Answer: Caching results of expensive function calls to avoid redundant computation
+
+6. What is the difference between recursion and iteration?
+   Answer: Recursion: function calls itself. Iteration: uses loops. Both solve repetitive problems
+
+7. What is tail recursion?
+   Answer: When the recursive call is the last operation — allows compiler optimization
+
+8. What is the space complexity of recursion?
+   Answer: O(depth) — each call adds a frame to the call stack
+
+9. What is a recursive tree?
+   Answer: A visualization of all recursive calls, showing the branching structure
+
+10. What is backtracking?
+    Answer: Recursion that explores all possibilities and undoes choices when they don't lead to a solution
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Factorial using recursion.
+    ```python
+    def factorial(n):
+        if n <= 1: return 1
+        return n * factorial(n - 1)
+    ```
+
+12. Fibonacci with memoization.
+    ```python
+    from functools import lru_cache
+    @lru_cache(maxsize=None)
+    def fib(n):
+        if n <= 1: return n
+        return fib(n-1) + fib(n-2)
+    ```
+
+13. Power function (x^n) in O(log n).
+    ```python
+    def power(x, n):
+        if n == 0: return 1
+        half = power(x, n // 2)
+        return half * half if n % 2 == 0 else half * half * x
+    ```
+
+14. Generate all subsets of a set.
+    ```python
+    def subsets(nums):
+        result = []
+        def backtrack(start, current):
+            result.append(current[:])
+            for i in range(start, len(nums)):
+                current.append(nums[i])
+                backtrack(i + 1, current)
+                current.pop()
+        backtrack(0, [])
+        return result
+    ```
+
+15. Generate all permutations.
+    ```python
+    def permute(nums):
+        result = []
+        def backtrack(start):
+            if start == len(nums):
+                result.append(nums[:])
+            for i in range(start, len(nums)):
+                nums[start], nums[i] = nums[i], nums[start]
+                backtrack(start + 1)
+                nums[start], nums[i] = nums[i], nums[start]
+        backtrack(0)
+        return result
+    ```
+
+16. Solve N-Queens problem.
+
+17. Generate all valid parentheses combinations.
+
+18. Combination sum (find combinations that sum to target).
+
+19. Word search in a grid (backtracking).
+
+20. Sudoku solver.
+
+21. Generate all binary trees with n nodes.
+
+22. Tower of Hanoi.
+
+23. Flood fill algorithm.
+
+24. Subset sum problem.
+
+25. Rat in a maze.
+
+---
+
+## HARD (5 Questions)
+
+26. N-Queens — place N queens on N×N board so no two attack each other.
+27. Sudoku solver using constraint propagation + backtracking.
+28. Generate all valid IP addresses from a string.
+29. Palindrome partitioning.
+30. Expression add operators (+, -, *) to reach target.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Missing base case causes infinite recursion
+def factorial(n):
+    return n * factorial(n - 1)  # No base case!
+# Fix: if n <= 1: return 1
+
+# Debug 2: Fibonacci redundant computation
+def fib(n):
+    if n <= 1: return n
+    return fib(n-1) + fib(n-2)  # O(2^n) — no memoization
+# Fix: Add @lru_cache or manual memoization
+
+# Debug 3: Backtracking doesn't undo changes
+def permute(nums, start=0):
+    if start == len(nums):
+        print(nums)
+    for i in range(start, len(nums)):
+        nums[start], nums[i] = nums[i], nums[start]
+        permute(nums, start + 1)
+        # Bug: missing swap back (undo)
+    # Fix: Add nums[start], nums[i] = nums[i], nums[start]
+
+# Debug 4: Recursive function hits Python recursion limit
+def deep_recursion(n):
+    if n == 0: return
+    deep_recursion(n - 1)
+# For n > 1000, hits RecursionError
+# Fix: Use sys.setrecursionlimit() or convert to iterative
+
+# Debug 5: Subset generation misses empty set
+def subsets(nums):
+    result = []
+    def backtrack(start, current):
+        for i in range(start, len(nums)):
+            current.append(nums[i])
+            backtrack(i + 1, current)
+            current.pop()
+    backtrack(0, [])
+    return result  # Bug: never appends empty set or subsets
+# Fix: Add result.append(current[:]) at start of backtrack
+```

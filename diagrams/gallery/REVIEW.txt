@@ -1,0 +1,93 @@
+==============================================================================
+DIAGRAM REVIEW - verify_diagrams.py
+==============================================================================
+images verified : 64
+total size      : 4.4 MB
+blank panels    : 0
+
+FOLDER         COUNT  TOTAL MB                 WxH RANGE
+----------------------------------------------------------
+llm               10       0.7       917x554 - 1764x1057
+agents             5       0.4       1167x609 - 1594x775
+ml                16       1.1       922x576 - 2385x1035
+math               4       0.5      1484x734 - 2085x1185
+dl                 6       0.5      1485x734 - 2233x1522
+backend            2       0.1      2085x734 - 2085x1184
+nlp                3       0.2      1482x734 - 2385x1185
+rag                2       0.1       2085x884 - 2385x885
+transformers       2       0.2     1485x1034 - 1785x1484
+graphs             8       0.4        440x350 - 1320x900
+graph              2       0.1        793x554 - 1089x575
+recommenders       2       0.1        793x547 - 1069x626
+rl                 2       0.1        775x531 - 1069x575
+----------------------------------------------------------
+
+PER-IMAGE TABLE
+FILE                                                    FMT        SIZE         DIM    STD  NOTE
+----------------------------------------------------------------------------------------------------
+agents/agent_loop.png                                   PNG      59.4KB    1167x756   32.4  
+agents/embedding_bench.png                              PNG      78.8KB    1594x609   74.7  
+agents/multi_agent.png                                  PNG      79.5KB    1221x756   33.6  
+agents/prod_rag_server.png                              PNG      90.4KB    1329x775   34.1  
+agents/rag_agent.png                                    PNG      93.2KB    1406x734   37.7  
+backend/api_flow.jpg                                    JPEG     52.6KB    2085x734   30.0  
+backend/backend_architecture.jpg                        JPEG     85.3KB   2085x1184   30.2  
+dl/activation_functions.jpg                             JPEG    145.8KB   1784x1522   39.6  
+dl/backpropagation.jpg                                  JPEG     63.1KB    2085x734   34.1  
+dl/cnn_architecture.jpg                                 JPEG     51.7KB    2085x734   29.5  
+dl/gradient_descent.jpg                                 JPEG    111.9KB    2233x772   34.9  
+dl/lstm_gates.jpg                                       JPEG     54.4KB    2085x884   27.4  
+dl/neural_network.jpg                                   JPEG     58.8KB   1485x1034   24.3  
+graph/link_prediction_auc.png                           PNG      43.6KB     793x575   68.7  
+graph/message_passing.png                               PNG      66.6KB    1089x554   30.9  
+graphs/gradient_descent_from_scratch.png                PNG      74.7KB    1320x495   32.9  
+graphs/lstm_sine_forecast.png                           PNG      52.6KB    1000x350   31.6  
+graphs/nn_training_loss.png                             PNG      43.9KB    1200x750   26.1  
+graphs/pca_demo.png                                     PNG      74.9KB    1200x900   31.6  
+graphs/vis_01_loss_curve.png                            PNG      29.4KB     550x385   33.7  
+graphs/vis_02_regression.png                            PNG      29.2KB     550x385   34.3  
+graphs/vis_03_confusion.png                             PNG      19.1KB     440x385   73.0  
+graphs/vis_04_roc.png                                   PNG      29.7KB     550x385   37.4  
+llm/kv_cache.png                                        PNG      70.7KB     939x639   40.6  
+llm/kv_cache_memory.png                                 PNG      47.4KB     917x591   56.2  
+llm/llm_architecture.png                                PNG      95.5KB   1004x1057   38.7  
+llm/lora.png                                            PNG      70.0KB    1167x648   34.0  
+llm/prefill_decode.png                                  PNG      84.0KB    1595x610   37.7  
+llm/pretraining_pipeline.png                            PNG      63.1KB    1764x554   32.3  
+llm/quantization.png                                    PNG      47.8KB     917x618   54.9  
+llm/sampling.png                                        PNG      74.7KB    1595x610   55.1  
+llm/scaling_laws.png                                    PNG      56.6KB    1171x639   57.2  
+llm/speculative_decoding.png                            PNG      67.4KB    1275x583   38.2  
+math/bias_variance.jpg                                  JPEG     87.2KB    1484x884   38.3  
+math/entropy_gini.jpg                                   JPEG     95.7KB    2085x734   36.5  
+math/gradient_descent.jpg                               JPEG    199.2KB   1484x1185   35.8  
+math/sigmoid.jpg                                        JPEG     79.2KB    1484x884   34.7  
+ml/confusion_matrix.jpg                                 JPEG     34.1KB     922x885   98.2  
+ml/cross_validation.jpg                                 JPEG     72.6KB    1785x734   38.0  
+ml/decision_boundary.jpg                                JPEG     66.5KB    1184x884   33.5  
+ml/feature_importance.png                               PNG      57.0KB    1046x637   60.3  
+ml/imbalance.png                                        PNG      73.2KB    1469x637   57.3  
+ml/kmeans.png                                           PNG      89.0KB    1418x637   36.7  
+ml/learning_curves.png                                  PNG      60.9KB     923x639   39.2  
+ml/ml_lifecycle.png                                     PNG      72.9KB    1764x576   33.9  
+ml/ml_workflow.jpg                                      JPEG     75.5KB    2385x885   30.9  
+ml/model_comparison.jpg                                 JPEG     98.1KB   1785x1035   71.4  
+ml/overfitting.jpg                                      JPEG     90.0KB    1485x884   33.2  
+ml/pca.png                                              PNG      99.9KB    1524x638   69.9  
+ml/pr_curve.png                                         PNG      49.9KB     923x637   38.9  
+ml/roc_curve.jpg                                        JPEG     67.2KB    1184x884   38.6  
+ml/test.jpg                                             JPEG     37.1KB    1200x900   22.0  
+ml/time_series.png                                      PNG     105.5KB    1029x637   38.7  
+nlp/nlp_pipeline.jpg                                    JPEG     59.1KB    2385x734   30.1  
+nlp/sentiment_analysis.jpg                              JPEG     72.0KB    1482x884   55.5  
+nlp/word_embeddings.jpg                                 JPEG     44.1KB   1485x1185   19.3  
+rag/rag_pipeline.jpg                                    JPEG     63.6KB    2385x884   27.9  
+rag/rag_vs_finetuning.jpg                               JPEG     64.3KB    2085x885   30.5  
+recommenders/als_vs_sgd_rmse.png                        PNG      35.8KB     793x547   60.9  
+recommenders/two_stage_recsys.png                       PNG      73.9KB    1069x626   37.1  
+rl/agent_env_loop.png                                   PNG      37.1KB    1069x531   34.2  
+rl/qlearning_vs_optimal.png                             PNG      38.6KB     775x575   72.9  
+transformers/self_attention.jpg                         JPEG     56.8KB   1485x1034   31.8  
+transformers/transformer_architecture.jpg               JPEG    119.8KB   1785x1484   32.5  
+
+VERDICT: ALL IMAGES OK - no unreadable or blank panels

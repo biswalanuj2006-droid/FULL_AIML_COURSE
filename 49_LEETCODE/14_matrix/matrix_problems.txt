@@ -1,0 +1,81 @@
+================================================================================
+LEETCODE PATTERN: MATRIX — 15 PROBLEMS
+================================================================================
+
+PATTERN: 2D array traversal, spiral, rotation, dynamic programming on grid.
+
+================================================================================
+EASY (5 Problems)
+================================================================================
+
+1. ROTATE IMAGE (LC #48)
+   def rotate(matrix):
+       matrix.reverse()
+       for i in range(len(matrix)):
+           for j in range(i):
+               matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+
+2. SPIRAL MATRIX (LC #54)
+3. SET MATRIX ZEROES (LC #73)
+4. VALID SUDOKU (LC #36)
+5. DIAGONAL TRAVERSE (LC #498)
+
+================================================================================
+MEDIUM (7 Problems)
+================================================================================
+
+6. NUMBER OF ISLANDS (LC #200)
+   def numIslands(grid):
+       count = 0
+       for i in range(len(grid)):
+           for j in range(len(grid[0])):
+               if grid[i][j] == '1':
+                   dfs(grid, i, j)
+                   count += 1
+       return count
+
+7. WORD SEARCH (LC #79)
+8. SPIRAL MATRIX II (LC #59)
+9. ROTATE IMAGE (LC #48)
+10. GAME OF LIFE (LC #289)
+11. SEARCH A 2D MATRIX II (LC #240)
+12. SHORTEST PATH IN BINARY MATRIX (LC #1091)
+
+================================================================================
+HARD (3 Problems)
+================================================================================
+
+13. LONGEST INCREASING PATH IN MATRIX (LC #329)
+14. MAXIMAL RECTANGLE (LC #85)
+15. FROG JUMP (LC #403)
+
+================================================================================
+MATRIX TRAVERSAL TEMPLATE
+===========================
+# DFS
+def dfs(grid, i, j):
+    if i < 0 or i >= len(grid) or j < 0 or j >= len(grid[0]):
+        return
+    if grid[i][j] != target: return
+    grid[i][j] = visited
+    dfs(grid, i+1, j)
+    dfs(grid, i-1, j)
+    dfs(grid, i, j+1)
+    dfs(grid, i, j-1)
+
+# BFS
+from collections import deque
+def bfs(grid, start):
+    queue = deque([start])
+    visited = {start}
+    while queue:
+        i, j = queue.popleft()
+        for di, dj in [(1,0),(-1,0),(0,1),(0,-1)]:
+            ni, nj = i+di, j+dj
+            if valid(ni, nj) and (ni, nj) not in visited:
+                visited.add((ni, nj))
+                queue.append((ni, nj))
+
+================================================================================
+END OF MATRIX PATTERN
+================================================================================

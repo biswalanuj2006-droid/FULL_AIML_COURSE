@@ -1,0 +1,91 @@
+================================================================================
+PRACTICE - 60 GRAPH MACHINE LEARNING
+================================================================================
+
+PART A - CONCEPTUAL
+--------------------------------------------------------------------------------
+1. For each problem, say why a graph (not a table) is the right
+   representation and what the nodes/edges are: friend suggestion;
+   molecule toxicity; paper topic classification; fraud rings; code
+   bug detection.
+2. Adjacency vs Laplacian: what does x^T L x measure for a 0/1 signal
+   x on the nodes? Why is the Laplacian called a smoothness operator?
+3. Transductive vs inductive models: which graph methods can score a
+   node never seen in training, and what do they require at inference?
+4. Why does DeepWalk reuse the word2vec machinery? What is the "sentence"
+   in a graph, and what similarity does node2vec's walk bias control?
+
+PART B - MATH
+--------------------------------------------------------------------------------
+5. Write the GCN layer update. Show what the symmetrically normalized
+   adjacency D^{-1/2} (A + I) D^{-1/2} does to a hub node of degree
+   10,000 vs a leaf of degree 1 (compute the effective weighting).
+6. Derive how L layers make a node's representation depend on its
+   L-hop neighborhood. Bound the neighborhood size growth for a
+   d-regular graph and explain over-smoothing at depth ~10+.
+7. GAT: write the attention coefficient alpha_uv (with LeakyReLU and
+   softmax over neighbors). What changes vs the GCN's fixed 1/sqrt(d)
+   weights? What extra cost does it pay?
+8. Link prediction: define the training set construction precisely
+   (positive edges, negative sampling ratio) and derive why random
+   splitting of an edge TABLE leaks (why time/edge splits matter).
+
+PART C - CODE
+--------------------------------------------------------------------------------
+9. numpy implementation of one GCN layer; run 2-layer GCN on the karate
+   club graph; report classification accuracy with 10 labeled nodes vs
+   an MLP on node features only.
+10. Random-walk embeddings: generate walks, train skip-gram-style
+    embeddings (borrow machinery from 24), and evaluate link prediction
+    AUC vs random and vs common-neighbors heuristic.
+11. Implement mean/max-pool GraphSAGE-style aggregation on a sampled
+    neighborhood; compare against full-neighborhood GCN on a mid-size
+    synthetic graph for train time and accuracy.
+12. Negative sampling study for link prediction: ratios 1:1, 1:5, 1:20
+    - report AUC and precision@k changes and explain the bias each
+    ratio induces.
+
+PART D - DEBUGGING
+--------------------------------------------------------------------------------
+13. A 2-layer GCN matches a feature-only MLP. Run the checks: giant
+    component size, average degree, label homophily (do friends share
+    labels?). Which check tells you the graph carries no signal?
+14. Validation accuracy oscillates wildly between epochs on a GCN. What
+    is the likely cause (label imbalance? high-degree variance?
+    full-batch vs sampled?) and the fix?
+15. Link prediction AUC is 0.99 - too good. What leakage did you
+    create, and what split fixes it?
+16. Deep (20-layer) GCN underperforms its 2-layer version. Explain
+    over-smoothing and verify with the representation-collapse metric
+    (mean pairwise cosine of node embeddings per layer).
+17. New users get garbage embeddings at serving time. Which design
+    choice caused this (transductive model) and what is the inductive
+    replacement?
+
+PART E - REAL WORLD
+--------------------------------------------------------------------------------
+18. Social network with 2B edges: design the training pipeline
+    (sampling, negative sampling, parallelism, depth) and the serving
+    path for "people you may know".
+19. Fraud rings: why are GNNs promising for fraud detection, and what
+    makes them hard in practice (label scarcity, adversarial edges,
+    heterophily: fraudsters connect to look normal)?
+20. (Interview) Explain message passing to someone who knows CNNs:
+    "convolution over a graph = weighted average of neighbors through
+    a learned matrix" - justify the analogy and name the difference
+    (irregular neighborhood sizes/ordering).
+21. (Interview) Graph RAG vs vector RAG: give a question where each
+    wins, and the retrieval step of the graph version.
+22. (Interview) Inductive vs transductive in one minute with an
+    example (new paper in a citation network).
+
+PART F - EXPERT
+--------------------------------------------------------------------------------
+23. Heterophily: construct a graph where neighbors tend to have
+    OPPOSITE labels; show a GCN fails and test a fix (ego-graph
+    feature separation or higher-order aggregation).
+24. Scalability: compare neighbor sampling vs Cluster-GCN on a graph
+    too big for full-batch; report convergence and accuracy trade-offs.
+25. (Open) Expressivity: show two non-isomorphic graphs that 1-WL
+    (and therefore message-passing GNNs) cannot distinguish; propose a
+    feature that breaks the tie and test it on a small benchmark.

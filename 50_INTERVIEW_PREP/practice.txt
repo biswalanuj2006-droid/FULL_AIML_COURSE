@@ -1,0 +1,67 @@
+================================================================================
+INTERVIEW PREPARATION — PRACTICE SET (50+ Questions)
+================================================================================
+
+PYTHON INTERVIEW (15)
+======================
+P1: Explain GIL and its impact on concurrency.
+P2: What is the difference between deepcopy and shallow copy?
+P3: Explain Python's memory model.
+P4: What are decorators and how do they work?
+P5: What is the difference between __new__ and __init__?
+P6: Explain generators vs iterators.
+P7: What are metaclasses?
+P8: How does Python's garbage collection work?
+P9: What is the difference between is and ==?
+P10: Explain context managers.
+P11: What are descriptors?
+P12: How does Python resolve method resolution order?
+P13: What is the difference between list and tuple performance?
+P14: Explain Python's data model.
+P15: What are abstract base classes?
+
+ML INTERVIEW (15)
+==================
+M1: Explain bias-variance tradeoff with example.
+M2: When use Random Forest vs XGBoost?
+M3: How handle class imbalance?
+M4: Explain regularization L1 vs L2.
+M5: What is cross-validation and variants?
+M6: How do you detect data leakage?
+M7: Explain gradient descent variants.
+M8: What is the curse of dimensionality?
+M9: When use SVM vs logistic regression?
+M10: Explain ensemble methods.
+M11: How do you evaluate a regression model?
+M12: What is feature importance?
+M13: Explain PCA and when to use it.
+M14: How do you handle missing data?
+M15: What is the difference between bagging and boosting?
+
+DL INTERVIEW (10)
+==================
+D1: Explain backpropagation mathematically.
+D2: Why use ReLU over sigmoid?
+D3: What is batch normalization?
+D4: Explain the vanishing gradient problem.
+D5: What is transfer learning?
+D6: How does attention mechanism work?
+D7: What is the difference between BERT and GPT?
+D8: Explain the Transformer architecture.
+D9: What is dropout and why does it work?
+D10: How do you debug a neural network?
+
+SYSTEM DESIGN (10)
+===================
+S1: Design a real-time fraud detection system.
+S2: Design a recommendation system.
+S3: Design a RAG platform.
+S4: Design an ML serving platform.
+S5: Design a feature store.
+S6: Design a model monitoring system.
+S7: Design a streaming ML pipeline.
+S8: Design a multi-tenant ML platform.
+S9: Design an A/B testing system.
+S10: Design a production LLM application.
+
+================================================================================

@@ -1,0 +1,66 @@
+================================================================================
+PRACTICE - 05 DECISION TREE FROM SCRATCH (CART)
+Work with code/05_decision_tree_from_scratch.py open.
+================================================================================
+
+CONCEPTUAL
+ 1. What impurity measure does CART use by default and why is it faster
+    than entropy in practice?
+ 2. What is information gain and why does it prefer splits with many
+    categories?
+ 3. Why do trees overfit, and what three hyperparameters control it?
+ 4. Why is a single tree called a "weak learner"?
+ 5. What does the split point search do on a continuous feature?
+ 6. Why can't CART handle categorical features natively without encoding?
+ 7. What is the difference between a leaf predicting a class vs a
+    probability?
+ 8. What is min_samples_split vs min_samples_leaf and which prevents
+    tiny leaves more directly?
+
+NUMERICAL
+ 9. A node has 10 positives / 10 negatives. Compute Gini impurity.
+10. Split A: child1 (10 pos, 0 neg), child2 (0 pos, 10 neg). Compute
+    weighted Gini after the split and information gain vs the parent.
+11. Split B: child1 (6 pos, 4 neg), child2 (4 pos, 6 neg). Compute
+    weighted Gini. Which split is better, A or B?
+12. Compute entropy of (8 pos, 2 neg). Now of (5, 5). Which is higher
+    and what does that mean for the split?
+
+CODE (write and run)
+13. Implement the best-split search over one feature with sorted unique
+    thresholds; print threshold + gain for a toy dataset.
+14. Add a max_depth parameter and show depth-2 tree predictions.
+15. Implement predict_proba returning leaf class proportions.
+16. Add min_samples_leaf and show overfitting reduction on a noisy
+    dataset (train vs test accuracy before/after).
+17. Compare your tree vs sklearn DecisionTreeClassifier on the same
+    data: accuracy, and your split thresholds vs sklearn's.
+
+DEBUGGING (find the bug)
+18. Gini computed as 1 - sum(p**2) using counts but counts are floats
+    that overflow after many splits - where does numerical drift come
+    from and how do you guard against it?
+19. Recursion never stops because a split produces a child with zero
+    samples but the code still recurses into it.
+20. The gain is computed against the FULL parent, not per-branch, so
+    splits never improve - symptoms and fix?
+21. Feature columns swapped between training and prediction produce
+    garbage but no exception - why is this dangerous in production?
+
+CHALLENGES
+22. Implement the same tree with entropy instead of Gini and compare
+    tree structures on the same data.
+23. Implement cost-complexity pruning (ccp_alpha) conceptually: prune
+    leaves whose impurity reduction is below alpha.
+24. Build a tree that also returns, for each leaf, the training sample
+    count - then plot a tree depth vs sample-count curve.
+
+REAL-WORLD SCENARIO
+25. You must explain a credit decision to a regulator. Walk through how
+    a depth-4 tree gives you that explanation, and where it would fail
+    (interactions, linear trends). Name one alternative that preserves
+    interpretability.
+
+================================================================================
+END
+================================================================================

@@ -1,0 +1,176 @@
+# PART B: MATHEMATICS + STATISTICS EXAM
+# Time: 60 minutes | Questions: 30 | Passing: 70%
+
+---
+
+## SECTION 1: LINEAR ALGEBRA (10 Questions)
+
+### Q1. What is the dot product of [1, 2, 3] and [4, 5, 6]?
+A) 32  B) [4, 10, 18]  C) 15  D) [5, 7, 9]
+
+<details><summary>Answer</summary>A) 1×4 + 2×5 + 3×6 = 4 + 10 + 18 = 32</details>
+
+### Q2. What is the determinant of [[2, 3], [1, 4]]?
+A) 5  B) 11  C) -5  D) 8
+
+<details><summary>Answer</summary>A) 2×4 - 3×1 = 8 - 3 = 5</details>
+
+### Q3. What is the transpose of [[1, 2], [3, 4], [5, 6]]?
+A) [[1,3,5], [2,4,6]]  B) [[6,5,4], [3,2,1]]  C) [[1,2], [3,4]]  D) Error
+
+<details><summary>Answer</summary>A) Rows become columns: (3×2) → (2×3)</details>
+
+### Q4. What is an eigenvalue?
+A) The largest element of a matrix  B) A scalar λ where Av = λv for eigenvector v  C) The trace of a matrix  D) The inverse
+
+<details><summary>Answer</summary>B) Av = λv — the scalar by which eigenvector v is scaled</details>
+
+### Q5. What is the rank of a matrix?
+A) Number of rows  B) Maximum number of linearly independent rows/columns  C) Number of columns  D) Trace
+
+<details><summary>Answer</summary>B) The dimension of the column space (or row space)</details>
+
+### Q6. What is the inverse of a matrix A used for?
+A) Finding eigenvalues  B) Solving Ax = b  C) Computing determinant  D) Matrix multiplication
+
+<details><summary>Answer</summary>B) If A⁻¹ exists, x = A⁻¹b solves the linear system</details>
+
+### Q7. What is SVD (Singular Value Decomposition)?
+A) A = UΣVᵀ where U, V are orthogonal, Σ is diagonal  B) A = LU  C) A = QR  D) A = LLᵀ
+
+<details><summary>Answer</summary>A) Any matrix A can be decomposed as UΣVᵀ — fundamental for PCA and recommendations</details>
+
+### Q8. What is PCA?
+A) Principal Component Analysis — dimensionality reduction using eigenvectors of covariance matrix
+
+### Q9. What is the dot product used for in ML?
+A) Measuring similarity between vectors, computing attention scores, linear transformations
+
+### Q10. What is the difference between a vector and a scalar?
+A) Vector has direction, scalar is just a number  B) No difference  C) Vector is always 3D D) Scalar is larger
+
+<details><summary>Answer</summary>A) A scalar is a single number; a vector is an ordered array of numbers with direction</details>
+
+---
+
+## SECTION 2: CALCULUS (5 Questions)
+
+### Q11. What is the derivative of f(x) = x³ + 2x²?
+A) 3x² + 4x  B) 3x + 2  C) x⁴ + x³  D) 6x + 4
+
+<details><summary>Answer</summary>A) f'(x) = 3x² + 4x using power rule</details>
+
+### Q12. What is the gradient of f(x,y) = x² + y²?
+A) (2x, 2y)  B) (x², y²)  C) (2, 2)  D) (x, y)
+
+<details><summary>Answer</summary>A) ∂f/∂x = 2x, ∂f/∂y = 2y → ∇f = (2x, 2y)</details>
+
+### Q13. What does the chain rule compute?
+A) Derivative of a sum  B) Derivative of composite functions  C) Derivative of a product  D) Integral
+
+<details><summary>Answer</summary>B) d/dx[f(g(x))] = f'(g(x)) × g'(x) — essential for backpropagation</details>
+
+### Q14. What is the partial derivative ∂/∂x of sin(xy)?
+A) y·cos(xy)  B) x·cos(xy)  C) cos(xy)  D) sin(xy)
+
+<details><summary>Answer</summary>A) Treat y as constant: ∂/∂x[sin(xy)] = y·cos(xy)</details>
+
+### Q15. What is the Hessian matrix?
+A) Matrix of first derivatives  B) Matrix of second partial derivatives  C) Matrix of eigenvalues  D) Identity matrix
+
+<details><summary>Answer</summary>B) H[i,j] = ∂²f/∂xᵢ∂xⱼ — used in optimization to determine curvature</details>
+
+---
+
+## SECTION 3: PROBABILITY (5 Questions)
+
+### Q16. What is P(A|B) if P(A∩B) = 0.3 and P(B) = 0.5?
+A) 0.6  B) 0.15  C) 0.8  D) 0.3
+
+<details><summary>Answer</summary>A) P(A|B) = P(A∩B)/P(B) = 0.3/0.5 = 0.6</details>
+
+### Q17. What is Bayes' theorem?
+A) P(A|B) = P(B|A)×P(A)/P(B)  B) P(A|B) = P(A)×P(B)  C) P(A|B) = P(A)/P(B)  D) P(A|B) = P(B)/P(A)
+
+<details><summary>Answer</summary>A) P(A|B) = P(B|A)×P(A)/P(B) — relates prior and posterior probabilities</details>
+
+### Q18. What is the expected value of a fair die roll?
+A) 3  B) 3.5  C) 4  D) 6
+
+<details><summary>Answer</summary>B) E[X] = (1+2+3+4+5+6)/6 = 21/6 = 3.5</details>
+
+### Q19. What is the variance of a constant?
+A) 0  B) 1  C) The constant itself  D) Undefined
+
+<details><summary>Answer</summary>A) A constant has no variation, so variance = 0</details>
+
+### Q20. What is the Central Limit Theorem?
+A) Large samples are always normal  B) Sample means approach normal distribution as sample size increases, regardless of population distribution  C) Data is always normally distributed  D) Mean equals median
+
+<details><summary>Answer</summary>B) For large n, the distribution of sample means ≈ N(μ, σ²/n)</details>
+
+---
+
+## SECTION 4: STATISTICS (5 Questions)
+
+### Q21. What is the difference between population and sample standard deviation?
+A) No difference  B) Sample uses n-1 denominator (Bessel's correction)  C) Population uses n-1  D) Sample is always larger
+
+<details><summary>Answer</summary>B) Sample: σ = √(Σ(x-x̄)²/(n-1)). Population: σ = √(Σ(x-μ)²/N)</details>
+
+### Q22. What is a p-value?
+A) Probability that the null hypothesis is true  B) Probability of observing data as extreme as or more extreme than observed, assuming H₀ is true  C) Probability of Type I error  D) Probability of Type II error
+
+<details><summary>Answer</summary>B) It measures how surprising the data is under H₀ — small p-value → reject H₀</details>
+
+### Q23. What is the correlation coefficient range?
+A) [0, 1]  B) [-1, 1]  C) [-∞, ∞]  D) [0, ∞)
+
+<details><summary>Answer</summary>B) Pearson r ranges from -1 (perfect negative) to +1 (perfect positive)</details>
+
+### Q24. What is the difference between Type I and Type II error?
+A) Type I: reject true H₀. Type II: fail to reject false H₀  B) No difference  C) Type I is worse  D) Type II is always worse
+
+<details><summary>Answer</summary>A) Type I = false positive, Type II = false negative</details>
+
+### Q25. When should you use median instead of mean?
+A) Always  B) When data has outliers or is skewed  C) Never  D) When data is normal
+
+<details><summary>Answer</summary>B) Median is robust to outliers; mean is sensitive to extreme values</details>
+
+---
+
+## SECTION 5: OPTIMIZATION (5 Questions)
+
+### Q26. What is the learning rate in gradient descent?
+A) The number of iterations  B) The step size for parameter updates  C) The loss value  D) The gradient magnitude
+
+<details><summary>Answer</summary>B) w = w - lr × gradient — too high → diverge, too low → slow convergence</details>
+
+### Q27. What is the Adam optimizer?
+A) Adaptive Moment Estimation — combines momentum and RMSProp for per-parameter learning rates
+
+### Q28. What is a local minimum vs global minimum?
+A) Local: smallest in neighborhood. Global: smallest overall.  B) Same thing  C) Global is always better  D) Local doesn't exist
+
+<details><summary>Answer</summary>A) Local min is the lowest point in a region; global min is the absolute lowest</details>
+
+### Q29. What is momentum in gradient descent?
+A) Using previous gradients to smooth updates and escape local minima
+
+### Q30. What is the vanishing gradient problem?
+A) Gradients become too large  B) Gradients become very small in deep networks, making early layers hard to train  C) Gradients are always zero  D) Gradients oscillate
+
+<details><summary>Answer</summary>B) Sigmoid/tanh squash gradients → layers close to input get tiny updates → use ReLU, skip connections, batch norm</details>
+
+---
+
+## SCORING
+
+| Score | Level |
+|-------|-------|
+| 28-30 | Expert |
+| 24-27 | Advanced |
+| 20-23 | Intermediate |
+| 15-19 | Beginner |
+| <15 | Novice |

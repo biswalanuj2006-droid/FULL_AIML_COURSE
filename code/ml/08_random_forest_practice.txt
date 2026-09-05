@@ -1,0 +1,65 @@
+================================================================================
+PRACTICE - RANDOM FOREST FROM SCRATCH (code/ml/random_forest_from_scratch.py)
+================================================================================
+
+CONCEPTUAL
+ 1. What two sources of randomness does a Random Forest use, and why
+    does each help?
+ 2. Why does bagging reduce variance more than bias?
+ 3. Why sample features per split (max_features)? What happens if
+    max_features = n_features?
+ 4. How do trees in a forest differ from a single deep tree?
+ 5. Why is the forest's OOB (out-of-bag) score a nearly-free validation?
+ 6. What does feature_importance_ actually measure in sklearn's RF?
+ 7. Why are forests hard to beat on tabular data but weak on images?
+ 8. When would you prefer a single tree over a forest (regulatory)?
+
+NUMERICAL (small hand example)
+ 9. Dataset of 4 samples, bootstrap sample of size 4: compute the
+    probability a given sample is never drawn (hint: (1 - 1/4)^4).
+10. Two trees vote [0, 0, 1] and [0, 1, 1] - what is the ensemble's
+    prediction for majority vote? For averaging probabilities 0.33/0.67?
+11. Given 10 features and max_features="sqrt" for classification, how
+    many features are tried per split?
+
+CODE (write and run)
+12. Implement bootstrap sampling and show which indices are OOB for a
+    fixed seed.
+13. Extend your single decision tree into a forest: train N trees, each
+    on a bootstrap sample with random feature subsets; predict by
+    majority vote.
+14. Compute OOB error during training and compare with validation error
+    on a held-out set (they should be close).
+15. Compare accuracy of: single tree, forest with max_features=1
+    (random), forest with max_features="sqrt", sklearn RF - same seed.
+16. Plot accuracy vs number of trees (1..100) and find where gains
+    saturate.
+17. Compare your forest vs sklearn RandomForestClassifier on 2 datasets
+    - report accuracy gap and training time gap.
+
+DEBUGGING
+18. All trees in your forest are identical - which of the two
+    randomness sources did you forget?
+19. OOB error is computed on samples used in training - symptoms and
+    fix?
+20. Feature importances sum to > 1 - what normalization error?
+21. Training time grows 100x when you double n_estimators - what
+    implementation choice causes it and how do you fix it?
+
+CHALLENGES
+22. Implement Extra-Trees style splits (random threshold per feature)
+    and compare with your RF on a noisy dataset.
+23. Build a forest that returns probability (mean of leaf proportions)
+    and calibrate it with Platt scaling - report Brier score before/
+    after.
+24. Use your RF's proximity (co-occurrence in leaves) to do clustering
+    on a dataset with no labels - does it recover known groups?
+
+REAL-WORLD SCENARIO
+25. Fraud data: 99.9% legitimate, 0.1% fraud. Explain why RF accuracy
+    is a useless metric here, what you would change (sampling, class
+    weight, threshold), and how you'd evaluate honestly.
+
+================================================================================
+END
+================================================================================

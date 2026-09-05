@@ -1,0 +1,95 @@
+================================================================================
+CLASSIFICATION MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (20 Questions)
+================================
+
+Q1: What is the difference between binary and multi-class classification?
+Q2: Explain the sigmoid function and its output range.
+Q3: What is the softmax function and when do you use it?
+Q4: Why do we need activation functions in neural networks?
+Q5: What is overfitting in a classification context?
+Q6: When would you use Naive Bayes over Logistic Regression?
+Q7: Explain precision vs recall with a real example.
+Q8: What is the F1 score and when is it preferred over accuracy?
+Q9: Why is accuracy misleading for imbalanced datasets?
+Q10: What is the confusion matrix?
+Q11: Name 3 tree-based classification algorithms.
+Q12: What is the Gini impurity?
+Q13: What is entropy in decision trees?
+Q14: Why does Random Forest reduce overfitting compared to a single tree?
+Q15: What is the purpose of the C parameter in SVM?
+Q16: Explain the difference between L1 and L2 regularization.
+Q17: What is cross-validation and why use it?
+Q18: When do you need to scale features before classification?
+Q19: What is stratified train/test split?
+Q20: Name 3 evaluation metrics for binary classification.
+
+SECTION B — MEDIUM (20 Questions)
+==================================
+
+Q21: Implement logistic regression from scratch using NumPy.
+Q22: Write code to compute precision, recall, and F1 from a confusion matrix.
+Q23: Implement a k-fold cross-validation function.
+Q24: Build a complete classification pipeline using sklearn Pipeline.
+Q25: Compare Logistic Regression vs Random Forest on a real dataset.
+Q26: Implement SMOTE oversampling from scratch.
+Q27: Write code to plot ROC curves for multiple models.
+Q28: Implement a decision tree split criterion calculation.
+Q29: Build a feature importance analysis for Random Forest.
+Q30: Implement grid search for hyperparameter tuning.
+Q31: Write code to handle class imbalance using class weights.
+Q32: Compare one-hot encoding vs target encoding for high-cardinality features.
+Q33: Implement a complete train/evaluate pipeline with proper preprocessing.
+Q34: Build a Naive Bayes classifier for text data.
+Q35: Implement the sigmoid function and its derivative.
+Q36: Write code to generate and plot decision boundaries.
+Q37: Compare KNN performance with different K values.
+Q38: Implement stratified k-fold cross-validation.
+Q39: Build a stacked ensemble classifier.
+Q40: Write code to calibrate classifier probabilities.
+
+SECTION C — HARD (10 Questions)
+================================
+
+Q41: Implement XGBoost gradient boosting from scratch (simplified).
+Q42: Build a complete fraud detection pipeline with imbalanced data.
+Q43: Implement custom loss function for weighted classification.
+Q44: Design a multi-label classification system.
+Q45: Implement model stacking with cross-validation.
+Q46: Build an end-to-end classification API with FastAPI.
+Q47: Implement threshold optimization for F1 score.
+Q48: Design a classification system for streaming data.
+Q49: Implement Monte Carlo dropout for uncertainty estimation.
+Q50: Build a classification system with concept drift detection.
+
+SECTION D — DEBUGGING (10 Problems)
+=====================================
+
+D1: Fix this code: model.fit(X_train) — what's wrong?
+D2: Why does accuracy show 99% but the model predicts all negatives?
+D3: Fix: ValueError: Input contains NaN — trace the source.
+D4: Why does SVM give terrible results without scaling?
+D5: Fix: Data leakage — the scaler was fit on all data before splitting.
+D6: Why does the model perform differently each run? (random_state)
+D7: Fix: Memory error when using OneHotEncoder on high-cardinality feature.
+D8: Why is cross_val_score returning NaN values?
+D9: Fix: Class weight causing unexpected behavior.
+D10: Why does GridSearchCV take forever? Fix the efficiency issue.
+
+SECTION E — INTERVIEW (10 Questions)
+======================================
+
+I1: Explain bias-variance tradeoff with a classification example.
+I2: When would you choose SVM over Random Forest?
+I3: How do you handle a dataset with 99% negative class?
+I4: Explain how gradient boosting works step by step.
+I5: What is the difference between L1 and L2 regularization?
+I6: How do you detect data leakage in a classification pipeline?
+I7: Explain ROC-AUC and when it's misleading.
+I8: How would you deploy a classification model to production?
+I9: What metrics would you use for a medical diagnosis system?
+I10: How do you explain a black-box model's predictions to stakeholders?
+
+================================================================================

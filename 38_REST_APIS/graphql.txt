@@ -1,0 +1,213 @@
+================================================================================
+LESSON: GRAPHQL (schema, resolvers, N+1, and when to choose it over REST)
+================================================================================
+GraphQL is a query language + runtime for APIs: the client declares
+EXACTLY the shape of data it needs in one round trip. This file teaches
+it the way an ML/backend engineer uses it: schema design, resolvers, the
+N+1 problem (its most common production failure), and an honest
+REST-vs-GraphQL decision rule.
+
+--------------------------------------------------------------------------------
+1. THE CORE IDEA vs REST
+--------------------------------------------------------------------------------
+REST: resources + fixed endpoints. The server decides the response shape.
+  GET /users/7/orders   -> always returns all order fields.
+  Need order totals too? New endpoint or over-fetch.
+
+GraphQL: ONE endpoint, a typed schema, and queries written by the client.
+  query { user(id: 7) { name orders { id total } } }
+  -> exactly name + order id + total. Nothing more, nothing less.
+
+TRADEOFFS IN ONE LINE
+  - REST wins: caching by URL, simple tooling, coarse-grained reads,
+    file upload, versioning by endpoint.
+  - GraphQL wins: many clients with different data needs (mobile vs web),
+    nested/multi-resource reads in one round trip, strongly typed
+    contract, evolution without versioning (add fields, deprecate old).
+
+--------------------------------------------------------------------------------
+2. THE TYPE SYSTEM (schema = the contract)
+--------------------------------------------------------------------------------
+GraphQL has a schema definition language (SDL). Core pieces:
+  type User {
+    id:    ID!
+    name:  String!
+    email: String            # nullable
+    orders: [Order!]!        # non-null list of non-null Orders
+  }
+  type Order {
+    id: ID!
+    total: Float!
+    user: User!              # reverse relation -> resolver joins
+  }
+  type Query {               # read entry points
+    user(id: ID!): User
+    users(first: Int, after: String): UserConnection   # pagination
+  }
+  type Mutation {            # writes
+    createOrder(userId: ID!, amount: Float!): Order!
+  }
+  type Subscription {        # realtime pushes
+    orderCreated: Order!
+  }
+RULES THAT PREVENT API ROT
+  - Every type has a clear identity; IDs are non-null.
+  - Nullability is a promise: `email: String` means "may be absent".
+    Marking everything non-null makes the API brittle (one resolver bug
+    fails the whole query).
+  - Lists: `[Order]!` = non-null list, items nullable; `[Order!]!` =
+    non-null list of non-null items. Choose deliberately.
+
+--------------------------------------------------------------------------------
+3. RESOLVERS (where the real code lives)
+--------------------------------------------------------------------------------
+A resolver is a function that returns the value for one FIELD. The
+schema is the map; resolvers are the implementation:
+  query { user(id: 7) { name orders { total } } }
+
+Execution: GraphQL calls userResolver(7) -> User object; then for the
+requested subfields, nameResolver(user) and ordersResolver(user); then
+for each order, totalResolver(order). This looks like magic but is just
+a tree walk of function calls.
+
+RESOLVER SIGNATURES (Strawberry example, Python):
+  import strawberry
+
+  @strawberry.type
+  class User:
+      id: strawberry.ID
+      name: str
+
+      @strawberry.field
+      def orders(self) -> list["Order"]:
+          # resolver: fetch this user's orders (see N+1 problem below)
+          return get_orders_for_user(self.id)
+
+  @strawberry.type
+  class Query:
+      @strawberry.field
+      def user(self, id: strawberry.ID) -> User | None:
+          return get_user(id)          # 1 DB call for the user
+  # schema = strawberry.Schema(query=Query)
+  # app.mount("/graphql", GraphQLApp(schema))
+
+--------------------------------------------------------------------------------
+4. THE N+1 PROBLEM (the #1 production GraphQL failure - know this cold)
+--------------------------------------------------------------------------------
+Naive resolvers issue one DB query PER PARENT:
+  query { users(first: 100) { orders { total } } }
+
+If usersResolver makes 1 query for 100 users, then ordersResolver runs
+once PER USER (100 queries), each with a WHERE user_id = ? -> 101
+queries total. For deeper nesting it compounds. This is the N+1 problem.
+
+THE FIX: DataLoader (batching + per-request caching).
+  1. Batching: instead of ordersResolver(user) querying per user, it
+     registers user_id in a queue and fires ONE query with
+     WHERE user_id IN (...100 ids) when the queue drains.
+  2. Caching: the same User/Order object is fetched once per REQUEST,
+     so repeated references in one query cost one lookup.
+
+  # data_loader pattern (conceptual; Strawberry/promise impl)
+  class OrdersByUserLoader:
+      def load(self, user_id):
+          self.pending.add(user_id)             # batch by request
+      def flush(self):
+          rows = db.query("SELECT * FROM orders "
+                          "WHERE user_id IN %(ids)s", self.pending)
+          self.pending.clear()                  # ONE query, not N
+  # Instantiate the loader PER REQUEST (never global - caches would
+  # leak data between users and go stale).
+
+DEBUGGING RULE: log the SQL your resolvers emit. If you see the same
+shape repeated N times with different ids, you have N+1. Fix with
+DataLoader or by resolving the whole list in the parent (prefetch
+orders for the 100 users in one join and group in memory).
+
+--------------------------------------------------------------------------------
+5. PAGINATION, AUTH, AND SUBSCRIPTIONS (the practical trio)
+--------------------------------------------------------------------------------
+PAGINATION: offset/limit is simple but unstable (new rows shift pages);
+GraphQL convention is CURSOR pagination with a Connection type:
+  type UserConnection { edges: [UserEdge!]! pageInfo: PageInfo! }
+  type UserEdge { cursor: String! node: User! }
+  type PageInfo { hasNextPage: Boolean! endCursor: String }
+  # query { users(first: 20, after: "cursor_xyz") { edges { node { name } } } }
+Cursor = opaque base64 of (sort_key, id); `after` means "start after
+this cursor" using a WHERE sort_key > ... AND id > ... - stable under
+insertions. Use keyset pagination in SQL, not OFFSET, for large tables.
+
+AUTH: GraphQL has no built-in auth. Standard pattern: context carries
+the authenticated user (JWT/session resolved at the HTTP layer); every
+resolver that returns private data checks permissions against context.
+  - Field-level authorization: hide or null out fields the caller may
+    not see (e.g., email when caller != owner and not admin).
+  - NEVER put auth tokens in queries; NEVER trust client ids without a
+    permission check (IDOR applies to GraphQL exactly as to REST).
+  - Depth/complexity limits: a malicious client can write a deeply
+    nested query that multiplies work exponentially
+    (friends { friends { friends ... } }). Enforce max_depth and
+    query cost (weighted fields), plus rate limiting.
+
+SUBSCRIPTIONS: real-time push over WebSocket:
+  subscription { orderCreated { id total } }
+  Implementation: a pub/sub broker (Redis) between your services and
+  the GraphQL server; the server forwards events to subscribed clients.
+  Keep subscription payloads SMALL (id + changed fields), not whole
+  objects - clients re-fetch via query if they need more.
+
+--------------------------------------------------------------------------------
+6. WHEN TO USE IT (honest decision rule for your own projects)
+--------------------------------------------------------------------------------
+  USE GraphQL when:
+    - Many heterogeneous clients (web, iOS, Android, third parties)
+      with different field needs.
+    - Data is naturally nested and clients need several resources per
+      screen (orders + items + user in one round trip).
+    - The API evolves fast and you want additive changes without
+      versioning.
+    - You need realtime (subscriptions) alongside queries.
+
+  PREFER REST when:
+    - Simple CRUD with few consumers; caching at the HTTP layer matters
+      (GET URLs cache naturally in CDNs - GraphQL POSTs mostly do not).
+    - File upload / binary-heavy traffic.
+    - You cannot afford resolver complexity (small team).
+    - The bottleneck is read-heavy public content served from cache.
+
+  Hybrid is common and fine: REST for public read-only content, GraphQL
+  for the app-facing API.
+
+--------------------------------------------------------------------------------
+7. PRACTICE
+--------------------------------------------------------------------------------
+1. (Schema) Write the SDL for: Author has many Books; Book has title,
+   year, author. Add a Query for book(id) and author(id), and a
+   Mutation addBook(title, authorId).
+2. (Design) A mobile home screen needs user name + latest 5 orders with
+   item titles. Write the ONE GraphQL query. Contrast with the REST
+   calls it replaces.
+3. (Concept) Explain in your own words what a resolver is and how
+   execution walks a nested query.
+4. (Debugging) You see 401 SQL queries for a query returning 400 users
+   and their orders. Diagnose the pattern and write the DataLoader fix.
+5. (Code) In Strawberry (or your framework), implement a Query with a
+   field that joins two tables WITHOUT N+1 (prefetch + group).
+6. (Pagination) Why is offset pagination unstable under inserts? Write
+   the keyset WHERE clause for "page after user 7 ordered by id".
+7. (Security) A client queries user(id: 999) and gets another user's
+   email. What is missing? Write the resolver-level check.
+8. (Security) Explain query depth/complexity attacks; what limits do you
+   set and how do you enforce them?
+9. (Design) Your boss says "GraphQL everywhere, REST is old". Give the
+   counter-argument for a public content site with CDN caching.
+10. (Interview) REST vs GraphQL: caching, over/under-fetching,
+    versioning, tooling, N+1 - a table in your own words.
+11. (Real world) Sketch how you'd serve ML predictions: a GraphQL
+    Mutation predict(input: JSON) returning a typed PredictionResult
+    (label, confidence, modelVersion). Where does auth + rate limiting
+    sit? How do clients poll or subscribe to long jobs?
+12. (Open-ended) OPEN PROBLEM: GraphQL federation across many teams
+    solves schema ownership but introduces cross-service N+1 and
+    consistency issues at scale. Design the failure modes and the
+    monitoring that would catch them.

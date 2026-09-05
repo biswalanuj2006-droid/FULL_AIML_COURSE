@@ -1,0 +1,44 @@
+================================================================================
+CODE PRACTICE - code/nlp (classic NLP pipeline)
+Companion: 01_nlp_classic_pipeline.py
+================================================================================
+RUN & OBSERVE
+1. Run the example; note the accuracy and the injected label noise -
+   why is a perfect 1.0 a red flag in real data (see the file's
+   comments and 23_NLP real_problem)?
+2. Print the 10 most informative features per class from the
+   logistic-regression coefficients (what did the model latch onto?).
+
+MODIFY
+3. Swap CountVectorizer for TfidfVectorizer with ngram_range=(1,2) and
+   min_df=5; compare accuracy and vocabulary size (the 2M-feature trap
+   from 23_NLP real_problem in miniature).
+4. Try a linear SVM (or SGDClassifier with hinge) vs logistic
+   regression at the same preprocessing; which wins here and why?
+5. Stem vs no stem: add a PorterStemmer to the analyzer and measure
+   the accuracy/vocab change.
+6. Class-weight the minority class and compare precision/recall/F1 on
+   the positive class (not just accuracy).
+
+DEBUG
+7. Remove the lowercase step and show the vocabulary doubles with
+   duplicate entries ("The" vs "the") - the classic text-prep bug.
+8. Feed an empty/whitespace document and read the vectorizer error;
+   guard against it with a document-length filter.
+9. Test/train split AFTER vectorizing on the full corpus: explain the
+   (minor here, major in self-trained vocab) leakage and fix the order.
+
+BUILD (mini)
+10. Extend the pipeline to a 3-class problem (add a third topic) and
+    re-report the confusion matrix - multiclass text in 10 lines.
+11. Save the fitted pipeline with joblib, reload in a new process, and
+    predict - the deployment pattern for 34_MODEL_DEPLOYMENT.
+12. Error analysis: collect 15 misclassified documents and find one
+    systematic pattern (e.g. negation, domain words); propose a feature
+    that would fix it and test it.
+
+RELATE
+13. Which claim from 23_NLP (e.g. ROUGE vs NLI, domain shift) can you
+    reproduce with this data? Run one small demonstration.
+14. (Interview) Why is accuracy the wrong headline metric here, and
+    which two metrics would you report instead?

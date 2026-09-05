@@ -1,0 +1,595 @@
+================================================================================
+MODULE 01 — PYTHON FOR AI/ML
+LESSON 03: FUNCTIONS
+================================================================================
+
+## What You Will Learn
+- Function definition and calling
+- Arguments: positional, keyword, *args, **kwargs
+- Return values
+- Lambda functions
+- Closures
+- Decorators
+- First-class functions
+- Recursive functions
+- Function design best practices
+
+## Why You Need It
+Functions are the building blocks of all ML code. You will define
+preprocessing pipelines, custom loss functions, evaluation metrics,
+training loops, and API endpoints — all as functions. Understanding
+function design is essential for writing clean, reusable ML code.
+
+================================================================================
+1. FUNCTION BASICS
+================================================================================
+
+DEFINING A FUNCTION:
+
+    def greet(name):
+        """Return a greeting message."""     # docstring
+        return f"Hello, {name}!"
+
+    CALLING:
+    message = greet("Alice")
+    print(message)    # "Hello, Alice!"
+
+ANATOMY:
+    def              keyword
+    greet            function name
+    (name)           parameters
+    """..."""        docstring (optional but recommended)
+    return           statement
+
+BENEFITS:
+    - Reusability: Call the same code multiple times
+    - Abstraction: Hide complexity behind a name
+    - Testing: Test functions independently
+    - Readability: Well-named functions are self-documenting
+
+================================================================================
+2. ARGUMENTS
+================================================================================
+
+POSITIONAL ARGUMENTS:
+    def add(a, b):
+        return a + b
+
+    add(3, 5)       # 8 (order matters)
+    add(5, 3)       # 8
+
+KEYWORD ARGUMENTS:
+    add(a=3, b=5)   # 8 (order doesn't matter)
+    add(b=5, a=3)   # 8
+
+MIXING POSITIONAL AND KEYWORD:
+    add(3, b=5)     # 8 (positional first, then keyword)
+    add(a=3, 5)     # ERROR! (positional after keyword)
+
+DEFAULT ARGUMENTS:
+    def greet(name, greeting="Hello"):
+        return f"{greeting}, {name}!"
+
+    greet("Alice")              # "Hello, Alice!"
+    greet("Alice", "Hi")        # "Hi, Alice!"
+    greet("Alice", greeting="Hey")  # "Hey, Alice!"
+
+    RULE: Default arguments must come AFTER non-default arguments.
+    def f(a, b=5, c=10):    # ✓ CORRECT
+    def f(a=5, b):           # ✗ SYNTAX ERROR
+
+***args — VARIABLE POSITIONAL ARGUMENTS:
+
+    def total(*args):
+        return sum(args)
+
+    total(1, 2, 3)         # 6
+    total(1, 2, 3, 4, 5)   # 15
+
+    args is a TUPLE of extra positional arguments.
+
+    ML USE:
+    def create_features(*feature_columns):
+        """Combine multiple feature columns."""
+        combined = np.column_stack(feature_columns)
+        return combined
+
+    create_features(age_col, income_col, score_col)
+
+**kwargs — VARIABLE KEYWORD ARGUMENTS:
+
+    def print_config(**kwargs):
+        for key, value in kwargs.items():
+            print(f"{key}: {value}")
+
+    print_config(lr=0.01, epochs=100, batch_size=32)
+
+    OUTPUT:
+    lr: 0.01
+    epochs: 100
+    batch_size: 32
+
+    kwargs is a DICTIONARY of extra keyword arguments.
+
+    ML USE:
+    def train_model(model, X_train, y_train, **kwargs):
+        """Train model with flexible parameters."""
+        model.fit(X_train, y_train, **kwargs)
+
+    train_model(model, X, y, sample_weight=weights)
+
+COMBINING ALL:
+
+    def function(a, b, *args, **kwargs):
+        print(f"a={a}, b={b}")
+        print(f"args={args}")
+        print(f"kwargs={kwargs}")
+
+    function(1, 2, 3, 4, x=5, y=6)
+    # a=1, b=2
+    # args=(3, 4)
+    # kwargs={'x': 5, 'y': 6}
+
+ENFORCING KEYWORD-ONLY ARGUMENTS:
+
+    def train(model, X, y, *, learning_rate=0.01, epochs=100):
+        # * means everything after must be keyword-only
+        pass
+
+    train(model, X, y, learning_rate=0.001)  # ✓
+    train(model, X, y, 0.001)                # ✗ ERROR
+
+    ML USE: Prevents accidentally passing arguments in wrong order.
+
+================================================================================
+3. RETURN VALUES
+================================================================================
+
+RETURN SINGLE VALUE:
+    def square(x):
+        return x ** 2
+
+RETURN MULTIPLE VALUES (as tuple):
+    def train_and_evaluate(model, X_train, y_train, X_test, y_test):
+        model.fit(X_train, y_train)
+        train_score = model.score(X_train, y_train)
+        test_score = model.score(X_test, y_test)
+        return train_score, test_score
+
+    train_acc, test_acc = train_and_evaluate(model, X_tr, y_tr, X_te, y_te)
+
+RETURN EARLY:
+    def process_data(data):
+        if not data:
+            return None    # Early return
+        if len(data) < 10:
+            return None    # Early return
+        # Main processing
+        result = complex_calculation(data)
+        return result
+
+    This avoids deep nesting and makes code more readable.
+
+NO RETURN (returns None implicitly):
+    def print_results(scores):
+        for name, score in scores.items():
+            print(f"{name}: {score}")
+    # Implicitly returns None
+
+================================================================================
+4. LAMBDA FUNCTIONS
+================================================================================
+
+LAMBDAS are anonymous (unnamed) functions.
+
+    # Regular function
+    def square(x):
+        return x ** 2
+
+    # Equivalent lambda
+    square = lambda x: x ** 2
+
+    square(5)    # 25
+
+SYNTAX:
+    lambda arguments: expression
+
+    The expression is automatically returned.
+    No 'return' keyword needed.
+    Can only contain ONE expression.
+
+WHEN TO USE LAMBDAS:
+
+    # 1. Short, simple operations
+    double = lambda x: x * 2
+    add = lambda x, y: x + y
+
+    # 2. As arguments to higher-order functions
+    numbers = [3, 1, 4, 1, 5, 9, 2, 6]
+    sorted_numbers = sorted(numbers, key=lambda x: -x)  # Sort descending
+    # [9, 6, 5, 4, 3, 2, 1, 1]
+
+    # 3. Sorting dictionaries by value
+    results = {"LR": 0.82, "RF": 0.87, "XGB": 0.89}
+    best = sorted(results.items(), key=lambda item: item[1], reverse=True)
+    # [("XGB", 0.89), ("RF", 0.87), ("LR", 0.82)]
+
+    # 4. Pandas apply
+    df["category"] = df["score"].apply(lambda x: "high" if x > 80 else "low")
+
+    # 5. Filtering
+    high_scores = list(filter(lambda x: x > 80, scores))
+
+    # 6. Mapping
+    doubled = list(map(lambda x: x * 2, numbers))
+
+WHEN NOT TO USE LAMBDAS:
+    - When the logic is complex (use def instead)
+    - When you need the function to be reusable by name
+    - When you need docstrings
+    - When the function has multiple statements
+
+    # BAD: Lambda is too complex
+    f = lambda x, y: (x**2 + y**2)**0.5 if x > 0 else -((x**2 + y**2)**0.5)
+
+    # GOOD: Use a regular function
+    def distance(x, y):
+        """Calculate distance from origin."""
+        dist = (x**2 + y**2)**0.5
+        return dist if x > 0 else -dist
+
+================================================================================
+5. FIRST-CLASS FUNCTIONS
+================================================================================
+
+In Python, functions are FIRST-CLASS OBJECTS:
+    - They can be assigned to variables
+    - They can be passed as arguments
+    - They can be returned from other functions
+    - They can be stored in data structures
+
+ASSIGNING TO VARIABLES:
+    def add(a, b):
+        return a + b
+
+    operation = add
+    print(operation(3, 5))    # 8
+
+PASSING AS ARGUMENTS:
+
+    def apply_operation(x, y, operation):
+        return operation(x, y)
+
+    apply_operation(3, 5, lambda a, b: a + b)    # 8
+    apply_operation(3, 5, lambda a, b: a * b)    # 15
+
+    ML USE: Strategy pattern for models
+    def evaluate(X_train, y_train, X_test, y_test, model_fn):
+        model = model_fn()
+        model.fit(X_train, y_train)
+        return model.score(X_test, y_test)
+
+    evaluate(X_tr, y_tr, X_te, y_te, lambda: RandomForestClassifier())
+
+STORING IN DATA STRUCTURES:
+    operations = {
+        "add": lambda x, y: x + y,
+        "multiply": lambda x, y: x * y,
+        "power": lambda x, y: x ** y,
+    }
+
+    print(operations["add"](3, 5))       # 8
+    print(operations["power"](2, 10))    # 1024
+
+================================================================================
+6. CLOSURES
+================================================================================
+
+A CLOSURE is a function that remembers values from its enclosing scope.
+
+    def make_multiplier(factor):
+        def multiply(x):
+            return x * factor    # 'factor' is remembered!
+        return multiply
+
+    double = make_multiplier(2)
+    triple = make_multiplier(3)
+
+    print(double(5))    # 10
+    print(triple(5))    # 15
+
+    'double' remembers factor=2
+    'triple' remembers factor=3
+
+ML USE — Creating Preprocessing Pipelines:
+
+    def make_scaler(method="standard"):
+        """Create a scaling function."""
+        if method == "standard":
+            def scale(data):
+                mean = sum(data) / len(data)
+                std = (sum((x - mean)**2 for x in data) / len(data))**0.5
+                return [(x - mean) / std for x in data]
+        elif method == "minmax":
+            def scale(data):
+                min_val, max_val = min(data), max(data)
+                return [(x - min_val) / (max_val - min_val) for x in data]
+        return scale
+
+    standard_scaler = make_scaler("standard")
+    minmax_scaler = make_scaler("minmax")
+
+    data = [1, 2, 3, 4, 5]
+    print(standard_scaler(data))
+    print(minmax_scaler(data))
+
+================================================================================
+7. DECORATORS
+================================================================================
+
+WHAT IS A DECORATOR?
+    A function that modifies another function's behavior.
+    It wraps a function to add functionality before/after.
+
+    @decorator
+    def function():
+        pass
+
+    Is equivalent to:
+    function = decorator(function)
+
+BASIC DECORATOR:
+
+    def timer(func):
+        import time
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            result = func(*args, **kwargs)
+            end = time.time()
+            print(f"{func.__name__} took {end - start:.4f}s")
+            return result
+        return wrapper
+
+    @timer
+    def train_model(model, X, y):
+        model.fit(X, y)
+        return model
+
+    model = train_model(RandomForestClassifier(), X, y)
+    # Prints: train_model took 0.0523s
+
+DECORATOR WITH ARGUMENTS:
+
+    def log_call(n_times=1):
+        def decorator(func):
+            def wrapper(*args, **kwargs):
+                for _ in range(n_times):
+                    result = func(*args, **kwargs)
+                return result
+            return wrapper
+        return decorator
+
+    @log_call(n_times=3)
+    def say_hello():
+        print("Hello!")
+
+    say_hello()
+    # Prints "Hello!" 3 times
+
+PRACTICAL ML DECORATORS:
+
+    # 1. Timing decorator
+    def timer(func):
+        import time
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            result = func(*args, **kwargs)
+            print(f"{func.__name__}: {time.time()-start:.2f}s")
+            return result
+        return wrapper
+
+    # 2. Cache/memoization decorator
+    from functools import lru_cache
+
+    @lru_cache(maxsize=128)
+    def expensive_calculation(n):
+        return sum(i**2 for i in range(n))
+
+    # 3. Validation decorator
+    def validate_input(func):
+        def wrapper(X, y, **kwargs):
+            if len(X) != len(y):
+                raise ValueError("X and y must have same length")
+            if len(X) == 0:
+                raise ValueError("Dataset cannot be empty")
+            return func(X, y, **kwargs)
+        return wrapper
+
+    @validate_input
+    def train(X, y):
+        model.fit(X, y)
+        return model
+
+    # 4. Retry decorator
+    def retry(max_attempts=3):
+        def decorator(func):
+            def wrapper(*args, **kwargs):
+                for attempt in range(max_attempts):
+                    try:
+                        return func(*args, **kwargs)
+                    except Exception as e:
+                        if attempt == max_attempts - 1:
+                            raise
+                        print(f"Attempt {attempt+1} failed: {e}")
+            return wrapper
+        return decorator
+
+PRESERVING FUNCTION METADATA:
+
+    The wrapper function replaces the original function's name and docstring.
+    Use @functools.wraps to preserve them:
+
+    from functools import wraps
+
+    def timer(func):
+        @wraps(func)    # Preserves func.__name__, func.__doc__, etc.
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            result = func(*args, **kwargs)
+            print(f"{func.__name__} took {time.time()-start:.4f}s")
+            return result
+        return wrapper
+
+================================================================================
+8. RECURSIVE FUNCTIONS
+================================================================================
+
+A function that calls itself.
+
+    def factorial(n):
+        if n <= 1:
+            return 1
+        return n * factorial(n - 1)
+
+    factorial(5) → 5 * factorial(4) → 5 * 4 * factorial(3) → ... → 120
+
+    WARNING: Deep recursion can cause "maximum recursion depth exceeded"
+
+    ML USE (rare but important):
+    - Decision tree traversal
+    - Graph algorithms
+    - Dynamic programming
+
+TAIL RECURSION (optimization pattern):
+    def factorial(n, accumulator=1):
+        if n <= 1:
+            return accumulator
+        return factorial(n - 1, n * accumulator)
+
+================================================================================
+9. FUNCTION DESIGN BEST PRACTICES
+================================================================================
+
+1. SINGLE RESPONSIBILITY: Each function does ONE thing.
+
+    # BAD
+    def process_data(data):
+        clean(data)
+        transform(data)
+        scale(data)
+        return data
+
+    # GOOD
+    def clean(data): ...
+    def transform(data): ...
+    def scale(data): ...
+
+2. MEANINGFUL NAMES: Functions should be named after what they do.
+
+    # BAD
+    def f(x):
+        return x * 2 + 1
+
+    # GOOD
+    def apply_linear_transform(x, slope=2, intercept=1):
+        return x * slope + intercept
+
+3. LIMIT PARAMETERS: Prefer 3-5 parameters.
+
+    # BAD
+    def train_model(X_train, y_train, X_val, y_val, model, lr, epochs,
+                    batch_size, optimizer, loss_fn, scheduler, ...):
+        pass
+
+    # GOOD
+    def train_model(model, train_data, val_data, config):
+        """Train model with config dict."""
+        pass
+
+4. PURE FUNCTIONS: Same input → Same output, no side effects.
+
+    # BAD: Modifies global state
+    results = []
+    def evaluate(model):
+        results.append(model.score(X_test, y_test))  # Side effect!
+
+    # GOOD: Returns result
+    def evaluate(model, X_test, y_test):
+        return model.score(X_test, y_test)
+
+5. USE TYPE HINTS (Python 3.5+):
+
+    def predict(model, X: np.ndarray) -> np.ndarray:
+        return model.predict(X)
+
+    def train(model, X: np.ndarray, y: np.ndarray, lr: float = 0.01) -> None:
+        model.fit(X, y)
+
+================================================================================
+10. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Mutable default arguments
+    def f(data=[]):        # WRONG!
+        data.append(1)
+        return data
+
+    def f(data=None):      # CORRECT
+        if data is None:
+            data = []
+        data.append(1)
+        return data
+
+MISTAKE 2: Not returning a value
+    def calculate(x):
+        result = x ** 2
+    # Missing return! Returns None.
+
+    def calculate(x):
+        result = x ** 2
+        return result    # CORRECT
+
+MISTAKE 3: Using global variables
+    # BAD
+    threshold = 0.5
+    def classify(prediction):
+        return "positive" if prediction > threshold else "negative"
+
+    # GOOD
+    def classify(prediction, threshold=0.5):
+        return "positive" if prediction > threshold else "negative"
+
+MISTAKE 4: Lambda with side effects
+    # BAD
+    log = lambda x: print(f"Value: {x}")  # Side effect in lambda!
+
+    # GOOD
+    def log(x):
+        print(f"Value: {x}")
+
+MISTAKE 5: Not using *args/**kwargs for flexibility
+    # Inflexible
+    def train(model, X, y):
+        model.fit(X, y)
+
+    # Flexible
+    def train(model, X, y, **fit_params):
+        model.fit(X, y, **fit_params)
+    # Now you can pass sample_weight, eval_set, etc.
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between *args and **kwargs?
+2. When should you use a lambda vs a regular function?
+3. What is a closure?
+4. What does @functools.wraps do?
+5. Write a decorator that logs function calls.
+6. What is the mutable default argument problem?
+7. How do you return multiple values from a function?
+8. What are type hints and why use them?
+
+================================================================================
+NEXT LESSON: 04_classes_oop.txt — Classes, OOP, Magic Methods
+================================================================================

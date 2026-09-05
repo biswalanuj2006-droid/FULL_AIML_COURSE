@@ -1,0 +1,288 @@
+================================================================================
+HUGGING FACE ECOSYSTEM DEEP DIVE
+================================================================================
+
+## What You Will Learn
+- Transformers library (models, tokenizers, pipelines)
+- Datasets library
+- Tokenizers library
+- Sentence Transformers
+- PEFT (LoRA fine-tuning)
+
+## Why Hugging Face?
+Hugging Face is THE platform for modern NLP and AI. It provides:
+- 500K+ pretrained models
+- 100K+ datasets
+- Standard API for NLP, CV, and more
+- Model hub, tokenizers, and training tools
+
+pip install transformers datasets tokenizers sentence-transformers peft
+
+================================================================================
+1. TRANSFORMERS — PIPELINES (EASIEST WAY)
+================================================================================
+
+from transformers import pipeline
+
+# Sentiment Analysis
+classifier = pipeline("sentiment-analysis")
+result = classifier("I love this product!")
+# [{'label': 'POSITIVE', 'score': 0.9998}]
+
+# Text Generation
+generator = pipeline("text-generation", model="gpt2")
+result = generator("The future of AI is", max_length=50)
+
+# Question Answering
+qa = pipeline("question-answering")
+result = qa(question="What is ML?", context="Machine learning is a subset of AI.")
+
+# Summarization
+summarizer = pipeline("summarization")
+summary = summarizer("Long article text...", max_length=100)
+
+# Translation
+translator = pipeline("translation_en_to_fr")
+result = translator("Hello, how are you?")
+
+# Zero-shot Classification
+classifier = pipeline("zero-shot-classification")
+result = classifier("I want to buy a car",
+                     candidate_labels=["technology", "sports", "business"])
+
+# Named Entity Recognition
+ner = pipeline("ner", aggregation_strategy="simple")
+entities = ner("Apple is based in Cupertino, California.")
+
+# Image Classification
+classifier = pipeline("image-classification")
+result = classifier("photo.jpg")
+
+# Object Detection
+detector = pipeline("object-detection")
+results = detector("photo.jpg")
+
+AVAILABLE PIPELINES:
+    sentiment-analysis, text-generation, question-answering,
+    summarization, translation, ner, fill-mask, conversational,
+    image-classification, object-detection, image-segmentation,
+    audio-classification, automatic-speech-recognition
+
+================================================================================
+2. TRANSFORMERS — MODELS AND TOKENIZERS
+================================================================================
+
+FROM PRETRAINED:
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+    model_name = "bert-base-uncased"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name, num_labels=2
+    )
+
+TOKENIZATION:
+    text = "I love machine learning!"
+
+    # Tokenize
+    inputs = tokenizer(text, return_tensors="pt",
+                       padding=True, truncation=True, max_length=128)
+
+    # inputs contains:
+    # input_ids: Token IDs
+    # attention_mask: Which tokens to attend to
+    # token_type_ids: Segment IDs (for some models)
+
+    # Decode back
+    decoded = tokenizer.decode(inputs["input_ids"][0])
+
+    # Batch tokenization
+    texts = ["Hello", "World", "AI"]
+    batch = tokenizer(texts, padding=True, truncation=True, return_tensors="pt")
+
+FINE-TUNING FOR CLASSIFICATION:
+    from transformers import TrainingArguments, Trainer
+    from datasets import load_dataset
+
+    # Load dataset
+    dataset = load_dataset("imdb")
+
+    # Tokenize
+    def tokenize_fn(examples):
+        return tokenizer(examples["text"], truncation=True, padding=True,
+                         max_length=512)
+
+    tokenized = dataset.map(tokenize_fn, batched=True)
+
+    # Training arguments
+    args = TrainingArguments(
+        output_dir="./results",
+        num_train_epochs=3,
+        per_device_train_batch_size=16,
+        per_device_eval_batch_size=64,
+        eval_strategy="epoch",
+        save_strategy="epoch",
+        learning_rate=2e-5,
+        weight_decay=0.01,
+        load_best_model_at_end=True,
+    )
+
+    # Train
+    trainer = Trainer(
+        model=model,
+        args=args,
+        train_dataset=tokenized["train"],
+        eval_dataset=tokenized["test"],
+    )
+    trainer.train()
+
+================================================================================
+3. SENTENCE TRANSFORMERS — EMBEDDINGS
+================================================================================
+
+from sentence_transformers import SentenceTransformer, util
+
+# Load model
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+# Encode sentences
+sentences = ["I love machine learning", "Deep learning is fascinating",
+             "I enjoy cooking"]
+embeddings = model.encode(sentences)
+# Shape: (3, 384)
+
+# Semantic similarity
+similarity = util.cos_sim(embeddings[0], embeddings[1])
+print(f"Similarity: {similarity.item():.4f}")
+
+# Semantic search
+query = "I like AI"
+query_embedding = model.encode(query)
+scores = util.cos_sim(query_embedding, embeddings)
+print(f"Best match: {sentences[scores.argmax()]}")
+
+# Find most similar
+hits = util.semantic_search(query_embedding, embeddings, top_k=3)
+
+ML USE:
+    - Semantic search
+    - Document clustering
+    - Recommendation systems
+    - RAG (Retrieval-Augmented Generation)
+    - Duplicate detection
+    - Paraphrase detection
+
+================================================================================
+4. DATASETS LIBRARY
+================================================================================
+
+from datasets import load_dataset
+
+# Load from Hugging Face Hub
+dataset = load_dataset("imdb")
+print(dataset)
+# DatasetDict({
+#     train: Dataset({features: ['text', 'label'], num_rows: 25000})
+#     test: Dataset({features: ['text', 'label'], num_rows: 25000})
+# })
+
+# Access splits
+train_data = dataset["train"]
+print(train_data[0])    # First example
+
+# Map preprocessing
+def preprocess(example):
+    return tokenizer(example["text"], truncation=True, padding="max_length",
+                     max_length=128)
+
+tokenized = dataset.map(preprocess, batched=True)
+
+# Split
+train_test = dataset["train"].train_test_split(test_size=0.2)
+
+# Save/load locally
+dataset.save_to_disk("./my_dataset")
+loaded = load_dataset("./my_dataset")
+
+# From CSV/JSON
+dataset = load_dataset("csv", data_files="data.csv")
+dataset = load_dataset("json", data_files="data.jsonl")
+
+================================================================================
+5. PEFT — PARAMETER-EFFICIENT FINE-TUNING
+================================================================================
+
+WHY PEFT?
+    Full fine-tuning of large models is expensive.
+    PEFT trains only a small fraction of parameters.
+
+from peft import LoraConfig, get_peft_model, TaskType
+
+# Configure LoRA
+lora_config = LoraConfig(
+    task_type=TaskType.SEQ_CLS,
+    r=8,                          # Rank of adaptation
+    lora_alpha=32,                # Scaling factor
+    lora_dropout=0.1,
+    target_modules=["query", "value"]  # Which layers to adapt
+)
+
+# Apply LoRA to model
+model = AutoModelForSequenceClassification.from_pretrained(
+    "bert-base-uncased", num_labels=2
+)
+peft_model = get_peft_model(model, lora_config)
+peft_model.print_trainable_parameters()
+# trainable params: 667,906 || all params: 109,687,812 || trainable%: 0.61%
+
+# Train with Trainer as normal
+# Only the LoRA parameters are trained!
+
+# Save only LoRA weights
+peft_model.save_pretrained("./lora_model")
+
+# Load LoRA weights
+from peft import PeftModel
+base_model = AutoModelForSequenceClassification.from_pretrained(
+    "bert-base-uncased", num_labels=2
+)
+model = PeftModel.from_pretrained(base_model, "./lora_model")
+
+================================================================================
+6. TOKENIZERS LIBRARY (LOW-LEVEL)
+================================================================================
+
+from tokenizers import Tokenizer, models, pre_tokenizers, trainers
+
+# Build a BPE tokenizer from scratch
+tokenizer = Tokenizer(models.BPE())
+tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
+
+trainer = trainers.BpeTrainer(
+    vocab_size=30000,
+    special_tokens=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"]
+)
+
+# Train on files
+tokenizer.train(files=["corpus.txt"], trainer=trainer)
+
+# Encode
+output = tokenizer.encode("Hello, how are you?")
+print(output.ids)        # Token IDs
+print(output.tokens)     # Token strings
+
+# Save/load
+tokenizer.save("tokenizer.json")
+tokenizer = Tokenizer.from_file("tokenizer.json")
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. When should you use pipelines vs manual model loading?
+2. What is the difference between fine-tuning and LoRA?
+3. Why use sentence-transformers for embeddings instead of raw transformers?
+4. What does the datasets library provide that pandas doesn't?
+5. When would you train a tokenizer from scratch?
+
+================================================================================

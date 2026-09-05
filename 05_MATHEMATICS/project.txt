@@ -1,0 +1,17 @@
+================================================================================
+MATHEMATICS MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: OPTIMIZATION VISUALIZER (Beginner)
+================================================
+Implement gradient descent on different functions, visualize the optimization path.
+
+PROJECT 2: LINEAR ALGEBRA ML TOOLKIT (Intermediate)
+====================================================
+Implement: PCA, SVD, linear regression, eigendecomposition — all from scratch using NumPy.
+
+PROJECT 3: MATHEMATICAL PROOFS FOR ML (Advanced/Research)
+==========================================================
+Derive and prove: backpropagation, attention gradient, Adam optimizer convergence, PCA optimality.
+
+================================================================================

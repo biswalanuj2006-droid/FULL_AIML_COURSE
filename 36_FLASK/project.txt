@@ -1,0 +1,17 @@
+================================================================================
+FLASK MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: SIMPLE FLASK API (Beginner)
+=========================================
+Build basic CRUD API with Flask.
+
+PROJECT 2: ML MODEL SERVING API (Intermediate)
+================================================
+Serve ML model with Flask, add validation and error handling.
+
+PROJECT 3: PRODUCTION FLASK APP (Advanced)
+============================================
+Build complete Flask app with auth, database, testing, Docker.
+
+================================================================================

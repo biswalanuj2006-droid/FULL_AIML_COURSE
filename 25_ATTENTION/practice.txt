@@ -1,0 +1,34 @@
+================================================================================
+ATTENTION MODULE — PRACTICE SET (20 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What problem does attention solve?
+Q2: What are Q, K, V in attention?
+Q3: Why scale by sqrt(d_k)?
+Q4: What is self-attention?
+Q5: What is cross-attention?
+Q6: What is multi-head attention?
+Q7: What is causal masking?
+Q8: Why is attention parallelizable?
+
+MEDIUM (8)
+===========
+Q9: Implement scaled dot-product attention from scratch.
+Q10: Implement multi-head attention in PyTorch.
+Q11: Visualize attention weights for text.
+Q12: Implement attention for sequence-to-sequence model.
+Q13: Compare attention vs no-attention model.
+Q14: Implement cross-attention between two sequences.
+Q15: Build attention visualization tool.
+Q16: Implement efficient attention (linear attention concept).
+
+HARD (4)
+=========
+Q17: Implement flash attention concept.
+Q18: Build custom attention mechanism.
+Q19: Implement sparse attention.
+Q20: Build attention analysis framework.
+
+================================================================================

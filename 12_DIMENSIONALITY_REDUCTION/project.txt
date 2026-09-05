@@ -1,0 +1,17 @@
+================================================================================
+DIMENSIONALITY REDUCTION — PROJECTS
+================================================================================
+
+PROJECT 1: PCA VISUALIZATION (Beginner)
+=========================================
+Apply PCA to high-dimensional data, visualize in 2D/3D, analyze explained variance.
+
+PROJECT 2: IMAGE COMPRESSION WITH PCA (Intermediate)
+=====================================================
+Use PCA to compress images, analyze reconstruction quality vs number of components.
+
+PROJECT 3: DIMENSIONALITY REDUCTION COMPARISON (Advanced)
+==========================================================
+Compare PCA, t-SNE, UMAP, LDA on multiple datasets with evaluation metrics.
+
+================================================================================

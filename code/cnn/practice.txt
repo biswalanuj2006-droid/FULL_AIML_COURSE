@@ -1,0 +1,40 @@
+================================================================================
+CODE PRACTICE - code/cnn (PyTorch CNN, MNIST)
+Companion: 01_pytorch_cnn.py
+================================================================================
+RUN & OBSERVE
+1. Run for 5 epochs; watch train vs test loss - does the gap grow?
+2. Save 8 test images with their predicted vs true labels; find the
+   failure patterns (which digits get confused?).
+
+MODIFY
+3. Change kernel size 3x3 -> 5x5 (first conv): accuracy, params, and
+   receptive field per layer - verify the field math manually.
+4. Add a second conv block; compare accuracy per epoch. Then remove the
+   final pooling and note what breaks (dimension mismatch / accuracy).
+5. Add data augmentation (random shifts/rotations with torchvision
+   transforms) and measure the train-test gap change.
+6. Switch to SGD(lr=0.01, momentum=0.9) from Adam: compare convergence
+   speed in the first 3 epochs (the optimizer card in action).
+
+DEBUG
+7. Remove the .train()/.eval() toggle and run dropout/BatchNorm in eval:
+   show the accuracy drop and explain why eval mode matters.
+8. Resize or channel mismatch: feed 28x28x1 as if it were 3-channel and
+   fix the input reshape - read the error message carefully.
+9. Set batch size 1 (or a number that doesn't divide the dataset):
+   watch for the "dropped last batch" and handle with drop_last.
+
+BUILD (mini)
+10. Implement a manual conv2d (double loop or im2col) in numpy on a
+    3x3 kernel and verify it matches torch's conv2d on random input.
+11. Transfer learning: load a torchvision pretrained ResNet-18, freeze
+    features, retrain the head on a small dataset; compare with the
+    from-scratch CNN accuracy at the same epoch budget (the 32_FINE_
+    TUNING lesson in code).
+
+RELATE
+12. Verify one 20_CNN think.txt claim experimentally (e.g. batch-size
+    scaling or augmentation gap).
+13. (Interview) Why does depth help CNNs? Give the receptive-field
+    argument using your architecture's numbers.

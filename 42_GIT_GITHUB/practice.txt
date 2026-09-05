@@ -1,0 +1,29 @@
+================================================================================
+GIT & GITHUB — PRACTICE SET (15 Questions)
+================================================================================
+
+EASY (6)
+=========
+Q1: What is the difference between git add and git commit?
+Q2: What is a branch?
+Q3: What is merge vs rebase?
+Q4: What is .gitignore?
+Q5: What is a pull request?
+Q6: What is a remote repository?
+
+MEDIUM (6)
+===========
+Q7: Resolve a merge conflict.
+Q8: Implement git workflow for ML project.
+Q9: Set up GitHub Actions CI/CD.
+Q10: Implement git branching strategy.
+Q11: Use git stash for temporary changes.
+Q12: Implement git hooks for code quality.
+
+HARD (3)
+=========
+Q13: Design complete Git workflow for team.
+Q14: Implement git submodules for monorepo.
+Q15: Build Git-based data versioning system.
+
+================================================================================

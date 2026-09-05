@@ -1,0 +1,70 @@
+================================================================================
+NUMPY MODULE — PRACTICE SET (50+ Questions)
+================================================================================
+
+EASY (15)
+=========
+Q1: Create a 1D array of zeros with 10 elements.
+Q2: Create a 3x3 identity matrix.
+Q3: Create an array from 0 to 20 with step 2.
+Q4: What is the shape of a (5,4,3) array?
+Q5: Reshape a 12-element array to 3x4.
+Q6: Find the mean of array [1,2,3,4,5].
+Q7: Find the max value in a 2D array along axis=1.
+Q8: Slice the first 3 elements of a 1D array.
+Q9: Multiply every element of an array by 3 (vectorized).
+Q10: What is the difference between np.array and np.asarray?
+Q11: Create an array of 5 evenly spaced numbers between 0 and 1.
+Q12: What does np.flatten() do vs np.ravel()?
+Q13: Concatenate two arrays along axis=0.
+Q14: Create a random 3x3 array with values 0-1.
+Q15: Find indices where array > threshold.
+
+MEDIUM (15)
+============
+Q16: Implement matrix multiplication using NumPy (3 methods).
+Q17: Compute the dot product of two vectors.
+Q18: Implement broadcasting to add a vector to every row of a matrix.
+Q19: Compute eigenvalues and eigenvectors of a matrix.
+Q20: Implement PCA from scratch using NumPy.
+Q21: Compute the covariance matrix of a dataset.
+Q22: Implement softmax function using NumPy.
+Q23: Implement cross-entropy loss using NumPy.
+Q24: Normalize a matrix to have zero mean and unit variance.
+Q25: Implement one-hot encoding using NumPy.
+Q26: Compute the inverse of a matrix.
+Q27: Implement SVD decomposition.
+Q28: Create a boolean mask and apply it to filter an array.
+Q29: Implement linear regression prediction using NumPy.
+Q30: Compute cosine similarity between two vectors.
+
+HARD (10)
+==========
+Q31: Implement k-means clustering using only NumPy.
+Q32: Implement a single-layer neural network forward pass.
+Q33: Implement backpropagation for a 2-layer network.
+Q34: Implement PCA with full pipeline (center, project, reconstruct).
+Q35: Implement gradient descent for linear regression.
+Q36: Compute the determinant of a matrix using LU decomposition.
+Q37: Implement convolution operation using NumPy.
+Q38: Implement batch normalization forward pass.
+Q39: Implement attention mechanism using NumPy.
+Q40: Benchmark NumPy vs Python loops for matrix operations.
+
+DEBUGGING (5)
+==============
+D1: Why does np.array([[1,2],[3,4,5]]) create an object array?
+D2: Fix: Broadcasting error when adding arrays of different shapes.
+D3: Why is np.dot(A,B) different from A @ B?
+D4: Fix: Memory error when creating large array.
+D5: Why does changing a slice modify the original array?
+
+OPTIMIZATION (5)
+=================
+O1: Rewrite Python loop to use NumPy vectorization.
+O2: Use np.einsum for tensor contraction.
+O3: Optimize memory usage for large array operations.
+O4: Compare np.memmap for out-of-core computation.
+O5: Use np.where for conditional element selection.
+
+================================================================================

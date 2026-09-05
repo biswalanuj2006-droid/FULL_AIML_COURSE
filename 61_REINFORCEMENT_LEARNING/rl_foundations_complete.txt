@@ -1,0 +1,190 @@
+================================================================================
+LESSON: REINFORCEMENT LEARNING FOUNDATIONS (the ML connection)
+================================================================================
+RL is a full specialization; this module gives the mathematical core and
+its direct links to the ML you already know (prediction, optimization,
+function approximation), enough to read modern RL papers and implement
+the classic algorithms.
+
+--------------------------------------------------------------------------------
+1. THE RL PROBLEM: learning from consequences, not labels
+--------------------------------------------------------------------------------
+Supervised learning has (x, y) pairs. RL has an AGENT acting in an
+ENVIRONMENT and receiving a scalar REWARD. There is no "correct answer"
+for an action - only delayed consequences. The agent must trade
+EXPLORATION (try new actions to learn) against EXPLOITATION (use what
+it knows) - a dilemma supervised learning does not have.
+The formal object is the MARKOV DECISION PROCESS (MDP):
+  - States S (what the agent observes)
+  - Actions A (what it can do)
+  - Transition p(s' | s, a) (environment dynamics; Markov: next state
+    depends only on current state + action, not the full history)
+  - Reward r(s, a, s') (the scalar feedback)
+  - Discount gamma in [0,1) (why: present reward > future reward;
+    also keeps infinite-horizon returns finite)
+A POLICY pi(a|s) is the agent's behavior - what to do in each state.
+The goal: maximize EXPECTED DISCOUNTED RETURN:
+    G_t = sum_{k=0..inf} gamma^k r_{t+k+1}
+The agent never sees the transition probabilities (model-free) or
+learns them (model-based). Everything below is model-free.
+
+--------------------------------------------------------------------------------
+2. VALUE FUNCTIONS AND THE BELLMAN EQUATIONS (the heart)
+--------------------------------------------------------------------------------
+STATE-VALUE: how good is state s under policy pi (expected return from
+here on)?
+    V_pi(s) = E_pi[ G_t | s_t = s ]
+ACTION-VALUE (Q-function): how good is taking action a in state s?
+    Q_pi(s, a) = E_pi[ G_t | s_t = s, a_t = a ]
+BELLMAN EQUATION (the recursive self-consistency that makes RL
+tractable):
+    V_pi(s) = sum_a pi(a|s) sum_{s'} p(s'|s,a) [ r + gamma V_pi(s') ]
+Read: "value of s = expected (immediate reward + discounted value of
+the next state)". Same recursion for Q:
+    Q_pi(s,a) = sum_{s'} p(s'|s,a) [ r + gamma sum_{a'} pi(a'|s')
+                                       Q_pi(s',a') ]
+OPTIMALITY: define the optimal value V*(s) = max over policies of
+V_pi(s). It satisfies the Bellman OPTIMALITY equation:
+    V*(s) = max_a sum_{s'} p(s'|s,a) [ r + gamma V*(s') ]
+and the optimal policy is greedy w.r.t. the optimal Q*:
+    pi*(s) = argmax_a Q*(s, a)
+THE PUNCHLINE: if you knew Q*, acting is trivial - take the argmax.
+RL = methods for learning Q* (or V*, or the policy directly) from
+experience. The Bellman equation is the fixed-point equation these
+methods iterate on - the same pattern as EM and contraction maps
+(Bellman operator is a contraction -> iteration converges).
+
+--------------------------------------------------------------------------------
+3. TABULAR LEARNING (small state spaces, exact updates)
+--------------------------------------------------------------------------------
+TEMPORAL DIFFERENCE (TD) - the central idea: update estimates toward
+the observed reward + bootstrapped estimate (learn from one step, no
+model, no waiting for episode end):
+    V(s_t) <- V(s_t) + lr [ r_{t+1} + gamma V(s_{t+1}) - V(s_t) ]
+The bracket is the TD ERROR delta_t - "how surprised was I".
+SARSA (on-policy): Q(s,a) <- Q(s,a) + lr [ r + gamma Q(s',a') - Q(s,a) ]
+  where a' is the action the CURRENT policy will actually take.
+Q-LEARNING (off-policy): Q(s,a) <- Q(s,a) + lr [ r + gamma max_{a'}
+  Q(s',a') - Q(s,a) ]
+  The max makes it learn the OPTIMAL Q* regardless of the exploratory
+  behavior policy - off-policy means the experience can come from any
+  policy (replay buffers exploit this). Q-learning converges to Q* for
+  tabular settings with decaying lr and enough exploration
+  (epsilon-greedy).
+DEEP Q-NETWORK (DQN, Mnih 2015) - the two tricks that made Q-learning
+work with neural nets:
+  1. EXPERIENCE REPLAY: store (s,a,r,s') transitions in a buffer;
+     sample MINI-BATCHES uniformly. Breaks the correlation between
+     consecutive transitions (i.i.d.-ish batches - exactly why SGD
+     works in supervised learning).
+  2. TARGET NETWORK: keep a frozen copy Q^- of the network, updated
+     slowly, and use it for the max term:
+       loss = ( r + gamma max_{a'} Q^-(s', a') - Q(s,a) )^2
+     Without it, the update chases a moving target (the same network
+     updates both sides) and diverges.
+  DQN loss = MSE on the TD error = supervised regression onto targets
+  produced by the Bellman equation. If you know supervised learning,
+  you know DQN's mechanics.
+
+--------------------------------------------------------------------------------
+4. POLICY GRADIENTS (learning the policy directly)
+--------------------------------------------------------------------------------
+Value methods act greedily on Q; policy methods optimize the policy
+itself. Parameterize pi_theta(a|s) (e.g. a softmax over action scores
+from a network) and maximize expected return J(theta) = E[G]. The
+POLICY GRADIENT THEOREM gives the gradient without differentiating
+through the environment:
+    grad_theta J = E[ grad_theta log pi_theta(a|s) * Q_pi(s,a) ]
+Read: "increase the log-probability of actions that led to high
+Q-values, decrease the rest" - a weighted maximum-likelihood update
+where the weight is the action's value. (MLE connection: supervised
+learning maximizes log p(y|x); RL maximizes log p(a|s) weighted by
+how good a was.)
+REDUCING VARIANCE:
+  - Subtract a BASELINE b(s) (any state-dependent function) - it does
+    not bias the gradient (E[grad log pi * b(s)] = 0) but slashes
+    variance:  grad = E[ grad log pi(a|s) * (Q(s,a) - b(s)) ]
+  - The standard choice: ADVANTAGE A(s,a) = Q(s,a) - V(s)
+    ("how much better than average was this action in this state").
+ACTOR-CRITIC: two networks - the ACTOR pi_theta and the CRITIC V_phi
+(estimates the baseline/advantage). The critic is trained by TD
+regression (supervised!); the actor by the policy gradient using the
+critic's advantage. This is the architecture behind modern algorithms.
+PPO (the practical standard) clips the importance ratio to keep updates
+small:
+    L = E[ min( r_t A_t, clip(r_t, 1-eps, 1+eps) A_t ) ],
+        r_t = pi_theta(a|s) / pi_old(a|s)
+  Trust-region-ish stability with plain SGD - this is what makes LLM
+  alignment (RLHF, InstructGPT) trainable in practice.
+
+--------------------------------------------------------------------------------
+5. THE ML CONNECTION TABLE (how to map what you already know)
+--------------------------------------------------------------------------------
+  Supervised loss on batches      <->  DQN regression to Bellman targets
+  MLE / cross-entropy             <->  policy gradient (weighted MLE)
+  Function approximation          <->  deep Q-networks, actor-critic
+  Bias-variance                  <->  exploration-exploitation
+  Gradient clipping / trust reg. <->  PPO clipped objective
+  Imbalanced/rare classes        <->  sparse rewards (need reward
+                                      shaping / intrinsic motivation)
+  Regularization                 <->  entropy bonus on the policy
+                                      (prevent premature collapse)
+
+--------------------------------------------------------------------------------
+6. FAILURE MODES AND DEBUGGING
+--------------------------------------------------------------------------------
+  - Reward hacking: the agent maximizes the MEASURED reward, which is
+    not the intended objective (ship the wrong metric -> the agent
+    games it). Always sanity-check learned behavior, not just the
+    curve.
+  - Deadly triad: function approximation + bootstrapping + off-policy
+    can diverge; mitigate with target networks and small steps.
+  - Sparse rewards: no learning signal for thousands of steps; shape
+    rewards, add intrinsic curiosity, or use hindsight/goal relabeling.
+  - Non-stationarity: the agent changes the data distribution as it
+    learns (unlike supervised learning) - replay buffers + slow targets
+    damp this.
+  - Evaluation instability: returns are noisy across seeds; report
+    mean +/- std over seeds, and test against a fixed random policy and
+    a heuristic baseline.
+DEBUGGING RULE: watch three curves - episode return, TD error / loss,
+and action entropy. Return flat + entropy collapsing = premature
+exploitation; loss diverging = target/learning-rate problem.
+
+--------------------------------------------------------------------------------
+7. PRACTICE
+--------------------------------------------------------------------------------
+1. (Math) Write the Bellman equation for V_pi and derive why the
+   Bellman optimality operator is a contraction (gamma < 1).
+2. (Concept) On-policy vs off-policy: SARSA vs Q-learning. Why does
+   Q-learning's max make it off-policy, and why does that enable
+   replay?
+3. (Code) Implement Q-learning with an epsilon-greedy policy on a tiny
+   gridworld (or FrozenLake-v1 via gymnasium if installed); plot
+   episode returns and show the learned policy is optimal.
+4. (Code) Extend to DQN with replay + target network on the same
+   environment; ablate: (a) no replay, (b) no target net - show which
+   one breaks and how.
+5. (Math) Write the policy gradient theorem update for a softmax
+   policy; explain why subtracting a baseline does not bias it.
+6. (Code) Implement REINFORCE (policy gradient with return as weight,
+   no critic) on a simple bandit/cartpole-scale problem; then add a
+   baseline and show the variance reduction in the loss curve.
+7. (Concept) Why does PPO clip the ratio? What failure of plain policy
+   gradient does it prevent, and what do you lose for it?
+8. (Design) RLHF: an LLM is trained to answer helpfully. Sketch the
+   three stages (SFT -> reward model from human preferences ->
+   PPO with the reward model) and identify where each ML idea from
+   section 5 appears.
+9. (Debugging) Returns plateau at the random-policy level. List four
+   causes and the diagnostic for each (reward scale, exploration,
+   learning rate, reward signal itself).
+10. (Reasoning) Sparse-reward maze: compare reward shaping, curiosity
+    bonus, and hindsight relabeling - which changes the objective and
+    which only changes the learning signal?
+11. (Interview) Explain the exploration-exploitation trade-off with a
+    restaurant example, then formalize it in MDP terms.
+12. (Open-ended) OPEN PROBLEM: sample-efficient deep RL (learning from
+    as little interaction as supervised learning needs data) is
+    unsolved - state the gap between RL and supervised sample
+    efficiency and what a breakthrough would need to demonstrate.

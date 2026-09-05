@@ -1,0 +1,17 @@
+================================================================================
+RESEARCH ENGINEERING — PROJECTS
+================================================================================
+
+PROJECT 1: PAPER IMPLEMENTATION (Beginner)
+=============================================
+Implement a classic ML paper (e.g., AlexNet, ResNet).
+
+PROJECT 2: COMPARATIVE STUDY (Intermediate)
+=============================================
+Compare multiple methods on same dataset with rigorous evaluation.
+
+PROJECT 3: NOVEL CONTRIBUTION (Advanced/Research)
+==================================================
+Propose and evaluate improvement to existing method.
+
+================================================================================

@@ -1,0 +1,227 @@
+================================================================================
+MODULE 07: DATA PREPROCESSING — LESSON 3: OUTLIER DETECTION & HANDLING
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able to:
+- Define outliers and understand their impact on ML
+- Detect outliers using statistical and ML-based methods
+- Handle outliers appropriately for different scenarios
+- Know when to keep vs remove vs transform outliers
+
+================================================================================
+1. WHAT ARE OUTLIERS?
+================================================================================
+
+INTUITION
+---------
+An outlier is a data point that differs significantly from other observations.
+Like a student who scores 100% while the class average is 50%.
+
+FORMAL DEFINITION
+-----------------
+A data point is an outlier if it falls far from the majority of data.
+
+Common threshold: beyond 1.5 × IQR from Q1 or Q3
+
+    Lower fence = Q1 - 1.5 × IQR
+    Upper fence = Q3 + 1.5 × IQR
+
+================================================================================
+2. TYPES OF OUTLIERS
+================================================================================
+
+UNIVARIATE — extreme value in a single feature
+  Example: age = 300 in a dataset of people
+
+MULTIVARIATE — combination of features is unusual
+  Example: (height=6ft, weight=50lbs) — individually plausible,
+           together impossible
+
+CONTEXTUAL — unusual only in specific context
+  Example: spending $10,000 at a grocery store is unusual;
+           spending $10,000 at a car dealership is not
+
+================================================================================
+3. DETECTION METHODS
+================================================================================
+
+3.1 VISUAL INSPECTION
+---------------------
+import matplotlib.pyplot as plt
+import numpy as np
+
+data = np.random.normal(50, 10, 1000)
+data = np.append(data, [200, -100])  # add outliers
+
+plt.figure(figsize=(10, 4))
+plt.subplot(1, 2, 1)
+plt.hist(data, bins=50)
+plt.title("Histogram")
+plt.subplot(1, 2, 2)
+plt.boxplot(data)
+plt.title("Boxplot")
+plt.tight_layout()
+plt.show()
+
+3.2 IQR METHOD (Most Common)
+-----------------------------
+Q1 = np.percentile(data, 25)
+Q3 = np.percentile(data, 75)
+IQR = Q3 - Q1
+
+lower_fence = Q1 - 1.5 * IQR
+upper_fence = Q3 + 1.5 * IQR
+
+outliers = data[(data < lower_fence) | (data > upper_fence)]
+print(f"Outliers found: {len(outliers)}")
+
+3.3 Z-SCORE METHOD
+------------------
+Z-score measures how many standard deviations from the mean.
+
+    z = (x - mean) / std
+
+Threshold: |z| > 3 (commonly used)
+
+from scipy import stats
+
+z_scores = stats.zscore(data)
+outliers = data[np.abs(z_scores) > 3]
+print(f"Outliers found: {len(outliers)}")
+
+3.4 MODIFIED Z-SCORE (Robust to outliers themselves)
+-----------------------------------------------------
+Uses median instead of mean:
+
+    modified_z = 0.6745 * (x - median) / MAD
+
+where MAD = median absolute deviation
+
+threshold: |modified_z| > 3.5
+
+3.5 ISOLATION FOREST (ML-BASED)
+-------------------------------
+from sklearn.ensemble import IsolationForest
+
+# Works well for multivariate data
+iso_forest = IsolationForest(contamination=0.05, random_state=42)
+predictions = iso_forest.fit_predict(X)
+# -1 = outlier, 1 = inlier
+
+3.6 LOCAL OUTLIER FACTOR (LOF)
+-------------------------------
+from sklearn.neighbors import LocalOutlierFactor
+
+lof = LocalOutlierFactor(n_neighbors=20, contamination=0.05)
+predictions = lof.fit_predict(X)
+
+================================================================================
+4. HANDLING OUTLIERS
+================================================================================
+
+4.1 REMOVAL
+-----------
+df_clean = df[(df['score'] >= lower_fence) & (df['score'] <= upper_fence)]
+
+PROS: Simple, removes noise
+CONS: Loses data, may remove important information
+USE WHEN: Clear data entry errors, small proportion of outliers
+
+4.2 CAPPING / WINSORIZING
+--------------------------
+Replace outliers with the fence values
+
+df['score'] = df['score'].clip(lower=lower_fence, upper=upper_fence)
+
+PROS: Preserves data, reduces outlier influence
+CONS: Distorts distribution at extremes
+USE WHEN: You want to keep all rows
+
+4.3 TRANSFORMATION
+------------------
+Log transform, square root, or Box-Cox to reduce outlier impact
+
+import numpy as np
+df['score_log'] = np.log1p(df['score'])
+
+PROS: Makes distribution more normal, keeps all data
+CONS: Changes interpretation, doesn't work for zero/negative values
+USE WHEN: Right-skewed data with extreme values
+
+4.4 IMPUTATION
+--------------
+Treat outliers as missing values and impute
+
+df.loc[df['score'] > upper_fence, 'score'] = np.nan
+df['score'] = df['score'].fillna(df['score'].median())
+
+PROS: Maintains row count, uses statistical logic
+CONS: Assumes outliers are errors (may not be)
+USE WHEN: Outliers are definitely data errors
+
+4.5 SEPARATE MODEL
+-------------------
+Build one model for normal data, another for extreme cases
+USE WHEN: Extreme values represent a distinct population
+
+================================================================================
+5. DECISION FRAMEWORK
+================================================================================
+
+ASK THESE QUESTIONS:
+1. Is it a data error? → Fix or remove
+2. Is it legitimate but extreme? → Cap, transform, or keep
+3. Does the model assume normality? → Transform or remove
+4. Is the dataset small? → Be cautious about removal
+5. Is it a tree-based model? → Outliers matter less, keep them
+6. Is it a linear model? → Outliers have high leverage, handle them
+
+MODEL SENSITIVITY
+-----------------
+High sensitivity to outliers:
+  - Linear Regression, Logistic Regression
+  - KNN (distance-based)
+  - K-Means (centroid-based)
+  - Neural Networks (gradient-based)
+
+Low sensitivity to outliers:
+  - Tree-based models (Decision Tree, Random Forest, XGBoost)
+  - Robust models (RANSAC, Huber regression)
+  - SVM with robust kernels
+
+================================================================================
+6. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Blindly removing all outliers
+  WRONG: df = df[(np.abs(z) < 3)]  (applied to every column)
+  RIGHT: Examine each feature, understand context
+
+MISTAKE 2: Removing outliers before train/test split
+  WRONG: Remove outliers on full dataset
+  RIGHT: Detect on training set only, apply same thresholds to test
+
+MISTAKE 3: Using mean-based methods on skewed data
+  WRONG: Z-score on exponential distribution
+  RIGHT: Use IQR or modified Z-score for skewed data
+
+MISTAKE 4: Removing outliers that are the target
+  WRONG: Remove high house prices (those ARE the valuable predictions)
+  RIGHT: Only remove outliers in features, not necessarily in target
+
+================================================================================
+7. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the IQR method and when would you use it?
+Q2: Why is the modified Z-score more robust than the regular Z-score?
+Q3: Name a tree-based model and explain why it handles outliers better
+    than linear regression.
+Q4: When should you NOT remove outliers?
+Q5: How do you ensure outlier handling doesn't cause data leakage?
+
+================================================================================
+END OF LESSON 3
+================================================================================

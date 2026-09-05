@@ -1,0 +1,219 @@
+# BINARY SEARCH — PRACTICE SET
+# 35 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is binary search?
+   Answer: An efficient search algorithm that finds target in O(log n) by halving the search space
+
+2. What is the precondition for binary search?
+   Answer: The array must be sorted
+
+3. What is the time complexity of binary search?
+   Answer: O(log n)
+
+4. What is the space complexity?
+   Answer: O(1) iterative, O(log n) recursive (call stack)
+
+5. What is lower bound?
+   Answer: The first index where element >= target
+
+6. What is upper bound?
+   Answer: The first index where element > target
+
+7. Can binary search be used on unsorted arrays?
+   Answer: No — the array must be sorted for the divide-and-conquer property to work
+
+8. What is "binary search on answer"?
+   Answer: Binary searching over the solution space (e.g., minimum feasible value) rather than over array indices
+
+9. How many comparisons does binary search make in the worst case?
+   Answer: ⌊log₂(n)⌋ + 1
+
+10. What is the difference between binary search and linear search?
+    Answer: Binary: O(log n) on sorted data. Linear: O(n) on any data.
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Standard binary search.
+    ```python
+    def binary_search(arr, target):
+        lo, hi = 0, len(arr) - 1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if arr[mid] == target: return mid
+            elif arr[mid] < target: lo = mid + 1
+            else: hi = mid - 1
+        return -1
+    ```
+
+12. Find first occurrence of target.
+    ```python
+    def first_occurrence(arr, target):
+        lo, hi = 0, len(arr) - 1
+        result = -1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if arr[mid] == target:
+                result = mid
+                hi = mid - 1  # Continue searching left
+            elif arr[mid] < target:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+        return result
+    ```
+
+13. Find last occurrence of target.
+    ```python
+    def last_occurrence(arr, target):
+        lo, hi = 0, len(arr) - 1
+        result = -1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if arr[mid] == target:
+                result = mid
+                lo = mid + 1  # Continue searching right
+            elif arr[mid] < target:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+        return result
+    ```
+
+14. Find minimum in rotated sorted array.
+    ```python
+    def find_min(nums):
+        lo, hi = 0, len(nums) - 1
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if nums[mid] > nums[hi]:
+                lo = mid + 1
+            else:
+                hi = mid
+        return nums[lo]
+    ```
+
+15. Search in rotated sorted array.
+    ```python
+    def search_rotated(nums, target):
+        lo, hi = 0, len(nums) - 1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if nums[mid] == target: return mid
+            if nums[lo] <= nums[mid]:  # Left half sorted
+                if nums[lo] <= target < nums[mid]:
+                    hi = mid - 1
+                else:
+                    lo = mid + 1
+            else:  # Right half sorted
+                if nums[mid] < target <= nums[hi]:
+                    lo = mid + 1
+                else:
+                    hi = mid - 1
+        return -1
+    ```
+
+16. Find square root of n (integer part).
+    ```python
+    def sqrt_int(n):
+        if n < 2: return n
+        lo, hi = 1, n // 2
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if mid * mid == n: return mid
+            elif mid * mid < n: lo = mid + 1
+            else: hi = mid - 1
+        return hi
+    ```
+
+17. Koko eating bananas (binary search on answer).
+
+18. Capacity to ship packages within D days.
+
+19. Split array largest sum.
+
+20. Find peak element.
+
+21. Median of two sorted arrays.
+
+22. Search a 2D matrix.
+
+23. Find the smallest letter greater than target.
+
+24. Time based key-value store.
+
+25. Find right interval.
+
+---
+
+## HARD (5 Questions)
+
+26. Median of two sorted arrays in O(log(min(m,n))).
+27. Find in rotated sorted array with duplicates.
+28. Magnetic force between two balls.
+29. Minimum speed to arrive on time.
+30. Maximum number of bananas can eat.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Off-by-one — infinite loop
+def binary_search(arr, target):
+    lo, hi = 0, len(arr)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == target: return mid
+        elif arr[mid] < target: lo = mid  # Bug: doesn't advance
+        else: hi = mid
+    return -1
+# Fix: lo = mid + 1
+
+# Debug 2: Integer overflow (not in Python, but conceptually)
+mid = (lo + hi) // 2  # Can overflow in Java/C++
+# Fix: mid = lo + (hi - lo) // 2
+
+# Debug 3: Wrong boundary in first occurrence
+def first_occurrence(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == target:
+            return mid  # Bug: returns first found, not necessarily first occurrence
+        elif arr[mid] < target: lo = mid + 1
+        else: hi = mid - 1
+    return -1
+# Fix: When found, continue searching left: hi = mid - 1
+
+# Debug 4: Binary search on answer wrong condition
+def can_eat(piles, h, speed):
+    return sum((pile + speed - 1) // speed for pile in piles) <= h
+
+def min_speed(piles, h):
+    lo, hi = 1, max(piles)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if can_eat(piles, h, mid):
+            hi = mid  # Bug: should be hi = mid (not mid - 1)
+        else:
+            lo = mid + 1
+    return lo
+
+# Debug 5: Searching in rotated array — wrong half selection
+def search(nums, target):
+    lo, hi = 0, len(nums) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if nums[mid] == target: return mid
+        if nums[lo] <= nums[mid]:
+            if nums[lo] <= target <= nums[mid]:  # Bug: should be < for right
+                hi = mid - 1
+            else:
+                lo = mid + 1
+```

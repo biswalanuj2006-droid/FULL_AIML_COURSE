@@ -1,0 +1,193 @@
+================================================================================
+MODULE 40: DATABASES — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Design and query SQL databases (PostgreSQL)
+- Understand ORM usage with SQLAlchemy
+- Use SQLite for development
+- Know when to use SQL vs NoSQL
+- Integrate databases with Python applications
+
+================================================================================
+1. SQL FUNDAMENTALS
+================================================================================
+
+TABLES & SCHEMA
+----------------
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(120) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE predictions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    model_name VARCHAR(100),
+    input_data JSONB,
+    output_data JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CRUD OPERATIONS
+---------------
+-- Create
+INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');
+
+-- Read
+SELECT * FROM users WHERE email = 'alice@example.com';
+SELECT * FROM predictions WHERE user_id = 1 ORDER BY created_at DESC;
+
+-- Update
+UPDATE users SET name = 'Alice Smith' WHERE id = 1;
+
+-- Delete
+DELETE FROM predictions WHERE id = 1;
+
+================================================================================
+2. JOINS
+================================================================================
+
+-- Inner join: only matching rows
+SELECT u.name, p.model_name, p.created_at
+FROM users u
+INNER JOIN predictions p ON u.id = p.user_id;
+
+-- Left join: all from left table
+SELECT u.name, COUNT(p.id) as prediction_count
+FROM users u
+LEFT JOIN predictions p ON u.id = p.user_id
+GROUP BY u.name;
+
+================================================================================
+3. AGGREGATION
+================================================================================
+
+SELECT
+    model_name,
+    COUNT(*) as total_predictions,
+    AVG(EXTRACT(EPOCH FROM created_at)) as avg_timestamp
+FROM predictions
+GROUP BY model_name
+HAVING COUNT(*) > 10
+ORDER BY total_predictions DESC;
+
+================================================================================
+4. INDEXES
+================================================================================
+
+-- Speed up frequent queries
+CREATE INDEX idx_predictions_user_id ON predictions(user_id);
+CREATE INDEX idx_predictions_model ON predictions(model_name);
+CREATE INDEX idx_predictions_created ON predictions(created_at);
+
+================================================================================
+5. SQLALCHEMY ORM
+================================================================================
+
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, JSON
+from sqlalchemy.orm import declarative_base, sessionmaker
+from datetime import datetime
+
+Base = declarative_base()
+
+class Prediction(Base):
+    __tablename__ = 'predictions'
+
+    id = Column(Integer, primary_key=True)
+    model_name = Column(String(100))
+    input_data = Column(JSON)
+    output_data = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# Setup
+engine = create_engine('postgresql://user:pass@localhost/mydb')
+Session = sessionmaker(bind=engine)
+session = Session()
+
+# Create tables
+Base.metadata.create_all(engine)
+
+# CRUD
+prediction = Prediction(model_name='rf_v1', input_data={'x': [1,2,3]})
+session.add(prediction)
+session.commit()
+
+# Query
+results = session.query(Prediction).filter_by(model_name='rf_v1').all()
+
+================================================================================
+6. POSTGRESQL + PYTHON
+================================================================================
+
+USING PSYCOPG2
+--------------
+import psycopg2
+
+conn = psycopg2.connect(
+    host='localhost',
+    database='mydb',
+    user='user',
+    password='password'
+)
+
+cur = conn.cursor()
+cur.execute("SELECT * FROM users WHERE id = %s", (1,))
+user = cur.fetchone()
+
+cur.close()
+conn.close()
+
+USING ASYNCPG (Async)
+----------------------
+import asyncpg
+import asyncio
+
+async def get_users():
+    conn = await asyncpg.connect('postgresql://user:pass@localhost/mydb')
+    users = await conn.fetch('SELECT * FROM users')
+    await conn.close()
+    return users
+
+================================================================================
+7. SQL vs NoSQL
+================================================================================
+
+| FEATURE        | SQL (PostgreSQL)   | NoSQL (MongoDB)     |
+|----------------|--------------------|--------------------|
+| Schema         | Fixed schema       | Flexible schema    |
+| Relationships  | Strong (JOINs)     | Weak (embedded)    |
+| ACID           | Yes                | Partial/BASE       |
+| Scaling        | Vertical           | Horizontal         |
+| Query Language | SQL                | MongoDB Query Lang |
+| Best For       | Structured data    | Unstructured data  |
+
+USE SQL WHEN:
+- Data has clear relationships
+- Need ACID compliance
+- Complex queries needed
+- Data integrity critical
+
+USE NOSQL WHEN:
+- Schema changes frequently
+- Horizontal scaling needed
+- Document/JSON-like data
+- High write throughput
+
+================================================================================
+8. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between INNER JOIN and LEFT JOIN?
+Q2: When would you use an index?
+Q3: What are the benefits of using an ORM?
+Q4: When should you choose PostgreSQL over MongoDB?
+Q5: What is ACID compliance?
+
+================================================================================
+END OF MODULE 40: DATABASES
+================================================================================

@@ -1,0 +1,363 @@
+================================================================================
+MODULE 01 — PYTHON FOR AI/ML
+LESSON 06: ERROR HANDLING
+================================================================================
+
+## What You Will Learn
+- Python exception types
+- Try/except/else/finally
+- Raising exceptions
+- Custom exceptions
+- Exception handling in ML pipelines
+- Debugging techniques
+
+## Why You Need It
+ML code fails frequently: missing data, shape mismatches, file not found,
+GPU errors, API timeouts. Good error handling turns crashes into informative
+messages and lets you diagnose problems quickly.
+
+================================================================================
+1. TYPES OF ERRORS
+================================================================================
+
+SYNTAX ERRORS (caught before running):
+    if True
+        print("hello")
+    # SyntaxError: invalid syntax
+    # The code won't run at all.
+
+RUNTIME ERRORS (exceptions, caught while running):
+    result = 10 / 0          # ZeroDivisionError
+    "hello" + 5              # TypeError
+    x = undefined_variable   # NameError
+    lst = [1, 2, 3]
+    lst[10]                  # IndexError
+
+LOGIC ERRORS (hardest to find):
+    def average(numbers):
+        return sum(numbers) / len(numbers) + 1  # Bug: extra + 1
+
+    average([1, 2, 3])    # Returns 3.0 instead of 2.0
+    No error is raised, but the result is wrong.
+
+COMMON PYTHON EXCEPTIONS:
+
+    Exception                Base class for most exceptions
+    TypeError                Wrong type used
+    ValueError               Right type, wrong value
+    IndexError               Index out of range
+    KeyError                 Dictionary key not found
+    AttributeError           Object doesn't have attribute
+    NameError                Variable not defined
+    FileNotFoundError        File doesn't exist
+    ZeroDivisionError        Division by zero
+    ImportError              Module import failed
+    RuntimeError             General runtime error
+    NotImplementedError      Abstract method not implemented
+    StopIteration            Iterator exhausted
+    OverflowError            Number too large
+
+================================================================================
+2. TRY/EXCEPT
+================================================================================
+
+BASIC SYNTAX:
+
+    try:
+        # Code that might fail
+        result = 10 / 0
+    except ZeroDivisionError:
+        # Handle the specific error
+        print("Cannot divide by zero!")
+        result = 0
+
+    OUTPUT: Cannot divide by zero!
+
+    The code continues after the except block (no crash).
+
+HANDLING MULTIPLE EXCEPTIONS:
+
+    try:
+        value = int(input("Enter a number: "))
+        result = 100 / value
+    except ValueError:
+        print("That's not a valid number!")
+    except ZeroDivisionError:
+        print("Cannot divide by zero!")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+CATCHING MULTIPLE EXCEPTIONS:
+
+    try:
+        data = process(input_data)
+    except (ValueError, TypeError) as e:
+        print(f"Data processing error: {e}")
+
+USING 'else' AND 'finally':
+
+    try:
+        f = open("data.csv")
+        data = f.read()
+    except FileNotFoundError:
+        print("File not found!")
+        data = None
+    else:
+        # Runs ONLY if no exception occurred
+        print(f"Loaded {len(data)} bytes")
+    finally:
+        # ALWAYS runs, whether or not an exception occurred
+        print("Cleanup complete")
+
+    SYNTAX:
+    try:
+        # risky code
+    except SomeError:
+        # handle error
+    else:
+        # runs if NO error
+    finally:
+        # ALWAYS runs
+
+================================================================================
+3. RAISING EXCEPTIONS
+================================================================================
+
+    def validate_age(age):
+        if not isinstance(age, int):
+            raise TypeError("Age must be an integer")
+        if age < 0:
+            raise ValueError(f"Age cannot be negative: {age}")
+        if age > 150:
+            raise ValueError(f"Age seems unrealistic: {age}")
+        return True
+
+    validate_age(25)      # True
+    validate_age(-5)      # ValueError: Age cannot be negative: -5
+    validate_age("old")   # TypeError: Age must be an integer
+
+RE-RAISING EXCEPTIONS:
+
+    try:
+        result = risky_operation()
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        raise    # Re-raises the same exception (useful for logging)
+
+================================================================================
+4. CUSTOM EXCEPTIONS
+================================================================================
+
+    class DataError(Exception):
+        """Base class for data-related errors."""
+        pass
+
+    class MissingValuesError(DataError):
+        """Raised when dataset has missing values."""
+        def __init__(self, column, count):
+            self.column = column
+            self.count = count
+            super().__init__(
+                f"Column '{column}' has {count} missing values"
+            )
+
+    class ShapeMismatchError(DataError):
+        """Raised when arrays have incompatible shapes."""
+        def __init__(self, expected, actual):
+            self.expected = expected
+            self.actual = actual
+            super().__init__(
+                f"Shape mismatch: expected {expected}, got {actual}"
+            )
+
+    # Usage
+    def validate_dataset(X, y):
+        if X.shape[0] != y.shape[0]:
+            raise ShapeMismatchError((X.shape[0],), (y.shape[0],))
+
+        for col in range(X.shape[1]):
+            missing = np.isnan(X[:, col]).sum()
+            if missing > 0:
+                raise MissingValuesError(f"feature_{col}", missing)
+
+    # Catching custom exceptions
+    try:
+        validate_dataset(X, y)
+    except MissingValuesError as e:
+        print(f"Fix missing values in {e.column}: {e.count} missing")
+    except ShapeMismatchError as e:
+        print(f"Data shapes don't match: {e}")
+
+================================================================================
+5. CONTEXT MANAGERS FOR RESOURCE HANDLING
+================================================================================
+
+Context managers ensure resources are properly cleaned up.
+
+USING 'with' STATEMENT:
+
+    # File handling
+    with open("data.csv") as f:
+        data = f.read()
+    # File is automatically closed
+
+    # Database connections
+    with sqlite3.connect("db.sqlite") as conn:
+        cursor = conn.execute("SELECT * FROM users")
+    # Connection is automatically closed
+
+CUSTOM CONTEXT MANAGERS:
+
+    class Timer:
+        """Context manager that times code execution."""
+        def __enter__(self):
+            import time
+            self.start = time.time()
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            import time
+            self.elapsed = time.time() - self.start
+            print(f"Elapsed: {self.elapsed:.4f}s")
+            return False  # Don't suppress exceptions
+
+    # Usage
+    with Timer():
+        model.fit(X_train, y_train)
+    # Prints: Elapsed: 0.0523s
+
+USING contextlib:
+
+    from contextlib import contextmanager
+
+    @contextmanager
+    def timer():
+        import time
+        start = time.time()
+        yield
+        print(f"Elapsed: {time.time() - start:.4f}s")
+
+    with timer():
+        train_model()
+
+================================================================================
+6. EXCEPTION HANDLING IN ML
+================================================================================
+
+ML-SPECIFIC ERROR PATTERNS:
+
+    # 1. Shape validation
+    def predict(model, X):
+        if not hasattr(model, 'is_fitted') or not model.is_fitted:
+            raise RuntimeError("Model not fitted. Call fit() first.")
+        if X.ndim == 1:
+            X = X.reshape(1, -1)    # Auto-fix single sample
+        return model.predict(X)
+
+    # 2. Data validation
+    def validate_data(df, required_columns):
+        missing = set(required_columns) - set(df.columns)
+        if missing:
+            raise ValueError(f"Missing columns: {missing}")
+
+        null_counts = df[required_columns].isnull().sum()
+        bad_cols = null_counts[null_counts > 0]
+        if not bad_cols.empty:
+            raise ValueError(f"Null values found:\n{bad_cols}")
+
+    # 3. Model training with error recovery
+    def safe_train(model, X_train, y_train, X_val, y_val):
+        try:
+            model.fit(X_train, y_train)
+        except MemoryError:
+            print("Out of memory. Trying with smaller batch...")
+            model.fit(X_train[:1000], y_train[:1000])
+        except ValueError as e:
+            if "Input contains NaN" in str(e):
+                print("Data has NaN values. Imputing...")
+                from sklearn.impute import SimpleImputer
+                imputer = SimpleImputer()
+                X_train = imputer.fit_transform(X_train)
+                model.fit(X_train, y_train)
+            else:
+                raise
+
+    # 4. API error handling
+    def call_api(url, payload, max_retries=3):
+        import requests
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(url, json=payload, timeout=30)
+                response.raise_for_status()
+                return response.json()
+            except requests.Timeout:
+                print(f"Timeout on attempt {attempt+1}")
+            except requests.HTTPError as e:
+                print(f"HTTP error: {e}")
+                if response.status_code == 429:  # Rate limited
+                    import time
+                    time.sleep(2 ** attempt)      # Exponential backoff
+            except requests.RequestException as e:
+                print(f"Request failed: {e}")
+        raise RuntimeError(f"API failed after {max_retries} attempts")
+
+================================================================================
+7. DEBUGGING TECHNIQUES
+================================================================================
+
+1. READ THE TRACEBACK:
+    Traceback (most recent call last):
+      File "train.py", line 15, in <module>    ← Where the error occurred
+        model.fit(X, y)
+      File "sklearn/base.py", line 450, in fit
+        self._validate_data(X, y)
+    ValueError: Input contains NaN             ← What the error is
+
+    Read BOTTOM-UP: The last line tells you the error type and message.
+
+2. USE PRINT DEBUGGING:
+    def process(data):
+        print(f"Input shape: {data.shape}")     # Add prints
+        result = transform(data)
+        print(f"Output shape: {result.shape}")
+        return result
+
+3. USE PYTHON DEBUGGER (pdb):
+    import pdb; pdb.set_trace()    # Breakpoint (Python 3.7+)
+    # Or in Python 3.7+: breakpoint()
+
+    In debugger:
+        p variable_name     # Print variable
+        n                    # Next line
+        c                    # Continue
+        q                    # Quit
+
+4. USE LOGGING INSTEAD OF PRINT:
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    logger.info("Starting training")
+    logger.warning("Missing values detected")
+    logger.error("Training failed")
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between SyntaxError and RuntimeError?
+2. What does 'finally' do in try/except/finally?
+3. How do you create a custom exception?
+4. Why is 'except Exception as e' better than bare 'except:'?
+5. What is a context manager?
+
+ANSWERS:
+1. SyntaxError is caught before code runs; RuntimeError happens during execution
+2. finally ALWAYS runs, whether or not an exception occurred
+3. Create a class inheriting from Exception
+4. It captures the exception object and avoids catching SystemExit/KeyboardInterrupt
+5. An object that manages resource setup/teardown (e.g., file opening/closing)
+
+================================================================================
+NEXT LESSON: 07_modules_packages.txt — Modules, Packages, Imports
+================================================================================

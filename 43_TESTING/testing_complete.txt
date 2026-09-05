@@ -1,0 +1,157 @@
+================================================================================
+MODULE 43: TESTING — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Write unit tests for Python code
+- Test ML models and data pipelines
+- Test APIs
+- Use pytest effectively
+- Implement CI/CD testing
+
+================================================================================
+1. WHY TEST?
+================================================================================
+
+INTUITION
+---------
+Tests verify your code works correctly and continues to work
+as you make changes.
+
+Without tests:
+- Refactoring breaks unknown things
+- Bugs discovered in production
+- No confidence in code quality
+
+================================================================================
+2. PYTEST BASICS
+================================================================================
+
+# test_basic.py
+def add(a, b):
+    return a + b
+
+def test_add():
+    assert add(2, 3) == 5
+    assert add(-1, 1) == 0
+    assert add(0, 0) == 0
+
+# Run: pytest test_basic.py -v
+
+FIXTURES
+--------
+import pytest
+
+@pytest.fixture
+def sample_data():
+    import pandas as pd
+    return pd.DataFrame({
+        'x': [1, 2, 3, 4, 5],
+        'y': [2, 4, 5, 4, 5]
+    })
+
+def test_mean(sample_data):
+    assert sample_data['x'].mean() == 3.0
+
+================================================================================
+3. TESTING ML MODELS
+================================================================================
+
+def test_model_training():
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.datasets import make_classification
+
+    X, y = make_classification(n_samples=100, n_features=10, random_state=42)
+    model = RandomForestClassifier(n_estimators=10, random_state=42)
+    model.fit(X, y)
+
+    # Model should fit without errors
+    assert hasattr(model, 'predict')
+
+def test_model_accuracy():
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.datasets import make_classification
+    from sklearn.model_selection import train_test_split
+
+    X, y = make_classification(n_samples=200, n_features=10, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    model = RandomForestClassifier(n_estimators=10, random_state=42)
+    model.fit(X_train, y_train)
+
+    accuracy = model.score(X_test, y_test)
+    assert accuracy > 0.7, f"Model accuracy {accuracy} below threshold"
+
+def test_data_quality(sample_data):
+    # No null values
+    assert sample_data.isnull().sum().sum() == 0
+    # Correct columns
+    assert list(sample_data.columns) == ['x', 'y']
+    # Correct types
+    assert sample_data['x'].dtype in ['int64', 'float64']
+
+================================================================================
+4. TESTING APIs
+================================================================================
+
+USING FASTAPI TESTCLIENT
+-------------------------
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+
+def test_health():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"
+
+def test_predict():
+    response = client.post("/predict", json={"features": [1, 2, 3]})
+    assert response.status_code == 200
+    assert "prediction" in response.json()
+
+def test_predict_invalid_input():
+    response = client.post("/predict", json={})
+    assert response.status_code == 422  # Validation error
+
+================================================================================
+5. TESTING BEST PRACTICES
+================================================================================
+
+TEST PYRAMID
+-------------
+1. Unit tests (many): test individual functions
+2. Integration tests (some): test components together
+3. End-to-end tests (few): test complete workflows
+
+NAMING CONVENTION
+-----------------
+test_<what>_<condition>_<expected>
+test_prediction_with_valid_input_returns_200
+test_model_accuracy_above_threshold
+
+WHAT TO TEST IN ML
+------------------
+- Data loading and validation
+- Feature engineering functions
+- Model training (completes without error)
+- Model inference (correct output shape)
+- API endpoints (correct status codes)
+- Error handling (invalid inputs)
+
+================================================================================
+6. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is a pytest fixture?
+Q2: What should you test in an ML pipeline?
+Q3: What is the test pyramid?
+Q4: How do you test a FastAPI endpoint?
+Q5: Why should you test data quality?
+
+================================================================================
+END OF MODULE 43: TESTING
+================================================================================

@@ -1,0 +1,213 @@
+================================================================================
+MODULE 07: DATA PREPROCESSING — LESSON 5: FEATURE SCALING
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able to:
+- Explain why feature scaling is necessary
+- Apply StandardScaler, MinMaxScaler, and RobustScaler
+- Choose the right scaler for your data and model
+- Avoid data leakage during scaling
+
+================================================================================
+1. WHY SCALE FEATURES?
+================================================================================
+
+INTUITION
+---------
+Imagine comparing age (0-100) with income (0-1,000,000).
+Without scaling, income dominates distance calculations.
+
+EXAMPLE: KNN WITH UNSCALED DATA
+-------------------------------
+Feature A: age (20-60)     range = 40
+Feature B: salary (30000-150000) range = 120000
+
+Distance = sqrt((age1-age2)² + (salary1-salary2)²)
+
+A difference of 5 years in age = 25
+A difference of $1000 salary = 1,000,000,000
+
+The salary completely dominates! KNN would effectively ignore age.
+
+================================================================================
+2. SCALING METHODS
+================================================================================
+
+2.1 STANDARDIZATION (Z-score normalization)
+-------------------------------------------
+Formula: z = (x - mean) / std
+
+Result: mean = 0, std = 1
+
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)  # use same scaler!
+
+BENEFITS:
+- Centers data around 0
+- Preserves shape of distribution
+- Works well when data is approximately Gaussian
+
+LIMITATIONS:
+- Sensitive to outliers (mean and std are affected)
+
+2.2 MIN-MAX NORMALIZATION
+-------------------------
+Formula: x_norm = (x - min) / (max - min)
+
+Result: values in [0, 1]
+
+from sklearn.preprocessing import MinMaxScaler
+
+scaler = MinMaxScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+BENEFITS:
+- Bounded range [0, 1]
+- Preserves relationships between data points
+- Good for neural networks
+
+LIMITATIONS:
+- Highly sensitive to outliers (they stretch the range)
+- Compresses non-outlier data into narrow range
+
+2.3 ROBUST SCALING
+------------------
+Formula: x_robust = (x - median) / IQR
+
+Uses median and IQR instead of mean and std.
+
+from sklearn.preprocessing import RobustScaler
+
+scaler = RobustScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+BENEFITS:
+- Robust to outliers
+- Works well with skewed data
+
+LIMITATIONS:
+- Doesn't produce bounded output
+
+2.4 MAX ABS SCALER
+-------------------
+Formula: x_scaled = x / max_abs_value
+
+from sklearn.preprocessing import MaxAbsScaler
+
+Result: values in [-1, 1], preserves sparsity
+
+2.5 L1/L2 NORMALIZATION (Vector normalization)
+----------------------------------------------
+Normalizes each sample to unit norm.
+
+from sklearn.preprocessing import Normalizer
+
+normalizer = Normalizer(norm='l2')
+X_normalized = normalizer.fit_transform(X)
+
+Used for: text data, cosine similarity tasks
+
+================================================================================
+3. WHEN TO USE WHAT?
+================================================================================
+
+| SCALER             | USE WHEN                          | AVOID WHEN              |
+|--------------------|-----------------------------------|-------------------------|
+| StandardScaler     | Gaussian-like data, linear models | Heavy outliers          |
+| MinMaxScaler       | Bounded range needed, neural nets | Outliers present        |
+| RobustScaler       | Outliers present, skewed data     | Need bounded output     |
+| MaxAbsScaler       | Sparse data (text, one-hot)       | Non-sparse data         |
+| Normalizer         | Text, cosine similarity           | Feature importance      |
+| No scaling needed  | Tree-based models                 | —                       |
+
+MODELS THAT NEED SCALING:
+- KNN (distance-based)
+- SVM (optimization-based)
+- Linear/Logistic Regression (gradient descent)
+- Neural Networks
+- PCA (variance-based)
+- K-Means (centroid-based)
+
+MODELS THAT DON'T NEED SCALING:
+- Decision Trees
+- Random Forest
+- XGBoost / LightGBM / CatBoost
+- Naive Bayes
+
+================================================================================
+4. CRITICAL: FIT ON TRAINING DATA ONLY
+================================================================================
+
+THE WRONG WAY
+-------------
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)  # fits on ALL data
+X_train, X_test = train_test_split(X_scaled)
+# Test data influenced the scaler! → DATA LEAKAGE
+
+THE RIGHT WAY
+-------------
+X_train, X_test = train_test_split(X, random_state=42)
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)  # fit on train only
+X_test_scaled = scaler.transform(X_test)         # transform test only
+
+IN A PIPELINE (BEST APPROACH)
+------------------------------
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model', LogisticRegression())
+])
+
+pipeline.fit(X_train, y_train)  # scaler fits only on training data
+score = pipeline.score(X_test, y_test)  # scaler transforms test correctly
+
+================================================================================
+5. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Fitting scaler on entire dataset before splitting
+  WRONG: X = StandardScaler().fit_transform(X) → then split
+  RIGHT: Split first, fit scaler on training data only
+
+MISTAKE 2: Scaling target variable unnecessarily
+  WRONG: Scaling y for classification
+  RIGHT: Only scale features; scale y only for regression if needed
+
+MISTAKE 3: Using MinMaxScaler with outliers
+  WRONG: MinMaxScaler on salary data with $10M outlier
+  RIGHT: Use RobustScaler or remove outliers first
+
+MISTAKE 4: Forgetting to transform test data
+  WRONG: scaler.fit_transform(X_train) and use raw X_test
+  RIGHT: scaler.transform(X_test)
+
+MISTAKE 5: Scaling categorical features encoded as numbers
+  WRONG: Scaling ordinal-encoded categories
+  RIGHT: Scale only continuous features
+
+================================================================================
+6. SKILLS CHECKPOINT
+================================================================================
+
+Q1: Why does KNN require feature scaling but Random Forest does not?
+Q2: What is the difference between StandardScaler and MinMaxScaler?
+Q3: Why must you fit the scaler only on training data?
+Q4: Which scaler is most robust to outliers?
+Q5: In a sklearn Pipeline, when does the scaler fit vs transform?
+
+================================================================================
+END OF LESSON 5
+================================================================================

@@ -1,0 +1,72 @@
+================================================================================
+NLP MODULE — PRACTICE SET
+================================================================================
+
+SECTION A — EASY (15 Questions)
+================================
+Q1: What is tokenization and why is it necessary?
+Q2: What is the difference between stemming and lemmatization?
+Q3: What are stopwords and when should you remove them?
+Q4: What is TF-IDF and how is it calculated?
+Q5: What is Bag of Words?
+Q6: What is a word embedding?
+Q7: What is the difference between Word2Vec and GloVe?
+Q8: What is named entity recognition (NER)?
+Q9: What is sentiment analysis?
+Q10: What is text classification?
+Q11: What are n-grams?
+Q12: What is the difference between NLTK and spaCy?
+Q13: What is a vocabulary in NLP context?
+Q14: What is padding in sequence models?
+Q15: What is sequence-to-sequence modeling?
+
+SECTION B — MEDIUM (15 Questions)
+==================================
+Q16: Build a spam classifier using TF-IDF + Logistic Regression.
+Q17: Implement Word2Vec from scratch conceptually.
+Q18: Build a sentiment analyzer using BERT.
+Q19: Implement text preprocessing pipeline from scratch.
+Q20: Compare BoW vs TF-IDF vs embeddings for classification.
+Q21: Build a text summarization system.
+Q22: Implement a simple language model.
+Q23: Build a named entity recognition system.
+Q24: Implement cosine similarity for text comparison.
+Q25: Build a topic modeling system with LDA.
+Q26: Implement attention-based text classifier.
+Q27: Build a machine translation system (simple).
+Q28: Implement text data augmentation techniques.
+Q29: Build a question answering system.
+Q30: Compare NLTK vs spaCy for NER.
+
+SECTION C — HARD (8 Questions)
+================================
+Q31: Build an end-to-end NLP pipeline (preprocessing → model → API).
+Q32: Implement a transformer-based classifier from scratch.
+Q33: Build a multilingual text classifier.
+Q34: Implement few-shot text classification.
+Q35: Build a document similarity search engine.
+Q36: Implement custom tokenizer training.
+Q37: Build a production NLP service with multiple models.
+Q38: Implement NLP model interpretability (attention visualization).
+
+SECTION D — DEBUGGING (6 Problems)
+====================================
+D1: Why is tokenization producing unexpected results?
+D2: Fix: Vocabulary mismatch between training and inference.
+D3: Why are embeddings poor for rare words?
+D4: Fix: Memory error when processing large text corpus.
+D5: Why does the model perform well on English but not other languages?
+D6: Fix: Batch dimension error in sequence model.
+
+SECTION E — INTERVIEW (8 Questions)
+=====================================
+I1: Explain the attention mechanism in your own words.
+I2: What is the difference between BERT and GPT?
+I3: How would you handle out-of-vocabulary words?
+I4: What are the challenges of multilingual NLP?
+I5: How do you evaluate a text generation model?
+I6: Explain the Transformer architecture briefly.
+I7: How would you build a real-time translation system?
+I8: What are the limitations of current NLP models?
+
+================================================================================

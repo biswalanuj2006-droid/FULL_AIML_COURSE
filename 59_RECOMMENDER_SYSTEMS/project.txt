@@ -1,0 +1,59 @@
+================================================================================
+PROJECTS - 59 RECOMMENDER SYSTEMS (3 LEVELS)
+================================================================================
+
+--------------------------------------------------------------------------------
+PROJECT 1 - LEVEL 1: RATING PREDICTOR (Beginner)
+--------------------------------------------------------------------------------
+PROBLEM: Build a movie/book recommender from an explicit-ratings
+dataset (e.g. MovieLens 100k - see datasets/README).
+REQUIREMENTS
+  - Baselines: global mean, popularity.
+  - Funk-SVD implemented yourself in numpy (no surprise libs).
+  - Time-based or leave-one-out split (NOT random rows).
+  - Report RMSE and (for ranking) NDCG@10.
+DELIVERABLES: script + a results table (baselines vs your model vs k in
+{5,10,20}) + 5-line explanation of what beats what and why.
+RUBRIC: correct split (leakage-free) 30%, beats baselines 30%,
+code clarity + documentation 20%, honest error analysis 20%.
+
+--------------------------------------------------------------------------------
+PROJECT 2 - LEVEL 2: IMPLICIT-FEEDBACK RECOMMENDER (Intermediate)
+--------------------------------------------------------------------------------
+PROBLEM: Realistic setting: only click/purchase logs (no ratings).
+Use a synthetic or public implicit dataset.
+REQUIREMENTS
+  - Hu-Koren ALS with confidence weighting, implemented or via a lib,
+    justified.
+  - Evaluation with ranking metrics on time-based split; compare
+    against popularity and a pointwise model.
+  - Cold-start story: how would the system treat a brand-new user and
+    a brand-new item? Implement one content-based fallback.
+  - Include a simple diversity metric (e.g. intra-list similarity) and
+    show the popularity-vs-diversity trade-off.
+DELIVERABLES: training script, eval notebook-style report, cold-start
+demo, 1-page findings.
+RUBRIC: correct implicit modeling 30%, honest eval incl. diversity 30%,
+cold start 20%, write-up 20%.
+
+--------------------------------------------------------------------------------
+PROJECT 3 - LEVEL 3: TWO-STAGE RECOMMENDATION SERVICE (Advanced/Expert)
+--------------------------------------------------------------------------------
+PROBLEM: Serve recommendations as an API on a catalog large enough that
+full scoring is infeasible (simulate >=100k items).
+REQUIREMENTS
+  - Stage 1: two-tower or MF-based candidate generation served by
+    approximate nearest neighbor (numpy/scipy, or a vector DB if
+    available).
+  - Stage 2: ranking model with user/item/context features.
+  - A/B-able evaluation: an offline harness + at least a simulated
+    online loop (see practice #12 feedback-loop simulation).
+  - Cold start, dedup/diversity, and business-rule hooks.
+  - Package as an API (FastAPI) with request logging.
+DELIVERABLES: architecture doc, two-stage code, API, eval harness,
+post-mortem of the feedback-loop experiment.
+RUBRIC: architecture correctness 25%, serving + ANN 25%, eval honesty
+incl. policy bias 25%, engineering quality 25%.
+INTERVIEW QUESTIONS TO PREPARE: matrix factorization math; why
+two-stage; NDCG vs recall; how you know your offline eval lies;
+cold start for users and items.

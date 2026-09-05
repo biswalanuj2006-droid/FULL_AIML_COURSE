@@ -1,0 +1,215 @@
+================================================================================
+MODULE 08: EDA — LESSON 2: UNIVARIATE ANALYSIS
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this lesson you will be able to:
+- Analyze individual features using statistics and plots
+- Identify distributions, outliers, and data quality issues
+- Interpret skewness and kurtosis
+- Choose appropriate visualizations for each data type
+
+================================================================================
+1. UNIVARIATE ANALYSIS: ONE FEATURE AT A TIME
+================================================================================
+
+INTUITION
+---------
+Univariate analysis examines one variable in isolation.
+Like checking the temperature of a single room — you measure one thing.
+
+================================================================================
+2. NUMERICAL FEATURES
+================================================================================
+
+2.1 SUMMARY STATISTICS
+----------------------
+import pandas as pd
+import numpy as np
+
+# Central tendency
+print(f"Mean:   {df['age'].mean():.2f}")
+print(f"Median: {df['age'].median():.2f}")
+print(f"Mode:   {df['age'].mode()[0]}")
+
+# Spread
+print(f"Std:    {df['age'].std():.2f}")
+print(f"Min:    {df['age'].min()}")
+print(f"Max:    {df['age'].max()}")
+print(f"Range:  {df['age'].max() - df['age'].min()}")
+print(f"IQR:    {df['age'].quantile(0.75) - df['age'].quantile(0.25)}")
+
+# Shape
+print(f"Skewness:    {df['age'].skew():.2f}")
+print(f"Kurtosis:    {df['age'].kurtosis():.2f}")
+
+INTERPRETING SKEWNESS
+---------------------
+skew ≈ 0  → symmetric distribution
+skew > 0  → right-skewed (long tail to the right)
+skew < 0  → left-skewed (long tail to the left)
+
+|skew| > 1 → highly skewed
+
+INTERPRETING KURTOSIS
+---------------------
+kurtosis ≈ 3 → normal distribution
+kurtosis > 3 → heavy tails (more outliers than normal)
+kurtosis < 3 → light tails (fewer outliers than normal)
+
+2.2 VISUALIZATIONS FOR NUMERICAL DATA
+--------------------------------------
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+
+# Histogram
+axes[0, 0].hist(df['age'], bins=30, edgecolor='black')
+axes[0, 0].set_title('Histogram of Age')
+
+# KDE (Kernel Density Estimate)
+sns.kdeplot(data=df, x='age', ax=axes[0, 1])
+axes[0, 1].set_title('KDE of Age')
+
+# Boxplot
+axes[1, 0].boxplot(df['age'].dropna())
+axes[1, 0].set_title('Boxplot of Age')
+
+# Violin plot
+sns.violinplot(data=df, y='age', ax=axes[1, 1])
+axes[1, 1].set_title('Violin Plot of Age')
+
+plt.tight_layout()
+plt.show()
+
+WHAT EACH PLOT SHOWS:
+- Histogram: distribution shape, bins
+- KDE: smooth density curve
+- Boxplot: median, quartiles, outliers
+- Violin: combined KDE + boxplot
+
+================================================================================
+3. CATEGORICAL FEATURES
+================================================================================
+
+3.1 FREQUENCY TABLE
+-------------------
+print(df['department'].value_counts())
+print(df['department'].value_counts(normalize=True))  # proportions
+
+3.2 VISUALIZATIONS FOR CATEGORICAL DATA
+----------------------------------------
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+# Bar chart
+df['department'].value_counts().plot(kind='bar', ax=axes[0])
+axes[0].set_title('Department Counts')
+
+# Pie chart (only for few categories)
+df['department'].value_counts().plot(kind='pie', ax=axes[1], autopct='%1.1f%%')
+axes[1].set_title('Department Distribution')
+
+# Horizontal bar (good for many categories)
+df['department'].value_counts().plot(kind='barh', ax=axes[2])
+axes[2].set_title('Departments (Horizontal)')
+
+plt.tight_layout()
+plt.show()
+
+================================================================================
+4. ITERATE OVER ALL FEATURES
+================================================================================
+
+AUTOMATED UNIVARIATE ANALYSIS
+-----------------------------
+def univariate_analysis(df):
+    """Perform univariate analysis on all columns."""
+    for col in df.columns:
+        print(f"\n{'='*50}")
+        print(f"FEATURE: {col}")
+        print(f"{'='*50}")
+        print(f"Type: {df[col].dtype}")
+        print(f"Non-null: {df[col].notna().sum()} / {len(df)}")
+        print(f"Missing: {df[col].isna().sum()} ({df[col].isna().mean()*100:.1f}%)")
+
+        if df[col].dtype in ['int64', 'float64']:
+            print(f"Mean: {df[col].mean():.2f}")
+            print(f"Median: {df[col].median():.2f}")
+            print(f"Std: {df[col].std():.2f}")
+            print(f"Skewness: {df[col].skew():.2f}")
+        else:
+            print(f"Unique: {df[col].nunique()}")
+            print(f"Top values:")
+            print(df[col].value_counts().head(5))
+
+univariate_analysis(df)
+
+================================================================================
+5. COMMON PATTERNS TO RECOGNIZE
+================================================================================
+
+SYMMETRIC (NORMAL-LIKE)
+  → bell-shaped histogram
+  → mean ≈ median
+  → good for: linear models, parametric tests
+
+RIGHT-SKEWED (LOG-NORMAL)
+  → long tail to the right
+  → mean > median
+  → common in: income, house prices, population
+  → fix: log transform
+
+BIMODAL
+  → two peaks
+  → suggests two sub-groups
+  → may need to separate or create a feature
+
+UNIFORM
+  → roughly equal in all bins
+  → rare in real data, check if data is synthetic
+
+UNIFORM CATEGORICAL
+  → all categories have similar counts
+  → balanced classes (good for classification)
+
+IMBALANCED CATEGORICAL
+  → one category dominates
+  → may need resampling for ML
+
+================================================================================
+6. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Ignoring missing values
+  WRONG: df['age'].mean() (ignores NaN silently)
+  RIGHT: df['age'].mean() is okay, but CHECK missing count first
+
+MISTAKE 2: Using mean on skewed data
+  WRONG: "Average income is $100K" (driven by billionaires)
+  RIGHT: Report median + IQR for skewed data
+
+MISTAKE 3: Pie charts for too many categories
+  WRONG: Pie chart with 20 slices
+  RIGHT: Use horizontal bar chart for many categories
+
+MISTAKE 4: Not checking dtypes
+  WRONG: Treating zip codes as numerical
+  RIGHT: Check df.dtypes, convert as needed
+
+================================================================================
+7. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What does skewness > 2 tell you about a distribution?
+Q2: When should you use a boxplot vs a histogram?
+Q3: Why is the median sometimes more useful than the mean?
+Q4: How would you handle a feature with 50% missing values?
+Q5: What does a bimodal distribution suggest about your data?
+
+================================================================================
+END OF LESSON 2
+================================================================================

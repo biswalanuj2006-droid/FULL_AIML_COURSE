@@ -1,0 +1,124 @@
+================================================================================
+MODULE 47: PROJECTS — COMPLETE GUIDE
+================================================================================
+
+PROJECT LEVELS
+==============
+
+LEVEL 1 — BEGINNER
+-------------------
+Single model, small dataset, simple interface.
+Goal: Learn fundamentals, get comfortable with the workflow.
+
+LEVEL 2 — INTERMEDIATE
+-----------------------
+Multiple components, real dataset, API, database or advanced preprocessing.
+Goal: Build end-to-end systems, handle real-world complexity.
+
+LEVEL 3 — ADVANCED / INDUSTRY
+-------------------------------
+Production-style architecture, model pipeline, backend, database,
+authentication, monitoring, Docker, testing, deployment.
+Goal: Build production-ready systems.
+
+================================================================================
+PROJECT REQUIREMENTS (ALL LEVELS)
+==================================
+
+Every project must include:
+1. Problem statement
+2. Requirements
+3. Architecture diagram
+4. Dataset description
+5. Implementation code
+6. Training & evaluation
+7. Visualization
+8. README with setup instructions
+9. requirements.txt
+
+Level 2+ also requires:
+10. API endpoint
+11. Database integration
+12. Data preprocessing pipeline
+
+Level 3 also requires:
+13. Authentication
+14. Docker containerization
+15. Unit tests
+16. CI/CD setup
+17. Monitoring
+18. Deployment
+
+================================================================================
+PROJECT LIST
+============
+
+MACHINE LEARNING
+----------------
+Level 1:
+1. Student Pass/Fail Predictor
+2. House Price Predictor
+3. Customer Churn Classifier
+
+Level 2:
+4. Fraud Detection System
+5. Customer Segmentation
+6. Loan Risk Prediction
+
+Level 3:
+7. End-to-End Recommendation System
+8. Production Fraud Detection API
+9. Real-Time ML Prediction Platform
+
+DEEP LEARNING
+-------------
+Level 1:
+1. MNIST Digit Classifier
+2. Simple Image Classifier
+3. Neural Network from Scratch
+
+Level 2:
+4. CNN Image Classification
+5. Transfer Learning System
+6. Time-Series LSTM Predictor
+
+Level 3:
+7. Production Computer Vision API
+8. Multi-class Vision Platform
+9. Real-Time Object Detection System
+
+NLP
+---
+Level 1:
+1. Spam Classifier
+2. Sentiment Analyzer
+3. News Classifier
+
+Level 2:
+4. NER System
+5. Document Classification
+6. Semantic Search Engine
+
+Level 3:
+7. Enterprise Document Intelligence
+8. NLP Research Assistant
+9. Production Semantic Search Platform
+
+GENERATIVE AI / RAG
+--------------------
+Level 1:
+1. Basic LLM Chatbot
+2. Document Q&A
+3. Embedding Search
+
+Level 2:
+4. PDF RAG Assistant
+5. Multi-document RAG
+6. Citation-based Research Assistant
+
+Level 3:
+7. Production RAG Platform
+8. Multi-user AI Knowledge System
+9. Agentic RAG Application
+
+================================================================================

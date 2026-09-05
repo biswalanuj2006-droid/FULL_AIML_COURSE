@@ -1,0 +1,283 @@
+================================================================================
+DEEP LEARNING  -  PROJECT.txt
+================================================================================
+Course   : AI_ENGINEERING/DEEP_LEARNING/
+Tiers    : E (easy) -> D -> C -> B -> A -> S -> S+ (production capstone)
+Rule     : every project ships the SAME 18-point document (template
+           below).  Do not start tier B+ without the earlier tier's
+           discipline: the graders are baselines, error analysis, and
+           honest limitations - not just accuracy.
+Prereqs  : COURSE.txt DL-00..DL-22 done module-by-module; EXAMPLE.py
+           sections S1..Sx as reference implementations.
+
+THE 18-POINT PER-PROJECT TEMPLATE (fill for EVERY project)
+  1. Problem statement        7.  Folder structure       13. Security
+  2. Objective                8.  Implementation stages  14. Deployment
+  3. Architecture             9.  Testing                15. Monitoring
+  4. Dataset/data source     10.  Evaluation             16. GitHub README
+  5. Prerequisites           11.  Failure analysis       17. Resume bullet
+  6. Technologies            12.  Debugging log          18. Improvements
+(master-prompt requirement: all 18 for every project.)
+
+================================================================================
+TIER E - TWO-LAYER MLP FROM SCRATCH
+================================================================================
+1. Problem: classify handwritten digits (or a synthetic 2D dataset with
+   3 overlapping Gaussian classes if offline) with NO deep learning
+   library - only numpy.
+2. Objective: implement forward/backward manually, reach test accuracy
+   >= 0.90 (synthetic >= 0.93), and prove the gradients are correct.
+3. Architecture: input -> Linear(784->128) -> ReLU -> Linear(128->10) ->
+   softmax (implemented as fused log-softmax+NLL).
+4. Data: MNIST (or sklearn make_blobs with 3 classes + noise).
+5. Prereqs: DL-00..DL-05, numpy fluency.
+6. Tech: python, numpy.  (torch allowed ONLY for the final comparison.)
+7. Folder:  per the PORTFOLIO_KIT template (src/, tests/, reports/).
+8. Stages: (1) one-batch overfit test; (2) gradient check vs finite
+   differences (rel diff < 1e-4); (3) full training; (4) confusion matrix.
+9. Testing: gradient check, shape asserts, one-batch-loss<0.01 test.
+10. Evaluation: accuracy vs a logistic-regression baseline; per-class
+    recall; report the failure classes.
+11. Failure analysis: which digits confuse each other (write 3 examples);
+    is it data or model?
+12. Debugging log: keep entries (NaN, slow convergence, symmetric
+    weights) with causes found.
+13. Security: N/A for training code; note data provenance.
+14. Deployment: not deployed - but structure train.py so it can be
+    (argparse config, fixed seed, save state_dict).
+15. Monitoring: N/A; add a note on what you WOULD monitor (accuracy
+    drift on new data).
+16. README: template in PORTFOLIO_KIT (ml_course) - headline number vs
+    baseline.
+17. Resume bullet: "Implemented a 2-layer MLP from scratch in numpy
+    (manual backprop + gradient check), 0.94 test accuracy on MNIST vs
+    0.92 logistic baseline; gradient-verified to 1e-4."
+18. Improvements: dropout, Adam, momentum, deeper net - measure each.
+
+================================================================================
+TIER D - CNN IMAGE CLASSIFIER
+================================================================================
+1. Problem: image classification on a small real dataset (FashionMNIST or
+   CIFAR-10; offline fallback: generate synthetic textured-class images).
+2. Objective: train a CNN from scratch (torch) that beats an MLP baseline
+   by >= 5 accuracy points; understand every layer's shape.
+3. Architecture: conv-bn-relu blocks (3), max pool, global average pool,
+   FC head; print every tensor shape in a debug mode.
+4. Data: 10 classes; stratified split; train-only augmentation
+   (flips/crops/color jitter); visualize 20 samples first.
+5. Prereqs: DL-08..DL-11, DL-20.
+6. Tech: torch, torchvision if available, matplotlib.
+7-9. Per template; TESTING must include a shape assert per layer and an
+   overfit-100-samples check.
+10. Evaluation: accuracy, per-class confusion, train-vs-val curves; show
+    augmentation's effect (+/- points) in a small table.
+11. Failure: find 10 misclassified images; group by cause (lighting,
+    class similarity, augmentation artifact).
+12. Debugging: log the BN eval() bug if you hit it - it is required
+    reading for your own future.
+13. Security: note adversarial fragility (one line: a small perturbation
+    flips predictions - cite DL-12/37 of ml_course).
+14. Deployment: export to ONNX or TorchScript; serve a single image
+    through FastAPI locally; measure p50 latency.
+15. Monitoring: log prediction-confidence histogram; flag drops.
+16-18. Per template; resume: "Trained a 3-block CNN on CIFAR-10 reaching
+    0.81 (MLP 0.71); augmentation +2.4 pts; served via FastAPI at 8 ms."
+
+================================================================================
+TIER C - TRANSFER LEARNING / FINE-TUNING
+================================================================================
+1. Problem: fine-tune a pretrained backbone (torchvision model or a
+   small custom net pretrained on your Tier-D data) for a NEW 5-class
+   task with limited data (200 samples/class).
+2. Objective: quantify feature-extraction vs full fine-tuning vs
+   from-scratch on the SAME data and report the honest comparison.
+3. Architecture: pretrained trunk (frozen) -> new head; then unfreeze
+   top block; compare three configs.
+4. Data: split your Tier D data into a small "target" task, or use two
+   domains of a public dataset; keep a clean test set.
+5. Prereqs: DL-12 (transfer learning), DL-20.
+6. Tech: torch, torchvision/timm if available.
+7-9. Per template.  Test that augmentations apply to TRAIN ONLY.
+10. Evaluation: accuracy + calibration (ECE) for: from-scratch, frozen
+    features, fine-tuned (lr 1e-4 vs 1e-3); make the 3x3 comparison table.
+11. Failure: where does fine-tuning OVERFIT (tiny data)?  Show the loss
+    curve that proves it and the LR/freezing fix.
+12. Debugging: wrong normalization stats vs the pretrained model is the
+    classic - log it if it bites you.
+13. Security: data provenance + note that pretrained weights carry their
+    training-distribution biases.
+14. Deployment: torchscript/ONNX export + integer quantization (INT8);
+    measure size and latency before/after.
+15. Monitoring: input-distribution drift vs the pretraining domain.
+16-18. Per template; resume: "Fine-tuned a pretrained CNN to a 5-class
+    medical-style task (200 img/class): 0.90 vs 0.79 from-scratch;
+    INT8 cut model size 4x with <0.5 pt loss."
+
+================================================================================
+TIER B - SEQUENCE MODELS (LSTM/GRU)
+================================================================================
+1. Problem: two options - (a) next-step forecasting on a synthetic +
+   real-ish time series with seasonality and trend, or (b) text
+   classification (sentiment-style) on a small corpus you can generate
+   offline.
+2. Objective: implement an LSTM cell from scratch, verify it matches
+   nn.LSTM, then build a real task and beat the naive baseline by a
+   defensible margin (longer-horizon forecasting, where persistence
+   decays - the lesson of ml_course EXAMPLE S21).
+3. Architecture: LSTM/GRU encoder -> head; bidirectional for
+   classification; causal/temporal split discipline for forecasting.
+4. Data: synthetic series (trend+season+noise) + a public small dataset;
+   temporal split, never random.
+5. Prereqs: DL-13..DL-15, DL-20 leakage audit.
+6. Tech: torch (manual cell + nn.LSTM), numpy.
+7-9. Per template; TEST the manual cell against nn.LSTM (atol 1e-4).
+10. Evaluation: forecasting at horizon H={1,6,12} vs naive last-value and
+    linear baselines (MSE/MAE); classification accuracy vs TF-IDF+logreg.
+11. Failure: show one case where the LSTM LOSES to the naive baseline and
+    explain why (smooth 1-step persistence) - the honest finding is the
+    point of the project.
+12. Debugging: state reset across sequences; BPTT memory on long series.
+13. Security: N/A; note that forecasts are conditional on distribution -
+    a regime shift invalidates them (monitoring link).
+14. Deployment: export and serve the forecaster; add a drift alert on
+    incoming residuals.
+15. Monitoring: residual tracking; alert when |residual| crosses 3-sigma.
+16-18. Per template; resume: "Built an LSTM forecaster (cell implemented
+    from scratch and verified vs nn.LSTM); at H=12 beats naive 6x on MSE
+    but honestly loses at H=1 - documented the persistence regime."
+
+================================================================================
+TIER A - TRANSFORMER FROM SCRATCH (mini-GPT)
+================================================================================
+1. Problem: build a decoder-only transformer from scratch (embedding,
+   causal MHA, pre-norm blocks, LM head) and train it on a small corpus
+   (your own generated prose) to a validation perplexity that BEATS a
+   bigram language model.
+2. Objective: every component implemented and unit-verified; training
+   pipeline with seed, split, checkpointing; final PPL vs bigram table.
+3. Architecture: the mini-GPT of llm_course/mini_gpt_lab.py is the
+   reference; reuse its shape discipline but write YOUR code.
+4. Data: ~100-500KB of text; char-level tokenization (simplest) with a
+   BOS/EOS discipline.
+5. Prereqs: DL-16..DL-18 + llm_course Parts 6-14 (or run the llm_course
+   labs first - strongly recommended).
+6. Tech: torch, numpy; optional wandb/MLflow for curves.
+7-9. Per template.  Unit tests: causal mask property, attention row sums,
+   KV-cache logit equivalence (the kv_decode_sweep_lab check!).
+10. Evaluation: train/val loss curves; PPL = exp(loss); sample text at
+    steps {end of warmup, 50%, 100%} and comment on quality.
+11. Failure: generation repeats or degenerates - explain via sampling
+    (temperature/top-k) experiments, not just "it's bad".
+12. Debugging: log the two classic bugs if you hit them - wrong causal
+    mask rows during decode, and re-feeding cached tokens (both are
+    documented in llm_course/kv_decode_sweep_lab.py).
+13. Security: note memorization risk on tiny corpora (model may memorize
+    training text - a real LLM concern at scale).
+14. Deployment: wrap generate() in a FastAPI endpoint with streaming
+    response; measure tokens/sec.
+15. Monitoring: log generation length, latency, and repetition rate.
+16-18. Per template; resume: "Built and trained a 250k-param decoder-only
+    transformer from scratch: val PPL 13.5 vs bigram 15.9; KV-cached
+    decode 6x faster than recompute at T=512; served via streaming API."
+
+================================================================================
+TIER S - GENERATIVE MODEL (VAE and/or diffusion)
+================================================================================
+1. Problem: learn a generative model of a small image set (e.g. 10k
+   synthetic shapes or a public set like MNIST) and sample from it.
+2. Objective: VAE with measurable reconstruction + KL + sample quality;
+   optional diffusion upgrade for sharpness; compare honestly.
+3. Architecture: VAE (enc: convs -> mu/logvar; reparam; dec: transpose
+   convs), KL-annealing schedule; diffusion: noise-prediction UNet with
+   a cosine schedule + DDIM sampling.
+4. Data: small public image set or procedurally generated shapes.
+5. Prereqs: DL-19, DL-10 (convs).
+6. Tech: torch, numpy; matplotlib for samples.
+7-9. Per template.  Tests: KL stays finite; reconstruction < threshold on
+   train; latent z ~ N(0,1) actually decodes to valid images.
+10. Evaluation: recon loss, KL, sample diversity (visual grid), and a
+    quantitative FID-style proxy if feasible (nearest-neighbor distance
+    of samples to train set is an offline proxy).
+11. Failure: blurry VAE samples - explain WHY (Gaussian decoder +
+    pixel independence); what would sharpen them (diffusion).
+12. Debugging: latent collapse (KL -> 0, recon high): KL-anneal; NaN
+    from logvar: clamp logvar.
+13. Security: deepfakes/synthetic-data ethics note - required reading.
+14. Deployment: sample endpoint (latent -> image); latency per sample.
+15. Monitoring: generation drift (sample stats vs train stats).
+16-18. Per template; resume: "Trained a VAE (KL-annealed) and a DDIM
+    diffusion model on [set]: diffusion samples visibly sharper; built
+    latent->image sampling API; documented the blur-vs-diversity trade."
+
+================================================================================
+TIER S+ - PRODUCTION DEEP LEARNING PLATFORM (THE CAPSTONE)
+================================================================================
+Architecture (draw this in your README):
+        BATCH DATA --> TRAINING PIPELINE --> MODEL REGISTRY
+        (dvc/versioned)   (MLflow runs)       (champion/challenger)
+                                                 |
+     USER --> API GATEWAY --> FASTAPI SERVICE --> MODEL (ONNX, INT8)
+                                |  auth/rate-limit/log
+                                v
+                          MONITORING (latency p50/p95, drift PSI,
+                          prediction histogram) --> ALERT --> RETRAIN
+
+1. Problem: your Tier A/C model as a production service: retrainable,
+   monitored, and safe to hand to a teammate.
+2. Objective: an end-to-end platform where a data drop can trigger
+   retraining and redeployment with evaluation gates - not just a model
+   behind an API.
+3. Architecture: (above).  Two paths: ONLINE /predict (low latency) and
+   BATCH (scheduled scoring); champion/challenger in the registry.
+4. Data: versioned dataset with leakage-free splits and a label-shuffle
+   CI test (DL-20.5).
+5. Prereqs: DL-20..DL-22 + ml_course Modules 39-41 (FastAPI/Docker/
+   MLflow) or the llm_course serving labs.
+6. Tech: torch, ONNX Runtime, FastAPI, MLflow, Docker, SQLite/Postgres
+   for logs, Redis for cache (optional).
+7. Folder: full PORTFOLIO_KIT structure + mlflow/ and deploy/.
+8. Stages: (1) training pipeline with resume + tracking; (2) export +
+   quantization; (3) FastAPI service with auth/rate-limit/logging; (4)
+   monitoring + drift checks; (5) retraining trigger; (6) Docker + CI.
+9. Testing: golden-output test, shape tests, leakage test (shuffled
+   labels -> chance), API contract tests (TestClient), load smoke.
+10. Evaluation: the registry stores model, metrics, data version, and
+    the promotion gate is a metric comparison on a clean holdout.
+11. Failure analysis: document 3 real failure modes (drift, cache
+    poisoning, cold-start latency) with the mitigation each got.
+12. Debugging: keep the incident log; include one real bug you caught
+    (eval() mode, INT8 calibration, split leakage).
+13. Security: auth, rate limiting, input validation, prompt/output
+    sanitization notes, secrets in env (never in code), model
+    extraction risk on public endpoints (throttle).
+14. Deployment: docker-compose (api + registry UI + db); document the
+    rollback procedure (revert to previous champion).
+15. Monitoring: latency p50/p95, error rate, prediction drift (PSI),
+    input drift, and a retraining alert when holdout-style metrics on
+    recent labeled data drop.
+16. README: architecture diagram + quickstart + the numbers table.
+17. Resume bullet: "Built a production DL platform (FastAPI + ONNX INT8
+    + MLflow): p50 6 ms, 3x INT8 size cut, drift alerts trigger
+    retraining; champion/challenger gates in the registry; Dockerized
+    with CI leakage tests."
+18. Improvements: A/B the retraining policy, add Redis caching, scale
+    with a second replica + LB, quantize to INT4, add online learning.
+
+================================================================================
+HOW TO CHOOSE YOUR SEQUENCE (12-week plan)
+================================================================================
+Weeks 1-2  Tier E (from scratch; the gradient check is non-negotiable)
+Weeks 3-4  Tier D (CNN; augmentation experiment)
+Weeks 5-6  Tier C (transfer learning; the 3-config table)
+Weeks 7-8  Tier B (sequence; the honest naive-baseline finding)
+Weeks 9-10 Tier A (transformer; run llm_course labs 41/42 alongside)
+Weeks 11   Tier S (generative; pick VAE or diffusion)
+Week 12    Tier S+ skeleton (service + monitoring; the capstone is the
+           long-term portfolio project - iterate it after each course in
+           the AI_ENGINEERING sequence)
+Every tier updates your GitHub README and resume bullet BEFORE you start
+the next one - portfolio work is part of the project, not after it.
+
+================================================================================
+END PROJECT.txt
+================================================================================

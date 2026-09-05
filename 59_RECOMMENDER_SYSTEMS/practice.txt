@@ -1,0 +1,96 @@
+================================================================================
+PRACTICE - 59 RECOMMENDER SYSTEMS
+================================================================================
+
+PART A - CONCEPTUAL
+--------------------------------------------------------------------------------
+1. Explicit vs implicit feedback: for each signal (star rating, view,
+   purchase, skip, add-to-cart), say which kind it is and one way the
+   missingness is ambiguous.
+2. Why must a matrix-factorization model beat the popularity baseline
+   before you trust any offline gain? What does the baseline capture
+   that the metric does not?
+3. Explain latent factor k in words: what does it mean that user u and
+   item i are close in factor space? Why is k a bias-variance knob?
+4. Two-stage retrieval: why can you not score 80M items per user with a
+   deep ranking model? Where does ANN search enter?
+
+PART B - NUMERICAL (do by hand)
+--------------------------------------------------------------------------------
+5. Ratings matrix (users U1..U3 x items I1..I3):
+        U1: I1=5, I2=3
+        U2: I1=4, I3=2
+        U3: I2=1, I3=4
+   Initialize p_u = q_i = (1,1) for all, lr = 0.05, lambda = 0.1.
+   Perform TWO Funk-SGD updates on the pair (U1, I1). Show every step
+   and the updated predictions.
+6. ALS closed form: with Q fixed, write p_u = (Q_u^T Q_u + lambda I)^-1
+   Q_u^T r_u. Explain each term for a user with 2 ratings and k=3.
+7. NDCG@2: recommender A returns [relevant, relevant], B returns
+   [relevant, irrelevant]. Relevance = 1/0. Compute DCG@2 and NDCG@2
+   for both. Why does B's score punish the second position?
+
+PART C - CODE
+--------------------------------------------------------------------------------
+8. Implement Funk-SGD matrix factorization in numpy on the MovieLens-
+   style data you generate (or use code/ or sklearn-free). Track RMSE
+   on a time-based holdout; plot RMSE vs k in {2,5,10,20}.
+9. Implement the Hu-Koren implicit ALS (section 4 of the lesson) on a
+   synthetic click matrix; verify that popular-but-unclicked items get
+   lower scores than clicked ones and that confidence alpha matters.
+10. Ranking evaluation: given a held-out set of one positive item per
+    user, compute HitRate@10 and NDCG@10 for (a) popularity, (b) your
+    MF model. State which wins and why.
+11. Two-tower: build user and item feature matrices, a small dot-product
+    model with in-batch negative sampling trained on synthetic
+    interactions; embed all items and serve the top-k by numpy
+    nearest neighbor for one user.
+12. Feedback-loop simulation: train MF, generate "clicks" from its top
+    recommendations only, retrain, repeat 10 rounds; measure how the
+    catalog's diversity collapses vs a model trained with 10% random
+    exploration.
+
+PART D - DEBUGGING
+--------------------------------------------------------------------------------
+13. Offline NDCG +8%, live CTR -15%. Give three candidate causes and
+    the A/B or analysis that isolates each.
+14. Your ALS model recommends only blockbusters for every user. Name two
+    mechanisms (popularity feedback, implicit count bias) and one fix
+    each.
+15. Users who rated 5 stars dominate the training loss; new-item
+    recommendations are random. Diagnose and propose the objective
+    change.
+16. A feature "item purchased after recommendation" is a column in the
+    training table. What is leaking, and what is the correct split?
+17. Evaluation says your recommender is excellent but a manual review
+    shows terrible diversity. Which metric are you not reporting, and
+    what metric would you add (MMR / intra-list diversity)?
+
+PART E - REAL WORLD
+--------------------------------------------------------------------------------
+18. Movie streaming, 200M users, 80M items: sketch the two-stage system
+    with candidate sources and ranking features; where is cold start
+    handled; how would you detect the popularity feedback loop in
+    production metrics?
+19. Marketplace with seasonal items: items live 6 weeks. Why does pure
+    CF fail, and how do you add item metadata + recency?
+20. You must defend "recommend the user the product they already bought"
+    - not possible, but the model still returns it. Which evaluation
+    bug makes this possible (leakage of the label into features)?
+21. (Interview) Explain matrix factorization to a PM in 3 sentences;
+    then to an engineer with the ALS update. Why two audiences?
+22. (Interview) "How would you evaluate a recommender before launch,
+    and how would you know your offline eval is lying?" Answer with
+    policy bias, position bias, and time split.
+
+PART F - EXPERT
+--------------------------------------------------------------------------------
+23. Implement causal / propensity-corrected evaluation (inverse
+    propensity weighting on logged click data) and show the correction
+    changes your model ranking vs naive logged-data evaluation.
+24. Design an exploration policy for ranking that guarantees each item
+    a minimum exposure while maximizing expected reward; implement a
+    simplified epsilon-greedy version and measure the regret.
+25. (Open) Debias a feedback loop analytically: model CTR as
+    p(click | item quality, exposure), and derive why naive training
+    confounds the two. What data would let you separate them?

@@ -1,0 +1,148 @@
+================================================================================
+MODULE 05 — MATHEMATICS FOR ML
+EXERCISES
+================================================================================
+
+Complete these exercises to verify your understanding.
+
+================================================================================
+ALGEBRA EXERCISES
+================================================================================
+
+A1: In the linear model y = 0.5x + 10, what is y when x = 20?
+
+A2: The loss function L(w) = (w - 4)² has its minimum at what value of w?
+
+A3: Compute σ(3) = 1/(1 + e⁻³). Show your work.
+
+A4: If log₂(x) = 5, what is x?
+
+A5: Given y = wx + b, if w = 2 and b = -3, find x when y = 7.
+
+================================================================================
+LINEAR ALGEBRA EXERCISES
+================================================================================
+
+L1: Compute the dot product of [1, 3, 5] and [2, 4, 6].
+
+L2: Given A = [[1, 2], [3, 4]] and B = [[5, 6], [7, 8]], compute A @ B.
+
+L3: What is the transpose of [[1, 2, 3], [4, 5, 6]]?
+
+L4: Compute the L2 norm of [3, 4].
+
+L5: For a dataset X with shape (1000, 10), what is the shape of X.T @ X?
+
+L6: What does an eigenvalue of 0 tell you about a matrix?
+
+================================================================================
+CALCULUS EXERCISES
+================================================================================
+
+C1: Find d/dx(3x³ + 2x² - 5x + 1).
+
+C2: Find d/dx(e²ˣ) using the chain rule.
+
+C3: If f(x, y) = x²y + xy², find ∂f/∂x and ∂f/∂y.
+
+C4: The sigmoid is σ(z) = 1/(1+e⁻ᶻ). Show that σ'(z) = σ(z)(1-σ(z)).
+
+C5: For L(w) = (1/n)Σ(yᵢ - wxᵢ)², derive dL/dw.
+
+================================================================================
+PROBABILITY EXERCISES
+================================================================================
+
+P1: A bag has 3 red and 5 blue balls. What is P(red)?
+
+P2: If P(A) = 0.6, P(B) = 0.4, and P(A∩B) = 0.2, find P(A|B).
+
+P3: Using Bayes theorem: P(disease) = 0.02, P(positive|disease) = 0.9,
+    P(positive|no disease) = 0.1. Find P(disease|positive).
+
+P4: What is the expected value of a fair 6-sided die?
+
+P5: What distribution would you use to model the number of clicks
+    on an ad, and why?
+
+================================================================================
+STATISTICS EXERCISES
+================================================================================
+
+S1: Dataset: [5, 10, 15, 20, 25]. Compute mean, variance, and std.
+
+S2: Two features have correlation r = -0.95. What does this mean
+    for feature selection in a linear model?
+
+S3: A model achieves 92% accuracy on 1000 test samples. Compute the
+    95% confidence interval.
+
+S4: What is the IQR of [1, 3, 5, 7, 9, 11, 13]?
+
+S5: When should you use stratified sampling instead of random sampling?
+
+================================================================================
+OPTIMIZATION EXERCISES
+================================================================================
+
+O1: With learning rate 0.1 and loss gradient 5.0, what is the weight
+    update? (Assume w = w - lr × gradient)
+
+O2: Why is Adam generally preferred over plain SGD?
+
+O3: What is the difference between batch, stochastic, and mini-batch
+    gradient descent?
+
+O4: If training loss decreases but validation loss increases, what is
+    happening and what should you do?
+
+O5: Why do we subtract the mean before PCA?
+
+================================================================================
+ANSWERS
+================================================================================
+
+ALGEBRA:
+A1: y = 0.5(20) + 10 = 20
+A2: w = 4 (minimum of (w-4)² is at w=4)
+A3: σ(3) = 1/(1+e⁻³) = 1/(1+0.0498) = 0.953
+A4: x = 2⁵ = 32
+A5: 7 = 2x - 3 → x = 5
+
+LINEAR ALGEBRA:
+L1: 1×2 + 3×4 + 5×6 = 2 + 12 + 30 = 44
+L2: [[19, 22], [43, 50]]
+L3: [[1, 4], [2, 5], [3, 6]]
+L4: √(9+16) = 5
+L5: (10, 10)
+L6: The matrix is singular (not invertible)
+
+CALCULUS:
+C1: 9x² + 4x - 5
+C2: 2e²ˣ
+C3: ∂f/∂x = 2xy + y², ∂f/∂y = x² + 2xy
+C4: σ'(z) = e⁻ᶻ/(1+e⁻ᶻ)² = σ(z) × (1-σ(z))
+C5: dL/dw = -(2/n)Σ(yᵢ-wxᵢ)xᵢ
+
+PROBABILITY:
+P1: 3/8 = 0.375
+P2: P(A|B) = 0.2/0.4 = 0.5
+P3: P(disease|pos) = (0.9×0.02)/(0.9×0.02+0.1×0.98) = 0.155
+P4: E[X] = 3.5
+P5: Poisson (count data)
+
+STATISTICS:
+S1: mean=15, var=50, std=7.07
+S2: High negative correlation → remove one (multicollinearity)
+S3: 0.92 ± 1.96×√(0.92×0.08/1000) = [0.903, 0.937]
+S4: Q1=3, Q3=11, IQR=8
+S5: When class distribution is imbalanced
+
+OPTIMIZATION:
+O1: w = w - 0.1 × 5.0 = w - 0.5
+O2: Adam adapts learning rate per parameter and uses momentum
+O3: Batch=all data, SGD=1 sample, mini-batch=B samples
+O4: Overfitting → use early stopping, regularization, more data
+O5: PCA requires centered data (mean=0) for correct variance computation
+
+================================================================================

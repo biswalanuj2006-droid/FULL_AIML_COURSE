@@ -1,0 +1,55 @@
+================================================================================
+RAG MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: PDF CHATBOT (Beginner)
+===================================
+Problem: Build a simple RAG system for PDF documents.
+Requirements:
+- Load PDF documents
+- Chunk text into passages
+- Embed with sentence-transformers
+- Store in Chroma vector DB
+- Query and retrieve relevant chunks
+- Generate answers with LLM
+Evaluation: Answers are grounded in documents
+
+PROJECT 2: MULTI-DOCUMENT RAG (Intermediate)
+=============================================
+Problem: Build RAG system supporting multiple document types.
+Requirements:
+- Support PDF, TXT, DOCX
+- Implement hybrid search (semantic + keyword)
+- Add metadata filtering
+- Implement reranking
+- Add source citations
+- Build Streamlit UI
+Evaluation: Retrieval accuracy > 80%
+
+PROJECT 3: PRODUCTION RAG PLATFORM (Advanced)
+===============================================
+Problem: Build a production-ready RAG system.
+Requirements:
+- FastAPI backend with JWT auth
+- PostgreSQL for metadata
+- Qdrant for vector search
+- Redis for caching
+- Multiple embedding models
+- Evaluation metrics
+- Docker deployment
+- Monitoring
+Evaluation: All components working, < 500ms latency
+
+PROJECT 4: MULTIMODAL RAG (Expert/Research)
+=============================================
+Problem: Build RAG system for text + images.
+Requirements:
+- Parse documents with images
+- Generate image descriptions
+- Multi-modal embeddings
+- Cross-modal retrieval
+- Evaluate retrieval quality
+- Compare with text-only RAG
+Evaluation: Research-quality experiment
+
+================================================================================

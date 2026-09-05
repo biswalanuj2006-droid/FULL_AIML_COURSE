@@ -1,0 +1,17 @@
+================================================================================
+VISUALIZATION MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: DATA VISUALIZATION DASHBOARD (Beginner)
+====================================================
+Create 10 different plot types for a dataset, combined into a dashboard.
+
+PROJECT 2: ML MODEL VISUALIZATION SUITE (Intermediate)
+=======================================================
+Visualize: decision boundaries, confusion matrix, ROC curves, feature importance, learning curves for multiple models.
+
+PROJECT 3: INTERACTIVE EDA DASHBOARD (Advanced)
+=================================================
+Build interactive Plotly dashboard for exploring a dataset with filters, selections, and drill-down capability.
+
+================================================================================

@@ -1,0 +1,339 @@
+================================================================================
+MODULE 02 — NUMPY
+LESSON 07: ADVANCED NUMPY AND FROM-SCRATCH ML
+================================================================================
+
+## What You Will Learn
+- Einstein summation (einsum)
+- Structured arrays
+- Memory layout and performance
+- From-scratch implementations of ML algorithms
+
+================================================================================
+1. EINSTEIN SUMMATION (np.einsum)
+================================================================================
+
+A compact notation for tensor operations.
+
+    # Dot product
+    np.einsum('i,i->', a, b)           # Same as np.dot(a, b)
+
+    # Outer product
+    np.einsum('i,j->ij', a, b)         # Same as np.outer(a, b)
+
+    # Matrix multiplication
+    np.einsum('ij,jk->ik', A, B)       # Same as A @ B
+
+    # Trace
+    np.einsum('ii->', A)               # Sum of diagonal
+
+    # Transpose
+    np.einsum('ij->ji', A)             # Same as A.T
+
+    # Element-wise multiply then sum
+    np.einsum('ij,ij->', A, B)         # Same as np.sum(A * B)
+
+    # Batch matrix multiply
+    np.einsum('bij,bjk->bik', A, B)   # For 3D arrays
+
+ML USE:
+    # Efficient computation without temporary arrays
+    # Useful for attention mechanisms in transformers
+    # Q × K^T computation: np.einsum('ij,kj->ik', Q, K)
+
+================================================================================
+2. MEMORY AND PERFORMANCE
+================================================================================
+
+WHY NUMPY IS FAST:
+    1. Contiguous memory blocks (no pointer overhead)
+    2. Operations in compiled C code
+    3. CPU cache-friendly access patterns
+    4. Vectorization (no Python loops)
+
+MEMORY LAYOUT:
+    C-order (row-major): Default. Rows stored contiguously.
+    F-order (column-major): Columns stored contiguously.
+
+    a = np.array([[1, 2], [3, 4]], order='C')    # Default
+    b = np.array([[1, 2], [3, 4]], order='F')
+
+    When to use F-order: When accessing columns frequently.
+
+VIEW vs COPY:
+    a = np.array([1, 2, 3, 4, 5])
+    b = a.view()       # Shares memory with a
+    c = a.copy()       # Independent copy
+
+    b[0] = 100         # Also changes a!
+    c[0] = 200         # Does NOT change a
+
+PERFORMANCE TIPS:
+    # Avoid Python loops — use vectorized operations
+    # BAD
+    result = np.empty(n)
+    for i in range(n):
+        result[i] = x[i] ** 2
+
+    # GOOD
+    result = x ** 2
+
+    # Pre-allocate arrays instead of appending
+    # BAD
+    results = []
+    for i in range(n):
+        results.append(compute(x[i]))
+
+    # GOOD
+    results = np.empty(n)
+    for i in range(n):
+        results[i] = compute(x[i])
+
+================================================================================
+3. FROM-SCRATCH: LINEAR REGRESSION
+================================================================================
+
+import numpy as np
+
+class LinearRegressionFromScratch:
+    """Linear regression using normal equation and gradient descent."""
+
+    def __init__(self, method="normal"):
+        self.method = method
+        self.weights = None
+        self.bias = None
+
+    def fit_normal(self, X, y):
+        """Solve using normal equation: w = (XᵀX)⁻¹Xᵀy"""
+        X_b = np.c_[np.ones(X.shape[0]), X]    # Add bias column
+        theta = np.linalg.inv(X_b.T @ X_b) @ X_b.T @ y
+        self.bias = theta[0]
+        self.weights = theta[1:]
+
+    def fit_gradient(self, X, y, lr=0.01, epochs=1000):
+        """Train using gradient descent."""
+        n_samples, n_features = X.shape
+        self.weights = np.random.randn(n_features) * 0.01
+        self.bias = 0
+        self.losses = []
+
+        for epoch in range(epochs):
+            # Forward pass
+            y_pred = X @ self.weights + self.bias
+
+            # Compute loss (MSE)
+            loss = np.mean((y_pred - y) ** 2)
+            self.losses.append(loss)
+
+            # Compute gradients
+            dw = (2 / n_samples) * X.T @ (y_pred - y)
+            db = (2 / n_samples) * np.sum(y_pred - y)
+
+            # Update
+            self.weights -= lr * dw
+            self.bias -= lr * db
+
+    def predict(self, X):
+        return X @ self.weights + self.bias
+
+    def score(self, X, y):
+        """R² score."""
+        y_pred = self.predict(X)
+        ss_res = np.sum((y - y_pred) ** 2)
+        ss_tot = np.sum((y - np.mean(y)) ** 2)
+        return 1 - (ss_res / ss_tot)
+
+# Usage
+np.random.seed(42)
+X = np.random.randn(100, 3)
+true_w = np.array([1.5, -2.0, 0.5])
+y = X @ true_w + np.random.randn(100) * 0.1
+
+model = LinearRegressionFromScratch()
+model.fit_normal(X, y)
+print(f"Weights: {model.weights.round(3)}")
+print(f"R²: {model.score(X, y):.4f}")
+
+================================================================================
+4. FROM-SCRATCH: LOGISTIC REGRESSION
+================================================================================
+
+class LogisticRegressionFromScratch:
+    def __init__(self, lr=0.01, epochs=1000):
+        self.lr = lr
+        self.epochs = epochs
+
+    def sigmoid(self, z):
+        return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+
+    def fit(self, X, y):
+        n_samples, n_features = X.shape
+        self.weights = np.zeros(n_features)
+        self.bias = 0
+        self.losses = []
+
+        for epoch in range(self.epochs):
+            # Forward
+            z = X @ self.weights + self.bias
+            y_pred = self.sigmoid(z)
+
+            # Binary cross-entropy loss
+            eps = 1e-15
+            loss = -np.mean(y * np.log(y_pred + eps) +
+                           (1 - y) * np.log(1 - y_pred + eps))
+            self.losses.append(loss)
+
+            # Gradients
+            dw = (1 / n_samples) * X.T @ (y_pred - y)
+            db = np.mean(y_pred - y)
+
+            # Update
+            self.weights -= self.lr * dw
+            self.bias -= self.lr * db
+
+    def predict_proba(self, X):
+        return self.sigmoid(X @ self.weights + self.bias)
+
+    def predict(self, X, threshold=0.5):
+        return (self.predict_proba(X) >= threshold).astype(int)
+
+    def accuracy(self, X, y):
+        return np.mean(self.predict(X) == y)
+
+# Usage
+from sklearn.datasets import make_classification
+X, y = make_classification(n_samples=200, n_features=5, random_state=42)
+
+model = LogisticRegressionFromScratch(lr=0.1, epochs=500)
+model.fit(X, y)
+print(f"Accuracy: {model.accuracy(X, y):.4f}")
+
+================================================================================
+5. FROM-SCRATCH: KNN
+================================================================================
+
+class KNNFromScratch:
+    def __init__(self, k=3):
+        self.k = k
+
+    def fit(self, X, y):
+        self.X_train = X
+        self.y_train = y
+
+    def predict(self, X):
+        predictions = [self._predict_one(x) for x in X]
+        return np.array(predictions)
+
+    def _predict_one(self, x):
+        # Compute distances to all training points
+        distances = np.sqrt(np.sum((self.X_train - x) ** 2, axis=1))
+
+        # Find k nearest neighbors
+        k_indices = np.argsort(distances)[:self.k]
+        k_labels = self.y_train[k_indices]
+
+        # Majority vote
+        unique, counts = np.unique(k_labels, return_counts=True)
+        return unique[np.argmax(counts)]
+
+# Usage
+X, y = make_classification(n_samples=200, n_features=5, random_state=42)
+model = KNNFromScratch(k=5)
+model.fit(X[:150], y[:150])
+accuracy = np.mean(model.predict(X[150:]) == y[150:])
+print(f"KNN Accuracy: {accuracy:.4f}")
+
+================================================================================
+6. FROM-SCRATCH: DECISION TREE (Simplified)
+================================================================================
+
+class SimpleDecisionTree:
+    """Simplified decision tree for classification."""
+
+    def __init__(self, max_depth=3):
+        self.max_depth = max_depth
+        self.tree = None
+
+    def _gini(self, y):
+        """Compute Gini impurity."""
+        classes, counts = np.unique(y, return_counts=True)
+        probs = counts / len(y)
+        return 1 - np.sum(probs ** 2)
+
+    def _best_split(self, X, y):
+        """Find best feature and threshold to split on."""
+        best_gini = float('inf')
+        best_feature, best_threshold = None, None
+        n_samples, n_features = X.shape
+
+        for feature in range(n_features):
+            thresholds = np.unique(X[:, feature])
+            for threshold in thresholds:
+                left_mask = X[:, feature] <= threshold
+                right_mask = ~left_mask
+
+                if left_mask.sum() == 0 or right_mask.sum() == 0:
+                    continue
+
+                gini = (left_mask.sum() * self._gini(y[left_mask]) +
+                       right_mask.sum() * self._gini(y[right_mask])) / n_samples
+
+                if gini < best_gini:
+                    best_gini = gini
+                    best_feature = feature
+                    best_threshold = threshold
+
+        return best_feature, best_threshold
+
+    def _build_tree(self, X, y, depth=0):
+        """Recursively build the tree."""
+        classes, counts = np.unique(y, return_counts=True)
+
+        # Stop conditions
+        if depth >= self.max_depth or len(classes) == 1 or len(y) < 2:
+            return {"leaf": True, "class": classes[np.argmax(counts)]}
+
+        feature, threshold = self._best_split(X, y)
+        if feature is None:
+            return {"leaf": True, "class": classes[np.argmax(counts)]}
+
+        left_mask = X[:, feature] <= threshold
+        return {
+            "leaf": False,
+            "feature": feature,
+            "threshold": threshold,
+            "left": self._build_tree(X[left_mask], y[left_mask], depth + 1),
+            "right": self._build_tree(X[~left_mask], y[~left_mask], depth + 1)
+        }
+
+    def fit(self, X, y):
+        self.tree = self._build_tree(X, y)
+
+    def _predict_one(self, x, node):
+        if node["leaf"]:
+            return node["class"]
+        if x[node["feature"]] <= node["threshold"]:
+            return self._predict_one(x, node["left"])
+        return self._predict_one(x, node["right"])
+
+    def predict(self, X):
+        return np.array([self._predict_one(x, self.tree) for x in X])
+
+# Usage
+X, y = make_classification(n_samples=200, n_features=5, random_state=42)
+tree = SimpleDecisionTree(max_depth=3)
+tree.fit(X[:150], y[:150])
+accuracy = np.mean(tree.predict(X[150:]) == y[150:])
+print(f"Decision Tree Accuracy: {accuracy:.4f}")
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What does einsum 'ij,jk->ik' compute?
+2. What is the difference between a view and a copy?
+3. How does the normal equation solve linear regression?
+4. What is the sigmoid derivative and why is it important?
+5. How does KNN classify a new point?
+
+================================================================================

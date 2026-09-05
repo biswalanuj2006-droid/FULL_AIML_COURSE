@@ -1,0 +1,45 @@
+================================================================================
+CODE PRACTICE - code/fastapi (ML inference API)
+Companion: 01_fastapi_ml_api.py (run: uvicorn main:app; or python -m uvicorn)
+================================================================================
+RUN & OBSERVE
+1. Start the server, hit /docs (Swagger UI), and call the predict
+   endpoint with a valid and an invalid payload. Read the auto 422.
+2. Check that the model is loaded ONCE (module level) - add a print in
+   the load function and confirm it runs once, not per request.
+
+MODIFY
+3. Add a /health endpoint returning model version + uptime; add a
+   readiness check that verifies the model can actually predict.
+4. Add request validation with a Pydantic schema (ranges, required
+   fields) and a custom error message for out-of-range input.
+5. Add response_model with a typed PredictionOut (label, confidence,
+   model_version) - show the schema in /docs.
+6. Add an API key dependency (Header check) and rate limiting with
+   slowapi or a simple in-memory counter.
+
+DEBUG
+7. Call predict with a python dict missing a feature: reproduce the
+   422 and make the error message tell the caller WHICH field is
+   missing (Pydantic field descriptions).
+8. Break the preprocessing-to-serve contract: preprocess the payload
+   differently from training (e.g. forget scaling) and show silent
+   wrong predictions - then fix by shipping the pipeline object.
+9. Send a 10MB payload and watch memory/time; add a size limit and
+   observe the 413.
+
+BUILD (mini)
+10. Wrap a DIFFERENT model (e.g. the classifier from code/nlp) behind
+    this API with the same schema discipline; verify parity with the
+    local predict.
+11. Load-test with a loop of 500 concurrent requests (ThreadPool) and
+    report p50/p95 latency; explain where the bottleneck is (CPU
+    predict vs serialization).
+12. Dockerize it with the code/docker Dockerfile pattern and confirm it
+    serves inside the container.
+
+RELATE
+13. Which of the 34_MODEL_DEPLOYMENT/real_problem.txt production
+    failures does each exercise above prevent? Map them.
+14. (Interview) Why load the model once at startup? Give the latency
+    numbers from your load test as evidence.

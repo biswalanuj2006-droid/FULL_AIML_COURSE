@@ -1,0 +1,17 @@
+================================================================================
+GIT & GITHUB — PROJECTS
+================================================================================
+
+PROJECT 1: GIT WORKFLOW (Beginner)
+=====================================
+Practice branching, merging, pull requests.
+
+PROJECT 2: CI/CD PIPELINE (Intermediate)
+==========================================
+Set up GitHub Actions for ML project.
+
+PROJECT 3: GIT-BASED DATA VERSIONING (Advanced)
+=================================================
+Implement Git-based versioning for datasets and models.
+
+================================================================================

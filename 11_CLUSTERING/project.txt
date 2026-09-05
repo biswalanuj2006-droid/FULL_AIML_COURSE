@@ -1,0 +1,17 @@
+================================================================================
+CLUSTERING MODULE — PROJECTS
+================================================================================
+
+PROJECT 1: CUSTOMER SEGMENTATION (Beginner)
+=============================================
+K-Means clustering on customer data, visualize segments, profile clusters.
+
+PROJECT 2: ANOMALY DETECTION SYSTEM (Intermediate)
+====================================================
+Use clustering for anomaly detection in transaction data.
+
+PROJECT 3: REAL-TIME CLUSTERING PIPELINE (Advanced)
+====================================================
+Build streaming clustering system with model update capability.
+
+================================================================================

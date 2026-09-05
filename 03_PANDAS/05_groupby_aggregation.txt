@@ -1,0 +1,115 @@
+================================================================================
+MODULE 03 — PANDAS
+LESSON 05: GROUPBY AND AGGREGATION
+================================================================================
+
+## What You Will Learn
+- Split-Apply-Combine pattern
+- GroupBy with single and multiple columns
+- Aggregation functions
+- Custom aggregation with agg()
+- Pivot tables
+- Cross-tabulation
+
+================================================================================
+1. GROUPBY BASICS
+================================================================================
+
+    # Create sample data
+    df = pd.DataFrame({
+        "department": ["Sales", "Sales", "Engineering", "Engineering", "HR", "HR"],
+        "employee": ["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank"],
+        "salary": [50000, 55000, 80000, 85000, 45000, 48000]
+    })
+
+    # Group by single column
+    df.groupby("department")["salary"].mean()
+    # department
+    # Engineering    82500.0
+    # HR             46500.0
+    # Sales          52500.0
+
+    # Multiple aggregations
+    df.groupby("department")["salary"].agg(["mean", "median", "std", "count"])
+
+================================================================================
+2. AGGREGATION FUNCTIONS
+================================================================================
+
+BUILT-IN:
+    .mean()    .median()    .std()    .var()
+    .min()     .max()       .sum()    .count()
+    .first()   .last()      .nunique()
+
+MULTIPLE AGGREGATIONS:
+    df.groupby("department")["salary"].agg(["mean", "max", "min"])
+
+DIFFERENT AGGREGATIONS PER COLUMN:
+    df.groupby("department").agg({
+        "salary": ["mean", "max"],
+        "employee": "count"
+    })
+
+CUSTOM AGGREGATION:
+    def salary_range(x):
+        return x.max() - x.min()
+
+    df.groupby("department")["salary"].agg(salary_range)
+
+================================================================================
+3. GROUPBY WITH MULTIPLE COLUMNS
+================================================================================
+
+    df.groupby(["department", "region"])["salary"].mean()
+
+    # Reset index for cleaner output
+    result = (df.groupby(["department", "region"])["salary"]
+              .mean()
+              .reset_index())
+
+================================================================================
+4. PIVOT TABLES
+================================================================================
+
+    # Like Excel pivot tables
+    df.pivot_table(
+        values="salary",
+        index="department",
+        columns="region",
+        aggfunc="mean",
+        fill_value=0
+    )
+
+================================================================================
+5. CROSS-TABULATION
+================================================================================
+
+    # Count frequency of combinations
+    pd.crosstab(df["department"], df["region"])
+
+    # With margins (totals)
+    pd.crosstab(df["department"], df["region"], margins=True)
+
+================================================================================
+6. TRANSFORM
+================================================================================
+
+    # Add group-level statistics back to original DataFrame
+    df["dept_avg_salary"] = df.groupby("department")["salary"].transform("mean")
+    df["salary_vs_avg"] = df["salary"] - df["dept_avg_salary"]
+
+    ML USE: Feature engineering — group-level statistics
+    df["city_avg_income"] = df.groupby("city")["income"].transform("mean")
+    df["income_ratio"] = df["income"] / df["city_avg_income"]
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What does groupby().mean() do?
+2. How do you apply different aggregations to different columns?
+3. What is the difference between agg() and transform()?
+
+================================================================================
+NEXT LESSON: 06_merge_concat.txt
+================================================================================

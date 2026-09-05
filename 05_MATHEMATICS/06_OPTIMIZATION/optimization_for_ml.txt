@@ -1,0 +1,398 @@
+================================================================================
+MODULE 05 — MATHEMATICS FOR ML
+LESSON 06: OPTIMIZATION FOR MACHINE LEARNING
+================================================================================
+
+## What You Will Learn
+- Objective functions and loss functions
+- Gradient descent (batch, stochastic, mini-batch)
+- Learning rate and convergence
+- Momentum, RMSProp, Adam
+- Convex vs non-convex optimization
+- How optimization powers model training
+
+## Why You Need It
+Optimization is HOW models learn. Training a model = finding the weights
+that minimize the loss function. Every training loop, every optimizer,
+every learning rate schedule is optimization in action.
+
+================================================================================
+1. OBJECTIVE FUNCTIONS
+================================================================================
+
+WHAT IS AN OBJECTIVE FUNCTION?
+    A function we want to MINIMIZE (or maximize).
+
+    In ML: We MINIMIZE the loss function.
+
+    min_θ L(θ)
+
+    where θ = model parameters (weights, biases)
+          L = loss function (measures how wrong predictions are)
+
+LOSS vs COST vs OBJECTIVE:
+    Loss: Error on a SINGLE example
+    Cost: Average error over the ENTIRE dataset
+    Objective: What we optimize (usually the cost)
+
+    L(y, ŷ) = loss for one example
+    J(θ) = (1/n) Σ L(yᵢ, ŷᵢ) = cost over all examples
+
+================================================================================
+2. COMMON LOSS FUNCTIONS
+================================================================================
+
+REGRESSION LOSSES:
+
+    Mean Squared Error (MSE):
+    L = (1/n) Σ(yᵢ - ŷᵢ)²
+
+    - Penalizes large errors heavily (squared)
+    - Sensitive to outliers
+    - Differentiable everywhere
+
+    Mean Absolute Error (MAE):
+    L = (1/n) Σ|yᵢ - ŷᵢ|
+
+    - Robust to outliers
+    - Not differentiable at 0
+    - Less common in neural networks
+
+    Huber Loss:
+    Combines MSE and MAE.
+    Quadratic for small errors, linear for large errors.
+
+    ML USE:
+    - MSE: Linear regression, neural network regression
+    - MAE: Robust regression, quantile regression
+    - Huber: When you want robustness + differentiability
+
+CLASSIFICATION LOSSES:
+
+    Binary Cross-Entropy (Log Loss):
+    L = -[y × ln(p) + (1-y) × ln(1-p)]
+
+    - Standard for binary classification
+    - Heavily penalizes confident wrong predictions
+    - Used in logistic regression and neural networks
+
+    Categorical Cross-Entropy:
+    L = -Σ yᵢ × ln(pᵢ)
+
+    - Standard for multi-class classification
+    - Used in softmax output layers
+
+    Hinge Loss (SVM):
+    L = max(0, 1 - y × ŷ)
+
+    - Used in Support Vector Machines
+    - Margin-based: wants y × ŷ ≥ 1
+
+================================================================================
+3. GRADIENT DESCENT
+================================================================================
+
+THE CORE IDEA:
+    Start with random weights. Compute the gradient. Move opposite
+    to the gradient. Repeat until convergence.
+
+    ┌─────────────────────────────────────┐
+    │  GRADIENT DESCENT ALGORITHM         │
+    │                                     │
+    │  1. Initialize weights randomly     │
+    │  2. Compute loss                    │
+    │  3. Compute gradient (∇L)           │
+    │  4. Update: w = w - η × ∇L         │
+    │  5. Repeat 2-4 until converged      │
+    └─────────────────────────────────────┘
+
+    where η = learning rate
+
+VISUAL:
+    Loss
+    │╲
+    │ ╲
+    │  ╲  ← current position
+    │   •
+    │    ╲
+    │     •  ← after one step
+    │      ╲
+    │       •
+    │        ╲
+    │         • → minimum
+    └──────────────── w
+
+BATCH GRADIENT DESCENT:
+    Compute gradient over ENTIRE dataset.
+
+    ∇L = (1/n) Σ ∇L(yᵢ, ŷᵢ)
+
+    - Accurate gradient
+    - Slow for large datasets
+    - May get stuck in local minima
+
+STOCHASTIC GRADIENT DESCENT (SGD):
+    Compute gradient on ONE random sample.
+
+    ∇L = ∇L(yᵢ, ŷᵢ)
+
+    - Fast updates
+    - Noisy gradient (helps escape local minima!)
+    - More volatile convergence
+
+MINI-BATCH GRADIENT DESCENT:
+    Compute gradient on a small batch (e.g., 32 samples).
+
+    ∇L = (1/B) Σᵢ₌₁ᴮ ∇L(yᵢ, ŷᵢ)
+
+    - Balance between batch and stochastic
+    - Standard in deep learning
+    - GPU-friendly (batch operations)
+
+COMPARISON:
+    ┌──────────────────┬────────────┬──────────┬──────────────┐
+    │ Method           │ Batch Size │ Speed    │ Noise        │
+    ├──────────────────┼────────────┼──────────┼──────────────┤
+    │ Batch GD         │ All data   │ Slow     │ None         │
+    │ SGD              │ 1 sample   │ Fast     │ High         │
+    │ Mini-batch GD    │ 32-512     │ Medium   │ Moderate     │
+    └──────────────────┴────────────┴──────────┴──────────────┘
+
+================================================================================
+4. LEARNING RATE
+================================================================================
+
+THE MOST IMPORTANT HYPERPARAMETER.
+
+    w_new = w_old - η × ∇L
+
+    η = learning rate (step size)
+
+    TOO LARGE:
+    Loss
+    │╲    ╱╲
+    │ ╲  ╱  ╲
+    │  ╲╱    ╲  ← oscillates, may diverge
+    │
+
+    TOO SMALL:
+    Loss
+    │╲
+    │ ╲
+    │  ····························  ← converges very slowly
+    │
+
+    JUST RIGHT:
+    Loss
+    │╲
+    │ ╲
+    │  ╲
+    │   ······→ minimum
+    │
+
+LEARNING RATE SCHEDULES:
+
+    Step Decay: Reduce LR by factor every N epochs
+    η = η₀ × γ^(epoch/N)
+
+    Exponential Decay: η = η₀ × e^(-kt)
+
+    Cosine Annealing: η follows cosine curve
+
+    Warm-up: Start small, increase, then decrease
+
+    ML USE: Learning rate schedules help converge faster and more reliably.
+
+================================================================================
+5. MOMENTUM
+================================================================================
+
+PROBLEM WITH SGD:
+    Oscillates in narrow valleys, slow in flat regions.
+
+SOLUTION: Add momentum (like a ball rolling downhill).
+
+    v_t = β × v_{t-1} + η × ∇L    (velocity)
+    w = w - v_t
+
+    β = momentum coefficient (typically 0.9)
+
+    - Accelerates in consistent gradient directions
+    - Dampens oscillations
+    - Helps escape shallow local minima
+
+VISUAL:
+    Without momentum: zig-zag path
+    With momentum: smooth path toward minimum
+
+================================================================================
+6. RMSPROP
+================================================================================
+
+PROBLEM: Different features may have different gradient magnitudes.
+
+SOLUTION: Adapt learning rate per parameter.
+
+    s_t = β × s_{t-1} + (1-β) × (∇L)²    (exponential moving avg of squared gradients)
+    w = w - η × ∇L / (√s_t + ε)
+
+    - Parameters with large gradients get smaller effective LR
+    - Parameters with small gradients get larger effective LR
+    - Adapts to the geometry of the loss surface
+
+================================================================================
+7. ADAM — THE DEFAULT OPTIMIZER
+================================================================================
+
+Adam = Adaptive Moment Estimation
+Combines Momentum + RMSProp.
+
+    m_t = β₁ × m_{t-1} + (1-β₁) × ∇L          (first moment = mean)
+    v_t = β₂ × v_{t-1} + (1-β₂) × (∇L)²        (second moment = uncentered variance)
+
+    Bias correction:
+    m̂_t = m_t / (1 - β₁ᵗ)
+    v̂_t = v_t / (1 - β₂ᵗ)
+
+    Update:
+    w = w - η × m̂_t / (√v̂_t + ε)
+
+    DEFAULT PARAMETERS:
+    β₁ = 0.9 (momentum)
+    β₂ = 0.999 (RMSProp)
+    ε = 1e-8 (numerical stability)
+    η = 0.001 (learning rate)
+
+    WHY ADAM IS POPULAR:
+    - Works well out of the box
+    - Adaptive learning rates per parameter
+    - Momentum for faster convergence
+    - Bias correction for early training stability
+    - Robust to hyperparameter choices
+
+OPTIMIZER COMPARISON:
+    ┌──────────┬────────────────────┬──────────────────────────┐
+    │ Optimizer│ Key Idea           │ When to Use              │
+    ├──────────┼────────────────────┼──────────────────────────┤
+    │ SGD      │ Simple gradient    │ Linear models, simple    │
+    │ Momentum │ Add velocity       │ Deep learning            │
+    │ RMSProp  │ Adaptive per-param │ RNNs                     │
+    │ Adam     │ Momentum+RMSProp   │ Default choice           │
+    │ AdamW    │ Decoupled weight   │ Transformers             │
+    └──────────┴────────────────────┴──────────────────────────┘
+
+================================================================================
+8. CONVEX vs NON-CONVEX
+================================================================================
+
+CONVEX FUNCTIONS:
+    Bowl shape. One global minimum. No local minima.
+
+    ML: Linear regression, logistic regression, SVM
+
+    ┌───────────────┐
+    │ ╲             │
+    │  ╲           │
+    │   ╲         │
+    │    ╲       │
+    │     ╲     │
+    │      ╲   │
+    │       ╲ │
+    │        •  ← global minimum (only one!)
+    └───────────────┘
+
+NON-CONVEX FUNCTIONS:
+    Many local minima and saddle points.
+
+    ML: Neural networks, deep learning
+
+    ┌───────────────┐
+    │ ╲   ╱╲   ╱╲  │
+    │  ╲ ╱  ╲ ╱  ╲ │
+    │   •    •    • │  ← many local minima
+    └───────────────┘
+
+    WHY NEURAL NETWORKS STILL WORK:
+    1. Most local minima have similar loss to global minimum
+    2. Saddle points are more common than local minima in high dimensions
+    3. SGD noise helps escape saddle points
+    4. Overparameterized networks have favorable loss landscapes
+
+================================================================================
+9. PRACTICAL TRAINING LOOP
+================================================================================
+
+    import numpy as np
+
+    def train(X, y, learning_rate=0.01, epochs=100):
+        n_samples, n_features = X.shape
+        weights = np.random.randn(n_features) * 0.01
+        bias = 0
+        losses = []
+
+        for epoch in range(epochs):
+            # Forward pass
+            z = X @ weights + bias
+            predictions = 1 / (1 + np.exp(-z))    # sigmoid
+
+            # Compute loss
+            loss = -np.mean(y * np.log(predictions + 1e-15) +
+                           (1-y) * np.log(1 - predictions + 1e-15))
+            losses.append(loss)
+
+            # Compute gradients
+            dw = (1/n_samples) * X.T @ (predictions - y)
+            db = np.mean(predictions - y)
+
+            # Update weights
+            weights -= learning_rate * dw
+            bias -= learning_rate * db
+
+            if epoch % 10 == 0:
+                print(f"Epoch {epoch}: loss = {loss:.4f}")
+
+        return weights, bias, losses
+
+================================================================================
+10. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Learning rate too large
+    Loss explodes instead of decreasing.
+    Fix: Start with 0.001, try 0.01, 0.0001.
+
+MISTAKE 2: Not normalizing features
+    Different feature scales → slow convergence.
+    Fix: Standardize features (mean=0, std=1).
+
+MISTAKE 3: Using SGD for everything
+    Mini-batch is usually better.
+    Fix: Use batch_size=32 or 64.
+
+MISTAKE 4: Ignoring learning rate schedule
+    Constant LR may be too large early, too small late.
+    Fix: Use cosine annealing or reduce-on-plateau.
+
+MISTAKE 5: Not monitoring loss
+    Training blindly without checking loss curves.
+    Fix: Plot training and validation loss every epoch.
+
+MISTAKE 6: Overfitting
+    Training loss keeps decreasing but validation loss increases.
+    Fix: Early stopping, regularization, more data.
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What is the difference between batch, stochastic, and mini-batch GD?
+2. Why is the learning rate so important?
+3. What does Adam combine?
+4. What is the difference between convex and non-convex optimization?
+5. Why do neural networks still work despite non-convex loss landscapes?
+
+================================================================================
+END OF MODULE 05: MATHEMATICS FOR ML
+================================================================================
+NEXT MODULE: 06_ML_FUNDAMENTALS — Machine Learning Fundamentals
+================================================================================

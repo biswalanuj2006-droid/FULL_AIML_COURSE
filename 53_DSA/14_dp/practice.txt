@@ -1,0 +1,208 @@
+# DYNAMIC PROGRAMMING — PRACTICE SET
+# 40 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is dynamic programming?
+   Answer: An optimization technique that solves problems by breaking them into overlapping subproblems and storing results
+
+2. What are the two requirements for DP?
+   Answer: Optimal substructure (optimal solution contains optimal sub-solutions) and overlapping subproblems
+
+3. What is the difference between memoization and tabulation?
+   Answer: Memoization: top-down, recursive with caching. Tabulation: bottom-up, iterative with table
+
+4. What is the time complexity of Fibonacci with memoization?
+   Answer: O(n) — each subproblem solved once
+
+5. What is the time complexity of Fibonacci without memoization?
+   Answer: O(2^n) — exponential, many redundant calculations
+
+6. What is a state in DP?
+   Answer: The minimum information needed to represent a subproblem
+
+7. What is the difference between 1D and 2D DP?
+   Answer: 1D: one changing parameter. 2D: two changing parameters (e.g., two strings, grid position)
+
+8. What is the knapsack problem?
+   Answer: Given items with weights and values, maximize value within a weight capacity
+
+9. What is the time complexity of 0/1 knapsack?
+   Answer: O(n × W) where n is items and W is capacity
+
+10. What is the difference between 0/1 knapsack and unbounded knapsack?
+    Answer: 0/1: each item used at most once. Unbounded: items can be reused
+
+---
+
+## MEDIUM (15 Questions)
+
+11. Climbing stairs.
+    ```python
+    def climb_stairs(n):
+        if n <= 2: return n
+        a, b = 1, 2
+        for _ in range(3, n + 1):
+            a, b = b, a + b
+        return b
+    ```
+
+12. House robber.
+    ```python
+    def rob(nums):
+        if not nums: return 0
+        if len(nums) == 1: return nums[0]
+        a, b = nums[0], max(nums[0], nums[1])
+        for i in range(2, len(nums)):
+            a, b = b, max(b, a + nums[i])
+        return b
+    ```
+
+13. Coin change (minimum coins).
+    ```python
+    def coin_change(coins, amount):
+        dp = [float('inf')] * (amount + 1)
+        dp[0] = 0
+        for i in range(1, amount + 1):
+            for coin in coins:
+                if coin <= i and dp[i - coin] != float('inf'):
+                    dp[i] = min(dp[i], dp[i - coin] + 1)
+        return dp[amount] if dp[amount] != float('inf') else -1
+    ```
+
+14. Longest common subsequence.
+    ```python
+    def lcs(s1, s2):
+        m, n = len(s1), len(s2)
+        dp = [[0] * (n + 1) for _ in range(m + 1)]
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                if s1[i-1] == s2[j-1]:
+                    dp[i][j] = dp[i-1][j-1] + 1
+                else:
+                    dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+        return dp[m][n]
+    ```
+
+15. 0/1 Knapsack.
+    ```python
+    def knapsack(weights, values, capacity):
+        n = len(values)
+        dp = [[0] * (capacity + 1) for _ in range(n + 1)]
+        for i in range(1, n + 1):
+            for w in range(capacity + 1):
+                dp[i][w] = dp[i-1][w]
+                if weights[i-1] <= w:
+                    dp[i][w] = max(dp[i][w], dp[i-1][w-weights[i-1]] + values[i-1])
+        return dp[n][capacity]
+    ```
+
+16. Longest increasing subsequence.
+    ```python
+    import bisect
+    def lis(nums):
+        tails = []
+        for num in nums:
+            pos = bisect.bisect_left(tails, num)
+            if pos == len(tails):
+                tails.append(num)
+            else:
+                tails[pos] = num
+        return len(tails)
+    ```
+
+17. Edit distance.
+
+18. Unique paths in a grid.
+
+19. Minimum path sum in a grid.
+
+20. Word break.
+
+21. Decode ways.
+
+22. Maximal square.
+
+23. Partition equal subset sum.
+
+24. Target sum.
+
+25. Longest palindromic subsequence.
+
+---
+
+## HARD (10 Questions)
+
+26. Edit distance between two strings.
+27. Burst balloons (interval DP).
+28. Regular expression matching.
+29. Egg dropping puzzle.
+30. Longest valid parentheses.
+31. Stone game (game theory DP).
+32. Boolean parenthesization.
+33. Matrix chain multiplication.
+34. Palindrome partitioning.
+35. Minimum edit distance with operations cost.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Fibonacci tabulation off-by-one
+def fib(n):
+    dp = [0] * (n + 1)
+    dp[1] = 1
+    for i in range(2, n + 1):
+        dp[i] = dp[i-1] + dp[i-2]
+    return dp[n]  # Correct for n >= 0
+
+# Debug 2: Knapsack — using 1D array incorrectly
+def knapsack_1d(weights, values, capacity):
+    dp = [0] * (capacity + 1)
+    for i in range(len(weights)):
+        for w in range(capacity, weights[i] - 1, -1):  # Reverse order for 0/1
+            dp[w] = max(dp[w], dp[w - weights[i]] + values[i])
+    return dp[capacity]
+# Bug: if iterating forward, it becomes unbounded knapsack
+# Fix: Iterate backward (capacity to weight[i])
+
+# Debug 3: LCS doesn't reconstruct the subsequence
+def lcs(s1, s2):
+    m, n = len(s1), len(s2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if s1[i-1] == s2[j-1]:
+                dp[i][j] = dp[i-1][j-1] + 1
+            else:
+                dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+    return dp[m][n]  # Bug: only returns length, not the subsequence
+# Fix: Backtrack through dp to reconstruct
+
+# Debug 4: Coin change returns wrong for impossible amount
+def coin_change(coins, amount):
+    dp = [float('inf')] * (amount + 1)
+    dp[0] = 0
+    for i in range(1, amount + 1):
+        for coin in coins:
+            if coin <= i:
+                dp[i] = min(dp[i], dp[i - coin] + 1)
+    return dp[amount]  # Bug: returns inf instead of -1
+# Fix: return dp[amount] if dp[amount] != float('inf') else -1
+
+# Debug 5: LIS binary search approach
+def lis(nums):
+    import bisect
+    tails = []
+    for num in nums:
+        pos = bisect.bisect_right(tails, num)  # Bug: should be bisect_left
+        if pos == len(tails):
+            tails.append(num)
+        else:
+            tails[pos] = num
+    return len(tails)
+# bisect_left for strictly increasing, bisect_right for non-decreasing
+```

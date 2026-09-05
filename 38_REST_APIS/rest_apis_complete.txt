@@ -1,0 +1,179 @@
+================================================================================
+MODULE 38: REST APIs — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Design RESTful APIs following best practices
+- Understand HTTP methods, status codes, and headers
+- Build and consume REST APIs
+- Implement pagination, filtering, and versioning
+- Handle errors gracefully
+
+================================================================================
+1. WHAT IS A REST API?
+================================================================================
+
+INTUITION
+---------
+REST (Representational State Transfer) is an architectural style
+for building web services. APIs communicate using HTTP requests.
+
+Key principles:
+- Client-server separation
+- Stateless (each request contains all info)
+- Uniform interface (standard HTTP methods)
+- Resource-based (URLs represent resources)
+
+================================================================================
+2. HTTP FUNDAMENTALS
+================================================================================
+
+METHODS
+-------
+GET    → Read a resource (safe, idempotent)
+POST   → Create a new resource
+PUT    → Update/replace a resource (idempotent)
+PATCH  → Partially update a resource
+DELETE → Remove a resource (idempotent)
+
+STATUS CODES
+------------
+200 OK                    → Success
+201 Created               → Resource created
+204 No Content            → Success, no body
+400 Bad Request           → Client error
+401 Unauthorized          → Authentication required
+403 Forbidden             → No permission
+404 Not Found             → Resource doesn't exist
+409 Conflict              → Resource conflict
+422 Unprocessable Entity  → Validation error
+429 Too Many Requests     → Rate limit exceeded
+500 Internal Server Error → Server error
+
+HEADERS
+-------
+Content-Type: application/json
+Authorization: Bearer <token>
+Accept: application/json
+X-Request-ID: unique-id
+
+================================================================================
+3. REST API DESIGN
+================================================================================
+
+RESOURCE URLs
+-------------
+GET    /api/v1/predictions          → List predictions
+POST   /api/v1/predictions          → Create prediction
+GET    /api/v1/predictions/123      → Get prediction 123
+PUT    /api/v1/predictions/123      → Update prediction 123
+DELETE /api/v1/predictions/123      → Delete prediction 123
+
+NESTED RESOURCES
+----------------
+GET /api/v1/models/456/predictions → Predictions for model 456
+
+QUERY PARAMETERS
+----------------
+GET /api/v1/predictions?status=completed&page=2&limit=50
+GET /api/v1/predictions?created_after=2024-01-01
+GET /api/v1/predictions?sort=-created_at
+
+================================================================================
+4. PAGINATION
+================================================================================
+
+# Page-based pagination
+GET /api/v1/predictions?page=2&page_size=20
+
+Response:
+{
+    "count": 150,
+    "page": 2,
+    "page_size": 20,
+    "total_pages": 8,
+    "results": [...]
+}
+
+# Cursor-based pagination (better for large datasets)
+GET /api/v1/predictions?cursor=abc123&limit=20
+
+================================================================================
+5. API VERSIONING
+================================================================================
+
+URL versioning: /api/v1/predictions
+Header versioning: Accept: application/vnd.api.v1+json
+Query parameter: /api/predictions?version=1
+
+Recommended: URL versioning (simplest, most visible)
+
+================================================================================
+6. CONSUMING APIs WITH PYTHON
+================================================================================
+
+USING REQUESTS
+--------------
+import requests
+
+# GET
+response = requests.get('https://api.example.com/predictions',
+                        params={'status': 'completed'},
+                        headers={'Authorization': 'Bearer token'})
+data = response.json()
+
+# POST
+response = requests.post('https://api.example.com/predictions',
+                         json={'features': [1, 2, 3]},
+                         headers={'Authorization': 'Bearer token'})
+
+USING HTTPX (Async)
+-------------------
+import httpx
+
+async with httpx.AsyncClient() as client:
+    response = await client.get('https://api.example.com/predictions')
+    data = response.json()
+
+================================================================================
+7. BEST PRACTICES
+================================================================================
+
+1. Use nouns for resources (/predictions, not /getPredictions)
+2. Use plural nouns (/predictions, not /prediction)
+3. Version your API from day one
+4. Always return appropriate status codes
+5. Use consistent error response format
+6. Implement rate limiting
+7. Document with OpenAPI/Swagger
+8. Use HTTPS in production
+9. Validate input data
+10. Handle errors gracefully with meaningful messages
+
+ERROR RESPONSE FORMAT
+---------------------
+{
+    "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Invalid input data",
+        "details": {
+            "features": "This field is required"
+        }
+    }
+}
+
+================================================================================
+8. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is the difference between PUT and PATCH?
+Q2: When should you return 401 vs 403?
+Q3: What is idempotency and which HTTP methods are idempotent?
+Q4: How does pagination improve API performance?
+Q5: What is the recommended way to version a REST API?
+
+================================================================================
+END OF MODULE 38: REST APIs
+================================================================================

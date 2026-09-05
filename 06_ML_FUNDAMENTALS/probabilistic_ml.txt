@@ -1,0 +1,143 @@
+================================================================================
+LESSON: PROBABILISTIC ML (beyond point estimates)
+================================================================================
+Companion: 10_REGRESSION/bayesian_and_gp_regression.txt derives Bayesian
+linear regression and Gaussian processes in full. This lesson covers the
+rest of the probabilistic toolbox: generative vs discriminative models,
+Bayesian networks, hidden Markov models, and uncertainty estimation.
+
+--------------------------------------------------------------------------------
+1. THE PROBABILISTIC VIEW OF LEARNING
+--------------------------------------------------------------------------------
+A supervised model is a conditional distribution p(y|x, w). Three ways to
+choose w:
+  MLE      : w = argmax_w  p(D|w)             (fit the data only)
+  MAP      : w = argmax_w  p(w) * p(D|w)      (MLE + prior = ridge-like
+                                               shrinkage, see GP lesson)
+  Bayesian : keep the FULL posterior p(w|D) ∝ p(w) p(D|w), then predict
+             p(y|x, D) = integral p(y|x, w) p(w|D) dw
+The Bayesian answer to "what if I'm not sure about w?" is to average over
+w, which produces calibrated uncertainty. The cost: the integral is
+intractable except for conjugate pairs - hence approximations.
+
+--------------------------------------------------------------------------------
+2. GENERATIVE vs DISCRIMINATIVE MODELS
+--------------------------------------------------------------------------------
+  Discriminative: model p(y|x) directly (logistic regression, neural
+  nets, trees). Optimized for the decision you care about; needs less
+  data to separate classes; cannot generate data; no principled way to
+  handle missing inputs.
+  Generative: model p(x, y) = p(y) * p(x|y) (naive Bayes, GMMs, HMMs,
+  diffusion models). You can sample new (x, y); you get p(x) for free
+  (anomaly detection!); handle missing features by marginalizing; need
+  more data because you model the harder object p(x|y).
+RULE OF THUMB: discriminative for pure prediction with enough labels;
+generative when you need p(x) (novelty), missingness, small-data priors,
+or generation.
+
+--------------------------------------------------------------------------------
+3. BAYESIAN NETWORKS (directed graphical models)
+--------------------------------------------------------------------------------
+A DAG where each node is a random variable and an edge X -> Y means Y
+depends directly on X. The joint factorizes:
+  p(X1..Xn) = product_i p(Xi | parents(Xi))
+This factorization is the point: it turns an exponential joint into a
+product of small conditional tables, and it encodes ASSUMPTIONS
+(conditional independencies) you can read off the graph:
+  X independent of Y given Z if every path between X and Y is
+  "blocked" by Z (d-separation).
+APPLICATION: expert-model + data: encode causal/domain structure as the
+graph, learn the conditional tables from data, then answer queries
+p(Query | Evidence) by sum-product (exact) or sampling (approximate).
+TRAP: "Bayesian network" does not imply causal - a correlation graph
+learned from data (PC algorithm) is not a causal model without
+intervention assumptions.
+
+--------------------------------------------------------------------------------
+4. HIDDEN MARKOV MODELS (HMMs)
+--------------------------------------------------------------------------------
+A generative model for sequences: at each time t there is a hidden state
+z_t (categorical) evolving by transition matrix A, and an observation
+x_t drawn from an emission p(x_t | z_t) (discrete or Gaussian). Joint:
+  p(z_1..z_T, x_1..x_T) = p(z_1) * prod_t p(z_t|z_{t-1}) p(x_t|z_t)
+The THREE canonical problems (know these by heart):
+  1. Likelihood p(x_1..x_T | A, emission): FORWARD algorithm - dynamic
+     programming over states, O(T * K^2). The forward variable
+     alpha_t(i) = p(x_1..x_t, z_t = i).
+  2. Decoding (most likely state path): VITERBI - same DP but with max
+     instead of sum; recover z*_1..z*_T.
+  3. Learning A and emissions from unlabeled sequences: BAUM-WELCH
+     (EM). E-step: forward-backward to get soft counts; M-step:
+     renormalize counts into A and emission parameters.
+USES: part-of-speech tagging (classic), gene finding, speech, and as the
+simplest "latent-state time-series" model to understand before state-
+space models and (conceptually) RNNs. REMEMBER: HMM assumes the hidden
+state is memoryless - the future depends on the past only through z_t.
+That is its main limitation.
+
+--------------------------------------------------------------------------------
+5. UNCERTAINTY ESTIMATION FOR REAL MODELS
+--------------------------------------------------------------------------------
+Two kinds of uncertainty (know the distinction):
+  Aleatoric: irreducible noise in the data (a fair coin). Cannot be
+  reduced with more data; must be MODELED (predict variance, not just
+  mean).
+  Epistemic: uncertainty about the model because of finite data.
+  Reducible with more data; this is what Bayesian inference captures.
+PRACTICAL TOOLS (when full Bayesian is intractable):
+  1. Deep ensembles: train 5-10 models with different seeds; treat the
+     spread of predictions as epistemic uncertainty. Cheap, and often
+     better calibrated than fancier methods.
+  2. Monte-Carlo dropout: keep dropout on at test time; run N forward
+     passes; mean = prediction, variance = uncertainty. Approximates a
+     Bayesian average over weights.
+  3. Temperature scaling / isotonic calibration: fix the CALIBRATION of
+     a single model's probabilities post hoc (train on validation logits
+     to map them to true frequencies). Fast, and usually sufficient
+     when you only need "is 0.9 really 0.9?".
+  4. Laplace approximation: Gaussian around the MAP point - a cheap
+     Bayesian-ish posterior.
+WHEN UNCERTAINTY MATTERS (real systems):
+  - Reject low-confidence predictions for human review (medical,
+    fraud).
+  - Out-of-distribution detection: epistemic uncertainty should spike
+    for OOD inputs (in practice deep models are often overconfident -
+    see 46_PRODUCTION_AI/ml_security.txt and OOD robustness).
+  - Decision making under risk: expected-cost decisions need the full
+    distribution, not the point estimate.
+VERIFICATION: calibration curve (bin predictions by confidence, plot
+accuracy within each bin; a calibrated model follows the diagonal) and
+Brier score.
+
+--------------------------------------------------------------------------------
+6. PRACTICE
+--------------------------------------------------------------------------------
+1. (Math) Write MLE, MAP, and the Bayesian predictive for a Bernoulli
+   with beta prior; show the posterior is beta and the predictive is
+   the posterior mean.
+2. (Reasoning) Why does the Bayesian predictive integral protect
+   against overconfidence far from the data, while MLE does not?
+3. (Concept) One sentence each: discriminative vs generative. When does
+   a generative model let you do anomaly detection for free?
+4. (Graphs) Given the Bayes net A->B, A->C, B->D, C->D, write the full
+   joint factorization and list which independencies hold given D.
+5. (Math) HMM forward algorithm: write the recursion for alpha_t(i) and
+   say why it is O(T K^2) not O(T K^T).
+6. (Code) Implement Viterbi decoding for a two-state HMM given A,
+   emission probabilities, and an observation sequence.
+7. (Reasoning) HMM vs RNN/LSTM: what assumption does the HMM make that
+   RNNs drop, and what price do RNNs pay for dropping it?
+8. (Design) A credit model returns 0.9 for a loan. The bank needs to
+   know when 0.9 means "confident approve" vs "the model has never seen
+   this applicant profile". Which uncertainty do they need, and which
+   tool from section 5 do you deploy first?
+9. (Code) Implement MC-dropout uncertainty on a small MLP: predict with
+   dropout on 50 times, return mean + std.
+10. (Concept) Aleatoric vs epistemic: a self-driving car sees fog
+    (sensor noise) vs a road type never in training. Classify both.
+11. (Debugging) Your calibrated model is overconfident again after
+    deployment. List 3 causes and which tool re-diagnoses them.
+12. (Open-ended) OPEN PROBLEM: reliable out-of-distribution uncertainty
+    for deep nets remains unsolved - modern models are overconfident on
+    shifted inputs. Design an evaluation that would convince you a new
+    method actually solved it.

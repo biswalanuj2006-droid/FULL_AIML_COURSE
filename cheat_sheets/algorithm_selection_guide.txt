@@ -1,0 +1,123 @@
+================================================================================
+ALGORITHM SELECTION GUIDE - WHICH MODEL WHEN?
+Reference card. For every case: pick primary, justify, list alternatives.
+================================================================================
+
+HOW TO USE THIS CARD
+1. Define the task: regression / binary / multiclass / clustering /
+   anomaly / ranking.
+2. Define the constraints: n, d, latency, interpretability, label
+   availability, data type.
+3. Read the matching row below, then sanity-check with the
+   "default ladder".
+
+================================================================================
+DEFAULT LADDERS (when nothing special is true)
+================================================================================
+Tabular regression, clean, n<100k:
+   Linear/Ridge baseline -> Gradient Boosting (or RF if you need
+   speed/robustness) -> tune -> done.
+Tabular classification, clean, n<100k:
+   Logistic baseline -> Gradient Boosting (LightGBM/XGBoost/CatBoost)
+   -> tune -> done. Check calibration if probabilities are used.
+Small data (n<1k):
+   Regularized linear, KNN, or a shallow tree; GP if you need
+   uncertainty. Avoid deep nets (they need data or pretraining).
+Images: CNN (pretrained, fine-tune). Text: transformer or TF-IDF+
+   linear. Sequences: LSTM/Transformer per module 21/26.
+Unsupervised structure: K-Means (blobs) -> DBSCAN/HDBSCAN (density)
+   -> GMM (soft/probabilistic). Dim reduction: PCA first, t-SNE/UMAP
+   for visualization only.
+Anomaly: Isolation Forest default -> LOF for local density ->
+   Elliptic Envelope for Gaussian -> autoencoder for images/sequences.
+
+================================================================================
+DECISION TABLE BY CONSTRAINT
+================================================================================
+Constraint / Situation          Primary choice           Alternatives / why
+--------------------------------------------------------------------------------
+10k rows, 50 numeric, binary    Gradient Boosting        logistic baseline for
+                                                         interpretability
+50M rows, many categorical      LightGBM/CatBoost        RF too slow; CatBoost
+                                                         if heavy categories
+Severe class imbalance          logistic or GB + class   threshold tuning;
+                                 weight + eval by PR     SMOTE only after CV
+Very small dataset (n<500)      regularized linear,       no deep nets; consider
+                                 KNN, GP for uncertainty  leave-one-out CV
+High-dim sparse text (n-grams)  linear (logistic/        kernels/SVM costly;
+                                 linear SVM) + TF-IDF     NB decent baseline
+Streaming / online data         SGD-based (partial_fit,  batch models need full
+                                 passive-aggressive)      retraining
+Need interpretable predictions  logistic / shallow tree  avoid RF/GB/black box;
+                                 (depth<=4)               explain with SHAP if not
+Need extremely low latency      linear or shallow tree,  GB distilled into tree;
+  (<1ms, high QPS)               quantized                batch or cache
+Very noisy labels                robust linear, RF        boosting overfits noise;
+                                 (bootstrap robust)       cleanlab first
+Missing values (lots)           tree models (native)     impute carefully for
+                                                         linear models
+Multicollinear features         Ridge/ElasticNet or PCA  Lasso drops arbitrarily
+Nonlinear boundary, n<20k       kernel SVM (RBF) or GB   tune C, gamma
+Time series forecasting         GB with lags/windows +   ARIMA/ETS baseline first;
+                                 walk-forward eval        LSTM only with lots data
+Image classification            pretrained CNN, fine-    train small CNN from
+                                 tune                     scratch only if n huge
+Clusters of varying density     HDBSCAN                  K-Means fails
+Anomalies rare + heterogeneous  Isolation Forest         supervised if labeled
+Ranking (search/reco)           gradient-boosted trees   learning-to-rank (lambdarank)
+  with click data               on pairwise loss
+Uncertainty required            GP (small n), quantile   ensembles/dropout for NN
+                                 regression (any n)
+
+================================================================================
+COMPLEXITY QUICK REFERENCE (typical; training, prediction)
+================================================================================
+Linear regression (normal eq):  O(n d^2 + d^3), O(d)
+Ridge/Lasso (coord. descent):   ~O(n d) per pass, O(d)
+Logistic regression (GD):       O(n d) per epoch, O(d)
+KNN (brute force):              O(1) store, O(n d) predict  (k-d tree ~O(log n) low-d)
+Naive Bayes:                    O(n d) train, O(c d) predict
+Decision tree (CART):           O(n d log n)-ish, O(depth)
+Random Forest:                   trees x single tree; predict O(T x depth)
+Gradient boosting:               M x O(n d log n); predict O(M x depth)
+XGBoost/LightGBM:                histogram bins speed train; predict like GB
+SVM (kernel, SMO-like):          between O(n^2) and O(n^3) train, O(n_SV x d) predict
+K-Means:                         O(n k d) per iteration, O(k d) predict
+DBSCAN:                          O(n log n) with index (O(n^2) brute), O(1)
+Gaussian Process:                O(n^3) train, O(n^2) predict
+Neural net (per epoch):          O(n x params); predict O(params)
+Isolation Forest:                O(trees x n log n)-ish train, O(trees x depth)
+
+Rules of thumb:
+  - Trees/GB: excel tabular, non-linear, mixed dtypes, n<1M.
+  - Linear: fast, interpretable, scales to huge sparse data, needs
+    feature work + scaling.
+  - Kernel SVM: great small-to-medium n; do not use for n>50k.
+  - Deep nets: need data/pretraining; win images/text/audio.
+  - GP: n<5k, uncertainty, smooth functions.
+  - If two models tie on validation, deploy the simpler/faster one.
+
+================================================================================
+ALGORITHM SELECTION EXERCISES (practice choosing, then justify)
+================================================================================
+1. 10,000 rows, 50 numerical features, binary classification.
+2. 50 million rows, mostly categorical features (high cardinality).
+3. Severe class imbalance (0.1% positives) - fraud.
+4. Very small dataset (300 rows, 20 features).
+5. High-dimensional sparse text (100k dims, bag of words).
+6. Streaming sensor data, concept drift expected.
+7. Highly interpretable medical predictions (regulator audit).
+8. Extreme low latency (<1ms), millions of predictions/day.
+9. 1M images, 1000 classes (with and without GPU budget).
+10. Noisy labels (estimated 15% wrong).
+11. Time series with strong seasonality and known holidays.
+12. Clusters with different densities + noise (customer types).
+13. Need calibrated probabilities for risk pricing.
+14. Anomaly detection on 5,000 servers x 200 metrics.
+15. Recommendation from implicit clicks (millions of users/items).
+
+For EACH: give primary algorithm, 2 alternatives, evaluation metric +
+validation scheme, and the one failure mode you must watch.
+================================================================================
+END
+================================================================================

@@ -1,0 +1,157 @@
+# ADVANCED PYTHON — PRACTICE SET
+# 35 Questions + Coding + Debugging
+
+---
+
+## EASY (8 Questions)
+
+1. What is the difference between `__init__` and `__new__`?
+   Answer: `__new__` creates the instance, `__init__` initializes it
+
+2. What is multiple inheritance?
+   Answer: A class inheriting from more than one parent class
+
+3. What is the MRO (Method Resolution Order)?
+   Answer: The order in which Python looks for methods in a class hierarchy (C3 linearization)
+
+4. What is a property decorator?
+   Answer: `@property` allows method to be accessed like an attribute
+
+5. What is a static method?
+   Answer: `@staticmethod` — method that doesn't access instance or class variables
+
+6. What is a class method?
+   Answer: `@classmethod` — method that receives the class as first argument
+
+7. What is a dataclass?
+   Answer: A class decorator that auto-generates `__init__`, `__repr__`, `__eq__` etc.
+
+8. What is the `__slots__` attribute?
+   Answer: Restricts instance attributes to a defined set, saving memory
+
+---
+
+## MEDIUM (15 Questions)
+
+9. Implement a singleton class.
+    ```python
+    class Singleton:
+        _instance = None
+        def __new__(cls):
+            if cls._instance is None:
+                cls._instance = super().__new__(cls)
+            return cls._instance
+    ```
+
+10. What is the difference between abstract class and interface?
+    Answer: Abstract class can have implementations. Interface (Python: Protocol) defines method signatures only.
+
+11. Implement a descriptor.
+    ```python
+    class Validated:
+        def __init__(self, validator):
+            self.validator = validator
+        def __set_name__(self, owner, name):
+            self.name = name
+        def __set__(self, instance, value):
+            if not self.validator(value):
+                raise ValueError(f"Invalid value for {self.name}")
+            instance.__dict__[self.name] = value
+    ```
+
+12. What is the `__call__` method?
+    Answer: Makes instances callable like functions
+
+13. What is a factory pattern?
+    Answer: Creating objects without specifying exact class — use factory method or factory class
+
+14. What is the observer pattern?
+    Answer: Object notifies dependents when state changes — used in event systems
+
+15. What is dependency injection?
+    Answer: Passing dependencies as arguments rather than creating them inside the class
+
+16. What is the difference between composition and inheritance?
+    Answer: Inheritance: "is-a" relationship. Composition: "has-a" relationship — prefer composition.
+
+17. What is a protocol in Python?
+    Answer: Structural subtyping — class is compatible if it has the required methods, no explicit inheritance needed
+
+18. What is `functools.reduce`?
+    Answer: Applies function cumulatively to reduce iterable to single value
+
+19. What is the difference between `__getattr__` and `__getattribute__`?
+    Answer: `__getattr__` called when attribute not found. `__getattribute__` called for every attribute access.
+
+20. What is metaclass programming?
+    Answer: Classes that create classes — controls class creation behavior
+
+21. What is the difference between `iter()` and `next()`?
+    Answer: `iter()` creates iterator. `next()` gets next value from iterator.
+
+22. What is a context variable in asyncio?
+    Answer: `contextvars` — variables scoped to async tasks, not threads
+
+23. What is `__init_subclass__`?
+    Answer: Hook called when a class is subclassed — allows metaclass-like behavior without metaclasses
+
+---
+
+## HARD (7 Questions)
+
+24. Implement an ORM-style model class.
+25. Implement a thread-safe cache with TTL.
+26. Create a custom ABC with multiple interface methods.
+27. Implement a reactive property system.
+28. Build a plugin system using importlib.
+29. Implement a dependency injection container.
+30. Create a state machine using metaclasses.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: MRO diamond problem
+class A: pass
+class B(A): pass
+class C(A): pass
+class D(B, C): pass
+# D.__mro__ = (D, B, C, A, object) — C3 linearization
+
+# Debug 2: Property vs method
+class Circle:
+    def __init__(self, radius):
+        self._radius = radius
+    @property
+    def area(self):
+        return 3.14 * self._radius ** 2
+c = Circle(5)
+c.area  # Works as property
+c.area()  # Error! Can't call property
+
+# Debug 3: __slots__ prevents adding attributes
+class Point:
+    __slots__ = ['x', 'y']
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+p = Point(1, 2)
+p.z = 3  # AttributeError! z not in __slots__
+
+# Debug 4: Descriptor not working
+class Descriptor:
+    def __get__(self, obj, objtype=None):
+        return 'descriptor value'
+class MyClass:
+    attr = Descriptor()
+# Bug: accessing MyClass.attr returns Descriptor object
+# Fix: __get__ should handle both instance and class access
+
+# Debug 5: Dataclass with mutable default
+from dataclasses import dataclass, field
+@dataclass
+class Config:
+    items: list = field(default_factory=list)  # Correct!
+# Bug: items: list = []  # Wrong — shared mutable default
+```

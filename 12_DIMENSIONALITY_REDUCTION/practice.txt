@@ -1,0 +1,37 @@
+================================================================================
+DIMENSIONALITY REDUCTION — PRACTICE SET (25 Questions)
+================================================================================
+
+EASY (8)
+=========
+Q1: What is the curse of dimensionality?
+Q2: What does PCA do?
+Q3: What is explained variance ratio?
+Q4: What is t-SNE?
+Q5: Difference between PCA and t-SNE?
+Q6: When use PCA vs feature selection?
+Q7: What is LDA?
+Q8: What is UMAP?
+
+MEDIUM (10)
+============
+Q9: Implement PCA from scratch.
+Q10: Compare PCA components on different datasets.
+Q11: Implement t-SNE visualization.
+Q12: Build dimensionality reduction comparison pipeline.
+Q13: Analyze explained variance vs number of components.
+Q14: Implement PCA for image compression.
+Q15: Compare PCA vs TruncatedSVD for sparse data.
+Q16: Build clustering after dimensionality reduction.
+Q17: Implement feature selection vs PCA comparison.
+Q18: Build visualization pipeline with 2D/3D projections.
+
+HARD (5)
+=========
+Q19: Implement kernel PCA.
+Q20: Build automatic component selection system.
+Q21: Implement incremental PCA for large datasets.
+Q22: Compare all dimensionality reduction methods systematically.
+Q23: Build dimensionality reduction for text data.
+
+================================================================================

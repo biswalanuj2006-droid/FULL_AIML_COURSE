@@ -1,0 +1,320 @@
+================================================================================
+MODULE 16: TIME SERIES — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand time series data and its unique properties
+- Decompose time series into trend, seasonality, and residuals
+- Apply stationary transforms
+- Build ARIMA and Prophet models
+- Evaluate time series models properly
+
+================================================================================
+1. WHAT IS TIME SERIES DATA?
+================================================================================
+
+INTUITION
+---------
+Data collected over time in chronological order.
+Unlike regular ML, the ORDER matters!
+
+Examples:
+- Stock prices over days
+- Temperature readings over months
+- Website traffic over hours
+- Energy consumption over seasons
+
+KEY DIFFERENCE FROM REGULAR ML
+-------------------------------
+- Cannot shuffle data (temporal order matters)
+- Future depends on past
+- Special splitting required (no random split)
+- Autocorrelation exists (values correlate with their own past)
+
+================================================================================
+2. TIME SERIES COMPONENTS
+================================================================================
+
+A time series can be decomposed into:
+
+TREND: long-term increase or decrease
+  → "House prices are rising over decades"
+
+SEASONALITY: regular periodic patterns
+  → "Ice cream sales peak every summer"
+
+CYCLIC: non-fixed-period fluctuations
+  → "Business cycles last ~3-5 years"
+
+RESIDUAL (noise): random variation
+  → Unpredictable fluctuations
+
+DECOMPOSITION
+-------------
+from statsmodels.tsa.seasonal import seasonal_decompose
+
+decomposition = seasonal_decompose(ts, model='additive', period=12)
+decomposition.plot()
+plt.show()
+
+# Multiplicative model (for data where seasonality grows with trend)
+decomposition = seasonal_decompose(ts, model='multiplicative', period=12)
+
+ADDITIVE MODEL:    y = trend + seasonality + residual
+MULTIPLICATIVE:    y = trend × seasonality × residual
+
+================================================================================
+3. STATIONARITY
+================================================================================
+
+INTUITION
+---------
+A stationary time series has:
+- Constant mean over time
+- Constant variance over time
+- Constant autocorrelation structure
+
+WHY IT MATTERS
+--------------
+Most time series models (ARIMA) assume stationarity.
+
+TESTS FOR STATIONARITY
+----------------------
+from statsmodels.tsa.stattools import adfuller
+
+result = adfuller(ts)
+print(f'ADF Statistic: {result[0]:.4f}')
+print(f'p-value: {result[1]:.4f}')
+# p < 0.05 → likely stationary
+# p > 0.05 → likely non-stationary
+
+MAKING DATA STATIONARY
+-----------------------
+1. Differencing: y' = y[t] - y[t-1]
+   ts_diff = ts.diff().dropna()
+
+2. Log transformation (stabilizes variance)
+   ts_log = np.log(ts)
+
+3. Seasonal differencing: y' = y[t] - y[t-season]
+   ts_seasonal_diff = ts.diff(periods=12).dropna()
+
+4. Combination of above
+
+================================================================================
+4. AUTOCORRELATION
+================================================================================
+
+AUTOCORRELATION FUNCTION (ACF)
+------------------------------
+Measures correlation between y[t] and y[t-k] for various lags.
+
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+plot_acf(ts_diff, lags=20, ax=axes[0])
+plot_pacf(ts_diff, lags=20, ax=axes[1])
+plt.show()
+
+PARTIAL AUTOCORRELATION FUNCTION (PACF)
+----------------------------------------
+ACF at lag k after removing linear dependence on lags 1 to k-1.
+
+ACF helps determine: MA(q) order
+PACF helps determine: AR(p) order
+
+RULE OF THUMB
+--------------
+- ACF cuts off at lag q → MA(q)
+- PACF cuts off at lag p → AR(p)
+- Both decay gradually → ARMA(p,q)
+
+================================================================================
+5. ARIMA
+================================================================================
+
+ARIMA = AutoRegressive Integrated Moving Average
+
+ARIMA(p, d, q):
+  p = AR order (autoregressive)
+  d = degree of differencing (integration)
+  q = MA order (moving average)
+
+IMPLEMENTATION
+--------------
+from statsmodels.tsa.arima.model import ARIMA
+
+# Fit ARIMA(1,1,1)
+model = ARIMA(ts_train, order=(1, 1, 1))
+fitted = model.fit()
+print(fitted.summary())
+
+# Forecast
+forecast = fitted.forecast(steps=30)
+print(forecast)
+
+# Confidence intervals
+forecast_result = fitted.get_forecast(steps=30)
+conf_int = forecast_result.conf_int()
+
+AUTO ARIMA
+----------
+from pmdarima import auto_arima
+
+auto_model = auto_arima(ts_train, seasonal=False,
+                        stepwise=True, suppress_warnings=True)
+print(auto_model.summary())
+
+# auto_arima automatically finds best (p,d,q)
+
+================================================================================
+6. SARIMA (Seasonal ARIMA)
+================================================================================
+
+SARIMA(p,d,q)(P,D,Q,m):
+  P, D, Q = seasonal AR, differencing, MA orders
+  m = seasonal period
+
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+model = SARIMAX(ts_train, order=(1,1,1), seasonal_order=(1,1,1,12))
+fitted = model.fit(disp=False)
+forecast = fitted.forecast(steps=30)
+
+================================================================================
+7. PROPHET (Facebook/Meta)
+================================================================================
+
+INTUITION
+---------
+Designed for business time series with:
+- Strong seasonal effects
+- Missing data
+- Outliers
+- Historical trend shifts
+
+IMPLEMENTATION
+--------------
+from prophet import Prophet
+
+# Prophet requires columns named 'ds' (date) and 'y' (value)
+df_prophet = pd.DataFrame({
+    'ds': df['date'],
+    'y': df['sales']
+})
+
+model = Prophet(
+    yearly_seasonality=True,
+    weekly_seasonality=True,
+    daily_seasonality=False,
+    changepoint_prior_scale=0.05
+)
+model.fit(df_prophet)
+
+# Make future dataframe
+future = model.make_future_dataframe(periods=365)
+forecast = model.predict(future)
+
+# Plot
+fig = model.plot(forecast)
+plt.show()
+
+# Components
+fig2 = model.plot_components(forecast)
+plt.show()
+
+================================================================================
+8. EVALUATION
+================================================================================
+
+METRICS
+-------
+MAE:  mean absolute error
+RMSE: root mean squared error
+MAPE: mean absolute percentage error
+      MAPE = (100/n) × Σ|y - ŷ|/|y|
+      ⚠️ MAPE is infinite when y = 0!
+
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+
+mae = mean_absolute_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
+
+CRITICAL: PROPER TIME SERIES SPLIT
+-----------------------------------
+from sklearn.model_selection import TimeSeriesSplit
+
+tscv = TimeSeriesSplit(n_splits=5)
+for train_idx, test_idx in tscv.split(X):
+    X_train_cv, X_test_cv = X[train_idx], X[test_idx]
+    # Train and evaluate
+
+NEVER USE random split for time series!
+
+================================================================================
+9. FEATURE ENGINEERING FOR TIME SERIES
+================================================================================
+
+LAG FEATURES
+------------
+df['lag_1'] = df['sales'].shift(1)
+df['lag_7'] = df['sales'].shift(7)
+df['lag_30'] = df['sales'].shift(30)
+
+ROLLING FEATURES
+----------------
+df['rolling_mean_7'] = df['sales'].rolling(window=7).mean()
+df['rolling_std_7'] = df['sales'].rolling(window=7).std()
+df['rolling_mean_30'] = df['sales'].rolling(window=30).mean()
+
+EXPANDING FEATURES
+------------------
+df['expanding_mean'] = df['sales'].expanding().mean()
+
+DIFFERENCING
+------------
+df['diff_1'] = df['sales'].diff(1)
+df['diff_7'] = df['sales'].diff(7)
+
+================================================================================
+10. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Using random train/test split
+  WRONG: train_test_split(ts, shuffle=True)
+  RIGHT: TimeSeriesSplit or temporal split (train on past, test on future)
+
+MISTAKE 2: Not checking for stationarity
+  WRONG: Fitting ARIMA on raw non-stationary data
+  RIGHT: Test with ADF, difference if needed
+
+MISTAKE 3: Looking at future data
+  WRONG: Scaling entire series before splitting
+  RIGHT: Scale only on training window, apply to test
+
+MISTAKE 4: Ignoring seasonality
+  WRONG: ARIMA without seasonal component on seasonal data
+  RIGHT: Use SARIMA or Prophet for seasonal data
+
+MISTAKE 5: Forecasting too far ahead
+  WRONG: Predicting 365 days with a model that learned monthly patterns
+  RIGHT: Horizon should be reasonable relative to available data
+
+================================================================================
+11. SKILLS CHECKPOINT
+================================================================================
+
+Q1: What is stationarity and why does it matter for ARIMA?
+Q2: What is the difference between ACF and PACF?
+Q3: When would you use Prophet instead of ARIMA?
+Q4: Why can't you shuffle time series data?
+Q5: How do lag features help a machine learning model predict future values?
+Q6: What is the seasonal period in monthly temperature data?
+Q7: When would you use multiplicative vs additive decomposition?
+
+================================================================================
+END OF MODULE 16: TIME SERIES
+================================================================================

@@ -1,0 +1,142 @@
+# PART F: PRACTICAL EXAM
+# Time: 4 hours | 1 Major Project | Demonstrates Full AI/ML Engineering Skills
+
+---
+
+## PRACTICAL EXAM 1: END-TO-END ML SYSTEM
+
+### Problem Statement
+Build a complete ML prediction system that takes data, trains a model, serves predictions via API, and monitors performance.
+
+### Requirements
+1. **Data Pipeline**: Load, clean, preprocess data
+2. **EDA**: Basic analysis and visualization
+3. **Feature Engineering**: Create meaningful features
+4. **Model Training**: Train at least 3 models, compare them
+5. **Evaluation**: Proper train/test split, metrics, cross-validation
+6. **API**: FastAPI endpoint for predictions
+7. **Database**: Store predictions in PostgreSQL/SQLite
+8. **Testing**: Write unit tests for key functions
+9. **Docker**: Containerize the application
+10. **Documentation**: README with setup instructions
+
+### Acceptance Criteria
+- [ ] Code runs without errors
+- [ ] Model achieves > 80% accuracy (or appropriate metric)
+- [ ] API endpoint returns predictions correctly
+- [ ] Tests pass
+- [ ] Docker image builds successfully
+- [ ] README explains the project clearly
+
+### Time Allocation
+- Data + EDA: 30 minutes
+- Feature Engineering + Modeling: 60 minutes
+- API + Database: 60 minutes
+- Testing + Docker: 30 minutes
+- Documentation + Polish: 30 minutes
+
+---
+
+## PRACTICAL EXAM 2: NLP CLASSIFICATION SYSTEM
+
+### Problem Statement
+Build a text classification system that can categorize documents into predefined categories.
+
+### Requirements
+1. Load text dataset
+2. Preprocess text (tokenization, cleaning, normalization)
+3. Extract features (TF-IDF, word embeddings, or transformer embeddings)
+4. Train classifier (traditional ML + simple neural network)
+5. Evaluate with precision, recall, F1, confusion matrix
+6. Build prediction API
+7. Handle edge cases (empty text, unknown characters)
+
+### Deliverables
+- `train.py` — Training script
+- `predict.py` — Prediction script
+- `api.py` — FastAPI endpoint
+- `test_api.py` — API tests
+- `requirements.txt`
+- `README.md`
+
+---
+
+## PRACTICAL EXAM 3: COMPUTER VISION PIPELINE
+
+### Problem Statement
+Build an image classification pipeline with data augmentation, model training, and inference API.
+
+### Requirements
+1. Load image dataset
+2. Apply data augmentation (rotation, flip, crop, color jitter)
+3. Train CNN (from scratch or transfer learning)
+4. Evaluate with accuracy, confusion matrix, per-class metrics
+5. Build inference API that accepts image uploads
+6. Handle image preprocessing consistently between training and inference
+
+### Deliverables
+- `train.py` — Training with augmentation
+- `inference.py` — Single image prediction
+- `api.py` — FastAPI endpoint
+- `model.py` — Model definition
+- `utils.py` — Preprocessing utilities
+- `Dockerfile`
+- `README.md`
+
+---
+
+## PRACTICAL EXAM 4: RAG SYSTEM
+
+### Problem Statement
+Build a Retrieval-Augmented Generation system that answers questions from uploaded documents.
+
+### Requirements
+1. Document ingestion (PDF, TXT, or Markdown)
+2. Text chunking with overlap
+3. Embedding generation (sentence-transformers)
+4. Vector storage (FAISS or Chroma)
+5. Semantic search retrieval
+6. LLM-based answer generation
+7. Citation of source documents
+8. Evaluation with sample queries
+
+### Architecture
+```
+Documents → Chunking → Embedding → Vector DB
+                                        ↑
+User Query → Embedding → Similarity Search
+                                        ↓
+                              Retrieved Chunks + Query
+                                        ↓
+                                    LLM Answer
+```
+
+### Deliverables
+- `ingest.py` — Document ingestion pipeline
+- `retrieve.py` — Retrieval system
+- `generate.py` — Answer generation
+- `api.py` — FastAPI endpoint
+- `evaluate.py` — Evaluation script
+- `requirements.txt`
+- `README.md`
+
+---
+
+## GRADING RUBRIC
+
+| Criteria | Points |
+|----------|--------|
+| **Code Quality** (clean, modular, commented) | 20 |
+| **Functionality** (all features work) | 25 |
+| **ML/DL Quality** (proper training, evaluation) | 20 |
+| **API Design** (clean endpoints, error handling) | 15 |
+| **Testing** (unit tests, API tests) | 10 |
+| **Documentation** (README, setup, usage) | 10 |
+| **Total** | **100** |
+
+### Grade Scale
+- **A (90-100):** Production-ready quality
+- **B (80-89):** Solid implementation with minor issues
+- **C (70-79):** Functional but needs improvement
+- **D (60-69):** Basic implementation, significant gaps
+- **F (<60):** Incomplete or non-functional

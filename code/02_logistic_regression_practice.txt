@@ -1,0 +1,150 @@
+# LOGISTIC REGRESSION — PRACTICE SET
+# 30 Questions + Coding + Debugging
+
+---
+
+## EASY (10 Questions)
+
+1. What is the sigmoid function?
+   Answer: σ(z) = 1 / (1 + e⁻ᶻ), outputs values between 0 and 1
+
+2. Why use sigmoid in logistic regression?
+   Answer: Maps any real number to (0,1), interpretable as probability
+
+3. What is the derivative of sigmoid?
+   Answer: σ'(z) = σ(z) × (1 - σ(z))
+
+4. What loss function does logistic regression use?
+   Answer: Binary Cross-Entropy (BCE) = -(1/n) Σ[y·log(ŷ) + (1-y)·log(1-ŷ)]
+
+5. What is the gradient of BCE with respect to z?
+   Answer: dz = ŷ - y (elegant simplification)
+
+6. What is the decision boundary?
+   Answer: The hyperplane where P(y=1) = 0.5, i.e., wᵀx + b = 0
+
+7. How do you extend logistic regression to multi-class?
+   Answer: Use One-vs-Rest (OvR) or Softmax (multinomial) logistic regression
+
+8. What is the time complexity of logistic regression training?
+   Answer: O(n × d × iterations) where n=samples, d=features
+
+9. What is regularization in logistic regression?
+   Answer: Adding penalty term (L1 or L2) to loss to prevent overfitting
+
+10. What is the difference between L1 and L2 regularization?
+    Answer: L1 (Lasso): sparse solutions, feature selection. L2 (Ridge): small weights, no feature selection
+
+---
+
+## MEDIUM (10 Questions)
+
+11. Implement sigmoid from scratch.
+    ```python
+    def sigmoid(z):
+        return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+    ```
+
+12. Implement binary cross-entropy loss.
+    ```python
+    def bce_loss(y_true, y_pred):
+        epsilon = 1e-15
+        return -np.mean(y_true * np.log(y_pred + epsilon) + 
+                       (1 - y_true) * np.log(1 - y_pred + epsilon))
+    ```
+
+13. Compute the confusion matrix from scratch.
+    ```python
+    def confusion_matrix(y_true, y_pred):
+        tp = np.sum((y_pred == 1) & (y_true == 1))
+        tn = np.sum((y_pred == 0) & (y_true == 0))
+        fp = np.sum((y_pred == 1) & (y_true == 0))
+        fn = np.sum((y_pred == 0) & (y_true == 1))
+        return np.array([[tn, fp], [fn, tp]])
+    ```
+
+14. Implement precision, recall, F1 from scratch.
+    ```python
+    def precision(y_true, y_pred):
+        tp = np.sum((y_pred == 1) & (y_true == 1))
+        return tp / (tp + np.sum((y_pred == 1) & (y_true == 0)))
+    def recall(y_true, y_pred):
+        tp = np.sum((y_pred == 1) & (y_true == 1))
+        return tp / (tp + np.sum((y_pred == 0) & (y_true == 1)))
+    def f1(y_true, y_pred):
+        p, r = precision(y_true, y_pred), recall(y_true, y_pred)
+        return 2 * p * r / (p + r)
+    ```
+
+15. Why might logistic regression fail?
+    Answer: Linearly inseparable data, outliers, multicollinearity, insufficient features
+
+16. What is the ROC curve?
+    Answer: Plot of TPR vs FPR at different classification thresholds
+
+17. What is AUC-ROC?
+    Answer: Area Under the ROC curve — probability that model ranks a random positive higher than negative
+
+18. How does class imbalance affect logistic regression?
+    Answer: Model biased toward majority class — use class weights, oversampling, or SMOTE
+
+19. What is the log-odds interpretation?
+    Answer: log(p/(1-p)) = wᵀx + b — coefficients represent change in log-odds per unit feature
+
+20. When to use logistic regression vs other classifiers?
+    Answer: Use when: linear boundary is reasonable, interpretability needed, small dataset. Avoid: complex non-linear boundaries
+
+---
+
+## HARD (5 Questions)
+
+21. Implement softmax function from scratch.
+    ```python
+    def softmax(z):
+        exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))
+        return exp_z / np.sum(exp_z, axis=1, keepdims=True)
+    ```
+
+22. Implement multi-class cross-entropy loss.
+    ```python
+    def multiclass_ce(y_true, y_pred):
+        return -np.mean(np.sum(y_true * np.log(y_pred + 1e-15), axis=1))
+    ```
+
+23. Derive the gradient of BCE loss step by step.
+
+24. Implement logistic regression with L2 regularization.
+
+25. Compare one-vs-rest vs softmax for multi-class classification.
+
+---
+
+## DEBUGGING (5 Problems)
+
+```python
+# Debug 1: Sigmoid overflow
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))  # Overflow for large negative z
+# Fix: np.clip(z, -500, 500) before exp
+
+# Debug 2: BCE loss returns NaN
+def bce(y_true, y_pred):
+    return -np.mean(y_true * np.log(y_pred) + (1-y_true) * np.log(1-y_pred))
+# Bug: log(0) = -inf when y_pred is exactly 0 or 1
+# Fix: Add epsilon: np.log(y_pred + 1e-15)
+
+# Debug 3: Gradient descent doesn't converge
+# The gradient for logistic regression is:
+# dw = (1/n) X.T.dot(y_pred - y)  # NOT X.T.dot(sigmoid(X@w) - y)
+# Both are equivalent but make sure you're using y_pred = sigmoid(X@w + b)
+
+# Debug 4: Predictions all same class
+# Cause: Learning rate too high, weights exploded
+# Fix: Normalize features, use smaller lr
+
+# Debug 5: Model accuracy is 50% on binary classification
+# This means model is random — check:
+# 1. Are labels encoded correctly (0/1)?
+# 2. Is the learning rate appropriate?
+# 3. Are features informative?
+```

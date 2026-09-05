@@ -1,0 +1,319 @@
+================================================================================
+                     AI/ML ENGINEERING COURSE
+                     ENVIRONMENT SETUP GUIDE
+================================================================================
+
+This guide helps you set up everything needed for the course.
+
+================================================================================
+1. PYTHON INSTALLATION
+================================================================================
+
+RECOMMENDED: Python 3.10 or 3.11
+
+WINDOWS:
+    1. Visit https://www.python.org/downloads/
+    2. Download Python 3.11 (or 3.10)
+    3. Run installer
+    4. CHECK THE BOX: "Add Python to PATH" ← CRITICAL
+    5. Click "Install Now"
+    6. Verify: Open terminal and type:
+       python --version
+       pip --version
+
+MAC:
+    1. Visit https://www.python.org/downloads/
+    2. Download and install
+    3. Or use Homebrew:
+       brew install python@3.11
+
+LINUX:
+    sudo apt update
+    sudo apt install python3.11 python3.11-venv python3-pip
+
+================================================================================
+2. VIRTUAL ENVIRONMENT
+================================================================================
+
+Always use a virtual environment. It keeps your project dependencies isolated.
+
+CREATE:
+    python -m venv ml_course_env
+
+ACTIVATE:
+    Windows:   ml_course_env\Scripts\activate
+    Mac/Linux: source ml_course_env/bin/activate
+
+DEACTIVATE:
+    deactivate
+
+You should see (ml_course_env) in your terminal prompt when activated.
+
+================================================================================
+3. INSTALL COURSE DEPENDENCIES
+================================================================================
+
+After activating the virtual environment, install all required packages:
+
+    pip install numpy pandas matplotlib seaborn plotly
+    pip install scikit-learn xgboost lightgbm catboost
+    pip install scipy statsmodels
+    pip install jupyter notebook jupyterlab
+    pip install fastapi uvicorn
+    pip install flask django djangorestframework
+    pip install psycopg2-binary sqlalchemy
+    pip install requests httpx
+    pip install shap lime
+    pip install mlflow
+    pip install pytest
+
+SAVE DEPENDENCIES:
+    pip freeze > requirements.txt
+
+FOR DEEP LEARNING (install later, around Module 18):
+    pip install torch torchvision torchaudio
+    pip install tensorflow
+    pip install onnx
+
+FOR NLP (install later, around Module 23):
+    pip install nltk spacy gensim
+    pip install transformers datasets tokenizers
+    pip install sentence-transformers
+
+FOR GENERATIVE AI (install later, around Module 27):
+    pip install langchain langchain-community
+    pip install chromadb faiss-cpu
+    pip install openai anthropic
+
+================================================================================
+4. INSTALL JUPYTER
+================================================================================
+
+Jupyter Notebook is essential for interactive learning.
+
+    pip install notebook jupyterlab
+
+LAUNCH:
+    jupyter notebook
+    OR
+    jupyterlab
+
+This opens a browser window. Create a new Python 3 notebook.
+
+================================================================================
+5. CODE EDITOR
+================================================================================
+
+RECOMMENDED: Visual Studio Code
+
+1. Download from https://code.visualstudio.com/
+2. Install the following extensions:
+   - Python (by Microsoft)
+   - Jupyter (by Microsoft)
+   - Pylance
+   - GitLens
+
+ALTERNATIVES:
+    - PyCharm (Community Edition — free)
+    - JupyterLab
+    - Google Colab (cloud-based, no local install needed)
+
+================================================================================
+6. GIT
+================================================================================
+
+Git is needed for version control and collaboration.
+
+WINDOWS:
+    Download from https://git-scm.com/download/win
+
+MAC:
+    xcode-select --install
+    OR
+    brew install git
+
+LINUX:
+    sudo apt install git
+
+CONFIGURE:
+    git config --global user.name "Your Name"
+    git config --global user.email "your.email@example.com"
+
+VERIFY:
+    git --version
+
+================================================================================
+7. DATABASE TOOLS (Optional, for later modules)
+================================================================================
+
+POSTGRESQL:
+    - Download from https://www.postgresql.org/download/
+    - Or use Docker: docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=password postgres:15
+
+SQLITE:
+    - Built into Python. No installation needed.
+    - import sqlite3
+
+PGADMIN (PostgreSQL GUI):
+    - Download from https://www.pgadmin.org/
+
+================================================================================
+8. DOCKER (Optional, for later modules)
+================================================================================
+
+WINDOWS:
+    Download Docker Desktop from https://www.docker.com/products/docker-desktop/
+
+MAC:
+    Download Docker Desktop from https://www.docker.com/products/docker-desktop/
+
+LINUX:
+    sudo apt install docker.io docker-compose
+
+VERIFY:
+    docker --version
+    docker-compose --version
+
+================================================================================
+9. GPU SETUP (Optional, for Deep Learning modules)
+================================================================================
+
+NVIDIA GPU USERS:
+
+1. Install NVIDIA drivers:
+   https://www.nvidia.com/Download/index.aspx
+
+2. Install CUDA Toolkit:
+   https://developer.nvidia.com/cuda-toolkit
+   Recommended: CUDA 11.8 or 12.1
+
+3. Install cuDNN:
+   https://developer.nvidia.com/cudnn
+
+4. Install PyTorch with CUDA:
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+5. Verify GPU in Python:
+   import torch
+   print(torch.cuda.is_available())
+   print(torch.cuda.get_device_name(0))
+
+NOTE: You can complete MOST of the course without a GPU.
+      GPU is needed mainly for:
+      - Training deep neural networks (Module 18+)
+      - Training CNNs (Module 20)
+      - Fine-tuning transformers (Module 32)
+      - Large-scale NLP experiments
+
+ALTERNATIVE: Google Colab provides free GPU access.
+    https://colab.research.google.com/
+
+================================================================================
+10. ENVIRONMENT VARIABLES
+================================================================================
+
+Some modules require API keys. NEVER commit real keys to Git.
+
+Create a .env file in your project root:
+
+    # .env (NEVER commit this file)
+    OPENAI_API_KEY=your_key_here
+    HUGGINGFACE_TOKEN=your_token_here
+    DATABASE_URL=postgresql://user:password@localhost/dbname
+    SECRET_KEY=your_secret_key_here
+
+Add .env to .gitignore:
+
+    # .gitignore
+    .env
+    __pycache__/
+    *.pyc
+    .venv/
+    ml_course_env/
+
+Load .env in Python:
+    pip install python-dotenv
+
+    from dotenv import load_dotenv
+    import os
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+
+================================================================================
+11. VERIFY INSTALLATION
+================================================================================
+
+Run this Python script to verify everything is installed correctly:
+
+    import sys
+    print(f"Python: {sys.version}")
+
+    import numpy as np
+    print(f"NumPy: {np.__version__}")
+
+    import pandas as pd
+    print(f"Pandas: {pd.__version__}")
+
+    import matplotlib
+    print(f"Matplotlib: {matplotlib.__version__}")
+
+    import seaborn as sns
+    print(f"Seaborn: {sns.__version__}")
+
+    import sklearn
+    print(f"Scikit-learn: {sklearn.__version__}")
+
+    import scipy
+    print(f"SciPy: {scipy.__version__}")
+
+    print("\n✅ All core packages installed successfully!")
+
+EXPECTED OUTPUT:
+    Python: 3.10.x or 3.11.x
+    NumPy: 1.24.x or higher
+    Pandas: 2.0.x or higher
+    Matplotlib: 3.7.x or higher
+    Seaborn: 0.12.x or higher
+    Scikit-learn: 1.3.x or higher
+    SciPy: 1.11.x or higher
+
+================================================================================
+12. TROUBLESHOOTING
+================================================================================
+
+PROBLEM: "python" command not found
+SOLUTION: Python is not in PATH. Reinstall with "Add to PATH" checked.
+
+PROBLEM: "pip" command not found
+SOLUTION: python -m pip install --upgrade pip
+
+PROBLEM: Permission denied on pip install
+SOLUTION: Use pip install --user <package> or use a virtual environment
+
+PROBLEM: Import errors
+SOLUTION: Make sure your virtual environment is activated.
+
+PROBLEM: Matplotlib plots don't show
+SOLUTION: Add matplotlib.use('Agg') or use plt.show() in scripts.
+          In Jupyter, use %matplotlib inline.
+
+PROBLEM: CUDA not found
+SOLUTION: Install NVIDIA drivers and CUDA toolkit.
+          Or use CPU-only PyTorch.
+
+================================================================================
+READY TO START?
+================================================================================
+
+After completing this setup:
+
+1. Activate your virtual environment
+2. Open the diagnostic assessment:
+   00_ORIENTATION/diagnostic_assessment.txt
+3. Complete the diagnostic
+4. Check your score in diagnostic_answers.txt
+5. Start the course at the appropriate module
+
+CONTINUE TO: how_to_use.txt
+
+================================================================================

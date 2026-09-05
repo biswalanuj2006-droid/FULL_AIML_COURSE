@@ -1,0 +1,55 @@
+================================================================================
+FAILURE LAB - 19 DEEP LEARNING (PyTorch/Keras)
+Reproduce -> diagnose -> fix -> report. Never guess; run experiments.
+================================================================================
+
+LAB 1 - BATCH-NORM BATCH-SIZE DIVERGENCE
+  Train ResNet-style net with BatchNorm at batch 256: train loss
+  decreases, validation loss noisy and worse than the same model at
+  batch 32.
+  Tasks: (1) reproduce both curves; (2) explain the BN-small-batch
+  interaction (noisy batch statistics at train vs eval); (3) fix with
+  a smaller effective BN batch or ghost BN; (4) report val loss before
+  and after.
+
+LAB 2 - THE LR THAT LOOKS RIGHT
+  lr=1e-3 trains but plateaus; lr=1e-2 diverges instantly.
+  Tasks: (1) run a lr-range test (increase lr per mini-batch, log loss)
+  and find the true maximum usable lr; (2) pick lr via the
+  one-cycle/cosine rule; (3) show loss curves for 3 lrs and justify
+  your choice with evidence, not convention.
+
+LAB 3 - THE SILENT FP16
+  Mixed precision (AMP) trains 2x faster but loss spikes to NaN at
+  random epochs.
+  Tasks: (1) reproduce with torch.autocast; (2) explain gradient
+  underflow and loss scaling; (3) fix with dynamic loss scaling +
+  FP32 master weights; (4) verify the FP16 run matches FP32 accuracy
+  within 0.5%.
+
+LAB 4 - THE VALIDATION LEAK IN AUGMENTATION
+  Random flip/rotation augmentations applied to the validation and test
+  sets: val accuracy looks great, deployment is worse.
+  Tasks: (1) find the bug (augmentation pipeline shared with train);
+  (2) quantify the inflation by fixing it; (3) write the rule:
+  augmentation on train ONLY; (4) add a data-pipeline test that fails
+  if val receives augmentations.
+
+LAB 5 - THE CHECKPOINT THAT LIED
+  Model saves every epoch "best by val loss"; loaded model performs
+  worse than the final epoch on the test set.
+  Tasks: (1) diagnose (best-by-train-loss, overwritten file, eval mode
+  vs train mode, missing state_dict keys); (2) fix saving to track val
+  metric + restore_best_weights semantics; (3) write a reload test:
+  load -> predict -> compare to the logged prediction.
+
+LAB 6 - THE GPU OOM AT EPOCH 10
+  Batch 128 fits at epoch 1; OOM at epoch 10 after accuracy improves.
+  Tasks: (1) explain why memory grows (activations/caches, BN buffers,
+  checkpoint accumulation); (2) find it with nvidia-smi/torch profiler
+  if GPU available, else reason it out; (3) fix with gradient
+  checkpointing, smaller batch + accumulation, or pinning memory; (4)
+  set a memory budget and a test that alarms before OOM.
+================================================================================
+END
+================================================================================

@@ -1,0 +1,355 @@
+================================================================================
+MODULE 32: APACHE KAFKA — COMPLETE STREAMING ENGINEERING COURSE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand Kafka architecture and distributed streaming
+- Build producers and consumers in Python
+- Design streaming ML pipelines
+- Handle exactly-once semantics
+- Build production-grade event-driven systems
+
+================================================================================
+1. WHY KAFKA?
+================================================================================
+
+PROBLEM: Traditional message queues are limited.
+- RabbitMQ: single consumer per message, no replay
+- Database polling: inefficient, high latency
+- Batch processing: not real-time
+
+KAFKA SOLUTION:
+- Distributed, durable, scalable
+- Messages persisted to disk (replayable)
+- Multiple consumers can read same data
+- Handles millions of messages per second
+- Perfect for real-time ML pipelines
+
+USE CASES IN AI/ML:
+- Real-time fraud detection
+- Live recommendation updates
+- Streaming feature computation
+- Model prediction pipelines
+- Log processing for monitoring
+- Real-time dashboards
+
+================================================================================
+2. KAFKA ARCHITECTURE
+================================================================================
+
+┌─────────────────────────────────────────────────────────┐
+│                    KAFKA CLUSTER                         │
+│                                                         │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐                │
+│  │Broker 1 │  │Broker 2 │  │Broker 3 │  ← Servers     │
+│  └────┬────┘  └────┬────┘  └────┬────┘                │
+│       │             │             │                      │
+│  ┌────▼─────────────▼─────────────▼────┐               │
+│  │           TOPICS                     │               │
+│  │  ┌──────────┐  ┌──────────┐         │               │
+│  │  │Partition 0│  │Partition 1│        │               │
+│  │  │  [msg1]  │  │  [msg1]  │         │               │
+│  │  │  [msg2]  │  │  [msg2]  │         │               │
+│  │  │  [msg3]  │  │  [msg3]  │         │               │
+│  │  └──────────┘  └──────────┘         │               │
+│  └──────────────────────────────────────┘               │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+KEY CONCEPTS:
+- BROKER: Server storing data (cluster = multiple brokers)
+- TOPIC: Named category/feed of messages
+- PARTITION: Topic split for parallelism (ordering within partition)
+- OFFSET: Unique ID for each message in a partition
+- PRODUCER: Sends messages to topics
+- CONSUMER: Reads messages from topics
+- CONSUMER GROUP: Multiple consumers reading in parallel
+- REPLICATION: Copies of partitions across brokers (fault tolerance)
+
+================================================================================
+3. PRODUCER (Python)
+================================================================================
+
+from kafka import KafkaProducer
+import json
+
+# Create producer
+producer = KafkaProducer(
+    bootstrap_servers=['localhost:9092'],
+    value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+    acks='all',              # wait for all replicas
+    retries=3,               # retry on failure
+    max_in_flight_requests_per_connection=1  # ordering guarantee
+)
+
+# Send message
+producer.send('transactions', value={
+    'user_id': 12345,
+    'amount': 299.99,
+    'timestamp': '2024-01-15T10:30:00',
+    'merchant': 'Amazon'
+})
+
+# Flush (wait for all pending messages)
+producer.flush()
+
+BATCH PRODUCING (More Efficient)
+----------------------------------
+for transaction in transactions:
+    producer.send('transactions', value=transaction)
+producer.flush()  # send all at once
+
+KEY CONFIGURATION:
+- acks=0: Fire and forget (fastest, no guarantee)
+- acks=1: Leader acknowledges (balanced)
+- acks=all: All replicas acknowledge (safest, slowest)
+
+================================================================================
+4. CONSUMER (Python)
+================================================================================
+
+from kafka import KafkaConsumer
+import json
+
+# Create consumer
+consumer = KafkaConsumer(
+    'transactions',
+    bootstrap_servers=['localhost:9092'],
+    group_id='fraud-detection',
+    auto_offset_reset='earliest',  # start from beginning
+    enable_auto_commit=False,       # manual offset control
+    value_deserializer=lambda m: json.loads(m.decode('utf-8'))
+)
+
+# Consume messages
+for message in consumer:
+    print(f"Topic: {message.topic}")
+    print(f"Partition: {message.partition}")
+    print(f"Offset: {message.offset}")
+    print(f"Key: {message.key}")
+    print(f"Value: {message.value}")
+
+    # Process message
+    process_transaction(message.value)
+
+    # Commit offset manually
+    consumer.commit()
+
+CONSUMER GROUPS:
+- Multiple consumers in same group share the load
+- Each partition consumed by exactly one consumer in a group
+- More consumers than partitions = idle consumers
+- Scale by adding partitions
+
+================================================================================
+5. STREAMING ML PIPELINE
+================================================================================
+
+REAL-TIME FRAUD DETECTION ARCHITECTURE:
+
+┌──────────┐    ┌─────────┐    ┌──────────┐    ┌─────────┐
+│Transaction│───→│  KAFKA  │───→│ Consumer │───→│  ML     │
+│  Source   │    │  Topic  │    │ (Python) │    │  Model  │
+└──────────┘    └─────────┘    └──────────┘    └────┬────┘
+                                                      │
+                                                      ▼
+┌──────────┐    ┌─────────┐    ┌──────────┐    ┌─────────┐
+│ Dashboard │←───│  Redis  │←───│  Logger  │←───│Decision │
+│  (Alert)  │    │ (Cache) │    │(Postgres)│    │(F/NF)   │
+└──────────┘    └─────────┘    └──────────┘    └─────────┘
+
+PYTHON IMPLEMENTATION:
+from kafka import KafkaConsumer, KafkaProducer
+import joblib
+import json
+
+# Load model
+model = joblib.load('fraud_model.pkl')
+
+# Setup
+consumer = KafkaConsumer('transactions', ...)
+producer = KafkaProducer(...)
+
+for message in consumer:
+    transaction = message.value
+
+    # Extract features
+    features = extract_features(transaction)
+
+    # Predict
+    prediction = model.predict([features])[0]
+    probability = model.predict_proba([features])[0][1]
+
+    # Publish result
+    result = {
+        'transaction_id': transaction['id'],
+        'is_fraud': bool(prediction),
+        'fraud_probability': float(probability)
+    }
+    producer.send('predictions', value=result)
+
+================================================================================
+6. DELIVERY SEMANTICS
+================================================================================
+
+AT-MOST-ONCE:
+  Message may be lost, never duplicated.
+  Producer sends, doesn't wait for ack.
+  Consumer commits offset before processing.
+
+AT-LEAST-ONCE (Default):
+  Message never lost, may be duplicated.
+  Producer retries on failure.
+  Consumer commits offset AFTER processing.
+  SOLUTION: Make processing idempotent.
+
+EXACTLY-ONCE:
+  Message delivered exactly once.
+  Requires: idempotent producer + transactional consumer.
+  Kafka supports this with transactions.
+
+IDEMPOTENT PROCESSING:
+  def process(message):
+      if already_processed(message.id):
+          return  # skip duplicate
+      # process...
+      mark_as_processed(message.id)
+
+================================================================================
+7. SCHEMA MANAGEMENT
+================================================================================
+
+AVRO SCHEMAS (Recommended for Production)
+-------------------------------------------
+from confluent_kafka import avro
+from confluent_kafka.avro import AvroProducer
+
+transaction_schema = avro.loads('''
+{
+    "type": "record",
+    "name": "Transaction",
+    "fields": [
+        {"name": "id", "type": "string"},
+        {"name": "amount", "type": "double"},
+        {"name": "timestamp", "type": "long"}
+    ]
+}
+''')
+
+WHY SCHEMAS MATTER:
+- Prevent invalid data from entering pipeline
+- Enable schema evolution
+- Documentation of data contracts
+- Compatibility checks between producers/consumers
+
+================================================================================
+8. MONITORING & OPERATIONS
+================================================================================
+
+KEY METRICS TO MONITOR:
+- Messages per second (throughput)
+- Consumer lag (how far behind consumers are)
+- Broker health
+- Partition distribution
+- Disk usage
+- Network I/O
+
+CONSUMER LAG:
+- Lag = latest offset - consumer offset
+- High lag = consumers can't keep up
+- Action: add consumers or partitions
+
+TOOLING:
+- Kafka CLI tools (kafka-topics.sh, kafka-consumer-groups.sh)
+- Kafka Manager / Confluent Control Center
+- Prometheus + Grafana
+- Datadog / New Relic integrations
+
+================================================================================
+9. PYTHON ECOSYSTEM
+================================================================================
+
+LIBRARIES:
+- kafka-python: Pure Python client
+- confluent-kafka: C-based (faster, recommended)
+- faust: Stream processing library
+- bytewax: Dataflow library
+- pyspark: Spark Structured Streaming
+
+FAUST EXAMPLE (Stream Processing):
+import faust
+
+app = faust.App('fraud-detection', broker='kafka://localhost:9092')
+
+class Transaction(faust.Record):
+    id: str
+    amount: float
+    user_id: str
+
+transactions_topic = app.topic('transactions', value_type=Transaction)
+
+@app.agent(transactions_topic)
+async def detect_fraud(transactions):
+    async for transaction in transactions.process():
+        if is_fraud(transaction):
+            await alert_topic.send(value=transaction)
+
+================================================================================
+10. KAFKA + ML INTEGRATION PATTERNS
+================================================================================
+
+PATTERN 1: Real-Time Inference
+  Data → Kafka → Consumer → Model → Prediction → Kafka/DB
+
+PATTERN 2: Feature Engineering Stream
+  Raw Events → Kafka → Flink/Spark → Features → Feature Store → Model
+
+PATTERN 3: Model Update Stream
+  New Data → Kafka → Batch Processor → Retrain → Model Registry
+
+PATTERN 4: Monitoring Stream
+  Predictions → Kafka → Monitor → Drift Detection → Alert
+
+================================================================================
+11. COMMON MISTAKES
+================================================================================
+
+1. Too few partitions: limits parallelism
+   RIGHT: Start with enough partitions (e.g., 12+ for production)
+
+2. Not handling consumer rebalancing
+   RIGHT: Process messages quickly, commit frequently
+
+3. Not using consumer groups
+   RIGHT: Use groups for parallel processing
+
+4. Auto-commit offsets
+   RIGHT: Commit after successful processing
+
+5. Not monitoring consumer lag
+   RIGHT: Set up alerts for high lag
+
+================================================================================
+12. LEETCODE-STYLE EXERCISES
+================================================================================
+
+Q1: Design a real-time feature computation system using Kafka.
+Q2: Implement exactly-once processing for ML predictions.
+Q3: Build a streaming aggregation pipeline.
+Q4: Design a multi-consumer ML pipeline (multiple models, same data).
+Q5: Implement backpressure handling in a Kafka consumer.
+
+================================================================================
+13. PROJECTS
+================================================================================
+
+PROJECT 1 (Beginner): Kafka Producer/Consumer Demo
+PROJECT 2 (Intermediate): Real-time Log Processing Pipeline
+PROJECT 3 (Advanced): Streaming Fraud Detection System
+PROJECT 4 (Production): Multi-model ML Inference Pipeline
+
+================================================================================
+END OF KAFKA MODULE
+================================================================================

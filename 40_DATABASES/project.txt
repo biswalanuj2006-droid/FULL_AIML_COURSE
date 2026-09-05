@@ -1,0 +1,17 @@
+================================================================================
+DATABASES — PROJECTS
+================================================================================
+
+PROJECT 1: DATABASE DESIGN (Beginner)
+========================================
+Design and implement database for ML experiment tracking.
+
+PROJECT 2: ORM INTEGRATION (Intermediate)
+============================================
+Build SQLAlchemy models for ML pipeline.
+
+PROJECT 3: PRODUCTION DATABASE (Advanced)
+============================================
+Build production database with PostgreSQL, caching, monitoring.
+
+================================================================================

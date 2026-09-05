@@ -1,0 +1,190 @@
+================================================================================
+MODULE 02 — NUMPY
+LESSON 03: BROADCASTING AND VECTORIZATION
+================================================================================
+
+## What You Will Learn
+- Broadcasting rules
+- Vectorization vs loops
+- Common vectorized patterns
+- Performance comparison
+
+================================================================================
+1. WHAT IS BROADCASTING?
+================================================================================
+
+Broadcasting allows NumPy to perform operations on arrays of different shapes
+WITHOUT explicitly looping or copying data.
+
+    # Without broadcasting (Python loop):
+    a = np.array([1, 2, 3])
+    b = np.array([10, 20, 30])
+    result = np.empty(3)
+    for i in range(3):
+        result[i] = a[i] + b[i]
+
+    # With broadcasting:
+    result = a + b    # [11, 22, 33]
+
+    Broadcasting makes code faster, shorter, and more readable.
+
+================================================================================
+2. BROADCASTING RULES
+================================================================================
+
+RULE 1: Arrays with different ndim — pad smaller shape with 1s on the LEFT.
+
+    a = np.array([1, 2, 3])         # shape: (3,)
+    b = np.array([[1], [2], [3]])    # shape: (3, 1)
+
+    a's shape becomes (1, 3) after padding.
+    Both are now 2D. Then apply Rule 2.
+
+RULE 2: Arrays with size 1 along a dimension are "stretched" to match.
+
+    (1, 3) + (3, 1) → (3, 3)
+
+    [[1, 2, 3]] + [[1], [2], [3]]
+    = [[1+1, 2+1, 3+1],
+       [1+2, 2+2, 3+2],
+       [1+3, 2+3, 3+3]]
+    = [[2, 3, 4],
+       [3, 4, 5],
+       [4, 5, 6]]
+
+RULE 3: If shapes don't match AND neither is 1 → ERROR.
+
+    a = np.ones((3, 4))
+    b = np.ones((3,))
+    a + b    # ERROR: shapes (3, 4) and (3,) can't broadcast
+
+VISUAL EXAMPLE:
+
+    Array A: shape (3, 4)
+    [[1, 2, 3, 4],
+     [1, 2, 3, 4],
+     [1, 2, 3, 4]]
+
+    Array B: shape (4,) → becomes (1, 4) → stretches to (3, 4)
+    [10, 20, 30, 40]
+
+    A + B:
+    [[11, 22, 33, 44],
+     [11, 22, 33, 44],
+     [11, 22, 33, 44]]
+
+================================================================================
+3. COMMON BROADCASTING PATTERNS
+================================================================================
+
+PATTERN 1: Add bias to each row
+    X = np.array([[1, 2], [3, 4], [5, 6]])    # (3, 2)
+    bias = np.array([10, 20])                   # (2,) → (1, 2) → (3, 2)
+    result = X + bias
+    # [[11, 22], [13, 24], [15, 26]]
+
+PATTERN 2: Subtract mean from each column
+    X = np.array([[1, 5], [2, 6], [3, 7]])     # (3, 2)
+    mean = X.mean(axis=0)                        # [2, 6] — mean of each column
+    centered = X - mean
+    # [[-1, -1], [0, 0], [1, 1]]
+
+PATTERN 3: Normalize features
+    X = np.array([[1, 100], [2, 200], [3, 300]])
+    mean = X.mean(axis=0)
+    std = X.std(axis=0)
+    normalized = (X - mean) / std
+
+PATTERN 4: Compute pairwise distances
+    points = np.array([[0, 0], [1, 1], [2, 2]])    # (3, 2)
+    # Distance from each point to origin
+    distances = np.sqrt(np.sum(points**2, axis=1))   # [0, 1.414, 2.828]
+
+    # Pairwise distances
+    diff = points[:, np.newaxis, :] - points[np.newaxis, :, :]  # (3, 3, 2)
+    distances = np.sqrt(np.sum(diff**2, axis=2))                 # (3, 3)
+
+================================================================================
+4. VECTORIZATION
+================================================================================
+
+WHAT IS VECTORIZATION?
+    Replacing explicit loops with array operations.
+    NumPy executes vectorized operations in optimized C code.
+
+SLOW (loop):
+    result = np.zeros(1000000)
+    for i in range(1000000):
+        result[i] = np.sin(i * 0.01)
+
+FAST (vectorized):
+    result = np.sin(np.arange(1000000) * 0.01)
+
+COMMON VECTORIZED OPERATIONS:
+
+    # Element-wise operations
+    a + b          # addition
+    a - b          # subtraction
+    a * b          # multiplication
+    a / b          # division
+    a ** 2         # power
+    np.sqrt(a)     # square root
+    np.exp(a)      # exponential
+    np.log(a)      # natural log
+    np.abs(a)      # absolute value
+    np.sin(a)      # sine
+
+    # Aggregation operations
+    np.sum(a)      # sum of all elements
+    np.mean(a)     # mean
+    np.std(a)      # standard deviation
+    np.min(a)      # minimum
+    np.max(a)      # maximum
+    np.argmin(a)   # index of minimum
+    np.argmax(a)   # index of maximum
+
+    # With axis parameter
+    a.mean(axis=0) # mean along rows (for each column)
+    a.mean(axis=1) # mean along columns (for each row)
+
+================================================================================
+5. PERFORMANCE COMPARISON
+================================================================================
+
+    import numpy as np
+    import time
+
+    n = 1_000_000
+    a = np.random.randn(n)
+    b = np.random.randn(n)
+
+    # Loop
+    start = time.time()
+    result_loop = np.empty(n)
+    for i in range(n):
+        result_loop[i] = a[i] * b[i] + 1
+    loop_time = time.time() - start
+
+    # Vectorized
+    start = time.time()
+    result_vec = a * b + 1
+    vec_time = time.time() - start
+
+    print(f"Loop: {loop_time:.4f}s")
+    print(f"Vectorized: {vec_time:.4f}s")
+    print(f"Speedup: {loop_time/vec_time:.1f}x")
+
+    # Typical: Vectorized is 50-200x faster
+
+================================================================================
+KNOWLEDGE CHECKPOINT
+================================================================================
+
+1. What are the 3 broadcasting rules?
+2. How do you subtract the mean from each column of a matrix?
+3. Why is vectorization faster than loops?
+4. What does axis=0 mean in np.mean()?
+
+================================================================================
+NEXT LESSON: 04_linear_algebra.txt
+================================================================================

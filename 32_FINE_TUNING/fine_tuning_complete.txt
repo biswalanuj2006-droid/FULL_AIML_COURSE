@@ -1,0 +1,258 @@
+================================================================================
+MODULE 32: FINE-TUNING — COMPLETE GUIDE
+================================================================================
+
+LEARNING OBJECTIVES
+-------------------
+After this module you will be able to:
+- Understand when fine-tuning is needed vs prompting
+- Apply parameter-efficient fine-tuning (LoRA, PEFT)
+- Fine-tune models for classification and generation
+- Evaluate fine-tuned models properly
+- Handle common fine-tuning pitfalls
+
+================================================================================
+1. WHEN TO FINE-TUNE?
+================================================================================
+
+DECISION GUIDE
+--------------
+| SCENARIO                              | APPROACH         |
+|---------------------------------------|------------------|
+| General tasks                         | Prompting/RAG    |
+| Domain-specific terminology           | Fine-tune        |
+| Consistent output format              | Fine-tune        |
+| Private/sensitive data                | Fine-tune        |
+| Custom style/tone                     | Fine-tune        |
+| Task-specific accuracy needed         | Fine-tune        |
+| No training data available            | Prompting + RAG  |
+| Very limited data (< 100 examples)    | Few-shot prompting|
+
+================================================================================
+2. FINE-TUNING APPROACHES
+================================================================================
+
+2.1 FULL FINE-TUNING
+---------------------
+Update ALL model parameters.
+Requires: lots of data, lots of compute (GPUs), lots of time.
+
+When to use: You have large dataset + compute budget + need maximum quality
+
+2.2 PARAMETER-EFFICIENT FINE-TUNING (PEFT)
+--------------------------------------------
+Update only a small subset of parameters.
+Much cheaper, faster, and requires less data.
+
+LoRA: Low-Rank Adaptation
+  - Adds small trainable matrices to existing layers
+  - Only trains ~0.1-1% of parameters
+  - Most popular PEFT method
+
+QLoRA: Quantized LoRA
+  - Uses 4-bit quantization + LoRA
+  - Fits on consumer GPUs
+  - Slight quality trade-off
+
+================================================================================
+3. LoRA DEEP DIVE
+================================================================================
+
+INTUITION
+---------
+Instead of updating the full weight matrix W (d × d),
+decompose the change into two small matrices:
+
+ΔW = A × B
+
+where A is (d × r) and B is (r × d), with r << d.
+
+Original: W is 4096 × 4096 = 16M parameters
+LoRA: A is 4096 × 16, B is 16 × 4096 = 131K parameters (0.8%!)
+
+USING PEFT LIBRARY
+-------------------
+from peft import LoraConfig, get_peft_model, TaskType
+
+lora_config = LoraConfig(
+    task_type=TaskType.SEQ_CLS,
+    r=16,              # rank of decomposition
+    lora_alpha=32,     # scaling factor
+    lora_dropout=0.1,
+    target_modules=["query", "value"]  # which layers to adapt
+)
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    'bert-base-uncased', num_labels=2
+)
+
+peft_model = get_peft_model(model, lora_config)
+peft_model.print_trainable_parameters()
+# trainable params: 667,906 || all params: 110,093,570 || 0.61%
+
+================================================================================
+4. FINE-TUNING FOR CLASSIFICATION
+================================================================================
+
+from transformers import (AutoModelForSequenceClassification,
+                          AutoTokenizer, TrainingArguments, Trainer)
+from datasets import load_dataset
+from peft import LoraConfig, get_peft_model
+
+# Load dataset
+dataset = load_dataset('imdb')
+
+# Tokenize
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+def tokenize(batch):
+    return tokenizer(batch['text'], truncation=True, padding=True, max_length=512)
+
+dataset = dataset.map(tokenize, batched=True)
+
+# Load model with LoRA
+model = AutoModelForSequenceClassification.from_pretrained(
+    'bert-base-uncased', num_labels=2
+)
+
+lora_config = LoraConfig(r=16, lora_alpha=32, target_modules=["query", "value"])
+model = get_peft_model(model, lora_config)
+
+# Training
+training_args = TrainingArguments(
+    output_dir='./results',
+    num_train_epochs=3,
+    per_device_train_batch_size=16,
+    learning_rate=2e-4,
+    evaluation_strategy='epoch',
+    save_strategy='epoch',
+    load_best_model_at_end=True
+)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=dataset['train'],
+    eval_dataset=dataset['test']
+)
+
+trainer.train()
+
+# Save
+model.save_pretrained('./my-finetuned-model')
+tokenizer.save_pretrained('./my-finetuned-model')
+
+================================================================================
+5. FINE-TUNING FOR TEXT GENERATION
+================================================================================
+
+USING HUGGING FACE TRAINER
+----------------------------
+from transformers import AutoModelForCausalLM, DataCollatorForLanguageModeling
+
+model = AutoModelForCausalLM.from_pretrained('gpt2')
+
+data_collator = DataCollatorForLanguageModeling(
+    tokenizer=tokenizer, mlm=False  # causal LM, not masked
+)
+
+training_args = TrainingArguments(
+    output_dir='./gpt2-finetuned',
+    num_train_epochs=3,
+    per_device_train_batch_size=4,
+    learning_rate=5e-5,
+    fp16=True
+)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    data_collator=data_collator,
+    train_dataset=tokenized_dataset
+)
+
+trainer.train()
+
+USING LOCALLY (LLAMA / OPEN-SOURCE)
+------------------------------------
+# Using unsloth for fast fine-tuning
+from unsloth import FastLanguageModel
+
+model, tokenizer = FastLanguageModel.from_pretrained("unsloth/llama-3-8b")
+model = FastLanguageModel.get_peft_model(model, r=16)
+
+# Training with SFTTrainer
+from trl import SFTTrainer
+
+trainer = SFTTrainer(
+    model=model,
+    tokenizer=tokenizer,
+    train_dataset=dataset,
+    max_seq_length=2048,
+    args=TrainingArguments(
+        output_dir="./output",
+        per_device_train_batch_size=2,
+        num_train_epochs=1,
+        learning_rate=2e-4,
+        fp16=True
+    )
+)
+
+trainer.train()
+
+================================================================================
+6. DATA PREPARATION FOR FINE-TUNING
+================================================================================
+
+DATA FORMAT
+-----------
+For classification:
+{"text": "This movie is great", "label": 1}
+
+For generation (instruction tuning):
+{"instruction": "Summarize this text",
+ "input": "Long article text...",
+ "output": "Summary here"}
+
+DATA QUALITY CHECKLIST
+-----------------------
+- [ ] Consistent format
+- [ ] Balanced classes (for classification)
+- [ ] No duplicates
+- [ ] No data leakage
+- [ ] Appropriate length (within context window)
+- [ ] 500-5000 examples minimum for good results
+- [ ] Validation set included
+
+================================================================================
+7. COMMON MISTAKES
+================================================================================
+
+MISTAKE 1: Fine-tuning when prompting works
+  RIGHT: Try few-shot prompting first, fine-tune only if needed
+
+MISTAKE 2: Too high learning rate
+  RIGHT: Start with 1e-5 to 5e-5 for full fine-tuning, 1e-4 to 3e-4 for LoRA
+
+MISTAKE 3: Not evaluating properly
+  RIGHT: Always hold out test set, use multiple metrics
+
+MISTAKE 4: Catastrophic forgetting
+  RIGHT: Use LoRA, lower learning rate, or mix in general data
+
+MISTAKE 5: Ignoring data quality
+  RIGHT: Curate training data carefully, quality > quantity
+
+================================================================================
+8. SKILLS CHECKPOINT
+================================================================================
+
+Q1: When should you fine-tune vs use prompting?
+Q2: What is LoRA and why is it efficient?
+Q3: What is the typical learning rate for fine-tuning?
+Q4: How do you prevent catastrophic forgetting?
+Q5: What is the minimum dataset size for useful fine-tuning?
+Q6: What is QLoRA and when would you use it?
+
+================================================================================
+END OF MODULE 32: FINE-TUNING
+================================================================================

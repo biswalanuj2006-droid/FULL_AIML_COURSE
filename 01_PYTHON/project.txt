@@ -1,0 +1,41 @@
+================================================================================
+01_PYTHON - PROJECTS (3 LEVELS)
+Do the practice file first, then build these in order.
+================================================================================
+
+PROJECT 1 - LEVEL 1 (Beginner): Data Pipeline CLI
+  Build a command-line tool that reads a CSV of sales records and prints a
+  summary report.
+  Requirements:
+  - Read CSV with the csv or pathlib module (no pandas yet)
+  - Functions: total revenue, best-selling product, monthly totals
+  - Handle a missing file and malformed rows gracefully
+  - Progress: use argparse for input path + optional --top N flag
+  Success criteria: runs from terminal, clean output, no crash on bad input.
+
+PROJECT 2 - LEVEL 2 (Intermediate): Student Gradebook with OOP
+  Build a gradebook system using classes.
+  Requirements:
+  - Student, Course, Gradebook classes with inheritance where sensible
+  - Load student data from JSON; persist results back to JSON
+  - Methods: add grade, average, letter grade, class statistics
+  - Custom exceptions for invalid grades (e.g., > 100)
+  - At least 3 unit tests (pytest or unittest) for core logic
+  Success criteria: object model is clean, tests pass, JSON round-trip works.
+
+PROJECT 3 - LEVEL 3 (Advanced): Concurrent Log Analyzer
+  Build a tool that analyzes large log files using generators + concurrency.
+  Requirements:
+  - Generator-based streaming reader (never loads the whole file)
+  - Count log levels, top error messages, time ranges
+  - Use concurrent.futures to analyze several files in parallel
+  - Decorator to time each analysis step; logging to a file
+  - CLI with argparse; summary written as JSON
+  Success criteria: handles a 1GB+ file without memory blowup, measurable
+  speedup from parallelism, documented function signatures.
+
+Deliverables per project: README, code with docstrings, sample input/output,
+and a short reflection on what Python features carried the solution.
+================================================================================
+END
+================================================================================

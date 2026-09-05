@@ -1,0 +1,48 @@
+================================================================================
+THINK.TXT - 16 TIME SERIES
+================================================================================
+
+1. A random split on time-series data leaks the future into the past at
+   the split boundary. Construct a concrete example and show the
+   optimistic bias in the validation metric.
+2. Stationarity: most classical models assume it. What is stationarity,
+   why does differencing help, and when is a NON-stationary model
+   actually the right choice?
+3. Walk-forward validation: describe the procedure, and explain why it is
+   more honest than K-fold for forecasting. What is its cost and when
+   would you still use K-fold?
+4. A naive persistence baseline (predict last value) beats your ARIMA on
+   test MSE. Interpret this result: is your model useless, or is MSE the
+   wrong lens? What baseline hierarchy should every forecast be compared
+   against first?
+5. Seasonality with period 7 vs 365: which lags/features capture each, and
+   what happens to a model trained on 6 months of daily data with yearly
+   seasonality?
+6. Exogenous features (weather, price) improve a demand forecast in
+   training. Why might they add NOTHING in production, and how do you
+   design the feature set to be robust?
+7. Forecast uncertainty: point forecasts hide risk. Compare prediction
+   intervals from quantile regression, conformal prediction, and
+   bootstrapped residuals - what does each assume?
+8. ARIMA vs gradient boosting vs LSTM on a 5-year daily series. Which
+   assumptions does each make about dynamics, and how do you choose
+   given n=1,800 points?
+9. Concept drift: a model trained on 2024 demand fails mid-2025 because
+   buying behavior changed. How do you detect the drift (statistical
+   test on residuals?), and what retraining policy responds fastest?
+10. Anomaly detection in series: a point 6 sigma above the rolling mean
+    could be an anomaly OR a new regime. Explain the difference and how
+    you would distinguish a spike from a step change.
+11. Multivariate series: 50 correlated sensors forecast one target. Why
+    does adding correlated inputs sometimes HURT a linear model but help
+    a tree model? What preprocessing differences matter?
+12. Your forecasts are systematically low during promotions you know
+    about but the model does not. Is this a modeling problem or a
+    data-availability problem? Argue the fix at each level.
+13. OPEN PROBLEM: forecasting evaluation under non-stationarity has no
+    settled protocol (fixed origin vs rolling origin, metric choice,
+    significance across horizons). Design the evaluation you would
+    standardize on and defend it.
+================================================================================
+END
+================================================================================

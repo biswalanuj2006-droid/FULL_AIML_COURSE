@@ -1,0 +1,81 @@
+# DEEP LEARNING — PROJECTS
+
+---
+
+## PROJECT 1 — MNIST DIGIT CLASSIFIER (Level 1)
+
+### Problem Statement
+Build a neural network to classify handwritten digits.
+
+### Requirements
+- Load MNIST dataset
+- Build 2-layer neural network from scratch (NumPy)
+- Train with gradient descent
+- Implement backpropagation
+- Visualize training loss
+- Compare with PyTorch implementation
+
+### Expected Output
+- Training loss curve
+- Accuracy > 95%
+- Confusion matrix
+- Visualization of learned weights
+
+---
+
+## PROJECT 2 — CIFAR-10 IMAGE CLASSIFIER (Level 2)
+
+### Problem Statement
+Build a CNN for image classification on CIFAR-10.
+
+### Requirements
+- Load CIFAR-10 dataset
+- Build CNN from scratch (PyTorch)
+- Implement data augmentation
+- Train with batch normalization and dropout
+- Use learning rate scheduling
+- Evaluate per-class metrics
+- Save/load model checkpoints
+
+### Architecture
+```
+Input (3×32×32)
+→ Conv(32) → BN → ReLU → Pool
+→ Conv(64) → BN → ReLU → Pool
+→ Conv(128) → BN → ReLU → Pool
+→ Flatten → Dense(128) → Dropout → Dense(10)
+```
+
+### Expected Output
+- Training/validation curves
+- Per-class accuracy
+- Confusion matrix
+- Saved model
+
+---
+
+## PROJECT 3 — TRANSFER LEARNING CLASSIFIER (Level 3)
+
+### Problem Statement
+Use a pre-trained model for custom image classification.
+
+### Requirements
+- Use pre-trained ResNet-18/50
+- Freeze early layers
+- Fine-tune on custom dataset
+- Implement proper data augmentation
+- Use learning rate scheduling
+- Evaluate with multiple metrics
+- Build inference API
+- Docker containerization
+
+### Dataset Options
+- Oxford Flowers 102
+- Stanford Dogs
+- Custom dataset
+
+### Expected Output
+- Transfer learning vs training from scratch comparison
+- Fine-tuning strategy documentation
+- Inference API
+- Docker deployment

@@ -1,0 +1,42 @@
+================================================================================
+THINK.TXT - 08 EDA
+================================================================================
+
+1. EDA is called "exploratory", yet you are asked to produce a report with
+   conclusions. Where is the line between exploring and p-hacking? Define
+   rules that keep your EDA honest.
+2. You find a correlation of 0.9 between two features. List five distinct
+   explanations (causation, confounding, collinearity, composition,
+   measurement) and the analysis that would discriminate each.
+3. Simpson's paradox: explain it with a concrete dataset and show how a
+   correct segmentation flips a conclusion. When would you still report the
+   unsegmented number?
+4. Every EDA chart you make implicitly assumes something about the data
+   generating process. For a histogram, a scatter, and a boxplot, state the
+   assumption and when it silently lies.
+5. A feature has 30% missing values that correlate perfectly with the
+   target being positive. Your EDA shows this. What are the modeling
+   implications and what would you recommend to the team?
+6. You only have time for 5 plots before modeling 50 features. Choose the
+   5, justify each, and explain what failure each one specifically guards
+   against.
+7. Outliers in EDA: a domain expert says "that's just how the data is",
+   a statistician says "remove them", a modeler says "keep them".
+   Construct the argument each is making and decide with evidence.
+8. Your EDA used 100% of the data and informed feature engineering, model
+   choice, and thresholds. A colleague says this invalidates your test
+   set. Argue both sides precisely - what does "using" the test set
+   mean and where is the actual boundary?
+9. Leakage detection by EDA: what specific plots and summaries would
+   reveal that a feature contains the future or the answer? Give three
+   concrete recipes.
+10. You compare two segments and find the difference "significant".
+    The dataset has 40 columns and you checked 100 comparisons. Recompute
+    your confidence in the finding and explain the correction needed.
+11. OPEN PROBLEM: How much EDA is too much? Formalize the point at which
+    additional exploration stops improving model decisions and starts
+    overfitting your own judgment to the sample. Propose a measurable
+    criterion.
+================================================================================
+END
+================================================================================

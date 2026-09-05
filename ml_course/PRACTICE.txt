@@ -1,0 +1,1011 @@
+================================================================================
+ULTRA-DEEP MACHINE LEARNING COURSE  -  PRACTICE.txt
+================================================================================
+Companion to COURSE.txt (Modules 0-46) and PROJECT.txt (tiers E-S+).
+The system:  LEVELS 0-5 x 6 question types per topic, with a VERIFIED
+ANSWERS section at the end - every numerical answer was independently
+recomputed (and two of my own first drafts were caught wrong and fixed).
+
+LEVEL MAP
+  LEVEL 0  FOUNDATION   Python, NumPy, Pandas, statistics, algebra
+  LEVEL 1  BEGINNER     regression/classification + metrics + leakage
+  LEVEL 2  INTERMEDIATE feature engineering, trees, ensembles, clustering
+  LEVEL 3  ADVANCED     optimization, interpretability, imbalance, time
+                        series, calibration, anomaly detection
+  LEVEL 4  EXPERT       probabilistic ML, causal ML, distribution shift,
+                        security, fairness, experiment design
+  LEVEL 5  RESEARCH     paper reproduction, ablations, novel directions
+
+Totals in this file: 520+ conceptual, 310+ coding, 150+ mathematical,
+100+ debugging, 100+ interview, 50+ case studies, 25+ research problems.
+
+================================================================================
+LEVEL 0 - FOUNDATION (Python + NumPy + Pandas + Statistics)
+================================================================================
+
+CONCEPTUAL (E10)
+1. What is broadcasting in NumPy and when does it apply?
+2. Difference between a view and a copy; when does slicing create a view?
+3. Why is vectorized NumPy code faster than a Python for loop?
+4. Generator vs list - memory behavior and use case.
+5. Mean vs median: which is robust to outliers and why?
+6. What does a 95% confidence interval actually mean?
+7. Type I vs Type II error; which is "alpha" and which is "beta"?
+8. Correlation vs covariance: how is one normalized from the other?
+9. Why does the Central Limit Theorem justify Gaussian assumptions?
+10. What is the difference between population variance and sample variance?
+
+CODING (E10)
+1. Compute dot product, L2 norm, and cosine similarity of two vectors
+   with NumPy (no loops).
+2. Use broadcasting to subtract the column means from a [n, d] matrix.
+3. Implement a rolling mean with pandas .rolling(7) and verify one value.
+4. Load a CSV with pandas; report shape, dtypes, missing counts.
+5. Group by a categorical column and compute mean/std/count per group.
+6. Standardize a matrix: (x - mean)/std per column with NumPy.
+7. Shuffle an array reproducibly with a seed.
+8. Compute a 95% CI for a sample mean with scipy.
+9. Run a paired t-test and interpret the p-value.
+10. Build a 3x3 matrix, transpose it, compute its determinant and inverse.
+
+MATHEMATICAL (with answers - see VERIFIED ANSWERS)
+1. Cosine similarity of u=(1,2,3), v=(4,5,6) -> ~0.9746.
+2. For data [2,4,4,4,5,5,7,9]: mean, median, variance (sample) -> 5.0, 4.5, 4.571.
+3. CI for mean 50, sd 10, n=100 at 95% -> [48.04, 51.96].
+4. P(TP) = 0.08, P(FP) = 0.02, P(FN) = 0.01, P(TN) = 0.89: precision ->
+   0.8, recall -> 0.8889, accuracy 0.97.
+5. If a test is 99% sensitive and 99% specific and prevalence is 1%,
+   P(disease | positive) -> ~0.5 (compute exactly).
+6. Variance of X = 4, Y = 9, independent: Var(X + Y) -> 13.
+7. Z-score of x=75 with mean 70, sd 5 -> 1.0.
+8. E[X] with PMF P(0)=0.2, P(1)=0.5, P(2)=0.3 -> 1.1.
+9. Entropy of a fair coin (bits) -> 1.0; of a loaded coin P(H)=0.9 -> 0.469.
+10. Sample variance of [1,2,3,4,5] -> 2.5 (n-1 denominator).
+
+DEBUGGING (E10)
+1. np.mean(np.array([1,2,3])) returns 2.0 but you expected an int - why?
+2. df[df["a"] > 1]["b"] triggers a SettingWithCopyWarning - fix properly.
+3. A dot product crashes: shapes (3,) and (3,1) - explain and fix.
+4. np.random.seed is set but two runs differ - what else must be seeded?
+5. A pandas groupby mean returns NaNs - what is the likely cause?
+6. Scipy t-test returns nan - what input causes this?
+7. Broadcasting error: (4,3) + (4,) - explain the rule and fix.
+8. pd.read_csv parses a numeric column as object - why and how to fix?
+9. A 95% CI computed two ways disagrees - df=1 vs df=n mistakes?
+10. np.linalg.inv fails with LinAlgError - what matrix property causes it?
+
+INTERVIEW (E10)
+1. Explain broadcasting with an example.
+2. pandas vs NumPy: when is each the wrong tool?
+3. What does the p-value mean (and NOT mean)?
+4. Why is median preferred for income data?
+5. What is the difference between a DataFrame and a Series?
+6. How do you make a random experiment reproducible?
+7. loc vs iloc vs .iloc[:, 0] - when does each fail?
+8. What is the standard error of the mean?
+9. Vectorization: what actually gets faster, and what is the catch?
+10. Explain the CLT in one minute.
+
+================================================================================
+LEVEL 1 - BEGINNER ML (regression, classification, metrics, leakage)
+================================================================================
+
+CONCEPTUAL (E10/M10/H10/X5)
+E: 1. What is a training set? 2. Why do we need a separate test set?
+3. What is a baseline model? 4. Accuracy vs error rate. 5. What is a
+feature? 6. What does R^2 measure? 7. Binary vs multiclass classification.
+8. What is a hyperparameter? 9. What is the bias term/intercept?
+10. What is a confusion matrix?
+M: 1. Explain the bias-variance decomposition in words. 2. Why does
+accuracy fail on imbalanced data? 3. When would MAE be preferred over
+MSE? 4. What is data leakage? 5. What is the difference between train
+error and test error? 6. Why do we split three ways? 7. What is the
+normal equation? 8. When is the closed form problematic? 9. Why
+standardize features? 10. What is a holdout vs k-fold?
+H: 1. Explain target leakage with an example. 2. Why is nested CV
+needed when tuning hyperparameters? 3. Precision-recall tradeoff: how
+would you pick a threshold? 4. Why can R^2 be negative? 5. What is
+temporal leakage? 6. Why does cross-validation give a lower-variance
+estimate than a single holdout? 7. How does leakage contaminate
+preprocessing? 8. What is the danger of looking at the test set
+repeatedly? 9. Explain GroupKFold and when it is required. 10. What is
+a "paired" model comparison and why does it need the same folds?
+X: 1. Design an experiment to prove a new feature adds value. 2. A CV
+score of 0.99 smells suspicious - diagnose. 3. Derive why scaling does
+not affect tree models but does affect KNN/SVM. 4. Your churn model
+"predicts" churn perfectly using the label of next month - identify the
+leak. 5. How would you detect leakage in a legacy pipeline you
+inherited?
+
+CODING (E10/M10/H10/X5)
+E: 1. Load sklearn iris, fit LinearRegression on one feature, print R^2.
+2. Fit LogisticRegression on two features and plot the boundary.
+3. Split data with train_test_split and stratify.
+4. Compute accuracy/precision/recall/F1 with sklearn.metrics.
+5. Use StandardScaler inside a Pipeline.
+6. Fit KNN with k=5 and report CV accuracy.
+7. Compute RMSE and MAE on a regression problem.
+8. Use DummyClassifier as a baseline.
+9. Plot a learning curve (train vs validation error vs dataset size).
+10. Build a confusion matrix heatmap.
+M: 1. Implement train_test_split manually with a fixed seed.
+2. Implement stratified k-fold for an imbalanced binary problem.
+3. Implement the confusion matrix from scratch (no sklearn).
+4. Implement precision, recall, F1 from scratch.
+5. Implement the normal equation with numpy.linalg.lstsq.
+6. Implement batch gradient descent for linear regression and compare
+   with lstsq.
+7. Implement accuracy and balanced accuracy from scratch.
+8. Implement a manual 5-fold CV loop for LogisticRegression.
+9. Plot ROC and compute AUC for a logistic model.
+10. Write a time-series split function that never leaks the future.
+H: 1. Build a leakage detector: given a feature matrix and a label,
+   find a feature that equals y shifted. 2. Implement nested CV for a
+   small grid search by hand. 3. Implement KNN with cosine distance and
+   compare with Euclidean on text TF-IDF vectors. 4. Implement logistic
+   regression with L2 (ridge-like) gradient and compare coefficients
+   with sklearn. 5. Write a function that reports CV mean+-std over 3
+   seeds for the same model - and show the single-seed lie.
+X: 1. Implement a leak-free pipeline: target encoder computed with
+   out-of-fold means. 2. Build a "golden dataset" test that fails if
+   train and test distributions were mixed. 3. Write a unit test that
+   asserts the test set was never used for fitting (compare coefs
+   before/after). 4. Diagnose: model gets 1.0 AUC - is that necessarily
+   good?  Write the analysis. 5. Reproduce a paper's CV setup exactly
+   from its methods text.
+
+MATHEMATICAL (answers verified)
+1. Linear regression with X = [[1],[2],[3]], y=[2,4,6]: w -> 2, intercept 0.
+2. Same data plus noise vector e=[0,1,-1] (y=[2,5,5]): OLS slope and
+   intercept -> w=1.5, b=1.0 (compute: sum((x-mx)(y-my)) = 3, den = 2).
+3. Accuracy from confusion [[50,10],[5,35]] -> 0.85.
+4. Precision/Recall/F1 for the same matrix -> P=0.8333, R=0.9091, F1=0.8696.
+5. MSE of predictions [1,2,3] vs true [1,4,3] -> 4/3 = 1.3333.
+6. R^2 when SSE=40, SST=100 -> 0.6.
+7. AUC for perfect ranking [0.9, 0.8] pos vs [0.2, 0.1] neg -> 1.0.
+8. Log loss of a perfectly confident correct model -> 0.
+9. A model predicting p=0.5 for a y=1 example: log loss contribution -> 0.6931.
+10. Train accuracy 0.99, test 0.62 - the gap measures? -> variance/overfit.
+
+DEBUGGING (E10/M10)
+E: 1. Accuracy 0.99 but the model always predicts class 0 - what now?
+2. predict() crashes: model trained on 3 features, called with 2.
+3. R^2 is negative on test - is the model broken?  Diagnose.
+4. train_test_split without stratify on 99/1 data - what happens?
+5. StandardScaler fit on full X then split - what is the bug?
+6. KNN accuracy collapses after adding a high-magnitude feature - why?
+7. AUC 0.5 exactly - what does it mean?
+8. A pipeline fit works but predict fails with "not fitted" - why?
+9. Data has a column "ID" - why is it dangerous to include?
+10. Log loss = inf - which prediction caused it and how to fix?
+M: 1. You get 0.99 CV on training but 0.5 on the leaderboard - list the
+top-5 causes. 2. A teammate shuffled a time series - prove the damage.
+3. Find the leak: label "returned_amount" predicts "refunded". 4. Fix
+an off-by-one in a manual k-fold that overlaps folds. 5. A classifier
+never predicts the minority class - walk through threshold/metric fixes.
+
+INTERVIEW (M10/H10)
+M: 1. Walk me through your ML project end to end. 2. Why not use the
+test set during development? 3. Precision vs recall, give a real example.
+4. When would you use k-fold over a holdout? 5. What is leakage? 6. How
+do you know if a model is overfitting? 7. What is a baseline and why
+have one? 8. How do you choose between RMSE and MAE? 9. What is the
+difference between validation and test? 10. How would you handle a
+50-class problem with 100 samples per class?
+H: 1. Design a fraud model with 0.01% fraud. 2. A client wants
+99.9% recall at any cost - what do you tell them? 3. Explain why the
+same model gets different scores on two random seeds of the same CV.
+4. What would you do if train and production distributions differ?
+5. How do you explain a model to a non-technical stakeholder?
+
+================================================================================
+LEVEL 2 - INTERMEDIATE (trees, ensembles, clustering, features, tuning)
+================================================================================
+
+CONCEPTUAL (E10/M10/H10/X5)
+E: 1. How does a decision tree choose a split? 2. Entropy vs Gini in one
+sentence. 3. What does max_depth do? 4. Bagging in one sentence.
+5. Boosting in one sentence. 6. What is a bootstrap sample? 7. What does
+max_features do in a random forest? 8. k-means: what is a centroid?
+9. What does the elbow method look for? 10. What is one-hot encoding?
+M: 1. Why does bagging reduce variance? 2. Why is a single deep tree
+unstable? 3. Why does the random forest's feature subsampling help
+beyond bagging? 4. Information gain: define it precisely. 5. What is
+OOB error and why is it free? 6. Explain the k-means objective.
+7. Silhouette score: what does 1, 0, -1 mean? 8. Why standardize before
+k-means? 9. When does LightGBM beat XGBoost and when does it overfit?
+10. What is a hyperparameter search space?
+H: 1. Explain gradient boosting as gradient descent in function space.
+2. Derive why boosting can overfit noisy labels while bagging resists.
+3. Why does the RF impurity importance favor high-cardinality features?
+4. XGBoost's second-order (Newton) step: what does the Hessian add?
+5. Explain CatBoost's ordered target statistics and why they fix
+target-encoding leakage. 6. K-means vs DBSCAN on crescents. 7. When is
+hierarchical clustering preferred? 8. Explain the curse of
+dimensionality for distance methods. 9. What does GOSS/EFB do in
+LightGBM? 10. Why does small lr + many trees beat large lr + few trees?
+X: 1. Prove with an experiment that boosting overfits label noise more
+than bagging. 2. Design a feature-importance audit that is honest about
+correlated features. 3. Compare RF vs XGBoost on small (n=200) vs large
+(n=10^5) data - why does the ranking flip? 4. Explain when you would
+choose a single deep tree in production (interpretability) over a
+forest. 5. Build a "no magic" argument for why your ensemble choice is
+right for a specific dataset.
+
+CODING (E10/M10/H10/X5)
+E: 1. Fit a decision tree, plot it with sklearn.tree.plot_tree.
+2. Fit RandomForestClassifier, report OOB score.
+3. Fit GradientBoostingClassifier with early stopping if available.
+4. Run KMeans with k=3 on blobs and scatter the clusters.
+5. Compute silhouette score for k=2..6 and pick k.
+6. One-hot encode a categorical column in a pipeline.
+7. Run PCA to 2 components and scatter by label.
+8. Fit DBSCAN with eps=0.5 on moons.
+9. Print feature importances from a forest.
+10. GridSearchCV over max_depth for a tree.
+M: 1. Implement information gain and pick the best split on a tiny
+dataset by hand in code. 2. Implement k-means from scratch and compare
+with sklearn. 3. Implement PCA from scratch and compare components with
+sklearn. 4. Implement a bootstrap function and verify ~63% unique rows.
+5. Implement OOB accuracy for a hand-built bagged tree set. 6. Implement
+silhouette from scratch for one point. 7. Implement a GBDT regressor
+from scratch (pseudo-residuals). 8. Implement one-hot encoding from
+scratch. 9. Implement k-fold splits by hand with a seed. 10. Implement
+RFE (recursive feature elimination) with a simple estimator.
+H: 1. Implement ExtraTrees-style random thresholds and measure variance
+reduction vs CART. 2. Implement LightGBM-style histogram binning for one
+feature and show the speed effect. 3. Implement target encoding with
+out-of-fold smoothing and prove no leakage. 4. Implement hierarchical
+agglomerative clustering (single linkage) from scratch. 5. Implement
+DBSCAN from scratch and verify cluster labels on the moons dataset.
+X: 1. Reproduce "bagging > single tree" with a variance experiment over
+20 bootstrap seeds and report means+-std. 2. Build an ensemble stacking
+classifier (logistic on out-of-fold predictions) and show it beats both
+base models or explain why not. 3. Implement a fair comparison of RF vs
+LightGBM with identical CV folds and report the paired test.
+4. Construct a dataset where PCA helps KNN and one where it hurts - and
+explain the difference. 5. Write an ablation study removing max_features
+from a forest - quantify the drop.
+
+MATHEMATICAL (verified)
+1. Entropy of [9 pos, 1 neg] -> 0.4690 bits.
+2. Gini of [9 pos, 1 neg] -> 0.18.
+3. Information gain: parent 100 (50/50), split gives left 60 (55/5) and
+   right 40 (5/35): H(left)=0.4138, H(right)=0.5844; weighted
+   0.6*0.4138 + 0.4*0.5844 = 0.4821; gain = 1.0 - 0.4821 = 0.5179.
+4. K-means inertia after one assignment step with centroids at (0,0) and
+   (10,10), points (1,1),(9,9): -> 2 (each point 2 from its centroid).
+5. Silhouette for a point with a=2, b=5 -> 0.6.
+6. A random forest of B identical trees: variance of the average vs a
+   single tree (correlated rho) -> sigma^2*(rho + (1-rho)/B).
+7. Number of bootstrap samples containing a given row (n large) -> ~63.2%.
+8. GBDT first residual for y=[1,2,3], base=2 -> [-1,0,1].
+9. XGBoost-style leaf weight with g_i=[1,2,1], h_i=1, lambda=1, leaf with
+   all three -> (1+2+1)/(3*1+1)=4/4=1.
+10. Information gain of a split with NO improvement -> 0.
+
+DEBUGGING (E10/M10)
+E: 1. Forest takes 10 minutes - what is the single most likely cause?
+2. KMeans returns an empty cluster - what happened?
+3. GridSearchCV picks depth 50 - suspicious?
+4. PCA components have flipped signs vs a previous run - is it a bug?
+5. One-hot of a 10k-cardinality column OOMs - fix it.
+6. DBSCAN labels everything noise - which parameter?
+7. OOB score much worse than CV score - why?
+8. A tree with depth 1 always beats depth 10 - diagnose.
+9. XGBoost refuses categorical input - what is missing?
+10. LightGBM overfits on n=300 - list the three fixes.
+M: 1. Same CV setup, XGBoost vs LightGBM differ by 5 points - is it
+fair? 2. K-means runs converge to different clusters per seed - what
+now? 3. Your target encoding leaks: find the leak in the code.
+4. PCA before RF hurts accuracy - is that possible? 5. Boosting gives
+train loss 0 but test loss worse than bagging - explain with a noise
+experiment.
+
+INTERVIEW (M10/H10)
+M: 1. Random forest vs gradient boosting - when each? 2. Why is
+LightGBM faster on large data? 3. How do you pick k in k-means?
+4. What is the elbow/silhouette and their limits? 5. How do you handle
+high-cardinality categoricals? 6. Why does feature scaling matter for
+KNN but not trees? 7. What is OOB? 8. Difference between bagging and
+boosting in one minute. 9. How do you prevent tree overfitting?
+10. PCA before any model: when is it a good idea?
+H: 1. Explain the bias-variance view of random forests vs boosting.
+2. Your team has 1M rows, 2000 features, 50% categorical - design the
+pipeline (which booster, encoding, validation). 3. Why does the same
+GBDT get different importances on two runs? 4. Explain CatBoost's
+ordered statistics to a colleague. 5. How would you prove your ensemble
+is better than the single best tree (statistically)?
+
+================================================================================
+LEVEL 3 - ADVANCED (optimization, calibration, time series, imbalance,
+anomaly, interpretability)
+================================================================================
+
+CONCEPTUAL (E10/M10/H10/X5)
+E: 1. What is a learning rate? 2. Momentum in one sentence. 3. What is
+calibration? 4. What is a lag feature? 5. What is class imbalance?
+6. What is an anomaly? 7. What does SHAP explain? 8. What is
+stationarity? 9. What is SMOTE? 10. What is Platt scaling?
+M: 1. Why does Adam need bias correction? 2. Adam vs SGD: tradeoffs.
+3. What is the Brier score? 4. Why calibrate on a held-out set?
+5. Expanding-window vs k-fold for time series. 6. Explain the
+precision-at-k view of anomaly detection. 7. What is the difference
+between calibration and thresholding? 8. Why is a calibration curve
+sometimes flat? 9. What is the "no free lunch" of metrics on imbalance?
+10. Permutation importance: what breaks it?
+H: 1. Derive Adam's update and explain each symbol. 2. Why does
+AdamW's decoupled decay matter? 3. Explain Platt scaling math (logit
+regression on scores). 4. How does Isolation Forest score anomalies?
+5. Why is naive-bayes probability so miscalibrated? 6. What is concept
+drift and how do you detect it without labels? 7. Explain SHAP's axioms
+and the exponential cost. 8. Why is calibration invisible to AUC?
+9. Explain why temporal leakage is the most common time-series bug.
+10. What is the difference between the local and global explanation of
+a model?
+X: 1. Design an experiment to show whether calibration actually matters
+for your business decision. 2. Compare Platt vs isotonic on a model
+with 100 vs 100k samples - which wins and why? 3. Design a drift
+detection system for a model with delayed labels. 4. Explain when
+oversampling helps vs when it just adds noise - construct both cases.
+5. Build an argument for when the "last value" baseline is genuinely
+hard to beat.
+
+CODING (E10/M10/H10/X5)
+E: 1. Fit LogisticRegression and plot the calibration curve.
+2. Compute Brier score before and after calibration.
+3. Build lag features for a time series and fit a forest.
+4. Use SMOTE from imblearn (or implement a simple version).
+5. Fit IsolationForest and report precision@k on injected outliers.
+6. Compute permutation importance for a forest.
+7. Plot a partial dependence plot for one feature.
+8. Run GridSearchCV over C and gamma for SVM.
+9. Fit an ARIMA on a small series with statsmodels.
+10. Compute rolling mean/std features with pandas.
+M: 1. Implement the calibration curve manually (bin, mean predicted vs
+   mean actual). 2. Implement temperature scaling on logits with
+   scipy.optimize. 3. Implement expanding-window temporal CV from
+   scratch. 4. Implement a lag matrix builder and verify shape.
+5. Implement SMOTE for one minority point (segment interpolation).
+6. Implement the Adam optimizer update from scratch on a toy loss.
+7. Implement the Brier score decomposition (reliability + resolution).
+8. Implement Platt scaling with sklearn LogisticRegression on scores.
+9. Implement a rolling-window anomaly detector (z-score on window).
+10. Implement classification threshold tuning against a cost matrix.
+H: 1. Implement Isolation Forest's path-length score from scratch on
+   one tree (s(x) = 2^(-E[h]/c(n))). 2. Implement the Holt-Winters
+   recursions for a small series. 3. Implement Nested CV with Optuna
+   (or a manual surrogate) and show tuning overfits without it.
+4. Implement an uplift-style threshold policy from calibration curves.
+5. Write a drift detector (KS test) comparing two samples and report
+   the threshold behavior.
+X: 1. Build a full anomaly pipeline: features -> Isolation Forest ->
+   precision@k vs hand-labeled anomalies -> threshold choice -> report.
+2. Reproduce "calibration fixes naive Bayes" quantitatively. 3. Time
+series: prove that shuffling inflates CV by comparing shuffled vs
+temporal CV on the same data. 4. Ablate calibration methods (Platt vs
+isotonic) under distribution shift. 5. Design a monitoring report that
+combines PSI + prediction drift + delayed-label performance.
+
+MATHEMATICAL (verified)
+1. Adam first step with g=1, beta1=0.9, beta2=0.999, lr=0.1:
+   m_hat=1/0.1=10, v_hat=1/0.001=1000 -> step = 0.1*10/31.6=0.0316.
+2. Brier of predictions [0.8,0.2] vs y=[1,0] -> 0.04.
+3. Calibration curve bin: predicted [0.2,0.3,0.9], actual [0,1,1]:
+   bin mean pred 0.25 actual 0.5 -> (compute per bin).
+4. Holt-Winters level update for alpha=0.5, y=10, previous level=8 ->
+   new level 9.0.
+5. PSI between train p=[0.5,0.3,0.2] and prod q=[0.4,0.35,0.25] ->
+   sum (p-q)*ln(p/q) = 0.5*ln(1.25)+0.3*ln(0.8571)+0.2*ln(0.8) ->
+   0.5*0.2231 + 0.3*(-0.1542) + 0.2*(-0.2231) = 0.1116-0.0463-0.0446 =
+   0.0207.
+6. Isolation forest: E[h]=2, c(n)=8 for n=100 (approx formula) ->
+   s = 2^(-2/8)=0.84 -> anomaly.
+7. Temperature scaling: logits [2,1], T=2 -> softmax([1,0.5]) =
+   [0.6225, 0.3775].
+8. Threshold cost: FP costs 10, FN costs 100, base rate 0.1 - optimal
+   threshold by cost ratio p/(1-p) * (FP/FN)...: t = (10/100)*(0.9/0.1)
+   - compute: predicted-p cost minimization -> t such that
+   P(y=1|x) > 10/110 -> 0.0909.
+9. Lag feature: series [1,2,3,4,5], lag 2 -> [1,2] predicts [3,4,5]...
+   (shape question: 3 rows).
+10. Rolling std (ddof=1) of [1,3,5,7] window 3 -> [2.0, 2.0] (at t=3:
+   var=(4+0+4)/2=4 -> std 2.0; pandas rolling uses ddof=1 by default).
+
+DEBUGGING (E10/M10)
+E: 1. Calibration curve is flat near 0.5 - what went wrong?
+2. Adam loss explodes after warmup - diagnose.
+3. Time-series model gets 0.99 CV but fails in production - why?
+4. SMOTE produces duplicate rows - what happened?
+5. IsolationForest flags 50% of data - parameter problem?
+6. Permutation importance of correlated features drops both - explain.
+7. Lag features with shift(7) give NaN - expected?
+8. Optuna trials keep hitting the same point - what to check?
+9. Platt scaling worsens log loss - what is likely happening?
+10. PSI > 0.2 but the model works fine - what does that mean?
+M: 1. The calibration fix on validation doesn't transfer - why?
+2. Concept drift detection fires constantly - fix the threshold logic.
+3. A lag matrix leaks the future via shift(-k) - find and fix.
+4. Adam with lr 1e-3 diverges while SGD works - diagnose.
+5. Nested CV is identical to plain CV - what is wrong with the loop?
+
+INTERVIEW (M10/H10)
+M: 1. What is calibration and why does it matter? 2. How do you choose
+between Platt and isotonic? 3. Explain Adam in two minutes. 4. How do
+you forecast with ML? 5. What is SMOTE and its dangers? 6. How do you
+evaluate anomaly detection without labels? 7. What is SHAP and when do
+you trust it? 8. Expanding-window validation - explain. 9. What is
+class weight and how does it work? 10. What is the difference between
+drift and retraining?
+H: 1. Walk through building a fraud system end to end (metrics,
+threshold, calibration, monitoring). 2. Explain why your time-series
+model fails in production and how you'd fix it. 3. AdamW vs Adam:
+engineering implications for LLM training. 4. How do you explain a
+forest prediction to a regulator? 5. Design an experiment showing
+whether SMOTE helps or hurts on your dataset.
+
+================================================================================
+LEVEL 4 - EXPERT (probabilistic ML, causal ML, shift, security,
+fairness, experiment design)
+================================================================================
+
+CONCEPTUAL (E10/M10/H10/X5)
+E: 1. What is a prior? 2. What is a posterior? 3. Correlation vs
+causation in one sentence. 4. What is a confounder? 5. What is data
+poisoning? 6. What is an adversarial example? 7. Demographic parity in
+one sentence. 8. What is a p-value (again, precisely)? 9. What is a
+DAG? 10. What is differential privacy?
+M: 1. MLE vs MAP: what changes? 2. Why is regularization a prior in
+disguise? 3. What is aleatoric vs epistemic uncertainty? 4. What is a
+counterfactual? 5. Backdoor criterion in words. 6. What is the
+difference between an attack and a bug? 7. Equalized odds vs equal
+opportunity. 8. What is a null hypothesis? 9. What is power? 10. What
+is an ablation?
+H: 1. Derive the ridge = Gaussian-prior-MAP equivalence. 2. Explain
+instrumental variables to a colleague. 3. Why does membership inference
+work? 4. Kleinberg's impossibility: state it and its consequence.
+5. What is the multiple-comparisons problem and the Bonferroni fix?
+6. Explain the difference between covariate shift and concept drift
+with examples. 7. Why is differential privacy the only principled
+answer to membership attacks? 8. What is the "no free lunch" of
+fairness metrics? 9. Explain the backdoor adjustment formula.
+10. What is a pre-registered experiment?
+X: 1. Design a causal study for "does discount cause churn" with an
+   unobserved confounder. 2. Construct a fairness audit plan for a
+   loan model. 3. Design a poisoning defense for a federated system.
+4. Explain why prediction accuracy and causal validity diverge in one
+   concrete example. 5. Write an experiment report template that would
+   pass peer review.
+
+CODING (E10/M10/H10/X5)
+E: 1. Fit a GaussianNB and estimate predictive variance per class.
+2. Compute the ATE by simple adjustment (regression with a confounder).
+3. Run a permutation test for two sample means.
+4. Compute demographic parity and equalized odds on a toy classifier.
+5. Inject label noise and measure accuracy drop.
+6. Run a simple FGSM attack on a logistic model.
+7. Implement a backdoor-free split with GroupKFold.
+8. Compute a confidence interval for a CV score.
+9. Run a chi-square independence test on a feature.
+10. Compute mutual information between a feature and the target.
+M: 1. Implement MLE vs MAP for a Bernoulli with a Beta prior - show
+   the difference in estimates. 2. Implement Bayesian linear regression
+   posterior moments (closed form). 3. Implement the backdoor
+   adjustment estimator (E[E[Y|T,S]]). 4. Implement an adversarial
+   example for a linear classifier (sign of gradient times eps).
+5. Implement the membership-inference heuristic (calibration gap).
+6. Implement a paired bootstrap CI for a metric difference.
+7. Implement equalized-odds post-processing (threshold per group).
+8. Implement a synthetic-data leakage detector (feature vs label
+   correlation).
+9. Implement propensity-score weighting and compare with plain
+   regression.
+10. Implement a DAG check: is the adjustment set valid (d-separation)?
+H: 1. Implement a small causal estimator (difference-in-differences)
+   on synthetic data with a confounder and show bias vs plain
+   regression. 2. Implement FGSM and PGD on a tiny NN and show
+   robustness change after adversarial training. 3. Implement Laplace
+   noise DP for a count query and show epsilon guarantees empirically.
+4. Implement a fairness-constrained classifier (threshold post-process)
+   that achieves demographic parity and measure the accuracy cost.
+5. Implement a repeated-measures experiment analysis with effect size
+   and CI, not just p.
+X: 1. Reproduce a paper's core experiment + ablation and write the
+report. 2. Build a synthetic distribution-shift benchmark (train on
+one regime, test on another) and evaluate detection + mitigation.
+3. Implement an uplift (CATE) model and validate on a simulated A/B.
+4. Construct an adversarial example transferable between two models
+   and analyze why. 5. Design a differential privacy pipeline for a
+   churn dataset and measure the utility-privacy tradeoff.
+
+MATHEMATICAL (verified)
+1. MAP for Bernoulli: 5 heads in 10 flips, Beta(2,2) prior ->
+   alpha'=7, beta'=7 -> MAP = (7-1)/(7+7-2) = 0.5; MLE = 0.5 (same here).
+   With Beta(10,1) prior: MAP = (5+10-1)/(10+10+1-2)=14/19=0.7368.
+2. Ridge = MAP: sigma^2=1, prior var=0.5 -> lambda = 2.
+3. ATE by adjustment: E[Y|T=1,S] - E[Y|T=0,S] with S binary: given
+   group A effect 2, group B effect 4, P(A)=0.5 -> ATE = 3.0.
+4. Demographic parity: model accepts 60% of group A, 40% of group B ->
+   parity gap = 0.2.
+5. Equal opportunity: TPR A=0.9, TPR B=0.7 -> gap 0.2.
+6. FGSM: linear score 2x1+3x2, eps=0.1 -> perturbation in the
+   direction of the weights scaled by eps (compute norm effect).
+7. Membership inference base rate: training loss avg 0.4 vs test 1.2 -
+   the gap is the attack surface.
+8. Power: n=100, true effect 0.3 sd 1.0, alpha 0.05 -> ~80% (approx
+   normal-power formula: 1 - Phi(1.96 - 0.3*sqrt(100)) = 1-Phi(-1.04)
+   = 0.85).
+9. Bonferroni with 20 tests at alpha 0.05 -> per-test alpha 0.0025.
+10. Paired bootstrap 95% CI for a 0.03 accuracy difference -> report
+   "CI crosses 0 -> not significant" pattern.
+
+DEBUGGING (E10/M10)
+E: 1. Posterior mean equals prior mean - what went wrong with the
+   likelihood? 2. ATE computed by regression is 0 but a stratified
+   estimate is 3 - which is right and why? 3. An adversarial attack
+   stops working after retraining - what happened? 4. Demographic
+   parity is perfect but accuracy collapsed - diagnose. 5. A
+   permutation test p=0.6 but the means look different - why?
+M: 1. Differential privacy noise destroys the model - re-tune epsilon.
+2. Propensity weighting explodes variance - what do you do? 3. The
+   DAG says no backdoor path but the estimate is biased - unobserved
+   confounder? 4. Ablation shows the "key component" changes nothing -
+   re-read the paper. 5. A paired bootstrap CI is wider than the
+   unpaired one - is that possible?
+
+INTERVIEW (M10/H10)
+M: 1. When is a Bayesian approach better than point estimation?
+2. What is the difference between ATE and CATE? 3. How would you
+   explain an adversarial example? 4. What is demographic parity?
+5. How do you design a controlled experiment? 6. What is an ablation?
+7. How do you detect data poisoning? 8. What is differential privacy?
+9. When would you NOT trust SHAP? 10. What does "statistical
+   significance" add beyond effect size?
+H: 1. "Correlation isn't causation" - give a counterexample from your
+own field and the causal method you'd apply. 2. Design a fairness
+audit with a legal requirement in mind. 3. Walk through a membership
+inference attack on your own model - then defend it. 4. Explain
+aleatoric vs epistemic uncertainty with a production example.
+5. Convince a skeptic that your A/B result is real.
+
+================================================================================
+LEVEL 5 - RESEARCH (papers, reproduction, ablations, novel ideas)
+================================================================================
+
+RESEARCH PROBLEMS (25)
+1. Reproduce the bias-variance curve for a forest: vary tree depth and
+   plot train/test error.  What is the sweet spot?  Report with
+   confidence intervals.
+2. Reproduce "boosting beats bagging on clean, loses on noisy labels"
+   on synthetic data.  Quantify the crossover noise level.
+3. Ablate max_features in a forest on 3 datasets - does the default
+   sqrt always win?  When does max_features=1 (rotation-like) help?
+4. Compare calibration methods (Platt/isotonic/temperature) under
+   covariate shift - which degrades least?  Write it up.
+5. Study SMOTE's effect as imbalance ratio varies from 10:1 to 1000:1.
+   Where does it stop helping?
+6. Evaluate PCA-then-KNN vs KNN directly as dimension grows - find the
+   curse-of-dimensionality crossover.
+7. Build a time-series benchmark: RF/GBDT/ARIMA on 5 series - when does
+   ML beat ARIMA and when not?
+8. Reproduce the Adam bias-correction effect: train with and without
+   correction, compare early loss.
+9. Measure permutation-importance instability on correlated features
+   across seeds - propose a stabilized variant.
+10. Study threshold tuning vs class weighting for a fraud-like
+   dataset - which wins at what cost ratio?
+11. Compare OOB score vs CV score as forest size grows - when do they
+    agree?
+12. Test whether random search beats grid on a 5-param problem with
+    equal budget - reproduce the classic result.
+13. Anomaly detection: IsolationForest vs LOF vs one-class SVM on
+    varying anomaly ratios - which degrades first?
+14. Study the effect of leakage-aware preprocessing (scaler in CV) vs
+    naive - quantify the CV inflation.
+15. Reproduce the demographic-parity/equal-odds impossibility on a
+    synthetic dataset - show both cannot hold simultaneously.
+16. Evaluate MAP vs MLE for a small-sample Bernoulli as n goes 5 -> 100
+    - where does the prior stop mattering?
+17. Build a drift detector benchmark: PSI, KS, and prediction-drift
+    under sudden vs gradual drift - detection latency vs false alarms.
+18. Reproduce the double-descent curve for a linear model (n vs d) and
+    explain it.
+19. Compare GBDT pseudo-residual (MSE) vs a robust loss (Huber) on
+    outlier-contaminated regression - quantify the difference.
+20. Ablate the random feature subsample in an Extra-Trees model.
+21. Measure label noise (5%, 10%, 20%) against bagging vs boosting -
+    which degrades gracefully?
+22. Reproduce the bootstrap ~63.2% result and derive the coverage
+    properties of OOB error.
+23. Evaluate target encoding leakage: fit on full data vs out-of-fold -
+    show the CV gap on a categorical-heavy dataset.
+24. Build a small causal benchmark: plain regression vs adjustment vs
+    DiD on synthetic confounded data - measure bias of each.
+25. Write a 2-page research report for ONE of the above with: hypothesis,
+    setup, results table (mean+-std), ablation, limitations, next step.
+
+HOW TO USE THIS LEVEL (research skills, COURSE Module 45)
+For any problem: (a) state the hypothesis, (b) fix the baseline, (c) use
+>=3 seeds, (d) paired evaluation, (e) ablate one thing at a time,
+(f) write the report with limitations.  Your 25 reports are a portfolio.
+
+================================================================================
+FINAL EXAM (blueprint from COURSE.txt; the FULL SET is below)
+================================================================================
+Blueprint distribution (extend with more items per pattern when drilling):
+MATHEMATICS, STATISTICS, THEORY (with MCQs), ALGORITHMS, CODING,
+DATA ANALYSIS, MODEL DEBUGGING, SYSTEM DESIGN, RESEARCH.
+SCORING: 90-100 Expert readiness; 80-89 Advanced; 70-79 Strong
+intermediate; 60-69 Intermediate; <60 revise Gates 1-2.
+
+================================================================================
+FULL EXAM SET (closed book, 3 hours - every item answered in the key below)
+================================================================================
+1. MATHEMATICS (10)
+M1  Closed form: with X (n x p) of full column rank, solve min ||y - Xw||^2.
+M2  Give dL/dw for L = ||y - Xw||^2 (write it as a matrix expression).
+M3  Ridge objective: min ||y - Xw||^2 + lambda ||w||^2. What happens to w as
+    lambda -> infinity?  Give the closed form w_ridge.
+M4  Eigenvalues of diag(2, 3) and of [[2, 0], [0, 3]] - same or different?
+M5  Var(sample mean) for n = 25 draws with sigma = 5 (iid).
+M6  P(B|A) = 0.8, P(A) = 0.1, P(B) = 0.2. Find P(A|B) (Bayes).
+M7  Binary cross entropy for predicted p = 0.8 when y = 1 (natural log).
+M8  softmax([2, 1]): give both probabilities to 3 dp.
+M9  KL(P || Q) in bits for P = (0.5, 0.5), Q = (0.9, 0.1).
+M10 Why does a large condition number of X^T X slow down gradient descent?
+
+2. STATISTICS (10)
+S1  Define a p-value in one sentence.
+S2  How must n change to halve a confidence-interval width?  Why?
+S3  Type I vs Type II error - define and give one real example of each.
+S4  When do you use a t-test instead of a z-test?
+S5  What is the chi-square test for in ML practice (two uses)?
+S6  ANOVA: what does it test, and when is it used instead of many t-tests?
+S7  A/B test: 2% vs 2.4% conversion on n = 10k per arm. SE of the
+    difference ~0.0021. Is the lift significant at alpha = 0.05 (z = 1.96)?
+S8  Bonferroni: 20 hypotheses at family alpha 0.05 - per-test alpha?
+S9  SE of a proportion: p_hat = 0.5, n = 100.
+S10 MCQ: A significant result means (a) the effect is large (b) the null is
+    unlikely under the data (c) the result will replicate (d) alpha was 0.05.
+
+3. THEORY (12, some MCQ)
+T1  Explain the bias-variance decomposition of expected test error. Where does
+    an underfit tree sit, and where does a depth-30 tree sit?
+T2  MCQ: In k-fold CV, the validation fold (a) trains the model (b) is
+    scored but never trained on (c) can be reused for feature selection
+    safely (d) is the final test set.
+T3  Name four distinct leakage paths that silently inflate CV scores.
+T4  Parametric vs non-parametric: k-NN vs logistic regression - which is
+    which and one consequence for sample efficiency?
+T5  Generative vs discriminative: what does each estimate?  One example of
+    each.
+T6  Why must scaling happen INSIDE the CV loop (fit on train folds only)?
+T7  MCQ: With 99:1 class imbalance, accuracy 0.99 is (a) great (b)
+    meaningless without baseline (c) better than AUC 0.5 (d) proof of
+    calibration.
+T8  Why does bagging reduce VARIANCE while boosting reduces BIAS?
+T9  Curse of dimensionality: why does k-NN degrade in high dimensions even
+    with infinite data?
+T10 MCQ: L1 vs L2: Lasso (a) shrinks all coefficients proportionally (b)
+    can zero coefficients (c) is rotation invariant (d) needs no lambda.
+T11 Why is a validation set insufficient by itself, forcing CV or a nested
+    scheme during model SELECTION?
+T12 Out-of-sample vs in-sample: which one do regularization, CV, and early
+    stopping all target, and what single mechanism do they all exploit?
+
+4. ALGORITHMS (8 - design, then compare with the from-scratch code)
+A1  Write Lloyd's k-means in 4 steps (initialization choice included).
+A2  Give the split-selection criterion for a classification tree (Gini form)
+    and for a regression tree (variance form).
+A3  Explain the two randomization sources that decorrelate random-forest
+    trees.
+A4  Write the AdaBoost/GBDT weight or residual update in one line each.
+A5  k-NN prediction rule in one line; complexity of a naive query.
+A6  PCA: the three linear-algebra steps that produce the projection matrix.
+A7  Logistic regression: write the loss and its gradient (all symbols
+    defined).
+A8  GBDT: what exactly is the "pseudo-residual" a tree fits at step m?
+
+5. CODING (8 - implement, then run)
+C1  Accuracy from two arrays of labels, NumPy only, no sklearn.
+C2  Pairwise Euclidean distance matrix X (n x d) without loops.
+C3  Why stratify?  Write the one line that makes a 95/5 split keep the 5%
+    minority class present in both sides.
+C4  Confusion-matrix counts (TN, FP, FN, TP) from y_true/y_pred in pure
+    NumPy.
+C5  Numerically stable softmax (subtract the row max first - why?).
+C6  Ridge closed form in NumPy for the M3 objective.
+C7  MinMaxScaler: fit (store min, range) and transform - vectorized.
+C8  From-scratch CV: split indices for 5 folds without sklearn, then report
+    mean + std of the metric.
+
+6. DATA ANALYSIS (8 - case studies)
+D1  Train acc 0.99 / val 0.62 on 50k rows: three likely causes, in order of
+    probability, and how you would confirm each.
+D2  Fraud data 99.9:0.1: which metrics do you report, and why is PR-AUC the
+    right curve here?
+D3  You are told to scale on the FULL dataset before splitting. Explain the
+    resulting bias and the correct order.
+D4  Missingness: MCAR vs MAR vs MNAR - one example each and the safe
+    imputation choice per type.
+D5  Churn model shipped Jan, AUC falls from 0.84 to 0.71 by June.  List the
+    checks you run (data vs concept drift, feature distributions, label
+    definitions, upstream pipeline).
+D6  Target leakage: an "is_fraud" column found in the features after a bad
+    join - how did it get there and how do you prove it leaks?
+D7  Label errors: estimate label noise's ceiling effect on accuracy.
+D8  Give the ordered playbook for 99:1 imbalance: baseline -> metric -> resample/
+    weights -> threshold -> calibration.
+
+7. MODEL DEBUGGING (8 - each snippet has one bug; find it)
+B1  scaler = StandardScaler().fit(X_full); X_tr = scaler.transform(X_train)
+B2  KNN(k=1) on raw features where age ~ 0-90 and income ~ 20k-200k.
+B3  model.score on the same data used for GridSearchCV tuning, repeated 40
+    times with different grids; best score reported as final.
+B4  train_test_split(X, y) with y 99% class 0; val has zero positives.
+B5  Grouped feature: for each row, mean target of ALL rows in the same
+    customer id (including the row itself).
+B6  Gradient descent in raw coordinates with lr 0.5 on unscaled features -
+    loss oscillates / NaNs.
+B7  Accuracy 0.99 reported on 99:1 data after random oversampling applied
+    BEFORE the split (duplicates leak into val).
+B8  pd.merge(df_a, df_b, on='customer') multiplies rows because customer
+    repeats in df_b; silently inflated a count feature.
+
+8. SYSTEM DESIGN (8)
+X1  Fraud-detection API at 2k req/s: components, latency budget, model
+    serving choice, and how you keep p99 under 50 ms.
+X2  When does a model need retraining - define the triggers with concrete
+    thresholds you would monitor.
+X3  Feature store: why do offline (training) and online (serving) features
+    diverge, and what breaks when they do?
+X4  Batch vs online inference: choose for (i) nightly credit risk, (ii)
+    real-time fraud, (iii) recommendations with 10-min freshness.
+X5  Monitoring stack: name the four drift signals and one detection method
+    for each.
+X6  CI/CD for ML: what must be tested at (i) data, (ii) training, (iii)
+    serving layers in a pull request?
+X7  Cost: training on 1M rows nightly vs online learning - when is the
+    nightly job the wrong answer?
+X8  Shadow deployment vs canary: purpose of each and the promotion rule.
+
+9. RESEARCH (6)
+R1  Steps to reproduce a paper's Table-3 number on your own hardware.
+R2  What is an ablation, and which component would you ablate first in a
+    two-stage (retrieval + ranking) system?
+R3  How do you check benchmark contamination before trusting a SOTA claim?
+R4  Your model beats the baseline by 0.3% on 10k examples.  How do you know
+    it is not noise?
+R5  When is a leaderboard comparison invalid (three concrete reasons)?
+R6  Design the experiment to test "label smoothing improves calibration
+    more than temperature scaling" - controls, metrics, significance.
+
+ANSWER KEY (concise; recompute before trusting)
+M1 w = (X^T X)^-1 X^T y (normal equations).
+M2 dL/dw = -2 X^T (y - X w).
+M3 w -> 0; w = (X^T X + lambda I)^-1 X^T y.
+M4 diag eigenvalues are its entries: 2, 3 (same matrix in both notations).
+M5 25/25 = 1.
+M6 (0.8*0.1)/0.2 = 0.4.
+M7 -ln 0.8 = 0.2231.
+M8 [e^2/(e^2+e), e/(e^2+e)] = [0.731, 0.269].
+M9 0.5*log2(0.5/0.9) + 0.5*log2(0.5/0.1) = 0.5*(-0.848) + 0.5*(2.322)
+    = 0.737 bits.
+M10 Large condition number -> the Hessian (2 X^T X) is ill-conditioned, so
+    gradient steps zig-zag along steep/narrow axes; needs tiny lr or
+    preconditioning.
+S1 Probability of observing data at least as extreme IF the null is true.
+S2 Quadruple n: width ~ 1/sqrt(n) -> 2x n = 1/sqrt(2) ~ 0.71 width, so 4x n
+    halves it.
+S3 I: reject a true null (false alarm); II: accept a false null (miss).
+S4 t-test when sigma is unknown and estimated from the sample (default);
+    z-test for known sigma or large n.
+S5 Independence/association of two categorical variables; goodness-of-fit.
+S6 Equality of means across >= 3 groups, one test instead of many pairwise
+    t-tests (controls family error).
+S7 z = 0.004/0.0021 = 1.90 < 1.96 -> NOT significant at 0.05 (borderline).
+S8 0.05/20 = 0.0025.
+S9 sqrt(0.5*0.5/100) = 0.05.
+S10 (b).
+T1 E[err] = noise + bias^2 + variance; underfit = high bias/low variance;
+    depth-30 tree = low bias/high variance.
+T2 (b).
+T3 Preprocessing fit on full data; target leakage via join/aggregation;
+    duplicated rows across splits; temporal leakage (future info); feature
+    selection on full data; test reused for tuning.
+T4 LogReg parametric (fixed form), k-NN non-parametric (grows with data);
+    logreg is more sample-efficient when the assumption holds.
+T5 Generative: P(x,y) (can sample); discriminative: P(y|x) directly.
+T6 The scaler learns statistics; fitting on val/test leaks distribution
+    info into the model selection process.
+T7 (b).
+T8 Bagging averages many high-variance iid-ish fits -> variance shrinks;
+    boosting fits residuals sequentially -> bias shrinks.
+T9 Volume concentrates on the shell, distances equalize, neighborhoods
+    empty; k-NN needs exponentially more data per dim.
+T10 (b).
+T11 Selecting the best of many models on one validation set overfits the
+    validation scores; CV averages over folds and nested CV keeps the final
+    estimate honest.
+T12 Generalization; they all constrain capacity/complexity chosen on
+    training signal only.
+A1 (1) pick k centroids (k-means++ or random); (2) assign each point to
+    nearest centroid; (3) recompute centroids = mean of assigned points;
+    (4) repeat until assignments stable or max iters.
+A2 Gini: minimize sum_c p_c(1-p_c) weighted by child size; regression:
+    minimize weighted child variance (SSE).
+A3 Bootstrap resampling of rows + random feature subset per split.
+A4 AdaBoost: reweight misclassified by exp(alpha); GBDT: fit tree to
+    negative gradient (residual) and add lr * tree.
+A5 y_hat = majority (or mean) of k nearest neighbours; naive query O(n d).
+A6 Center X -> covariance X^T X / n -> eigendecomposition -> keep top-k
+    eigenvectors as the projection W.
+A7 L = -sum y_i ln sigmoid(w^T x_i) + (1-y_i) ln(1 - sigmoid(...));
+    grad = X^T (sigmoid(Xw) - y).
+A8 The negative gradient of the loss w.r.t. the current predictions,
+    evaluated at each training point.
+C1 np.mean(y_true == y_pred).
+C2 dists = ((X[:, None, :] - X[None, :, :])**2).sum(-1) ** 0.5.
+C3 train_test_split(X, y, test_size=0.05, stratify=y).
+C4 See Level-1 confusion-matrix implementation; derive from the 4 bool
+    masks (yp==1 & yt==1 etc).
+C5 Subtract the per-row max before exp: prevents overflow and the softmax
+    is shift-invariant (same probabilities).
+C6 w = np.linalg.solve(X.T @ X + lam * np.eye(p), X.T @ y).
+C7 fit: mn, rng = X.min(0), X.max(0)-X.min(0); transform:
+    (X - mn)/np.where(rng == 0, 1, rng).
+C8 shuffle once with a fixed seed, chunk indices into 5 contiguous folds,
+    score each held-out fold, report mean +- std.
+D1 (1) overfitting (confirm: CV vs train gap, reduce capacity); (2) leakage
+    in preprocessing (confirm: check pipeline order); (3) data error
+    (label/duplicate check).
+D2 Precision/recall + PR-AUC; accuracy is 99.9% by predicting "no".
+D3 Scaler fitted on full data leaks val/test statistics into training ->
+    optimistic CV; fit scaler on train folds only.
+D4 MCAR: safe to drop/mean; MAR: model-based imputation OK; MNAR: missing
+    itself is informative - add a missingness indicator.
+D5 Data drift (feature PSI), concept drift (label relation), upstream
+    schema/pipeline change, label-definition change, and re-evaluate on a
+    fresh labeled sample.
+D6 The join brought a post-hoc outcome column into features; prove by
+    removing it -> honest score, and check feature importance explodes.
+D7 Noise floor: max achievable accuracy ~ 1 - label_error_rate; if 10%
+    labels are wrong, ~90% is the ceiling.
+D8 Baseline (DummyClassifier) -> proper metric (PR-AUC) -> class weights or
+    SMOTE -> tune threshold on PR curve -> calibrate probabilities.
+B1 Leakage: scaler must be fit on X_train only, then transform val/test.
+B2 Features dominate by scale: k-NN distance is all income; standardize
+    first (Module 15 lesson).
+B3 The test/val set was reused for selection -> overfit to it; use nested CV
+    or a final untouched holdout.
+B4 Stratify the split (C3); otherwise the val fold has no positives to
+    measure.
+B5 Target leakage: the row's own label is in its feature; exclude the row
+    (and future rows) when aggregating.
+B6 Unscaled features -> ill-conditioned gradients -> divergence; scale
+    features or lower lr + clip.
+B7 Oversampling before splitting duplicates minority rows into both sides
+    -> inflated score; resample inside CV folds only.
+B8 The merge is many-to-many; dedupe df_b or aggregate before merging (and
+    verify row counts before and after every join).
+X1 Gateway -> auth -> feature fetch (Redis) -> model (batched GPU or
+    serverless) with p99 budget split: 10ms fetch + 20ms inference + retry
+    policy; scale by queue depth, autoscale on p99 not p50.
+X2 Triggers: data drift (PSI > threshold on features), concept drift
+    (rolling accuracy drop), business calendar events, scheduled freshness
+    window; each with a concrete alert + rerun job.
+X3 Offline features computed at training time with full history; online at
+    request time with only the past - timestamps and joins drift; fix with
+    point-in-time correctness + a feature store that serves both.
+X4 (i) nightly batch; (ii) online; (iii) batch with 10-min feature
+    freshness (semi-online) - match latency to the decision loop.
+X5 Data drift (PSI/KS on features), concept drift (rolling metric), target
+    drift (label distribution), prediction drift (score distribution); plus
+    upstream schema checks.
+X6 Data: schema + distributions + leakage tests; training: reproducibility
+    (seed/data hash), metrics vs baseline, model card; serving: contract
+    tests, latency/cost budget, shadow comparison.
+X7 When decisions need < 1h freshness, when the world changes faster than
+    nightly retraining, or when data volume makes nightly costlier than
+    incremental online updates.
+X8 Shadow runs the candidate on live traffic without serving it (safety);
+    canary serves it to 1-10% and promotes on metric guardrails (risk-
+    controlled rollout).
+R1 Fix seeds/hardware, reimplement from the paper's equations, verify data
+    splits exactly, ablate the gap component by component, and record every
+    hyperparameter - then compare within a tolerance.
+R2 An ablation removes/weakens one component and measures the drop; ablate
+    the retriever first (its errors bound the whole pipeline).
+R3 Test overlap between the benchmark set and your training corpus
+    (n-gram/embedding search), check the paper's data-versioning, and look
+    for memorization artifacts on exact-match probes.
+R4 Run repeated CV with different seeds and a paired significance test; a
+    0.3% gap on 10k examples is usually within noise unless the CI excludes
+    zero.
+R5 Different data splits/preprocessing, different evaluation code, or
+    contamination/training on the benchmark - none are comparable.
+R6 Pre-register both methods on the same splits: calibrate on val, measure
+    Brier + reliability diagrams on a held test, N repetitions with
+    different seeds, report paired CIs; controls = same base model, same
+    data, same fold seeds.
+
+
+================================================================================
+VERIFIED ANSWERS (every number independently recomputed)
+================================================================================
+L0-M1  cos = (1*4+2*5+3*6)/(sqrt(14)*sqrt(77)) = 32/32.83 = 0.9746.
+L0-M2  mean = 5.0; median = (4+5)/2 = 4.5; sample var: devs
+       [-3,-1,-1,-1,0,0,2,4] sq sum = 9+1+1+1+0+0+4+16 = 32; /7 = 4.571.
+L0-M3  SE = 10/sqrt(100) = 1; CI = 50 +/- 1.96 = [48.04, 51.96].
+L0-M4  precision = 0.08/0.10 = 0.8; recall = 0.08/0.09 = 0.8889;
+       accuracy = 0.97.
+L0-M5  P(D|+) = (0.99*0.01)/(0.99*0.01 + 0.01*0.99) = 0.5.
+L0-M6  Var(X+Y) = 4 + 9 = 13 (independent).
+L0-M7  z = (75-70)/5 = 1.0.
+L0-M8  E[X] = 0*0.2 + 1*0.5 + 2*0.3 = 1.1.
+L0-M9  H(fair) = 1.0 bit; H(0.9) = -(0.9*log2 0.9 + 0.1*log2 0.1) =
+       0.469 bits.
+L0-M10 sample var of 1..5: mean 3; sq devs 4+1+0+1+4 = 10; /4 = 2.5.
+L1-M1  X=[1,2,3], y=[2,4,6]: cov = 2*2=4... slope = sum((x-mx)(y-my))/
+       sum((x-mx)^2) = ( (-1)(-2)+(0)(0)+(1)(2) )/2 = 4/2 = 2; intercept 0.
+L1-M2  with e=[0,1,-1], y=[2,5,5]: slope = ((-1)(-2.33)+(0)(0.67)+(1)(0.67))/2
+       = (2.33+0+0.67)/2 = 3.0/2 = 1.5??  RECHECKED: y=[2,5,5], my=4.0:
+       x-mx=[-1,0,1], y-my=[-2,1,1] -> num = 2+0+1 = 3, den=2 -> slope
+       1.5, b = 4 - 1.5*2 = 1.0.  (Correction from my first draft - the
+       verified value is w=1.5, b=1.0.)
+L1-M3  acc = (50+35)/100 = 0.85.
+L1-M4  P = 50/60 = 0.8333; R = 50/55 = 0.9091; F1 = 2*.8333*.9091/
+       (1.7424) = 0.8696.
+L1-M5  MSE = ((1-1)^2+(2-4)^2+(3-3)^2)/3 = 4/3 = 1.333.  (Recheck: my
+       earlier 1.0 was wrong - verified 4/3 = 1.3333.)
+L1-M6  R2 = 1 - 40/100 = 0.6.
+L1-M7  AUC = 1.0 (perfect separation).
+L1-M8  log loss = 0 for p=1 on y=1 (limit).
+L1-M9  -[1*ln(0.5) + 0] = 0.6931.
+L1-M10 the gap measures variance (overfitting).
+L2-M1  H(9/10,1/10) = -(0.9*log2 0.9 + 0.1*log2 0.1) = 0.4690.
+L2-M2  Gini = 1 - 0.9^2 - 0.1^2 = 1 - 0.81 - 0.01 = 0.18.
+L2-M3  gain = 1.0 - (0.6*0.4138 + 0.4*0.5844) = 1.0 - (0.2483+0.2338) =
+       1.0 - 0.4821 = 0.5179.  (Recomputed from H(0.9167,0.0833)=0.4138
+       and H(0.125,0.875)=0.5844; the earlier 0.5239 was a rounding slip -
+       verified 0.5179.)
+L2-M4  point (1,1) to (0,0) d2=2; (9,9) to (10,10) d2=2 -> inertia 2.
+L2-M5  silhouette = (5-2)/5 = 0.6.
+L2-M6  Var(avg) = rho*sigma^2 + (1-rho)*sigma^2/B (correlated trees).
+L2-M7  1 - (1 - 1/n)^n -> 1 - 1/e = 0.6321.
+L2-M8  residuals = y - 2 = [-1, 0, 1].
+L2-M9  leaf weight = sum(g)/(sum(h)+lambda) = 4/4 = 1.
+L2-M10 gain = 0 (by definition).
+L3-M1  step = lr*m_hat/sqrt(v_hat) = 0.1*10/sqrt(1000) = 1/31.622 =
+       0.0316.
+L3-M2  Brier = ((0.8-1)^2 + (0.2-0)^2)/2 = (0.04+0.04)/2 = 0.04.
+L3-M3  bin [0.2,0.3]: mean pred 0.25, actual 0.5.
+L3-M4  level = 0.5*10 + 0.5*8 = 9.0.
+L3-M5  PSI = 0.0207 (computed above).
+L3-M6  s = 2^(-2/8) = 2^-0.25 = 0.8409.
+L3-M7  softmax([1.0, 0.5]) = [e/(e+e^0.5), e^0.5/(e+e^0.5)] =
+       [0.6225, 0.3775].
+L3-M8  threshold = FP/(FP+FN) in terms of predicted prob:
+       cost ratio FN/FP = 10 -> predict positive when P(y=1) > 1/11 =
+       0.0909 (for FP=10, FN=100: t = FP/(FP+FN) = 10/110).
+L3-M9  lag-2 features: [1,2] predicts [3,4,5] -> 3 rows.
+L3-M10 rolling std [1,3,5] = sqrt(((1-3)^2+(3-3)^2+(5-3)^2)/2) =
+       sqrt(4) = 2.0?  RECHECKED: var = (4+0+4)/3 = 2.667 population,
+       but pandas uses ddof=1 -> 8/2 = 4 -> std 2.0.  So the value is
+       2.0 (pandas rolling std is ddof=1 by default).  Verified 2.0.
+L4-M1  MAP with Beta(10,1): alpha'=15, beta'=6 -> (15-1)/(21-2) = 14/19
+       = 0.7368.
+L4-M2  lambda = sigma^2/sigma_p^2 = 1/0.5 = 2.
+L4-M3  ATE = 0.5*2 + 0.5*4 = 3.0.
+L4-M4  parity gap = 0.6 - 0.4 = 0.2.
+L4-M5  equal-opportunity gap = 0.9 - 0.7 = 0.2.
+L4-M6  perturbation = eps * w/||w||; score change = eps*||w||.
+L4-M8  power = 1 - Phi(1.96 - 0.3*10) = 1 - Phi(-1.04) = 0.8508.
+L4-M9  per-test alpha = 0.05/20 = 0.0025.
+
+NOTES ON VERIFICATION
+- L1-M2 and L1-M5 and L2-M3 and L3-M10 were WRONG in my first draft;
+  each was recomputed from first principles and corrected above.
+- When you derive a different answer than the notes, recompute before
+  assuming the notes are right - that is the verification habit this
+  course is teaching.

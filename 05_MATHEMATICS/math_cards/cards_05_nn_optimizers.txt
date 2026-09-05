@@ -1,0 +1,87 @@
+================================================================================
+CARD: MLP + BACKPROPAGATION
+================================================================================
+PROBLEM   learn non-linear functions by composing affine maps + element-
+          wise nonlinearities.
+MODEL     layer l:  a^l = f(W^l a^{l-1} + b^l)
+          f = activation (ReLU max(0,z), sigmoid, tanh); a^0 = x;
+          last layer's activation depends on task (softmax for K-class,
+          linear for regression).
+OBJECTIVE minimize L(y, a^L) over all W^l, b^l.
+CHAIN RULE (backprop = efficient chain rule)
+          Define the "error" of layer l:  delta^l = dL/da^l.
+          Output:  delta^L = a^L - y        (softmax + CE: prediction
+                                             minus one-hot - see the
+                                             softmax card)
+          Recurse: delta^l = (W^{l+1})^T delta^{l+1} . f'(z^l)
+          Weight gradient: dL/dW^l = delta^l (a^{l-1})^T
+          Bias gradient:   dL/db^l = delta^l
+          Update: W^l <- W^l - lr * dL/dW^l
+KEY       universal approximation (1 hidden layer can fit any continuous
+          function on a compact set - but depth generalizes better);
+          the nonlinearity is what prevents collapsing to a linear map;
+          ReLU fixes the vanishing gradient of sigmoid/tanh for deep
+          nets.
+          Initialization matters: He init for ReLU (variance 2/fan_in),
+          Xavier for tanh - random init sets the signal scale.
+COMPLEXITY one forward + one backward pass ~O(2 * params) per example.
+FAILURES  vanishing/exploding gradients (see RNN card for the worst
+          case), bad init, lr too high/low, overfitting without
+          regularization/dropout/data.
+CONNECTS  one neuron + sigmoid = logistic regression (softmax card);
+          optimizers below are the update rules.
+
+================================================================================
+CARD: GRADIENT DESCENT FAMILY (SGD -> Adam)
+================================================================================
+PROBLEM   minimize L(w) over w given noisy gradient estimates g_t.
+SETTING  g_t = gradient on a mini-batch (SGD = batch size 1).
+
+VANILLA SGD    w_{t+1} = w_t - lr * g_t
+               Variance of g_t = noise; needs decaying lr for
+               convergence on nonconvex/stationary problems.
+
+MOMENTUM       v_t = beta v_{t-1} + g_t ;  w -= lr * v_t
+               Velocity averages gradients -> damps zigzag, accelerates
+               consistent directions; beta ~ 0.9. Asymptotic step =
+               lr/(1-beta) under a constant gradient.
+
+NESTEROV       v_t = beta v_{t-1} + g(w - lr*beta*v_{t-1});  w -= lr v_t
+               Look-ahead evaluation of the gradient -> better convex
+               convergence rate than momentum.
+
+ADAGRAD        G_t = G_{t-1} + g_t^2 ;  w -= lr * g_t / (sqrt(G_t)+eps)
+               Accumulated SUM: rare parameters (small G) get large
+               steps, common ones shrink. G grows unbounded -> step
+               sizes -> 0 (the flaw).
+
+RMSPROP        v_t = rho v_{t-1} + (1-rho) g_t^2 ;  w -= lr g_t/(sqrt(v_t)+eps)
+               EMA instead of sum -> no monotone decay; rho ~ 0.9-0.99.
+
+ADAM           m_t = b1 m_{t-1} + (1-b1) g_t          (first moment)
+               v_t = b2 v_{t-1} + (1-b2) g_t^2        (second moment)
+               m_hat = m_t/(1-b1^t), v_hat = v_t/(1-b2^t)  (BIAS
+               CORRECTION: first steps otherwise too small since m,v
+               start at 0)
+               w -= lr * m_hat / (sqrt(v_hat) + eps)
+               b1=0.9, b2=0.999, eps=1e-8 default.
+               Effective step ~ lr regardless of gradient scale (the
+               ratio m/sqrt(v) ~ sign-ish) -> lr means "fraction of the
+               parameter's scale", not weight-space distance.
+
+ADAMW          Adam with DECOUPLED weight decay: w -= lr*lambda*w applied
+               directly to weights instead of adding L2 to the loss.
+               Why: with Adam's normalized steps, L2-in-the-loss shrinks
+               only parameters with SMALL adaptive steps; direct decay
+               shrinks all uniformly. Standard for transformers.
+
+KEY INTUITION per-coordinate adaptive learning rates win on sparse /
+          ill-conditioned problems (AdaGrad origin), momentum + bias
+          correction make Adam the safe default; SGD+momentum with a
+          good schedule often generalizes best on CNNs after full
+          training.
+FAILURES  Adam: generalization gap on some vision tasks, needs warmup
+          on transformers (huge early steps); all need LR tuning - the
+          optimizer is not a free hyperparameter.
+CONNECTS  code/ml/gradient_descent_from_scratch.py (verified) +
+          code/ml/12_optimizer_family_practice.txt (25 exercises).

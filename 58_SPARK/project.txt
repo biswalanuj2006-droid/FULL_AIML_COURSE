@@ -1,0 +1,95 @@
+# SPARK / PYSPARK — PROJECTS
+
+---
+
+## PROJECT 1 — ETL PIPELINE WITH PYSPARK (Level 2)
+
+### Problem Statement
+Build a production-style ETL pipeline that ingests, transforms, and loads data.
+
+### Requirements
+- Read raw CSV/JSON data from multiple sources
+- Clean data (handle missing values, duplicates, outliers)
+- Transform data (aggregations, joins, pivots)
+- Write processed data to Parquet partitioned by date
+- Implement data quality checks
+- Log pipeline metrics
+
+### Architecture
+```
+Raw Data (CSV/JSON) → Spark ETL → Cleaned Data (Parquet)
+                        ↓
+                    [Extract]
+                    [Validate]
+                    [Transform]
+                    [Load]
+                    [Quality Check]
+```
+
+### Expected Output
+- Partitioned Parquet output
+- Data quality report
+- Pipeline execution logs
+- Performance metrics
+
+---
+
+## PROJECT 2 — BIG DATA ANALYTICS PLATFORM (Level 3)
+
+### Problem Statement
+Build an analytics platform that processes large datasets and generates insights.
+
+### Requirements
+- Process 10GB+ dataset
+- Implement star schema design
+- Run complex analytical queries
+- Generate business intelligence reports
+- Optimize for query performance
+
+### Dataset
+- NYC Taxi Trip Data (public dataset, billions of rows available)
+
+### Analysis Tasks
+1. Average trip duration by time of day
+2. Revenue analysis by zone
+3. Tip prediction features
+4. Demand forecasting features
+5. Anomaly detection (fraudulent trips)
+
+### Expected Output
+- Optimized Parquet tables
+- SQL analytics dashboard data
+- Feature engineering pipeline
+- Performance comparison (optimized vs naive)
+
+---
+
+## PROJECT 3 — REAL-TIME ML PIPELINE (Level 3)
+
+### Problem Statement
+Build a real-time ML prediction pipeline using Spark Streaming.
+
+### Requirements
+- Ingest streaming data (Kafka or simulated)
+- Feature engineering on streaming data
+- Real-time model inference
+- Output predictions to database
+- Handle late-arriving data
+- Monitor pipeline health
+
+### Architecture
+```
+Data Source → Spark Streaming → Feature Engineering
+                                    ↓
+                              Model Inference
+                                    ↓
+                              PostgreSQL/Redis
+                                    ↓
+                              Dashboard API
+```
+
+### Expected Output
+- Streaming job running continuously
+- Real-time predictions
+- Monitoring dashboard
+- Latency metrics

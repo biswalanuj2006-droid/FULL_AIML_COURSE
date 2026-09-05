@@ -1,0 +1,17 @@
+================================================================================
+WORD EMBEDDINGS — PROJECTS
+================================================================================
+
+PROJECT 1: WORD ANALOGY SYSTEM (Beginner)
+============================================
+Train Word2Vec, solve analogies, visualize embeddings.
+
+PROJECT 2: SEMANTIC SEARCH ENGINE (Intermediate)
+==================================================
+Build text search using sentence embeddings.
+
+PROJECT 3: DOMAIN EMBEDDINGS (Advanced)
+==========================================
+Train custom embeddings for medical/legal/technical text.
+
+================================================================================

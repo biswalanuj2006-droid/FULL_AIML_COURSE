@@ -1,0 +1,57 @@
+================================================================================
+VISUALIZATION MODULE — PRACTICE SET (40+ Questions)
+================================================================================
+
+EASY (10)
+=========
+Q1: Create a line plot with Matplotlib.
+Q2: Add title, labels, and legend to a plot.
+Q3: Create a histogram of normally distributed data.
+Q4: Create a bar chart comparing categories.
+Q5: Create a scatter plot with color coding.
+Q6: Create subplots in a single figure.
+Q7: Save a plot as PNG file.
+Q8: Create a box plot using Seaborn.
+Q9: Create a heatmap of a correlation matrix.
+Q10: Customize plot colors and style.
+
+MEDIUM (15)
+============
+Q11: Create a multi-panel figure with 4 different plot types.
+Q12: Plot training loss and accuracy curves.
+Q13: Create a confusion matrix heatmap.
+Q14: Plot ROC curve with AUC score.
+Q15: Create feature importance bar chart.
+Q16: Plot decision boundaries for a classifier.
+Q17: Create a pair plot for EDA.
+Q18: Plot distribution of features with KDE.
+Q19: Create a stacked bar chart.
+Q20: Plot time series with trend and seasonality.
+Q21: Create an annotated scatter plot.
+Q22: Plot learning curves for model evaluation.
+Q23: Create violin plots comparing distributions.
+Q24: Plot precision-recall curve.
+Q25: Create a pipeline flow diagram.
+
+HARD (10)
+==========
+Q26: Build complete EDA dashboard with 8+ plots.
+Q27: Create animated plot showing training progress.
+Q28: Build interactive visualization with Plotly.
+Q29: Create publication-quality figure with specific requirements.
+Q30: Build model comparison visualization (5+ models).
+Q31: Create embeddings visualization with t-SNE.
+Q32: Build data quality report with visualizations.
+Q33: Create interactive dashboard with Streamlit.
+Q34: Plot CNN feature maps from trained model.
+Q35: Create attention heatmap visualization.
+
+DEBUGGING (5)
+==============
+D1: Why is plt.show() not displaying?
+D2: Fix: Chinese characters not showing in plot.
+D3: Why is the plot too small/too large?
+D4: Fix: Legend not showing correct labels.
+D5: Why are colors different between Matplotlib versions?
+
+================================================================================
