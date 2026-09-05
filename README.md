@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🧠 ULTRA-LEVEL AI/ML Engineering Course
 
 ## Complete AI/ML Engineering + CS + DSA + Research + Production Program
@@ -141,3 +142,7 @@ Production AI → AI System Architect → AI Researcher
 ## License
 
 This course is provided for educational purposes.
+=======
+# FULL_AIML_COURSE
+A comprehensive AI/ML engineering course covering Python, mathematics, statistics, data science, machine learning, deep learning, NLP, computer vision, transformers, LLMs, RAG, LangChain, LangGraph, AI agents, MLOps, deployment, cloud, security, system design, research, and production-grade AI projects.
+>>>>>>> 02ecab42a1f5c19d570ac76eb942a941843af565
