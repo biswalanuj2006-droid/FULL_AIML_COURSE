@@ -1,6 +1,24 @@
 """FastAPI core: app setup, auth helpers, auth routes, static serving."""
 import os
 
+
+def _load_env(path: str = ".env") -> None:
+    """Tiny .env loader (KEY=VALUE lines) - no python-dotenv dependency."""
+    try:
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, _, v = line.partition("=")
+                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+    except FileNotFoundError:
+        pass
+
+
+_load_env(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+_load_env()
+
 import bcrypt
 import jwt
 from fastapi import Depends, FastAPI, HTTPException
