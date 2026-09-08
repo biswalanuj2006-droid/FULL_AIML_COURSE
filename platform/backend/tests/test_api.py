@@ -132,6 +132,10 @@ def test_leaderboard(client, auth):
 
 
 def test_spa_deep_link(client):
+    import os
+    from app.main import FRONTEND_DIST
+    if not os.path.isfile(os.path.join(FRONTEND_DIST, "index.html")):
+        pytest.skip("frontend not built in this environment (CI backend job)")
     r = client.get("/courses/rag")
     assert r.status_code == 200
     assert b'id="root"' in r.content
