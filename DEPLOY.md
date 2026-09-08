@@ -24,8 +24,23 @@ cd platform/frontend && npm install && npm run build && cd ../..
 4. **Variables** → add `JWT_SECRET` (any long random string). That's it.
 5. **Settings → Networking → Generate Domain** → your app is live.
 
-Optional Postgres: **New → Database → PostgreSQL**, then set
-`DATABASE_URL=${{Postgres.DATABASE_URL}}` on the web service.
+### Already have a project but deploys fail with "trial has expired"?
+
+The project + service already exist (CLI is linked). Unblock it:
+
+1. Open https://railway.app → your project → **Select a plan** (Hobby or Trial
+   reactivation — a 2-minute billing step only the account owner can do).
+2. Then redeploy — either click **Deploy** in the dashboard, or from the repo:
+
+```bash
+railway up -s web
+```
+
+3. Add your AI-tutor API key as a Variable so the deployed chatbot uses the LLM:
+   - `OPENROUTER_API_KEY` **or** `GROQ_API_KEY` **or** `GOOGLE_API_KEY` **or**
+     `OPENAI_API_KEY` (any one — the tutor also works without any key).
+4. Optional Postgres: **New → Database → PostgreSQL**, then set
+   `DATABASE_URL=${{Postgres.DATABASE_URL}}` on the web service.
 
 CLI alternative:
 
