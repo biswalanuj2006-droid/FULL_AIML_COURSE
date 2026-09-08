@@ -30,6 +30,9 @@ jobs:
       run: flake8 app tests --count --select=E9,F63,F7,F82 --show-source --statistics
     - name: Run backend tests
       run: python -m pytest tests/ -q
+      env:
+        DATABASE_URL: sqlite:///./test_platform.db
+        JWT_SECRET: ci-secret
 
   frontend:
     runs-on: ubuntu-latest
