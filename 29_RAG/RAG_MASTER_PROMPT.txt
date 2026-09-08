@@ -1,0 +1,665 @@
+================================================================================
+COMPLETE RETRIEVAL-AUGMENTED GENERATION (RAG) - MASTER COURSE PROMPT / SPEC
+FROM FUNDAMENTALS TO PRODUCTION  (76 parts / 16 phases)
+================================================================================
+This file is the master prompt (course-generation contract) that defines the
+RAG curriculum. It is stored verbatim-in-structure here so every RAG artifact
+in this repository is traceable to it:
+
+  - AI_ENGINEERING/RAG/COURSE.txt    (module course  RAG-00..RAG-13)
+  - AI_ENGINEERING/RAG/PRACTICE.txt  (levels 0-5)
+  - AI_ENGINEERING/RAG/PROJECT.txt   (tiers E..S+ + enterprise capstone)
+  - AI_ENGINEERING/RAG/EXAMPLE.py    (offline numpy lab S1-S15, fully passing)
+  - 29_RAG/rag_complete.txt          (folder-level deep-dive course)
+  - 29_RAG/practice.txt, project.txt, real_problem.txt
+
+================================================================================
+ROLE
+================================================================================
+Act as a PRINCIPAL AI/ML ENGINEER, RAG ARCHITECT, LLM RESEARCHER,
+INFORMATION RETRIEVAL ENGINEER, and technical educator.
+
+Produce an ULTRA-COMPREHENSIVE, INDUSTRY-GRADE, ENGINEERING-LEVEL course:
+        COMPLETE RETRIEVAL-AUGMENTED GENERATION (RAG)
+              FROM FUNDAMENTALS TO PRODUCTION
+
+The course must NOT be a basic beginner tutorial. The student must be able to:
+- understand the mathematics and theory behind RAG
+- implement RAG systems from scratch
+- use modern RAG frameworks (LangChain, LlamaIndex, LangGraph)
+- understand every stage of the RAG pipeline
+- debug retrieval failures
+- evaluate retrieval quality
+- optimize latency and cost
+- build production-grade RAG applications
+- design scalable RAG architectures
+- build multimodal RAG, GraphRAG, agentic RAG
+- understand advanced retrieval techniques
+- deploy RAG systems
+- explain RAG architecture in technical interviews
+- design enterprise RAG systems
+
+Do NOT skip difficult concepts. Do NOT reduce advanced topics into shallow
+definitions. Use practical examples, mathematical intuition, diagrams,
+pseudocode, Python implementations, experiments, failure cases, engineering
+tradeoffs, and real-world architectures.
+
+================================================================================
+PART 1 - RAG FUNDAMENTALS
+================================================================================
+1. What is RAG? 2. Why RAG was invented. 3. Problems with vanilla LLMs.
+4. Hallucination. 5. Knowledge cutoff. 6. Static model knowledge.
+7. Private/proprietary data. 8. Domain-specific knowledge. 9. Grounded
+generation. 10. RAG vs fine-tuning. 11. RAG vs prompt engineering.
+12. RAG vs long-context LLMs. 13. RAG vs web search. 14. RAG vs traditional
+information retrieval. 15. RAG vs knowledge graphs. 16. RAG vs agents.
+
+RAG lifecycle (explain EVERY stage independently):
+USER QUERY -> QUERY PROCESSING -> QUERY TRANSFORMATION -> RETRIEVAL ->
+FILTERING -> RERANKING -> CONTEXT CONSTRUCTION -> PROMPT CONSTRUCTION ->
+LLM GENERATION -> POST-PROCESSING -> CITATIONS/SOURCES -> FINAL RESPONSE
+
+================================================================================
+PART 2 - COMPLETE RAG PIPELINE
+================================================================================
+Ingestion: Documents -> Document Loading -> Parsing -> Cleaning ->
+Normalization -> Metadata Extraction -> Document Classification -> Chunking ->
+Embedding -> Vector Storage -> Indexing.
+
+Query pipeline: User Query -> Query Analysis -> Query Rewriting -> Query
+Expansion -> Embedding -> Candidate Retrieval -> Hybrid Retrieval ->
+Filtering -> Reranking -> Context Compression -> Context Assembly -> Prompt ->
+LLM -> Grounded Answer -> Citation.  Explain each component deeply.
+
+================================================================================
+PART 3 - DOCUMENT INGESTION
+================================================================================
+Formats: PDFs, DOCX, TXT, Markdown, HTML, CSV, JSON, XML, Excel, PowerPoint,
+webpages, emails, databases, APIs, cloud storage, Git repositories, source
+code, images, scanned documents.
+Concepts: loaders, parsers, OCR, document normalization, metadata extraction,
+duplicate detection, document versioning, document IDs, source tracking,
+timestamps, access-control metadata.
+WHY: bad ingestion creates bad RAG.
+
+================================================================================
+PART 4 - DOCUMENT PARSING
+================================================================================
+PDF parsing, layout-aware parsing, table extraction, image extraction, OCR,
+headers/footers/page numbers, hyperlinks, citations, code extraction,
+structured documents. Tools: PyMuPDF, pdfplumber, Unstructured, Apache Tika,
+OCR systems, document intelligence systems. Parser failure modes.
+
+================================================================================
+PART 5 - CHUNKING
+================================================================================
+Types: fixed-size, character, token, sentence, paragraph, recursive,
+semantic, hierarchical, document-aware, structure-aware, markdown, code,
+table chunking.
+Explain: chunk size, chunk overlap, token limits, semantic boundaries,
+context preservation, retrieval granularity. Discuss 128/256/512/1024-token
+chunks and large vs small chunks. Tradeoffs. Experiments: small vs medium vs
+large chunks. Chunking failure modes.
+
+================================================================================
+PART 6 - EMBEDDINGS
+================================================================================
+First principles: vectors, dimensions, semantic representation, embedding
+space, semantic similarity, cosine similarity, dot product, Euclidean
+distance, normalization. Mathematics of each. Embedding models; sentence /
+document / query / multilingual / domain-specific / code embeddings.
+Concepts: embedding dimension, vector normalization, embedding drift, model
+selection, multilingual retrieval, domain adaptation. Practical Python.
+
+================================================================================
+PART 7 - VECTOR DATABASES
+================================================================================
+FAISS, Chroma, Qdrant, Weaviate, Milvus, Pinecone, Elasticsearch/OpenSearch
+vector search, pgvector. Concepts: collections, indexes, vectors, metadata,
+payloads, namespaces, filtering, persistence, sharding, replication.
+
+================================================================================
+PART 8 - VECTOR INDEXING (ANN)
+================================================================================
+Brute force vs exact vs approximate nearest neighbor. HNSW (graph
+construction, layers, M, efConstruction, efSearch), IVF, PQ, IVF-PQ, Annoy,
+ScaNN. Recall vs latency tradeoffs.
+
+================================================================================
+PART 9 - RETRIEVAL
+================================================================================
+Semantic / lexical / keyword / dense / sparse / metadata retrieval.
+Top-K: K=1,3,5,10,20,50. Why increasing K does not always improve answers.
+
+================================================================================
+PART 10 - BM25
+================================================================================
+From first principles: term frequency, inverse document frequency, document
+length normalization, k1, b. Full formula. Python implementation. BM25 vs
+dense embeddings.
+
+================================================================================
+PART 11 - HYBRID SEARCH
+================================================================================
+Dense + sparse -> hybrid. BM25 + embeddings, reciprocal rank fusion (RRF
+mathematics), weighted fusion, score normalization, rank fusion. When hybrid
+beats pure vector search. Practical implementation.
+
+================================================================================
+PART 12 - METADATA FILTERING
+================================================================================
+Date/category/user/permission/tenant/document-type/source filters. Semantic
+retrieval + metadata filtering. Enterprise access-control RAG.
+
+================================================================================
+PART 13 - QUERY TRANSFORMATION
+================================================================================
+Query rewriting, expansion, decomposition, classification, normalization,
+spelling correction, synonym expansion, intent detection. Advanced: HyDE,
+multi-query retrieval, step-back prompting, sub-question generation, query
+routing.
+
+================================================================================
+PART 14 - HYDE
+================================================================================
+QUERY -> LLM generates hypothetical answer/document -> Embedding -> Vector
+search -> Retrieved documents -> Final LLM. Why HyDE can improve retrieval.
+Its risks.
+
+================================================================================
+PART 15 - MULTI-QUERY RETRIEVAL
+================================================================================
+One query -> generate variations -> retrieve each -> merge -> rerank ->
+generate. Query diversity, redundancy, latency, cost.
+
+================================================================================
+PART 16 - QUERY DECOMPOSITION
+================================================================================
+Complex questions -> sub-questions -> multi-step retrieval. Example:
+"What were Apple's revenues and profit margins from 2020 to 2025?" broken into
+per-year revenue + margin calculations.
+
+================================================================================
+PART 17 - RERANKING
+================================================================================
+Why first-stage retrieval is not enough. Vector search -> Top 50 -> Reranker
+-> Top 5 -> LLM. Cross-encoders, bi-encoders, rerankers, relevance scoring,
+late interaction. BGE reranker, Cohere rerank. Latency vs quality.
+
+================================================================================
+PART 18 - CONTEXT ENGINEERING
+================================================================================
+Context selection, compression, ordering, redundancy removal, prioritization,
+lost-in-the-middle problem, context windows, token budgets. Why MORE context
+can produce WORSE answers.
+
+================================================================================
+PART 19 - PROMPT ENGINEERING FOR RAG
+================================================================================
+System prompts, context instructions, source attribution, citation
+requirements, refusal behavior, grounding constraints, answer formatting,
+uncertainty handling. Professional RAG prompt templates.
+
+================================================================================
+PART 20 - LLM PARAMETERS
+================================================================================
+temperature, top_p, top_k, max_tokens, stop sequences, frequency penalty,
+presence penalty, repetition penalty, seed, reasoning parameters.
+TEMPERATURE deep-dive: T=0, 0.1, 0.3, 0.5, 0.7, 1.0, >1 mathematically via
+P(token) = softmax(logits / temperature). Effect on determinism, creativity,
+factuality, hallucination, diversity, RAG reliability.
+CRITICAL: temperature controls GENERATION, not retrieval. Retrieval params
+(top_k, similarity threshold, efSearch, reranking depth, candidate count) are
+separate.
+
+================================================================================
+PART 21 - TOP-P
+================================================================================
+Nucleus sampling. top_p = 0.1 / 0.5 / 0.9 / 1.0. Compare temperature vs top_p.
+
+================================================================================
+PART 22 - RAG GENERATION STRATEGIES
+================================================================================
+Extractive vs abstractive RAG, grounded generation, citation generation,
+quote-based answers, answer synthesis, multi-document synthesis.
+
+================================================================================
+PART 23 - HALLUCINATION
+================================================================================
+Retrieval failure, generation hallucination, unsupported claims, missing
+evidence, conflicting documents, outdated information. Mitigation: better
+retrieval, reranking, grounding prompts, citations, confidence estimation,
+answer verification, self-checking, attribution.
+
+================================================================================
+PART 24 - RAG EVALUATION
+================================================================================
+RETRIEVAL: Precision@K, Recall@K, Hit Rate, MRR, MAP, NDCG, Context
+Precision/Recall. GENERATION: Exact Match, F1, BLEU, ROUGE, BERTScore,
+faithfulness, groundedness, answer relevance, factual correctness. Every
+metric explained mathematically.
+
+================================================================================
+PART 25 - RAG-SPECIFIC EVALUATION
+================================================================================
+RAGAS, DeepEval, TruLens, LangSmith evaluation, custom pipelines. Evaluate
+Question / Ground Truth / Retrieved Context / Generated Answer at every stage.
+
+================================================================================
+PART 26 - DATASET CREATION FOR RAG
+================================================================================
+Questions, expected answers, source documents, relevant chunks, hard
+negatives, metadata, difficulty levels. Synthetic question generation.
+
+================================================================================
+PART 27 - RAG FAILURE ANALYSIS
+================================================================================
+If the answer is wrong, check: 1 ingestion 2 parsing 3 chunking 4 embeddings
+5 retrieval 6 filtering 7 reranking 8 context 9 prompt 10 LLM generation.
+Decision trees for debugging.
+
+================================================================================
+PART 28 - ADVANCED RETRIEVAL
+================================================================================
+Parent-child, hierarchical, contextual, sentence-window, metadata-aware,
+self-query, recursive, multi-vector, summary-index retrieval.
+
+================================================================================
+PART 29 - CONTEXTUAL RETRIEVAL
+================================================================================
+Context-enriched chunks before embedding: Raw Chunk vs Context-Enriched Chunk.
+Benefits and costs.
+
+================================================================================
+PART 30 - PARENT-CHILD RETRIEVAL
+================================================================================
+Small child chunks -> retrieve child -> return parent context. Precision up,
+context preserved.
+
+================================================================================
+PART 31 - SELF-QUERY RETRIEVER
+================================================================================
+LLM converts natural language into semantic query + metadata filters.
+Example: "Find research papers about transformers published after 2023" ->
+semantic query "transformers" + filter year > 2023.
+
+================================================================================
+PART 32 - GRAPH RAG
+================================================================================
+Knowledge graphs, entities, relationships, graph construction, traversal,
+community detection, graph summaries, graph-based retrieval. Compare: Vector
+RAG vs GraphRAG vs Hybrid Graph + Vector RAG.
+
+================================================================================
+PART 33 - KNOWLEDGE GRAPH RAG
+================================================================================
+Document -> Entity Extraction -> Relationship Extraction -> Knowledge Graph ->
+Graph Retrieval -> LLM. Neo4j and graph databases.
+
+================================================================================
+PART 34 - MULTIMODAL RAG
+================================================================================
+Text, images, tables, charts, PDFs, audio, video, screenshots. Multimodal
+embeddings, image retrieval, vision-language models, table retrieval, OCR,
+document layout understanding.
+
+================================================================================
+PART 35 - CODE RAG
+================================================================================
+Code chunking, AST parsing, function-level indexing, class-level indexing,
+dependency graphs, symbol retrieval, repository retrieval. Build "Chat with
+your GitHub repository".
+
+================================================================================
+PART 36 - SQL RAG
+================================================================================
+Natural Language -> Schema Retrieval -> SQL Generation -> SQL Validation ->
+Database -> Result -> LLM Explanation. SQL injection risks.
+
+================================================================================
+PART 37 - AGENTIC RAG
+================================================================================
+Traditional RAG vs Agentic RAG. Planner -> Retriever -> Tools (Web Search,
+Database, Calculator) -> Verifier -> LLM. Planning, tool use, iterative
+retrieval, reflection, verification, stopping conditions.
+
+================================================================================
+PART 38 - SELF-RAG
+================================================================================
+Model decides whether retrieval is needed, retrieves, evaluates retrieved
+evidence, critiques generated output.
+
+================================================================================
+PART 39 - CORRECTIVE RAG
+================================================================================
+Retrieve -> Evaluate retrieval -> if poor: corrective retrieval -> Generate.
+
+================================================================================
+PART 40 - ADAPTIVE RAG
+================================================================================
+Route between no retrieval / simple retrieval / multi-query / web search /
+database / graph search based on query complexity.
+
+================================================================================
+PART 41 - ROUTING
+================================================================================
+Query routers, document routers, model routers, retrieval routers. Example:
+technical -> technical DB; financial -> financial DB; general -> web search.
+
+================================================================================
+PART 42 - RAG SECURITY
+================================================================================
+Prompt injection, indirect prompt injection, data poisoning, malicious
+documents, retrieval manipulation, data leakage, tenant isolation failures,
+unauthorized retrieval, sensitive information exposure. Defensive
+architecture.
+
+================================================================================
+PART 43 - ACCESS-CONTROLLED RAG
+================================================================================
+User A -> Documents A; User B -> Documents B; Admin -> all authorized.
+RBAC, ABAC, tenant isolation, document-level permissions, metadata filtering.
+
+================================================================================
+PART 44 - RAG COST OPTIMIZATION
+================================================================================
+Embedding/LLM/retrieval/reranking/token costs, caching. Semantic caching,
+prompt caching, embedding caching, result caching, batch embedding, smaller
+models, adaptive retrieval.
+
+================================================================================
+PART 45 - RAG LATENCY
+================================================================================
+Break down: query processing + embedding + vector search + reranking + prompt
+construction + LLM generation. Optimize every stage.
+
+================================================================================
+PART 46 - CACHING
+================================================================================
+Exact-match cache, semantic cache, embedding cache, retrieval cache, response
+cache. Cache invalidation.
+
+================================================================================
+PART 47 - RAG OBSERVABILITY
+================================================================================
+Trace: user query, rewritten query, retrieved documents, similarity scores,
+reranker scores, prompt, token count, latency, model, temperature, answer,
+citations. LangSmith, OpenTelemetry, logging, tracing, monitoring.
+
+================================================================================
+PART 48 - RAG PRODUCTION ARCHITECTURE
+================================================================================
+Frontend -> API Gateway -> Backend -> Authentication -> Query Router ->
+Retriever -> Reranker -> LLM -> Response. FastAPI, PostgreSQL, pgvector,
+Redis, Docker, Kubernetes, cloud storage, monitoring.
+
+================================================================================
+PART 49 - LANGCHAIN
+================================================================================
+Documents, loaders, text splitters, embeddings, vector stores, retrievers,
+chains, prompts, output parsers, Runnable interfaces, LCEL, callbacks,
+tracing. Architecture, not just syntax.
+
+================================================================================
+PART 50 - LANGGRAPH
+================================================================================
+Agentic RAG, multi-step retrieval, state management, routing, verification,
+human-in-the-loop, retries. Complete examples.
+
+================================================================================
+PART 51 - LLAMAINDEX
+================================================================================
+Ingestion, indexing, retrieval, query engines, response synthesis, metadata,
+agents, advanced retrieval. Compare LangChain vs LlamaIndex.
+
+================================================================================
+PART 52 - RAG FROM SCRATCH
+================================================================================
+Python + NumPy + Pandas + scikit-learn + sentence-transformers + FAISS:
+1 document loader 2 chunker 3 embedding generator 4 vector index 5 similarity
+search 6 top-K retrieval 7 prompt builder 8 LLM call 9 citation system.
+Explain every line.
+
+================================================================================
+PART 53 - PRODUCTION RAG PROJECT ("AI Research Assistant")
+================================================================================
+PDF upload, ingestion, OCR, chunking, embeddings, vector DB, hybrid search,
+reranking, citations, conversation history, source viewer, authentication,
+user-specific documents, evaluation dashboard, feedback, logging, caching.
+Backend FastAPI; DB PostgreSQL + pgvector; cache Redis; frontend React or
+Streamlit; deployment Docker.
+
+================================================================================
+PART 54 - ADVANCED PROJECTS (at least 10)
+================================================================================
+1 PDF QA. 2 Chat with multiple PDFs. 3 Research paper RAG. 4 Codebase RAG.
+5 SQL RAG. 6 Enterprise document RAG. 7 Multimodal RAG. 8 GraphRAG.
+9 Agentic RAG. 10 Production Enterprise RAG Platform. Each: problem
+statement, architecture, requirements, dataset, folder structure,
+implementation, evaluation, testing, deployment, improvements.
+
+================================================================================
+PART 55 - RAG MATHEMATICS
+================================================================================
+Vectors, matrices, dot product, cosine similarity, probability, softmax,
+logits, IR mathematics, BM25, ranking, distributions, entropy, cross entropy,
+attention, embeddings. Formulas step-by-step.
+
+================================================================================
+PART 56 - TRANSFORMERS FOR RAG
+================================================================================
+Tokenization, embeddings, positional encoding, self-attention, multi-head
+attention, encoder, decoder, encoder-decoder, causal language modeling,
+context window. Why transformers are useful for RAG.
+
+================================================================================
+PART 57 - TOKENIZATION
+================================================================================
+Tokens, token IDs, vocabulary, BPE, WordPiece, SentencePiece, token counting.
+Why tokenization matters for chunk size, cost, context window, latency.
+
+================================================================================
+PART 58 - CONTEXT WINDOWS
+================================================================================
+Context window, input/output tokens, long context, compression, truncation.
+4K / 8K / 16K / 32K / 64K / 128K+ windows.
+
+================================================================================
+PART 59 - RAG + FINE-TUNING
+================================================================================
+Compare RAG / fine-tuning / RAG + fine-tuning. When to use each.
+
+================================================================================
+PART 60 - RAG + LoRA
+================================================================================
+Fine-tuning improves domain language, response style, instruction following,
+specialized reasoning; RAG provides external knowledge, current information,
+citations.
+
+================================================================================
+PART 61 - RAG ARCHITECTURE PATTERNS
+================================================================================
+Basic, two-stage, hybrid, hierarchical, modular, agentic, GraphRAG,
+multimodal, corrective, adaptive, self-RAG. Diagrams for every architecture.
+
+================================================================================
+PART 62 - RAG DESIGN TRADEOFFS
+================================================================================
+For every decision: QUALITY / LATENCY / COST / COMPLEXITY / SCALABILITY.
+Examples: chunk size (small -> precision up / context down), K, reranking,
+embedding model, vector DB, LLM, temperature, top_p, context length, hybrid.
+
+================================================================================
+PART 63 - EXPERIMENTATION
+================================================================================
+Controlled experiments: chunk size 256 vs 512 vs 1024; K 3/5/10/20; dense vs
+BM25 vs hybrid; with vs without reranker; temperature 0/0.3/0.7. Measure
+Recall@K, MRR, faithfulness, latency, cost. Results in tables and graphs.
+
+================================================================================
+PART 64 - RAG BENCHMARKING
+================================================================================
+Methodology: baseline, improved system, controlled variables, evaluation
+dataset, metrics, statistical comparison. Avoid misleading benchmarks.
+
+================================================================================
+PART 65 - PRODUCTION DEPLOYMENT
+================================================================================
+Docker, Docker Compose, FastAPI, PostgreSQL, pgvector, Redis, Nginx, cloud
+storage; AWS/Azure/GCP. Environment variables, secrets, HTTPS,
+authentication, monitoring, scaling, backups.
+
+================================================================================
+PART 66 - SCALABILITY
+================================================================================
+100 -> 10,000 -> 1M -> 100M+ documents. Sharding, indexing, distributed
+vector DBs, async ingestion, queues, workers, batching, caching.
+
+================================================================================
+PART 67 - DATA FRESHNESS
+================================================================================
+Incremental ingestion, document updates/deletion, re-embedding, index
+updates, stale embeddings, versioning. Document synchronization pipeline.
+
+================================================================================
+PART 68 - REAL-TIME RAG
+================================================================================
+Live APIs, databases, web search, streaming data, real-time events. Avoiding
+stale knowledge.
+
+================================================================================
+PART 69 - CITATIONS AND ATTRIBUTION
+================================================================================
+Every answer identifies document, page, chunk, source, timestamp. Citation
+hallucination.
+
+================================================================================
+PART 70 - TESTING
+================================================================================
+Unit, integration, retrieval, prompt, regression, load, security testing.
+Automated RAG tests.
+
+================================================================================
+PART 71 - INTERVIEW PREPARATION
+================================================================================
+BEGINNER / INTERMEDIATE / ADVANCED / EXPERT question bank: architecture,
+embeddings, vector DBs, chunking, retrieval, reranking, BM25, hybrid search,
+GraphRAG, agentic RAG, evaluation, hallucination, latency, cost, security,
+production architecture. Theory/debugging/system-design/coding/architecture
+questions, answers separate.
+
+================================================================================
+PART 72 - CODING INTERVIEW QUESTIONS
+================================================================================
+Cosine similarity, vector search, BM25, top-K, ranking, reranking, chunking,
+token counting, metadata filtering, caching, retrieval pipelines.
+
+================================================================================
+PART 73 - SYSTEM DESIGN QUESTIONS
+================================================================================
+"Design ChatGPT for 1M company documents." "Design a production
+legal-document RAG." "Design RAG for GitHub repositories." "Design multimodal
+RAG for medical research." "Design a multi-tenant enterprise RAG." Complete
+system designs.
+
+================================================================================
+PART 74 - COMMON RAG MISTAKES (at least 100)
+================================================================================
+Bad chunking, arbitrary chunk size, no metadata, poor embeddings, too many /
+too few chunks, no reranking, ignoring BM25, stuffing context, no evaluation,
+no citations, no access control, trusting retrieved documents, prompt
+injection, ignoring latency/cost, no observability, and more.
+
+================================================================================
+PART 75 - COMPLETE RAG CHEAT SHEET
+================================================================================
+Architecture, formulas, parameters, algorithms, tools, frameworks, databases,
+metrics, debugging, optimization.
+
+================================================================================
+PART 76 - FINAL CAPSTONE
+================================================================================
+ENTERPRISE-GRADE AI KNOWLEDGE PLATFORM: authentication, authorization,
+document upload/parsing/OCR, chunking, embeddings, hybrid search, BM25,
+vector DB, reranking, query rewriting, multi-query retrieval, HyDE, query
+decomposition, metadata filtering, contextual retrieval, parent-child
+retrieval, citations, conversation memory, semantic caching, evaluation,
+observability, feedback, analytics, GraphRAG, agentic RAG, multimodal RAG,
+API, frontend, Docker, PostgreSQL, Redis, scalable architecture.
+
+================================================================================
+COURSE FORMAT (for EVERY module)
+================================================================================
+1 Learning objectives  2 Concept explanation  3 Why it matters
+4 Architecture  5 Mathematical intuition  6 Formulas where applicable
+7 Real-world example  8 Python implementation  9 From-scratch implementation
+10 Framework implementation  11 Common mistakes  12 Debugging techniques
+13 Performance  14 Cost  15 Security  16 Interview questions
+17 Coding questions  18 Mini-project  19 Exercises  20 Advanced challenge
+
+================================================================================
+TEACHING STYLE
+================================================================================
+Senior engineer mentoring an AI/ML engineer. For every concept:
+FIRST intuition -> SECOND architecture -> THIRD mathematics -> FOURTH
+from-scratch implementation -> FIFTH modern frameworks -> SIXTH production
+considerations -> SEVENTH failure cases -> EIGHTH interview questions.
+
+================================================================================
+IMPORTANT DISTINCTIONS (never conflate)
+================================================================================
+- RAG != "embeddings + vector database + LLM". RAG is a COMPLETE information
+  retrieval + context engineering + generation system.
+- RETRIEVAL parameters vs GENERATION parameters.
+- TOP-K RETRIEVAL != TOP-K SAMPLING
+- TEMPERATURE != retrieval randomness
+- TOP-P != vector-search threshold
+- SIMILARITY THRESHOLD != TEMPERATURE
+
+================================================================================
+FINAL OUTPUT STRUCTURE (16 phases)
+================================================================================
+PHASE 1  FOUNDATIONS
+PHASE 2  DOCUMENT PROCESSING
+PHASE 3  EMBEDDINGS
+PHASE 4  VECTOR DATABASES
+PHASE 5  RETRIEVAL
+PHASE 6  ADVANCED RETRIEVAL
+PHASE 7  LLM GENERATION
+PHASE 8  RAG EVALUATION
+PHASE 9  ADVANCED RAG
+PHASE 10 GRAPH RAG
+PHASE 11 MULTIMODAL RAG
+PHASE 12 AGENTIC RAG
+PHASE 13 SECURITY
+PHASE 14 PRODUCTION ENGINEERING
+PHASE 15 SYSTEM DESIGN
+PHASE 16 CAPSTONE
+
+The course must be MASSIVE, technically accurate, practical, and suitable for
+an aspiring AI/ML engineer. Do not omit important RAG concepts to keep it
+short. If a response becomes too long, continue in the next section rather
+than summarizing or skipping topics.
+
+================================================================================
+COVERAGE MAP -> REPOSITORY ARTIFACTS
+================================================================================
+Part 1-2, 55-58      -> AI_ENGINEERING/RAG/COURSE.txt RAG-00..RAG-02
+Parts 3-5            -> RAG-03 (ingestion/chunking) + PRACTICE.txt levels 0-1
+Parts 6-12           -> RAG-03..RAG-05 (embeddings, ANN, dense/sparse/hybrid)
+Parts 13-17, 28-31   -> RAG-07 (advanced retrieval, query rewrite, parent-child)
+Parts 17, 24-27      -> RAG-06 (reranking), RAG-09 (evaluation) + EXAMPLE.py S6-S13
+Parts 32-33          -> RAG-07 (GraphRAG section)
+Parts 34-36          -> RAG-07 (multimodal/code/SQL RAG sections)
+Parts 37-41          -> RAG-07 (agentic/self/corrective/adaptive/routing)
+Parts 42-43          -> RAG-12 (security) + EXAMPLE.py S14-S15
+Parts 44-48, 65-68   -> RAG-10..RAG-11 (production, cost, latency, caching,
+                       observability, deployment, freshness)
+Parts 49-51          -> AI_ENGINEERING/LANGCHAIN/, AI_ENGINEERING/LANGGRAPH/
+                       (sibling courses in this repository)
+Parts 52-54, 76      -> PROJECT.txt (tiers E..S+) + EXAMPLE.py (from scratch)
+Parts 62-64, 70      -> RAG-09 (evaluation/experiments) + PRACTICE.txt levels 3-5
+Parts 71-73          -> PRACTICE.txt levels 4-5 + QUESTIONS_BANK.txt Domains 20-25
+
+Diagrams:  diagrams/rag/*.png + Videos/*.mp4 + Images/ (see generate_rag_media.py)
+================================================================================

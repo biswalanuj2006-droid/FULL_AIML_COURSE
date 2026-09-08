@@ -1,0 +1,20 @@
+[build]
+  command = "cd platform/frontend && npm install && npm run build && mkdir -p dist_out && cp -r platform/frontend/dist/* dist_out/"
+  publish = "dist_out"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://YOUR-RAILWAY-APP.up.railway.app/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/assets/*"
+  to = "https://YOUR-RAILWAY-APP.up.railway.app/assets/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

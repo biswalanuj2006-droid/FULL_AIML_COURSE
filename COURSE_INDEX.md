@@ -186,10 +186,42 @@ duplicates, 4,485 lines. Extend any domain by appending new IDs.
 - llm_fundamentals.txt
 - README.md, practice.txt, project.txt
 
+## AI_ENGINEERING/RAG/
+**Purpose:** Self-contained ULTRA-DEEP RAG sub-course (Course 2 of 4 in the AI_ENGINEERING set: DEEP_LEARNING -> RAG -> LANGCHAIN -> LANGGRAPH).
+Files: COURSE.txt (RAG-00..RAG-13, 822 lines), PRACTICE.txt (levels 0-5, 265 lines), PROJECT.txt (tiers E-S+ plus enterprise capstone, 177 lines), EXAMPLE.py (offline numpy-only lab S1-S15, 921 lines, runs: python AI_ENGINEERING/RAG/EXAMPLE.py).
+STATUS: EXAMPLE.py now VERIFIED FULLY PASSING (ALL S1-S15: cleaning, chunking, PPMI-SVD embeddings, dense vs lexical 7/10 vs 10/10, IVF recall 1.00, BM25 from scratch, RRF hybrid 3/3, rerank funnel, parent-child, grade-retry query rewrite, prompt contract + content-word ABSTAIN, groundedness 1.00 vs 0.00, eval harness hit@3 10/12 + MRR 0.68 + abstain 2/2 + groundedness 1.00, failure injection/poisoned-doc exclusion, security: tenant isolation + 2-layer injection defense 2/2).
+Coverage: ingestion/cleaning/normalization, recursive chunking, real dense embeddings trained in-file (PPMI+SVD), dense vs lexical vs hybrid (RRF), BM25 from scratch, IVF/HNSW-lite, two-stage rerank funnel, parent-child retrieval, query rewrite + multi-query + grade-retry, evidence-grounded generation + abstain, groundedness check, eval harness (hit@k/MRR/NDCG/groundedness), failure injection + per-query trace, production RAG (auth/rate limits/cache invalidation/observability), security (indirect prompt injection/tenant isolation/cache poisoning/poisoning test), 4 learning gates before LANGCHAIN.
+Docs: COURSE_INDEX.md, COURSE_AUDIT.txt. Companion live labs already exist in genai_agents_course/: rag_agent_server.py, rag_agent_server_prod.py, embedding_rag_lab.py.
+
 ## 29. RAG (`29_RAG`)
 **Purpose:** Retrieval-augmented generation, retrieval quality
 - rag_complete.txt
 - README.md, practice.txt, project.txt, rp (full wrong-answer debug walkthrough)
+- RAG_MASTER_PROMPT.txt: the 76-part / 16-phase RAG master course prompt
+  (spec contract) stored here, with a coverage map to every RAG artifact
+  (AI_ENGINEERING/RAG/, rag_complete.txt, QUESTIONS_BANK.txt Domains 20-25).
+
+## MEDIA: Images/ + Videos/ + VISUAL_CONTENT_MASTER_PLAN.txt
+**Purpose:** populated root media folders (were empty) + the visual production blueprint.
+- Images/: 77 images copied from diagrams/ organized by category (llm,
+  agents, ml, math, dl, backend, nlp, rag, transformers, graphs, graph,
+  recommenders, rl) - regenerate: python diagrams/generate_rag_media.py
+- Videos/: 6 animated MP4 clips (4 s, 12 fps, ffmpeg): topk_retrieval,
+  bm25_parameters, rrf_fusion, temperature_sampling, chunk_size_tradeoff,
+  ann_recall_latency
+- diagrams/rag/ gained 8 new panels: rag_lifecycle, rerank_funnel,
+  hybrid_rrf, parent_child, agentic_rag, graph_vs_vector_rag, rag_metrics,
+  temperature_softmax (gallery regenerated: 77 diagrams)
+- VISUAL_CONTENT_MASTER_PLAN.txt (repo root): the complete 40-course image +
+  video generation blueprint - shared visual language, three-level visual
+  system, per-course panel + animation + video specs, project visuals,
+  visual quizzes, QC checklist, and the render pipeline. It lists every
+  rendered asset and every still-missing one.
+- diagrams/generate_v2_panels.py: second-wave panels produced from the plan
+  (5 new): transformers/attention_mask, transformers/mqa_gqa, ml/overfit_gap,
+  math/broadcasting, nlp/tokenization. Regenerate then refresh Images/ and
+  the gallery: python diagrams/generate_v2_panels.py && python
+  diagrams/generate_rag_media.py && python diagrams/generate_gallery.py
 
 ## 30. VECTOR DATABASES (`30_VECTOR_DATABASES`)
 **Purpose:** Embedding storage, ANN search, vector stores

@@ -1,5 +1,7 @@
 ================================================================================
 MODULE 29: RETRIEVAL-AUGMENTED GENERATION (RAG) — COMPLETE GUIDE
+Reference master prompt: see AI_ENGINEERING/RAG/ (COURSE.txt RAG-00..RAG-13) and 29_RAG/real_problem.txt.
+This file is the existing 29_RAG module text. The more recent RAG course lives in AI_ENGINEERING/RAG/.
 ================================================================================
 
 LEARNING OBJECTIVES

@@ -1,0 +1,77 @@
+import pandas as pd
+
+=============================================================================
+                                 CSV
+=============================================================================
+
+1.opening a local csv file
+
+df = pd.read_csv("aug_train.csv)
+
+2.opening a csv file from a url
+
+import requests
+from io import Stringio
+
+url = "url"
+headers = {"user-agent" : "agent name"}
+req = requests.get(url,headers=headers)
+data = Stringio(req.text)
+pd.read_csv(data)
+
+3.sep parameter
+
+df = read_csv("movie_material.tsv",sep='\t',name=[names])
+it used when the data has no column name
+
+4.index_col name
+
+df = pd.read_csv("avg_mark.tsv",index_col=column name)
+
+5.header parameter
+
+df = pd.read_csv("test.csv",header=1)
+it used when column specifier name is merge with the data
+
+6.use_cols parameter
+df = pd.read_csv("aug_train.csv",use_cols=['cols1','cols2',...,colsn])
+it gives the specific column
+
+7.sqeeze parameter
+
+df = pd.read_csv("dataset",usecols=[column name],sqeeze=True/False)
+it gives the one column, it doesn't give any pandasframe it give pandas series
+
+8.skiprows parameter
+
+df = pd.read_csv("dataset",skiprows=[row1,row2,row3,...,rown])
+it skips the rows from the dataset
+
+nrows
+df = pd.read_csv("dataset",nrows=number_of_rows_to_skip)
+
+9.Encoding parameter
+
+df = pd.read_csv("dataset",encoding="encoding")(it can be latin but most of the cases it is utf-8)
+
+10.skip bad lines
+
+df = pd.read_csv("dataset",sep=";",encoding="encoder",error_bad_lines=False)
+
+11. dtypes parameter
+df = pd.read_csv("dataset",dtype={'col_name' : datatype})
+df.info()#it gives the information about the csv file
+
+12.handelling dates
+df = pd.read_csv("dataset",parse_dates = ['date_cloumn'])
+it is used to change the datetime64 or any datetime datatype to make it used as a real date time varibale
+
+parse_dates = [[clon_1,clon_2]]
+this method is used to merge two date and time columns
+
+df = pd.read_csv("dataset",converters={'coln_name' : condition})we can also use lambda functioon for specific 
+
+=====================================================================================================================
+                                                   JSON
+=====================================================================================================================
+

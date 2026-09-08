@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Databases
+*.db
+*.sqlite3
+platform/backend/*.db
+
+# Node
+node_modules/
+platform/frontend/dist/
+static/
+
+# Env & secrets
+.env
+
+# OS
+.Desktop.ini
+desktop.ini
+Thumbs.db
+
+# Media generators' temp output
+diagrams/gallery/thumbs/

@@ -1,0 +1,997 @@
+================================================================================
+VISUAL CONTENT MASTER PLAN
+COMPLETE IMAGE + VIDEO GENERATION BLUEPRINT FOR THE AI/ML ENGINEERING CURRICULUM
+================================================================================
+Role            : AI/ML Professor + Scientific Illustrator + Motion-Graphics
+                  Director + Technical Content Creator
+Goal            : Every image, diagram, animation and video must TEACH a
+                  technical concept. Accuracy > beauty. Clarity > decoration.
+                  Learning > art.
+Primary file     : THIS plan (VISUAL_CONTENT_MASTER_PLAN.txt)
+Execution note   : The repo ALREADY renders real assets from matplotlib + ffmpeg
+                  (no AI image generator needed). This plan is the SPEC. Each
+                  entry lists what to draw and what the learner must notice.
+                  Build/refresh: python diagrams/generate_course_diagrams.py,
+                  python diagrams/generate_module_diagrams.py,
+                  python diagrams/generate_rag_media.py,
+                  python diagrams/generate_gallery.py
+                  (ffmpeg is installed; all MP4s are real, validated clips)
+
+--------------------------------------------------------------------------------
+0. CURRENT ASSET INVENTORY (what exists on disk today)
+--------------------------------------------------------------------------------
+diagrams/  - source PNGs by category (44 panels, matplotlib box/arrow style):
+  ml/          feature_importance, imbalance, kmeans, learning_curves,
+               ml_lifecycle, pca, pr_curve, time_series, overfit_gap
+               (v2)
+  llm/         kv_cache, kv_cache_memory, llm_architecture, lora,
+               prefill_decode, pretraining_pipeline, quantization, sampling,
+               scaling_laws, speculative_decoding
+  math/        bias_variance, entropy_gini, gradient_descent, sigmoid,
+               broadcasting (v2)
+  nlp/         nlp_pipeline, sentiment_analysis, word_embeddings,
+               tokenization (v2)
+  transformers self_attention, transformer_architecture, attention_mask
+               (v2), mqa_gqa (v2)
+  rag/         agentic_rag, graph_vs_vector_rag, hybrid_rrf, parent_child,
+               rag_lifecycle, rag_metrics, rerank_funnel, temperature_softmax
+  agents/      agent_loop, embedding_bench, multi_agent, prod_rag_server,
+               rag_agent
+  graphs/      gradient_descent_from_scratch, lstm_sine_forecast,
+               nn_training_loss, pca_demo, vis_01_loss_curve, vis_02_regression,
+               vis_03_confusion, vis_04_roc
+  recommenders two_stage_recsys, als_vs_sgd_rmse
+  rl/          agent_env_loop, qlearning_vs_optimal
+  graph/       message_passing, link_prediction_auc
+  backend/     (2: api_flow, backend_architecture)
+  dl/          (6: activation_functions, backpropagation, cnn_architecture,
+               gradient_descent, lstm_gates, neural_network)
+  math/        (4: bias_variance, entropy_gini, gradient_descent, sigmoid)
+  nlp/         (3)
+  transformers (2)
+  gallery/     index.html + thumbs (the visual gallery, all images verified OK)
+  key_concepts_diagrams.txt  (299 lines ASCII diagrams)
+  additional_diagrams.txt    (543 lines ASCII diagrams)
+  DIAGRAM_GALLERY.md         (140-line index of every rendered panel)
+
+Images/      - 77 images organized into 14 category folders + README.txt
+Videos/      - 6 animated MP4s (~4 s, 12 fps, 960x540, ffprobe-validated):
+                 topk_retrieval, bm25_parameters, rrf_fusion,
+                 temperature_sampling, chunk_size_tradeoff, ann_recall_latency
+Reference    - key_concepts_diagrams.txt and additional_diagrams.txt define the
+               canonical box/arrow notation used throughout.
+
+SECOND-WAVE (v2) ALREADY SHIPPED - diagrams/generate_v2_panels.py built
+  transformers/attention_mask, transformers/mqa_gqa, ml/overfit_gap,
+  math/broadcasting, nlp/tokenization (5 new panels; Images/ now 77).
+
+GAPS the plan below targets next (highest teaching value first):
+  1. Math/stats animated gradients, distributions, Bayes (few rendered panels)
+  2. Transformer internals: self-attention, QKV, positional encoding, KV cache
+     animation, continuous batching (2 panels exist; no video)
+  3. ML algorithm animations: k-means, gradient boosting, SVM margin, decision
+     tree split, overfitting curves (static panels exist, no motion)
+  4. Agents/LangGraph: agent loop exists as static; needs state-machine video
+  5. Deep learning: backprop flow animation, dropout/batchnorm, activation
+     curves exist as static only
+  6. Fine-tuning/quantization/LoRA animations (static llm/lora exists)
+  7. Embeddings/IR: similarity geometry, HNSW graph search video
+  8. Recommend/RL/time-series/graph-ML static panels exist but no videos
+
+--------------------------------------------------------------------------------
+1. VISUAL GRADING (difficulty levels)
+--------------------------------------------------------------------------------
+LEVEL 0  Absolute beginner   - 3 boxes, plain words, one direction of flow
+LEVEL 1  Beginner            - concept image + one simple pipeline
+LEVEL 2  Intermediate        - labeled stages, small math annotations
+LEVEL 3  Advanced            - full architecture, tensor shapes on the boxes
+LEVEL 4  Professional        - real component names, latency/cost annotations
+LEVEL 5  Senior engineer     - tradeoff callouts, failure modes, scale notes
+LEVEL 6  Expert              - memory/latency math, GPU execution notes
+LEVEL 7  Research            - ablations, parameter sweeps, benchmark curves
+
+RULE: beginner visuals must NOT look like paper figures; expert topics are
+allowed full technical density.
+
+--------------------------------------------------------------------------------
+2. THE THREE-LEVEL VISUAL SYSTEM (one concept -> three figures)
+--------------------------------------------------------------------------------
+For every difficult concept produce THREE panels:
+  LEVEL 1 - INTUITION : what it is, in the world.        (no jargon)
+  LEVEL 2 - TECHNICAL : internal architecture/mechanics. (named components)
+  LEVEL 3 - IMPLEMENTATION: code + tensors + math flow.  (shapes on boxes)
+Example - attention:
+  L1 "tokens look at other tokens"         (arrows between words)
+  L2 Q -> K -> attention matrix -> V       (block diagram)
+  L3 QK^T / sqrt(d_k) -> softmax -> V      (matrices with dims labeled)
+
+--------------------------------------------------------------------------------
+3. MASTER VISUAL ROADMAP (dependency order for the visual curriculum)
+--------------------------------------------------------------------------------
+PYTHON -> NUMPY -> PANDAS -> MATH -> STATISTICS -> DATA SCIENCE -> MACHINE
+LEARNING -> DEEP LEARNING -> NLP / COMPUTER VISION -> ATTENTION -> TRANSFORMERS
+-> LLMs -> EMBEDDINGS -> INFORMATION RETRIEVAL -> RAG -> ADVANCED RAG ->
+LANGCHAIN -> LANGGRAPH -> AI AGENTS -> MULTI-AGENT -> MLOPS -> PRODUCTION AI ->
+SYSTEM DESIGN -> RESEARCH
+
+Visuals must respect this order: later panels may assume notation introduced
+earlier (e.g. RAG panels reuse the EMBEDDING symbol defined in the embeddings
+course; agents reuse the LLM symbol from the LLM course).
+
+--------------------------------------------------------------------------------
+4. SHARED VISUAL LANGUAGE (consistency rules - apply to EVERY panel)
+--------------------------------------------------------------------------------
+SYMBOLS
+  [DOC/BOX]  rounded rect = component/service          color-coded by kind:
+             blue #1565c0 = data/inference pipeline     green #2e7d32 = storage
+             amber #b26a00 = query/user input           purple #5e35b1 = model/
+             red   #b02a37 = failure/risk               compute
+  ARROW      solid  ->   data/control flow (label = what moves)
+             dashed -->  feedback/update loop
+  tensor     boxes annotated with real shapes: (B, T, d), (T, T), (d_k)
+  time       flows left -> right or top -> bottom ONLY (never mixed in one fig)
+
+NOMENCLATURE (consistent everywhere)
+  embedding = dense vector in semantic space   RAG = retrieval + context +
+             generation (never just "vector DB")
+  RAG lifecycle = INGEST (load->parse->clean->chunk->embed->index) THEN QUERY
+             (process->transform->retrieve->rerank->prompt->generate->cite)
+
+MATH ACCURACY
+  verify every equation before rendering. Canonical forms used everywhere:
+    cosine sim = (a.b) / (|a||b|)                 attention = softmax(QK^T/sqrt d_k) V
+    BM25 = IDF * (f(k1+1)) / (f + k1(1-b+b|D|/avgdl))   softmax = e^z / sum e^z
+    P(token) = softmax(logits / T)                MSE = (1/n) sum (y - yhat)^2
+
+CODE ACCURACY
+  never draw invented APIs. LangChain/LangGraph panels use CURRENT stable
+  concepts (Runnable/LCEL, StateGraph, nodes/edges/state); PyTorch panels use
+  tensors/autograd/nn.Module; Hugging Face panels use current transformers APIs.
+
+--------------------------------------------------------------------------------
+5. FILE ORGANIZATION + NAMING (repo layout to extend)
+--------------------------------------------------------------------------------
+IMAGES/            already mirrors diagrams/<category>/
+VIDEOS/            currently flat; grow into subfolders when >20 clips:
+                   VIDEOS/01_FOUNDATIONS/, .../10_DL/, .../15_LLM/, .../21_RAG/,
+                   .../27_AGENTS/, .../PROJECT_DEMOS/
+NAMING  (existing generators already use the tail; keep it)
+  image   <DOMAIN>_<MODULE>_<TOPIC>_<KIND>_<NNN>.png     e.g. RAG_PIPELINE_ARCH_001
+  video   <DOMAIN>_<MODULE>_<TOPIC>_VIDEO_<NNN>.mp4       e.g. TRANSFORMER_ATTENTION_VIDEO_001
+  KIND    ARCH (architecture) | FLOW (pipeline) | MATH | GEO (geometry) |
+          FAIL (failure/debug) | TRADE (tradeoff) | CURVE (sweep result)
+
+--------------------------------------------------------------------------------
+6. IMAGE PROMPT / SPEC FORMAT (every panel ships this header)
+--------------------------------------------------------------------------------
+IMAGE ID:
+COURSE: MODULE: TOPIC: DIFFICULTY: KIND:
+PURPOSE / LEARNING OBJECTIVE:
+VISUAL TYPE: (concept | diagram | flowchart | architecture | math | code-vis)
+MAIN ELEMENTS:      (boxes + their exact labels)
+ARROWS:             (what flows between which elements)
+MATH/ANNOTATION:    (equations or shapes to place on the figure)
+COLORS per section 4.  BACKGROUND: plain white, no decoration.
+COMMON MISINTERPRETATION TO AVOID: (drawn correctly on purpose)
+WHAT THE LEARNER MUST NOTICE:
+
+--------------------------------------------------------------------------------
+7. VIDEO SPEC FORMAT (every animation ships this header)
+--------------------------------------------------------------------------------
+VIDEO ID: COURSE: TOPIC: DIFFICULTY: DURATION (s): FPS:
+LEARNING OBJECTIVE:
+SCENE-BY-SCENE (each ~0.5-1 s for a 4 s clip; longer lessons 5-30+ s scenes):
+  SCENE n: what moves | narration | on-screen text | freeze-holds
+RENDER: matplotlib FFMpegWriter, libx264, 960x540, fps 12 (matches Videos/).
+Rule: motion must carry the explanation (gradient stepping, tokens attending,
+query moving through space, bars growing), not decorative bounce.
+
+--------------------------------------------------------------------------------
+8. FULL 40-COURSE VISUAL SPECIFICATIONS
+--------------------------------------------------------------------------------
+
+# COURSE 01 - PYTHON FOR AI  (course module 01_PYTHON)
+  CONCEPT PANELS
+   PY_MEMREF_FLOW_001  (L1) variables point to objects: box "name" -> arrow ->
+        object box "value + type + refcount". NOTICE: two names can share one object.
+   PY_LISTVSSTR_FLOW_002 (L2) mutable vs immutable: mutate in place vs rebind.
+   PY_ITERGEN_FLOW_003  (L3) iterator protocol: __iter__ -> __next__ -> StopIteration;
+        generator = lazy, frame frozen between yields (state bubble).
+   PY_DECORATOR_FLOW_004 (L2) function in -> wrapper around it -> call flows
+        through wrapper. Avoid "magic" misreading.
+   PY_EXEC_FLOW_005   (L1) program -> interpreter -> bytecode -> PVM -> output.
+  ANIMATION/VIDEO
+   PY_COMPREHENSION_VIDEO_001 (4-8 s) list-comp builds: for->if->expr lighting
+        up while an equivalent for-loop writes the same list.
+   PY_GENERATOR_VIDEO_002  (6-10 s) next() calls resume the frozen frame; show
+        memory bar tiny vs full list bar large.
+  THUMBNAIL: "PYTHON FOR AI" over one object-graph figure.
+
+# COURSE 02 - NUMPY  (module 02_NUMPY)
+  CONCEPT PANELS
+   NP_TENSOR_GEO_001  (L1) scalar/vector/matrix/tensor as nested blocks with
+        shape labels (3,), (3,4), (2,3,4).
+   NP_BROADCAST_FLOW_002 (L2) the (3,1)+(1,4)=(3,4) stretch: draw both input
+        arrays, show each being "stretched" along the size-1 axis, sum lands
+        in the (3,4) result with axes highlighted.
+   NP_VIEWCOPY_FLOW_003 (L2) base buffer + view arrow (slicing) vs .copy()
+        (new buffer). NOTICE: reshape/slice share memory; copy does not.
+   NP_MATMUL_ARCH_004  (L3) (m,k) @ (k,n) -> (m,n): the contraction axis k
+        drawn crossing between the two matrices.
+  ANIMATION/VIDEO
+   NP_BROADCAST_VIDEO_001 (6 s) the stretch happens frame by frame, then the
+        elementwise sum grid fills in.
+   NP_MATMUL_VIDEO_002  (8 s) dot-product rows x columns sweeping -> result
+        cell fills.
+  THUMBNAIL: "NUMPY" over a broadcasting grid.
+
+# COURSE 03 - PANDAS  (module 03_PANDAS)
+  CONCEPT PANELS
+   PD_DF_FLOW_001  (L1) CSV -> DataFrame grid (rows/columns labeled, dtypes).
+   PD_GROUPBY_FLOW_002 (L2) split-apply-combine: vertical slices -> per-group
+        op -> reassembled table.
+   PD_MERGE_FLOW_003 (L2) two tables + key columns -> join types (inner/left/
+        outer) shown as Venn over the key column.
+   PD_PIVOT_FLOW_004  (L3) long -> wide reshape with index/columns/values
+        arrows pointing at the target grid.
+  ANIMATION/VIDEO
+   PD_GROUPBY_VIDEO_001 (6 s) split (rows fly to groups), apply (per-group
+        colored bar computes), combine (bars merge back).
+  THUMBNAIL: "PANDAS" over a tidy DataFrame grid.
+
+# COURSE 04 - MATHEMATICS FOR AI  (module 05_MATHEMATICS; static panels exist)
+  CONCEPT PANELS (extend existing math/: gradient_descent, sigmoid, entropy_gini,
+  bias_variance - currently 4)
+   MA_DOTPROD_GEO_001  (L1) two vectors, projection arrow, |a||b|cos(theta)
+        labeled on the figure.
+   MA_COSINE_GEO_002   (L2) angle vs length: cosine captures direction only.
+        NOTICE: same angle, different lengths -> same cosine.
+   MA_MATMUL_FLOW_003  (L3) rows x columns sweep (see NumPy video still).
+   MA_EIGEN_GEO_004    (L3) square matrix as transform; vector that stays on
+        its line = eigenvector, stretch factor = eigenvalue.
+   MA_CHAINRULE_FLOW_005 (L3) x->f->g with dz/dx = dz/dy * dy/dx annotated on
+        the arrows.
+  ANIMATION/VIDEO
+   MA_GRADIENT_VIDEO_001 (10 s) ball on loss bowl, arrow = -grad, step shrinks
+        near the bottom (existing static graph can seed frames).
+   MA_CHAINRULE_VIDEO_002 (8 s) activation propagates forward, partials pulse
+        backward, multiply along the path.
+  THUMBNAIL: "MATHEMATICS FOR AI" over a gradient-descent bowl.
+
+# COURSE 05 - STATISTICS & PROBABILITY  (module 05_MATHEMATICS/stats content)
+  CONCEPT PANELS
+   ST_NORMAL_MATH_001 (L1) Gaussian curve with mean/sd/1-2-3 sigma bands and
+        % mass labels.
+   ST_BAYES_FLOW_002  (L2) prior P(H) -> likelihood P(E|H) -> posterior P(H|E)
+        as three proportional bars; arrows labeled with the rule.
+   ST_BIASVAR_ARCH_003 (L2) existing math/bias_variance.png - reuse as the
+        canonical figure, plus target-shooting inset (center = truth, spread =
+        variance, offset = bias).
+   ST_CONFINT_GEO_004  (L3) 20 sample means with their CIs; ~95% contain the
+        true mean. NOTICE: CI is about the procedure, not one interval.
+  ANIMATION/VIDEO
+   ST_LLN_VIDEO_001 (8 s) die-roll average converges to 3.5 as n grows.
+   ST_CORR_VIDEO_002 (6 s) scatter points follow r from +1 -> 0 -> -1.
+  THUMBNAIL: "STATISTICS & PROBABILITY" over a normal curve with sigma bands.
+
+# COURSE 06 - DATA SCIENCE  (modules 07_DATA_PREPROCESSING, 08_EDA)
+  CONCEPT PANELS
+   DS_PIPELINE_FLOW_001 (L1) collect->clean->EDA->features->split->train->eval
+        as one horizontal pipeline (matches ml_lifecycle but data-only).
+   DS_LEAKAGE_FAIL_002 (L3, FAIL) the classic trap drawn correctly: scaler/
+        encoder fit on FULL data before split -> information flows from test
+        into train. Show the leak arrow in red.
+   DS_MISSING_FLOW_003 (L1) missing matrix (white gaps) -> impute options side
+        by side (drop/mean/median/model) with when-to-use notes.
+  ANIMATION/VIDEO
+   DS_LEAKAGE_VIDEO_001 (8 s) same pipeline run twice: leak path lights red and
+        val accuracy lies high; correct order keeps val honest.
+  THUMBNAIL: "DATA SCIENCE" over the clean pipeline with a red leakage branch.
+
+# COURSE 07 - MACHINE LEARNING  (modules 06..16; static panels exist: kmeans,
+# pca, learning_curves, feature_importance, imbalance, pr_curve, ml_lifecycle)
+  CONCEPT PANELS (extend)
+   ML_LINREG_ARCH_001 (L1) points + fitted line + residual sticks; MSE caption.
+   ML_SIGMOID_MATH_002 (L1) reuse math/sigmoid: probability vs decision
+        boundary at 0.5.
+   ML_TREE_FLOW_003  (L2) root splits on feature -> children -> leaf; label
+        each node with its split rule + gini.
+   ML_BAGGING_FLOW_004 (L2) samples with replacement -> parallel trees ->
+        vote/average.
+   ML_BOOSTING_FLOW_005 (L2) sequential trees where tree t+1 fits the RESIDUAL
+        of the ensemble so far (arrow labeled "residuals").
+   ML_SVM_GEO_006     (L2) hyperplane + margin dashed lines + support vectors
+        circled; "only support vectors matter" callout.
+   ML_KNN_GEO_007     (L1) query point, k=3 ring, majority vote.
+   ML_KMEANS_FLOW_008 (L2) freeze frames of the k-means loop (assign -> update)
+        as a static storyboard.
+   ML_DBSCAN_GEO_009  (L3) core/border/noise with eps radius circles; "density
+        reachable" chain drawn.
+   ML_OVERFIT_CURVE_010 (L1) reuse graphs/nn_training_loss + ml/learning_curves:
+        train vs val gap widening; annotate bias and variance regimes.
+  ANIMATION/VIDEO
+   ML_KMEANS_VIDEO_001 (10 s) centroids initialize, points recolor, centroids
+        step until convergence (classic teaching loop).
+   ML_GBM_VIDEO_002   (12 s) tree 1 fits data, residual arrows shrink, tree 2
+        fits what's left; ensemble curve approaches targets.
+   ML_SVM_VIDEO_003   (6 s) margin widens as C / kernel changes.
+  THUMBNAIL: "MACHINE LEARNING" over the k-means storyboard.
+
+# COURSE 08 - FEATURE ENGINEERING  (module 15_FEATURE_ENGINEERING)
+  CONCEPT PANELS
+   FE_ENCODE_FLOW_001 (L1) categorical column -> one-hot grid (each value a
+        column, 1 at its row); ordinal vs one-hot vs target encoding compared.
+   FE_SCALE_FLOW_002 (L2) raw feature histogram -> standardize (mean 0 sd 1)
+        and min-max (0..1) transforms side by side.
+   FE_POLY_GEO_003   (L3) line underfits -> quadratic fits -> cubic overfits
+        (three mini panels, one degree label each).
+   FE_LEAK_FAIL_004  (L3, FAIL) target encoding fit on full data leaks target
+        info; draw the leak in red (paired with DS_LEAKAGE panel).
+  ANIMATION/VIDEO
+   FE_ONEHOT_VIDEO_001 (5 s) each category lights its own column.
+  THUMBNAIL: "FEATURE ENGINEERING" over the encoding grid.
+
+# COURSE 09 - ML EVALUATION  (module 14_MODEL_EVALUATION; static: pr_curve,
+# imbalance, confusion, roc)
+  CONCEPT PANELS
+   EV_CONFUSION_FLOW_001 (L1) reuse graphs/vis_03_confusion: 2x2 grid with TP/
+        FP/FN/TN cells and precision/recall formulas under the correct cells.
+   EV_ROC_MATH_002    (L2) reuse graphs/vis_04_roc: threshold sweeping along the
+        curve; AUC = area caption; diagonal = random.
+   EV_PR_CURVE_003    (L3) PR vs ROC: when positives are rare, PR is the honest
+        curve. Annotate why (denominator changes).
+   EV_CALIBRATION_004 (L3) reliability diagram: predicted vs observed prob;
+        perfect = diagonal; overconfident bows below.
+   EV_METRIC_PICK_FLOW_005 (L2) decision flow: fraud? (recall) / spam? (F1) /
+        ranking? (NDCG) / rare positive? (PR-AUC).
+  ANIMATION/VIDEO
+   EV_THRESHOLD_VIDEO_001 (8 s) threshold slider moves, confusion-matrix counts
+        tick, point travels along ROC.
+  THUMBNAIL: "ML EVALUATION" over the ROC + threshold point.
+
+# COURSE 10 - DEEP LEARNING  (modules 18_ANN..22; dl/ has 6 static panels)
+  CONCEPT PANELS (extend dl/: neural_network, backpropagation, gradient_descent,
+  activation_functions, cnn_architecture, lstm_gates)
+   DL_NEURON_ARCH_001 (L1) x1..xn -> weights -> sum z -> activation f -> out.
+        Existing dl/neural_network is the canonical figure; add an inset with
+        z = sum w_i x_i + b.
+   DL_BACKPROP_FLOW_002 (L3) existing dl/backpropagation plus the chain rule
+        annotated on each returning arrow (dL/dw = dL/da * da/dz * dz/dw).
+   DL_DROPOUT_ARCH_003 (L2) same net twice: train (some neurons crossed out) vs
+        eval (all active, scaled) - inverted dropout note.
+   DL_NORM_ARCH_004   (L3) batchnorm vs layernorm: batchnorm normalizes per
+        feature across the batch; layernorm per sample across features.
+   DL_RESIDUAL_FLOW_005 (L2) x -> layers -> +x (skip arrow around the block);
+        "gradient highway" label on the skip.
+  ANIMATION/VIDEO
+   DL_BACKPROP_VIDEO_001 (12 s) forward pass lights green, loss cell flashes,
+        backward pulses travel red, weights update.
+   DL_DROPOUT_VIDEO_002 (6 s) random neurons switch off each training step,
+        all on at eval.
+  THUMBNAIL: "DEEP LEARNING" over the neuron computation.
+
+# COURSE 11 - PYTORCH  (module 19_DEEP_LEARNING/pytorch content)
+  CONCEPT PANELS
+   PT_TENSOR_ARCH_001 (L1) tensor object: storage + shape + stride + dtype;
+        "view is metadata" callout.
+   PT_AUTOGRAD_FLOW_002 (L3) forward graph x -> w -> loss with leaves; backward
+        arrows carry dL/dx, dL/dw (mirror of DL_BACKPROP but with .grad shown).
+   PT_LOOP_FLOW_003  (L2) the 5-step training loop: forward -> loss ->
+        zero_grad -> backward -> step, drawn as a cycle with the optimizer box.
+   PT_DATALOADER_ARCH_004 (L2) Dataset (indexable) -> Sampler -> DataLoader
+        batching -> collate -> batch tensor with shapes.
+   PT_AMP_FLOW_005    (L3) FP32 master weights, FP16 matmuls, loss scaling up
+        then down - the mixed-precision cycle.
+  ANIMATION/VIDEO
+   PT_AUTOGRAD_VIDEO_001 (8 s) tensors animate through the compute graph;
+        .backward() pulses gradients back to leaves.
+  THUMBNAIL: "PYTORCH" over the autograd graph.
+
+# COURSE 12 - COMPUTER VISION  (modules 17_CV_FOUNDATIONS, 20_CNN)
+  CONCEPT PANELS (extend dl/cnn_architecture)
+   CV_CONV_FLOW_001 (L1) 3x3 kernel slides over image, output pixel = sum of
+        elementwise products (one highlighted window + its math).
+   CV_PADDING_GEO_002 (L2) same conv with/without padding: output shrinks vs
+        same size; formula out = (n + 2p - k)/s + 1 annotated.
+   CV_POOL_FLOW_003 (L2) 2x2 max-pool window taking max -> downsample.
+   CV_RECEPTIVE_FLOW_004 (L3) pixel -> layer2 sees 5x5 -> layer3 sees larger
+        field: concentric squares growing.
+   CV_TRANSFER_FLOW_005 (L2) frozen backbone (gray) + trainable head (green)
+        on a small dataset.
+   CV_YOLO_ARCH_006   (L3) image grid -> per-cell anchors -> boxes + class
+        scores -> NMS keeps one box per object.
+   CV_UNET_ARCH_007   (L3) encoder down / decoder up with skip connections
+        drawn as horizontal bridges.
+  ANIMATION/VIDEO
+   CV_CONV_VIDEO_001 (8 s) kernel slides; output feature map fills cell by cell.
+   CV_YOLO_VIDEO_002  (10 s) boxes appear per grid cell, confidence bars, NMS
+        collapses duplicates.
+  THUMBNAIL: "COMPUTER VISION" over the sliding conv window.
+
+# COURSE 13 - NLP  (module 23_NLP; nlp/ has 3 panels)
+  CONCEPT PANELS (extend)
+   NLP_TOKEN_FLOW_001 (L1) raw sentence -> tokens -> ids -> embedding rows.
+   NLP_TFIDF_MATH_002 (L2) word x document matrix; one cell's TF*IDF worked out
+        with the numbers on the figure.
+   NLP_W2V_GEO_003    (L3) king - man + woman ~= queen as vector arithmetic in
+        a 2D sketch (arrows labeled).
+   NLP_NER_ARCH_004   (L2) sentence tokens above B-I-O tag labels; "inside a
+        span" arrows.
+  ANIMATION/VIDEO
+   NLP_W2V_VIDEO_001 (6 s) vector moves: king - man + woman, lands near queen.
+  THUMBNAIL: "NLP" over the tokenization pipeline.
+
+# COURSE 14 - TRANSFORMERS  (modules 25_ATTENTION, 26_TRANSFORMERS; 2 static
+# panels exist - this course needs the MOST new visuals)
+  CONCEPT PANELS
+   TF_ENCBLOCK_ARCH_001 (L2) token embeddings -> MHA -> add&norm -> FFN ->
+        add&norm; block drawn once with a "repeat N times" brace.
+   TF_ATTN_MATH_002  (L3) THE canonical: Q,K,V -> QK^T -> /sqrt(d_k) ->
+        softmax -> xV with real matrix shapes under each stage.
+   TF_MASK_FLOW_003  (L2) causal mask: upper triangle grayed; token i attends
+        only to <=i (row-by-row).
+   TF_POSENC_MATH_004 (L3) sinusoid curves + RoPE rotation annotation vs ALiBi
+        linear bias - one panel, three encodings compared.
+   TF_CROSSATTN_ARCH_005 (L3) decoder queries attend to encoder K,V; arrows
+        crossing from the encoder stack.
+   TF_MQA_GQA_ARCH_006 (L3) MHA vs MQA vs GQA head sharing diagram: GQA
+        intermediate groups highlighted (KV-cache memory footnote).
+   TF_RMSNORM_SWIGLU_MATH_007 (L3) RMSNorm formula on a vector; SwiGLU
+        activation = silu(xW) * (xV) drawn as two gates.
+  ANIMATION/VIDEO
+   TF_SELFATTN_VIDEO_001 (10 s) token 2's query vector flies to all keys,
+        attention weights glow, weighted sum pulls values back.
+   TF_KVCACHE_VIDEO_002 (10 s) decode step appends one KV row to the cache
+        (reuse llm/kv_cache + kv_cache_memory stills as end frames).
+  THUMBNAIL: "TRANSFORMERS" over the attention QK^T matrix.
+
+# COURSE 15 - LLMs  (module 28_LLM_FUNDAMENTALS; llm/ has 10 panels)
+  CONCEPT PANELS (extend existing llm/: llm_architecture, sampling,
+  pretraining_pipeline, scaling_laws, kv_cache, quantization, lora, etc.)
+   LLM_AUTOREG_FLOW_001 (L1) "The cat sat" -> predict next -> append ->
+        predict - the generation loop (still of the classic autoregression
+        animation).
+   LLM_LOGIT_MATH_002 (L2) vocab slice with logits bar -> softmax -> probs bar;
+        argmax vs sample marked.
+   LLM_TEMPERATURE_MATH_003 (L2) reuse rag/temperature_softmax as canonical:
+        P(token)=softmax(logits/T), T in {0.1,0.5,1.0,2.0}.
+   LLM_TOPK_TOPP_004  (L2) top-k: keep tallest k bars (rest gray); top-p:
+        smallest set whose cumulative prob >= p (nucleus).
+   LLM_CTXWINDOW_ARCH_005 (L1) context window as a tape: system + history +
+        retrieved + question + answer slots; "full = truncate or compress"
+        callout.
+   LLM_HALLUC_MAKE_006 (L3, FAIL) factual claim drawn as confident bars with
+        no grounding arrow beneath; "fluent does not mean true" caption.
+  ANIMATION/VIDEO
+   LLM_AUTOREG_VIDEO_001 (12 s) token-by-token: prob bars over vocab, chosen
+        token slides into the context, repeat (use existing sampling panel as
+        seed frames).
+   LLM_KVCACHE_VIDEO_002 (10 s) prefill computes all rows at once; decode
+        appends row by row and reuses cached rows (memory flat after prefill).
+  THUMBNAIL: "LLMs" over the autoregressive loop.
+
+# COURSE 16 - LLM ENGINEERING
+  CONCEPT PANELS
+   LE_API_FLOW_001  (L1) app -> prompt -> API -> structured output -> validate
+        -> use; retry/backoff arrow looping back on a 429.
+   LE_STREAM_FLOW_002 (L2) tokens arriving over time as a growing tape; TTFB
+        vs total time annotated.
+   LE_TOOLCALL_ARCH_003 (L3) model emits tool_use -> tool runs -> result
+        message appended -> model continues (the full round trip).
+   LE_ROUTING_ARCH_004 (L2) query classifier -> cheap/small vs big/reasoning
+        model lanes with cost + latency labels.
+   LE_CACHE_FLOW_005 (L2) exact cache hit vs semantic cache (embed query, find
+        near cluster, reuse answer) with invalidation note.
+  ANIMATION/VIDEO
+   LE_STREAM_VIDEO_001 (6 s) response renders token by token.
+   LE_TOOLCALL_VIDEO_002 (10 s) message loop: assistant(tool_use) ->
+        tool(result) -> assistant(final) around the cycle.
+  THUMBNAIL: "LLM ENGINEERING" over the tool-call round trip.
+
+# COURSE 17 - FINE-TUNING  (llm/lora.png exists as static)
+  CONCEPT PANELS
+   FT_FULL_FLOW_001  (L2) all weight tensors light up during update (full FT)
+        vs PEFT where only adapters update (gray frozen base).
+   FT_LORA_MATH_002  (L3) W + (B A) update: A (d x r) and B (r x d) with r << d;
+        "only 2rd trainable params" callout.
+   FT_QLORA_ARCH_003 (L3) 4-bit base (NF4) + LoRA on top in bf16 + paged
+        optimizer note.
+   FT_FORGET_FAIL_004 (L3, FAIL) catastrophic forgetting: old-task accuracy
+        bars dropping as new-task training proceeds.
+  ANIMATION/VIDEO
+   FT_LORA_VIDEO_001 (8 s) frozen base stays gray, A x B rank stripe grows,
+        W + AB result shown.
+  THUMBNAIL: "FINE-TUNING" over the W + AB update.
+
+# COURSE 18 - QUANTIZATION & INFERENCE  (llm/quantization.png exists; video gap)
+  CONCEPT PANELS
+   QZ_DPREC_MATH_001 (L2) FP32 -> BF16/FP16 -> INT8 -> INT4: same weight value
+        shown with fewer bits; memory bar halves each step.
+   QZ_PTQ_FLOW_002   (L3) weights -> calibration data -> scale/zero-point ->
+        quantized weights + dequant path.
+   QZ_PREFILL_DECODE_FLOW_003 (L2) reuse llm/prefill_decode: prefill = parallel
+        across the prompt; decode = one token at a time (memory/time bars).
+   QZ_BATCH_ARCH_004 (L3) static batching: all sequences padded to the longest;
+        continuous batching: slots free as sequences finish -> new ones enter
+        (the capacity win drawn as a timeline).
+   QZ_SPEC_ARCH_005  (L3) reuse llm/speculative_decoding: draft model proposes,
+        big model verifies in parallel, accepted tokens marked green.
+   QZ_FLASHATTN_ARCH_006 (L3) tiling: Q,K,V blocks loaded to SRAM, online
+        softmax rescaling note, no (T,T) materialization.
+  ANIMATION/VIDEO
+   QZ_CONTBATCH_VIDEO_001 (12 s) GPU slots timeline: seq A finishes mid-batch,
+        seq D immediately enters the freed slot.
+  THUMBNAIL: "QUANTIZATION & INFERENCE" over the bit-width ladder.
+
+# COURSE 19 - EMBEDDINGS
+  CONCEPT PANELS
+   EMB_MODEL_FLOW_001 (L1) text -> embedding model -> vector (axis labels:
+        semantic dims, not words).
+   EMB_SIMILARITY_GEO_002 (L2) 2D sketch: "cat" "kitten" near each other, far
+        from "car"; cosine angle vs euclidean distance both drawn.
+   EMB_DIMS_MATH_003 (L3) dim sweep curve: retrieval quality vs dim (matryoshka
+        note); normalized vs raw vector annotation.
+   EMB_DRIFT_FAIL_004 (L3, FAIL) old vs new model space: same word lands in a
+        shifted region; "re-embed or keep one model" callout.
+  ANIMATION/VIDEO
+   EMB_SPACE_VIDEO_001 (8 s) documents cluster into semantic neighborhoods as
+        they embed; query vector slides in and nearest cluster lights up.
+  THUMBNAIL: "EMBEDDINGS" over the similarity geometry.
+
+# COURSE 20 - INFORMATION RETRIEVAL
+  CONCEPT PANELS
+   IR_INVERTED_FLOW_001 (L2) doc -> tokenize -> postings lists (term ->
+        [doc ids]); query AND merge shown.
+   IR_BM25_MATH_002  (L3) the full BM25 formula rendered once with k1 and b
+        annotated and one worked example cell (reuse video still from
+        Videos/bm25_parameters.mp4).
+   IR_SPARSE_DENSE_ARCH_003 (L2) one-word-overlap vs paraphrase match: lexical
+        wins on "API key error 401", dense wins on paraphrase - drawn as the
+        S4 example in EXAMPLE.py.
+   IR_HYBRID_FLOW_004 (L2) reuse rag/hybrid_rrf as canonical RRF figure.
+   IR_CROSSENCODER_ARCH_005 (L3) reranker: query + doc concatenated -> single
+        relevance score vs bi-encoder two-tower separation.
+  ANIMATION/VIDEO
+   IR_INVERTED_VIDEO_001 (8 s) query terms walk their postings lists; AND
+        intersection lights the shared doc ids.
+  THUMBNAIL: "INFORMATION RETRIEVAL" over the inverted index.
+
+# COURSE 21 - RAG  (10 static panels + 6 videos exist - the most complete)
+  CONCEPT PANELS - DONE (rag_lifecycle, rerank_funnel, hybrid_rrf, parent_child,
+  agentic_rag, graph_vs_vector_rag, rag_metrics, temperature_softmax) + the two
+  RAG agent panels under agents/ (rag_agent, prod_rag_server). Extend with:
+   RAG_CITATION_FLOW_009 (L2) answer sentence with [1][2] -> brackets point
+        back to the two chunks that grounded each clause; citation
+        hallucination (bracket with no arrow) drawn as FAIL inset.
+   RAG_ACCESSCTRL_ARCH_010 (L3) user -> permission filter -> metadata-filtered
+        retrieval; two tenants' document sets never cross.
+  ANIMATION/VIDEO - DONE (topk_retrieval, bm25_parameters, rrf_fusion,
+  temperature_sampling, chunk_size_tradeoff, ann_recall_latency). Add:
+   RAG_CHUNK_VIDEO_007 (10 s) fixed vs recursive vs semantic chunking on the
+        same page: boundaries shown as cut lines; context bleed shown for
+        fixed-size.
+   RAG_GROUNDED_VIDEO_008 (10 s) answer sentence drawn; each clause's arrow
+        finds its evidence chunk (grounded = all arrows land) vs hallucinated
+        clause floating with no arrow.
+  THUMBNAIL: "RAG" over the rag_lifecycle figure.
+
+# COURSE 22 - VECTOR DATABASES
+  CONCEPT PANELS
+   VDB_LAYER_FLOW_001 (L1) app -> ANN index -> vector store (collection,
+        metadata, payload) -> storage engine.
+   VDB_HNSW_ARCH_002 (L3) multi-layer graph: top layer sparse, bottom dense;
+        entry point -> greedy descent with M and efSearch labeled.
+   VDB_IVF_ARCH_003 (L3) coarse centroids (Voronoi) -> probe top cells ->
+        exact scan inside; nprobe tradeoff.
+   VDB_PQ_MATH_004    (L4) vector split into subvectors -> codebooks -> code
+        = one centroid id per subspace; memory math (d/2 bytes).
+   VDB_FILTER_FLOW_005 (L2) metadata prefilter vs postfilter vs the "lost
+        vectors" failure of prefiltering at low recall.
+  ANIMATION/VIDEO
+   VDB_HNSW_VIDEO_001 (10 s) query descends layers, hops light up, search
+        radius narrows (reuse ann_recall_latency style).
+  THUMBNAIL: "VECTOR DATABASES" over the HNSW layers.
+
+# COURSE 23 - ADVANCED RAG (most of the architecture diagrams exist in rag/;
+# each needs its own one-panel treatment - parent_child + agentic_rag done)
+  CONCEPT PANELS - DONE (parent_child, agentic_rag, graph_vs_vector). Add:
+   ARAG_QUERYREWRITE_FLOW_011 (L2) original query -> 3 rewritten variants ->
+        parallel retrieval -> RRF merge.
+   ARAG_HYDE_FLOW_012 (L2) query -> LLM writes hypothetical doc -> embed THAT
+        -> retrieve; "closer to doc side of the space" callout + risk note.
+   ARAG_MULTIHOP_FLOW_013 (L3) Q1 answer feeds Q2 which feeds Q3 (chained
+        retrieval with intermediate answers as context).
+   ARAG_ADAPTIVE_FLOW_014 (L3) router: no-retrieval / simple / multi-query /
+        web / graph lanes, selected by a complexity classifier.
+   ARAG_CORRECTIVE_FLOW_015 (L3) retrieve -> grade -> good: generate /
+        bad: rewrite + re-retrieve loop with max-iterations stop.
+   ARAG_SELF_FLOW_016  (L4) the four Self-RAG tokens (Retrieve / ISREL /
+        ISSUP / ISUSE) inserted along the generation stream.
+   ARAG_SQL_FLOW_017 (L3) NL -> schema retrieval -> SQL gen -> validate ->
+        execute -> result -> NL answer (SQL injection red-flag note).
+   ARAG_CONTEXTUAL_FLOW_018 (L2) raw chunk vs chunk + surrounding doc context
+        prepended before embedding (contextual retrieval).
+   ARAG_SUMMARY_FLOW_019 (L3) map-reduce summarization: chunk summaries ->
+        merged -> doc summary -> embedded for coarse retrieval, then drill in.
+  ANIMATION/VIDEO
+   ARAG_MULTIHOP_VIDEO_003 (12 s) sub-question tiles light one by one, each
+        answer feeding the next prompt.
+   ARAG_SELF_VIDEO_004  (12 s) generation pauses at each Self-RAG token and
+        routes retrieve/evaluate/continue.
+  THUMBNAIL: "ADVANCED RAG" over the adaptive router.
+
+# COURSE 24 - RAG EVALUATION (rag_metrics.png exists)
+  CONCEPT PANELS
+   REV_SYSTEM_FLOW_001 (L2) reuse rag/rag_metrics: golden set row = question,
+        ground truth, relevant chunks, hard negatives.
+   REV_RECALLK_MATH_002 (L3) Hit@K / Recall@K / MRR / NDCG each with a tiny
+        worked ranking (doc ids + positions) and the formula on the figure.
+   REV_GEN_METRICS_003 (L3) faithfulness vs answer relevance: one axis = claims
+        in evidence, other = addresses query (2x2 quadrant).
+   REV_TRACEBACK_FLOW_004 (L3, FAIL) bad answer -> which stage: retrieval miss
+        (recall low) vs bad context (precision low) vs generation (grounded
+        but wrong) - the debugging decision tree.
+  ANIMATION/VIDEO
+   REV_THRESHOLD_VIDEO_002 (6 s) K slides 1->50: Hit@K climbs, Precision@K
+        falls; the crossover teaches why K is a knob, not a dial to max.
+  THUMBNAIL: "RAG EVALUATION" over the metrics 2x2.
+
+# COURSE 25 - LANGCHAIN
+  CONCEPT PANELS (current stable API - Runnable/LCEL; no obsolete chains)
+   LC_RUNNABLE_ARCH_001 (L2) the Runnable interface: invoke/batch/stream/ainvoke
+        as four doors on one box; every component implements it.
+   LC_PIPE_FLOW_002   (L2) prompt | model | parser as | pipes with typed
+        objects passing between (PromptValue -> Message -> str).
+   LC_RETRIEVER_FLOW_003 (L2) vector store as retriever (as_retriever -> k) ->
+        retrieved Documents into the prompt.
+   LC_TOOL_FLOW_004   (L3) tool schema (Pydantic) -> model tool-call -> parsed
+        args -> tool runs -> ToolMessage back.
+   LC_LCEL_GRAPH_005  (L3) RunnableParallel: one input fans out to two branches
+        then RunnablePassthrough merges (map-merge pattern).
+  ANIMATION/VIDEO
+   LC_STREAM_VIDEO_001 (6 s) | pipe passes objects left to right; stream mode
+        shows tokens arriving early on the right side.
+  THUMBNAIL: "LANGCHAIN" over the pipe composition.
+
+# COURSE 26 - LANGGRAPH  (static agent diagrams exist; needs state-machine video)
+  CONCEPT PANELS
+   LG_STATEGRAPH_ARCH_001 (L2) StateGraph: node circles + edges; state object
+        (typed dict) flows through, each node returns partial updates.
+   LG_CONDITIONAL_FLOW_002 (L2) after "agent" a diamond routes: has tool call?
+        -> tool node -> back; else -> END.
+   LG_CHECKPOINT_ARCH_003 (L3) timeline of state snapshots with a resume arrow
+        (thread_id); interrupt -> human edit -> resume shown.
+   LG_SUBGRAPH_FLOW_004 (L3) outer graph containing an inner graph node;
+        nested state channels drawn as ports.
+   LG_MAPREDUCE_FLOW_005 (L3) one node fans out to N parallel copies over a
+        list, results reduce in a final node (Send API note).
+  ANIMATION/VIDEO
+   LG_AGENTLOOP_VIDEO_001 (10 s) the agent cycle: AGENT -> CONDITION ->
+        TOOL -> AGENT ... token light travels the cycle and stops at END
+        (can reuse agents/agent_loop.png as the base artwork).
+   LG_INTERRUPT_VIDEO_002 (6 s) execution pauses at a checkpoint, "human
+        approves", resumes from the same state.
+  THUMBNAIL: "LANGGRAPH" over the conditional agent cycle.
+
+# COURSE 27 - AI AGENTS  (agents/ has agent_loop, multi_agent, rag_agent; the
+# agent-loop animation should be built on agent_loop.png)
+  CONCEPT PANELS
+   AG_REACT_FLOW_001 (L2) Thought -> Action -> Observation cycle with the three
+        lines labeled as text; stop conditions under the loop.
+   AG_TOOL_ARCH_002   (L2) tool = name + description + JSON schema -> model
+        picks -> args validated -> result observed.
+   AG_MEMORY_FLOW_003 (L3) short-term (context) vs long-term (store) vs working
+        (scratchpad): three boxes with arrows in/out of the loop.
+   AG_REFLEX_FLOW_004 (L3) generate -> critique -> revise: the critic node
+        grades the draft, loop back with feedback until pass.
+   AG_FAILURE_FAIL_005 (L3, FAIL) infinite tool loop: cycle arrows drawn with
+        a max-iteration stop sign; "budget: steps, time, tokens, cost".
+  ANIMATION/VIDEO
+   AG_LOOP_VIDEO_001 (12 s) goal enters, plan tiles appear, tools fire with
+        results returning, verifier either loops or ends (main hero video for
+        the agents course).
+  THUMBNAIL: "AI AGENTS" over the ReAct cycle.
+
+# COURSE 28 - MULTI-AGENT SYSTEMS  (agents/multi_agent.png exists)
+  CONCEPT PANELS
+   MA_SUPERVISOR_ARCH_001 (L2) supervisor hub in the center, specialist agents
+        (research/code/data/review) around it, delegation arrows out and
+        results back.
+   MA_HIERARCHY_ARCH_002 (L3) two-level tree: lead -> team leads -> workers
+        with handoff arrows; escalation path drawn.
+   MA_SHAREDSTATE_FLOW_003 (L3) blackboard pattern: agents read/write one shared
+        state store vs message-passing envelopes between peers.
+   MA_FAILURE_FAIL_004 (L3, FAIL) two agents delegating to each other forever:
+        cycle marked red with a supervisor timeout breaking it.
+  ANIMATION/VIDEO
+   MA_SUPERVISOR_VIDEO_001 (8 s) task packet moves from supervisor to the
+        matching specialist and returns; parallel specialists fire
+        simultaneously (from existing static panel).
+  THUMBNAIL: "MULTI-AGENT SYSTEMS" over the supervisor hub.
+
+# COURSE 29 - MULTIMODAL AI
+  CONCEPT PANELS
+   MM_ENCODER_ARCH_001 (L1) text + image + audio -> one shared embedding space
+        with the three modalities landing near each other when related.
+   MM_VLM_ARCH_002   (L3) image patches -> vision encoder -> projected tokens ->
+        joined with text tokens into the LLM (the ViT + projector path).
+   MM_DOCINTEL_FLOW_003 (L3) scanned page -> layout detection -> blocks (text/
+        table/figure) -> OCR text + table structure + image, each into its
+        own retriever/chunk type.
+   MM_RAG_ARCH_004   (L3) text chunks and image chunks in one index; query
+        retrieves both; captioning bridges images to text retrieval.
+  ANIMATION/VIDEO
+   MM_DOCINTEL_VIDEO_001 (8 s) scanner sweep reveals layout blocks in order and
+        routes each block type to its pipeline.
+  THUMBNAIL: "MULTIMODAL AI" over the shared embedding space.
+
+# COURSE 30 - GENERATIVE AI (diffusion, VAE, GAN)
+  CONCEPT PANELS
+   GEN_DIFFUSION_FLOW_001 (L2) forward: clean image -> noise ladder (t
+        increasing); reverse: noise -> denoise ladder -> generated image; the
+        two ladders drawn as parallel arrows.
+   GEN_VAE_ARCH_002  (L3) encoder -> mu/sigma -> sample z (reparameterization)
+        -> decoder; KL + reconstruction caption.
+   GEN_GAN_ARCH_003  (L2) noise -> generator -> fake; real vs fake -> discriminator
+        -> loss arrows to both (the adversarial tug drawn explicitly).
+   GEN_LDM_ARCH_004  (L3) image -> VAE latent -> diffusion in latent space ->
+        decode back (the "latent" shortcut circled).
+  ANIMATION/VIDEO
+   GEN_DIFFUSION_VIDEO_001 (12 s) reverse diffusion: pure noise frame
+        progressively sharpens into an image (the classic hero animation).
+  THUMBNAIL: "GENERATIVE AI" over the diffusion ladder.
+
+# COURSE 31 - RECOMMENDER SYSTEMS  (recommenders/ has 2 static panels)
+  CONCEPT PANELS (extend two_stage_recsys)
+   REC_CF_FLOW_001  (L2) user-item matrix with missing cells -> fill via
+        similar users (row correlations drawn) or similar items.
+   REC_MF_MATH_002  (L3) R ~= U V^T: rank-r factorization shown as two thin
+        matrices whose product rebuilds the rating grid; ALS/SGD note
+        (reuse als_vs_sgd_rmse curve).
+   REC_TWOSTAGE_FLOW_003 (L2) reuse recommenders/two_stage_recsys: retrieval
+        (fast, 1000 candidates) -> ranking (precise, top 10).
+   REC_COLDSTART_FAIL_004 (L2, FAIL) new user with no history: content-based
+        fallback lane lights up; popularity bias warning.
+  ANIMATION/VIDEO
+   REC_MF_VIDEO_001  (8 s) U and V^T cells pulse as SGD updates; the rebuilt
+        matrix converges toward the known ratings.
+  THUMBNAIL: "RECOMMENDER SYSTEMS" over the user-item matrix.
+
+# COURSE 32 - TIME SERIES  (ml/time_series.png + graphs/lstm_sine_forecast exist)
+  CONCEPT PANELS (extend)
+   TS_DECOMP_FLOW_001 (L2) one series -> trend + seasonal + residual (the
+        additive stack drawn, components aligned on shared x-axis).
+   TS_STATIONARITY_MATH_002 (L3) non-stationary (wandering mean) vs differenced
+        stationary series; "modeling needs stationary residuals" note.
+   TS_ARIMA_FLOW_003 (L3) AR(p) + MA(q) + I(d): each operator drawn as a filter
+        box; ACF/PACF cut-off insets guide p,q.
+   TS_WINDOW_ARCH_004 (L3) sliding window of past L steps -> model -> next
+        step forecast; walk-forward validation split drawn under the timeline.
+  ANIMATION/VIDEO
+   TS_FORECAST_VIDEO_001 (10 s) forecast line extends horizon step by step;
+        uncertainty fan widens with lead time (reuse lstm_sine_forecast).
+  THUMBNAIL: "TIME SERIES" over the trend/seasonal decomposition.
+
+# COURSE 33 - MLOPS
+  CONCEPT PANELS
+   MLOPS_LIFECYCLE_FLOW_001 (L1) data -> experiment -> train -> evaluate ->
+        registry -> deploy -> monitor -> drift -> retrain as one circular
+        pipeline (reuse ml/ml_lifecycle as the base).
+   MLOPS_REGISTRY_ARCH_002 (L2) model registry holding versions + metrics +
+        tags; stage transitions (staging -> prod) drawn as lanes.
+   MLOPS_DEPLOY_FLOW_003 (L2) the 4 serving patterns side by side: batch, online
+        REST, streaming, serverless - each with its trigger arrow.
+   MLOPS_DRIFT_FAIL_004 (L3, FAIL) train-time distribution vs live distribution
+        drifting apart; red zone where the model silently degrades.
+   MLOPS_ROLLBACK_FLOW_005 (L3) canary: 5% -> 25% -> 100% traffic; metric drop
+        at 25% triggers rollback arrow to the previous version.
+  ANIMATION/VIDEO
+   MLOPS_CANARY_VIDEO_001 (10 s) traffic pie splits and grows; a metric dip
+        flips the rollout back to the old version.
+  THUMBNAIL: "MLOPS" over the circular lifecycle.
+
+# COURSE 34 - PRODUCTION AI ENGINEERING  (backend/ has 2 static panels)
+  CONCEPT PANELS (extend backend/api_flow + backend_architecture)
+   PROD_STACK_ARCH_001 (L2) frontend -> API gateway -> FastAPI service box with
+        LLM/RAG/agents inside -> Postgres + Redis + vector DB + object storage
+        -> monitoring (the canonical production stack figure).
+   PROD_ASYNC_FLOW_002 (L3) sync request thread pool vs async event loop:
+        blocking call on a thread vs await yielding; latency bars compare.
+   PROD_QUEUE_ARCH_003 (L3) API -> queue -> workers (N) -> backends; DLQ lane
+        for poison messages; autoscaling arrow on queue depth.
+   PROD_CACHE_FLOW_004 (L2) cache-first read path with invalidation events
+        flowing back from writes (stale-read failure inset).
+   PROD_AUTH_FLOW_005  (L2) request -> authn (token) -> authz (scopes/RBAC) ->
+        route; 401 vs 403 split drawn.
+  ANIMATION/VIDEO
+   PROD_QUEUE_VIDEO_001 (10 s) request cards enter the queue, idle workers
+        pick them up, queue depth drives worker count up/down.
+  THUMBNAIL: "PRODUCTION AI" over the full stack figure.
+
+# COURSE 35 - CLOUD AI
+  CONCEPT PANELS (vendor-accurate only - never conflate services)
+   CLOUD_GPU_ARCH_001 (L2) training pod: GPU instances + NVMe scratch + object
+        store + checkpoint bucket; the data path arrows labeled with the
+        service names actually used (e.g. S3 / GCS / Blob - draw ONE vendor per
+        figure, note the two others textually).
+   CLOUD_SERVE_FLOW_002 (L3) managed endpoint: model image -> autoscaler on
+        request rate -> GPU pool -> LB; cold-start vs warm pool tradeoff.
+   CLOUD_COST_MATH_003 (L3) cost = (GPU-hours x price) + storage + egress bars;
+        spot vs on-demand vs reserved lane comparison.
+  ANIMATION/VIDEO
+   CLOUD_AUTOSCALE_VIDEO_001 (8 s) request bars rise, replicas count follows
+        with lag; scale-down cooldown visible.
+  THUMBNAIL: "CLOUD AI" over the GPU serving stack.
+
+# COURSE 36 - AI SECURITY
+  CONCEPT PANELS (threat + defense always paired)
+   SEC_INJECTION_FAIL_001 (L2, FAIL) attacker text inside a retrieved document
+        reaches the system prompt: the malicious instruction drawn traveling
+        the retrieval -> context -> prompt path in red.
+   SEC_INDIRECT_FLOW_002 (L3) indirect injection: poisoned web page -> tool
+        output -> context; the trust boundary drawn as a dashed red line.
+   SEC_DEFENSE_ARCH_003 (L2) layered defense: input guard -> sandboxed tools ->
+        output filter -> audit log; each layer a gate the payload must pass.
+   SEC_TENANT_FLOW_004 (L3) user -> permissions -> metadata filter -> index
+        slice; two tenants' lanes never intersect (same figure as
+        RAG_ACCESSCTRL but with the trust boundary emphasized).
+   SEC_POISONING_FAIL_005 (L3, FAIL) data poisoning: garbage doc embedded high
+        in the index pollutes retrieval results for everyone.
+   SEC_SECRETS_FAIL_006 (L2, FAIL) log line capturing an API key: secret flows
+        to logs -> dashboards; redaction + vault callouts.
+  ANIMATION/VIDEO
+   SEC_INJECTION_VIDEO_001 (8 s) malicious instruction rides a document into the
+        prompt (red), then the input-guard gate blocks it (green).
+  THUMBNAIL: "AI SECURITY" over the layered defense gates.
+
+# COURSE 37 - AI EVALUATION
+  CONCEPT PANELS
+   AE_PIPELINE_FLOW_001 (L1) dataset -> model -> predictions -> metrics ->
+        human/LLM judge -> benchmark report (one flow, all stages labeled).
+   AE_OFFLINE_ONLINE_ARCH_002 (L3) offline (fixed set, fast, cheap, can leak)
+        vs online (traffic A/B, slow, ground truth) side-by-side with the
+        tradeoff table under.
+   AE_JUDGE_ARCH_003 (L3) LLM-as-judge: candidate answer + rubric -> judge LLM
+        -> score + rationale; position/verbosity bias warnings drawn as FAIL
+        insets.
+   AE_SIG_MATH_004  (L4) two model scores with overlapping error bars; the
+        "significance requires delta > noise" annotation.
+  ANIMATION/VIDEO
+   AE_AB_VIDEO_001   (8 s) users split 50/50 into lanes; a metric gap emerges
+        and the winning lane takes more traffic (gradual ramp).
+  THUMBNAIL: "AI EVALUATION" over the eval pipeline.
+
+# COURSE 38 - AI OBSERVABILITY
+  CONCEPT PANELS
+   OB_DASH_ARCH_001 (L2) dashboard concept: latency, token usage, cost, error
+        rate, retrieval quality, tool calls, agent steps, quality - each a
+        tile with a mini-sparkline (the canonical dashboard sketch).
+   OB_TRACE_FLOW_002 (L3) one request's trace: LLM -> retriever -> vector DB ->
+        tool -> LLM as a span tree with per-span latency + token bars (parent
+        span wraps children).
+   OB_RETRIEVAL_TRACE_003 (L3) query -> rewritten -> retrieved docs with
+        scores -> reranked -> chosen; every doc id and score visible (the
+        RAG debugging gold mine).
+   OB_AGENT_TRACE_004 (L3) agent trace: each step's thought/tool/result logged
+        with token + cost cumulative counters on the side.
+  ANIMATION/VIDEO
+   OB_TRACE_VIDEO_001 (8 s) a request card flows through services, spawning
+        child spans that close as each call returns; total latency bar fills.
+  THUMBNAIL: "AI OBSERVABILITY" over the trace tree.
+
+# COURSE 39 - AI RESEARCH
+  CONCEPT PANELS
+   RS_METHOD_FLOW_001 (L2) hypothesis -> experiment -> baseline -> variant ->
+        eval -> ablation -> conclusion (one horizontal flow).
+   RS_ABLATION_ARCH_002 (L3) full model vs -component bars: each removed part's
+        metric drop isolates its contribution.
+   RS_SWEEP_CURVE_003 (L3) hyperparameter sweep: metric vs param with the
+        optimum marked; "tune on val, never on test" callout.
+   RS_REPRO_FLOW_004 (L2) seeds/versions/data hashes -> same run -> same
+        numbers: the reproducibility contract drawn as three locks.
+  ANIMATION/VIDEO
+   RS_SWEEP_VIDEO_001 (8 s) many runs scatter over the parameter axis and the
+        best region emerges.
+  THUMBNAIL: "AI RESEARCH" over the ablation bars.
+
+# COURSE 40 - AI SYSTEM DESIGN
+  CONCEPT PANELS (big architecture canvases - 10+ boxes each)
+   SD_ENTERPRISE_RAG_ARCH_001 (L4) clients -> gateway -> auth -> query router ->
+        hybrid retriever -> reranker -> LLM; storage: Postgres, Redis, vector
+        DB, object store; queues + workers for ingestion; monitor + eval side
+        rails. (Full assembly of the course's components - the final exam
+        figure.)
+   SD_INFERENCE_PLATFORM_ARCH_002 (L5) load balancer -> model replicas with
+        continuous batching -> KV-cache-aware scheduler -> GPU pool; autoscaler
+        + cost monitor.
+   SD_CODING_AGENT_ARCH_003 (L4) user task -> planner -> repo index (code RAG)
+        -> tool sandbox (lint/test/exec) -> verifier -> patch output.
+   SD_MULTITENANT_ARCH_004 (L5) tenant isolation: per-tenant indexes/namespaces
+        + authz at every hop; shared GPU pool vs per-tenant quotas.
+   SD_FRAUD_ARCH_005   (L4) stream -> feature store -> model ensemble ->
+        decision service -> case queue (human review) -> feedback loop.
+   SD_DOCINTEL_ARCH_006 (L4) ingest (PDF/scan/table) -> layout parse -> OCR ->
+        per-type index -> retrieval -> VLM answer with citations.
+  ANIMATION/VIDEO
+   SD_REQUEST_VIDEO_001 (12 s) one request traverses the enterprise RAG
+        architecture, each hop lighting + logging its latency (the system
+        design tour video).
+  THUMBNAIL: "AI SYSTEM DESIGN" over the enterprise RAG canvas.
+
+--------------------------------------------------------------------------------
+9. PROJECT VISUALS (for every tier E->S++ project in the course)
+--------------------------------------------------------------------------------
+Per project generate 10 assets:
+  1 thumbnail      concept frame of the app's main screen
+  2 architecture   boxes: client -> API -> services -> storage (see section 4)
+  3 data flow      the one request path through the system, time-ordered
+  4 UI concept     wireframe sketch (chat pane + sources + citation chips)
+  5 model pipeline train/eval flow with the metric gates
+  6 inference      request -> pre/post -> model -> response with latency labels
+  7 deployment     Docker compose / k8s diagram (services + ports + volumes)
+  8 monitoring     dashboard concept (latency/cost/quality/errors tiles)
+  9 demo video     30-60 s screen flow: load -> query -> answer + citations
+ 10 eval report    curve figure: retrieval + generation metrics before/after
+                   (paired bars, one improvement labeled)
+
+--------------------------------------------------------------------------------
+10. COURSE INTRO / OUTRO VIDEOS
+--------------------------------------------------------------------------------
+Every course gets a 1-3 min intro (L1, no code):
+  scene 1 what this course is      scene 2 why it matters (one real system)
+  scene 3 where it is used         scene 4 what you will build (thumbnails of
+  the course projects)             scene 5 jobs + prerequisites + roadmap
+Outro (30-60 s): what you learned -> what you built -> what you can do now ->
+next course arrow (respect the master roadmap order).
+
+--------------------------------------------------------------------------------
+11. VISUAL QUIZZES + VISUAL DEBUGGING (embed into PRACTICE.txt per course)
+--------------------------------------------------------------------------------
+QUIZ PATTERN A - architecture reading: show a real panel, ask "where is the
+bottleneck / what breaks if this box dies / where does caching go?"
+QUIZ PATTERN B - broken diagram: give a three-box flow missing a stage
+(e.g. user -> LLM -> vector DB) and ask what is missing (embedding, retriever,
+context construction, prompt).
+QUIZ PATTERN C - tensor shapes: show an ops graph with one unlabeled shape and
+ask for the missing dimension.
+QUIZ PATTERN D - comparison grids: side-by-side panels and ask for the scenario
+that favors each side.
+VISUAL DEBUGGING CHALLENGE SET (one per course): ship a panel with a real
+architectural error (leak arrow, missing reranker, retriever wired to the wrong
+index, cache without invalidation) and a one-line diagnosis the learner must
+produce. Hundreds are possible by re-combining the components defined in the
+course panels above.
+
+--------------------------------------------------------------------------------
+12. QUALITY CONTROL CHECKLIST (run before shipping any asset)
+--------------------------------------------------------------------------------
+[ ] technically correct (labels match real component behavior)
+[ ] mathematically correct (every equation verified, dims consistent)
+[ ] no fake APIs / no deprecated APIs presented as current
+[ ] no incorrect architecture / arrows logically correct
+[ ] no meaningless decoration (no robots, glow, fake formulas)
+[ ] labels readable at 960x540 and thumbnail size
+[ ] tensor/matrix shapes correct where shown
+[ ] terminology consistent with the shared language (section 4)
+[ ] difficulty appropriate to the target level
+[ ] learning objective stated and actually taught by the figure
+[ ] one clear "what to notice" takeaway per asset
+[ ] files saved under the naming scheme (section 5) and listed in the gallery
+
+RENDER PIPELINE (how this plan becomes pixels)
+  1. panels   -> python diagrams/generate_course_diagrams.py  (+ module + rag
+                generators) writes diagrams/<cat>/*.png
+  2. videos   -> python diagrams/generate_rag_media.py section B (extend to a
+                shared diagrams/generate_videos.py so ALL courses can add clips)
+  3. Images/  -> python diagrams/generate_rag_media.py section C (copy)
+  4. gallery  -> python diagrams/generate_gallery.py (regenerate index.html +
+                DIAGRAM_GALLERY.md, verify every thumb)
+  5. docs     -> update COURSE_INDEX.md + COURSE_AUDIT.txt with the new counts
+
+================================================================================
+END OF VISUAL CONTENT MASTER PLAN
+Every concept deserves a visual. Every architecture deserves a diagram. Every
+stateful process deserves an animation. Build in the dependency order of the
+master roadmap, verify each asset against the quality checklist, and keep every
+figure honest: ACCURACY > BEAUTY, CLARITY > DECORATION, LEARNING > ART.
+================================================================================

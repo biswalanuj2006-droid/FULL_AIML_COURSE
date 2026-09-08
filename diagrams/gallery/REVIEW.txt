@@ -1,21 +1,21 @@
 ==============================================================================
 DIAGRAM REVIEW - verify_diagrams.py
 ==============================================================================
-images verified : 64
-total size      : 4.4 MB
+images verified : 79
+total size      : 5.4 MB
 blank panels    : 0
 
 FOLDER         COUNT  TOTAL MB                 WxH RANGE
 ----------------------------------------------------------
 llm               10       0.7       917x554 - 1764x1057
-agents             5       0.4       1167x609 - 1594x775
-ml                16       1.1       922x576 - 2385x1035
-math               4       0.5      1484x734 - 2085x1185
+agents             7       0.5       1058x609 - 1594x797
+ml                17       1.2       922x576 - 2385x1035
+math               5       0.5      1035x588 - 2085x1185
 dl                 6       0.5      1485x734 - 2233x1522
 backend            2       0.1      2085x734 - 2085x1184
-nlp                3       0.2      1482x734 - 2385x1185
-rag                2       0.1       2085x884 - 2385x885
-transformers       2       0.2     1485x1034 - 1785x1484
+nlp                4       0.3      1167x689 - 2385x1185
+rag               10       0.7       1004x646 - 2385x885
+transformers       4       0.3       917x704 - 1785x1484
 graphs             8       0.4        440x350 - 1320x900
 graph              2       0.1        793x554 - 1089x575
 recommenders       2       0.1        793x547 - 1069x626
@@ -27,9 +27,11 @@ FILE                                                    FMT        SIZE         
 ----------------------------------------------------------------------------------------------------
 agents/agent_loop.png                                   PNG      59.4KB    1167x756   32.4  
 agents/embedding_bench.png                              PNG      78.8KB    1594x609   74.7  
+agents/memory_types.png                                 PNG      73.9KB    1167x681   36.6  
 agents/multi_agent.png                                  PNG      79.5KB    1221x756   33.6  
 agents/prod_rag_server.png                              PNG      90.4KB    1329x775   34.1  
 agents/rag_agent.png                                    PNG      93.2KB    1406x734   37.7  
+agents/react_loop.png                                   PNG      67.1KB    1058x797   32.2  
 backend/api_flow.jpg                                    JPEG     52.6KB    2085x734   30.0  
 backend/backend_architecture.jpg                        JPEG     85.3KB   2085x1184   30.2  
 dl/activation_functions.jpg                             JPEG    145.8KB   1784x1522   39.6  
@@ -59,6 +61,7 @@ llm/sampling.png                                        PNG      74.7KB    1595x
 llm/scaling_laws.png                                    PNG      56.6KB    1171x639   57.2  
 llm/speculative_decoding.png                            PNG      67.4KB    1275x583   38.2  
 math/bias_variance.jpg                                  JPEG     87.2KB    1484x884   38.3  
+math/broadcasting.png                                   PNG      30.6KB    1035x588   68.3  
 math/entropy_gini.jpg                                   JPEG     95.7KB    2085x734   36.5  
 math/gradient_descent.jpg                               JPEG    199.2KB   1484x1185   35.8  
 math/sigmoid.jpg                                        JPEG     79.2KB    1484x884   34.7  
@@ -72,6 +75,7 @@ ml/learning_curves.png                                  PNG      60.9KB     923x
 ml/ml_lifecycle.png                                     PNG      72.9KB    1764x576   33.9  
 ml/ml_workflow.jpg                                      JPEG     75.5KB    2385x885   30.9  
 ml/model_comparison.jpg                                 JPEG     98.1KB   1785x1035   71.4  
+ml/overfit_gap.png                                      PNG      59.0KB    1135x726   33.5  
 ml/overfitting.jpg                                      JPEG     90.0KB    1485x884   33.2  
 ml/pca.png                                              PNG      99.9KB    1524x638   69.9  
 ml/pr_curve.png                                         PNG      49.9KB     923x637   38.9  
@@ -80,13 +84,24 @@ ml/test.jpg                                             JPEG     37.1KB    1200x
 ml/time_series.png                                      PNG     105.5KB    1029x637   38.7  
 nlp/nlp_pipeline.jpg                                    JPEG     59.1KB    2385x734   30.1  
 nlp/sentiment_analysis.jpg                              JPEG     72.0KB    1482x884   55.5  
+nlp/tokenization.png                                    PNG      76.2KB    1167x689   37.1  
 nlp/word_embeddings.jpg                                 JPEG     44.1KB   1485x1185   19.3  
+rag/agentic_rag.png                                     PNG      76.0KB    1113x754   34.8  
+rag/graph_vs_vector_rag.png                             PNG      69.1KB    1167x689   32.6  
+rag/hybrid_rrf.png                                      PNG      73.5KB    1113x708   29.2  
+rag/parent_child.png                                    PNG      68.8KB    1320x667   29.3  
+rag/rag_lifecycle.png                                   PNG      86.3KB    1167x842   38.1  
+rag/rag_metrics.png                                     PNG      73.9KB    1167x681   36.7  
 rag/rag_pipeline.jpg                                    JPEG     63.6KB    2385x884   27.9  
 rag/rag_vs_finetuning.jpg                               JPEG     64.3KB    2085x885   30.5  
+rag/rerank_funnel.png                                   PNG      53.5KB    1004x646   32.9  
+rag/temperature_softmax.png                             PNG      43.0KB    1075x655   59.0  
 recommenders/als_vs_sgd_rmse.png                        PNG      35.8KB     793x547   60.9  
 recommenders/two_stage_recsys.png                       PNG      73.9KB    1069x626   37.1  
 rl/agent_env_loop.png                                   PNG      37.1KB    1069x531   34.2  
 rl/qlearning_vs_optimal.png                             PNG      38.6KB     775x575   72.9  
+transformers/attention_mask.png                         PNG      59.6KB     917x704   48.9  
+transformers/mqa_gqa.png                                PNG      96.0KB    1167x806   33.2  
 transformers/self_attention.jpg                         JPEG     56.8KB   1485x1034   31.8  
 transformers/transformer_architecture.jpg               JPEG    119.8KB   1785x1484   32.5  
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI/ML Engineering — Diagram Gallery (64 images)</title>
+<title>AI/ML Engineering — Diagram Gallery (89 images)</title>
 <style>
   :root { color-scheme: light dark; }
   body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -36,7 +36,7 @@
 <body>
 <header>
   <h1>AI/ML Engineering — Diagram Gallery</h1>
-  <p>64 diagrams &middot; llm_course / genai_agents_course / ml_course + core-curriculum visuals
+  <p>89 diagrams &middot; llm_course / genai_agents_course / ml_course + core-curriculum visuals
      &middot; regenerate: python diagrams/generate_gallery.py &middot; review: python diagrams/verify_diagrams.py</p>
 </header>
 <main>
@@ -145,6 +145,14 @@
         </div>
       </div>
       <div class="card">
+        <a href="../agents/memory_types.png" target="_blank"><img loading="lazy" src="thumbs/agents/memory_types.png" alt="memory_types"></a>
+        <div class="meta">
+          <div class="title">memory_types</div>
+          <div class="file">agents/memory_types.png &middot; 1167x681</div>
+          <div class="cap">&nbsp;</div>
+        </div>
+      </div>
+      <div class="card">
         <a href="../agents/multi_agent.png" target="_blank"><img loading="lazy" src="thumbs/agents/multi_agent.png" alt="multi_agent"></a>
         <div class="meta">
           <div class="title">multi_agent</div>
@@ -166,6 +174,14 @@
           <div class="title">rag_agent</div>
           <div class="file">agents/rag_agent.png &middot; 1406x734</div>
           <div class="cap">RAG agent: query -&gt; retrieve -&gt; ground -&gt; generate with citations; tool calls for calculator/retrieval; injection guard</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../agents/react_loop.png" target="_blank"><img loading="lazy" src="thumbs/agents/react_loop.png" alt="react_loop"></a>
+        <div class="meta">
+          <div class="title">react_loop</div>
+          <div class="file">agents/react_loop.png &middot; 1058x797</div>
+          <div class="cap">&nbsp;</div>
         </div>
       </div>
       </div>
@@ -254,6 +270,14 @@
         </div>
       </div>
       <div class="card">
+        <a href="../ml/overfit_gap.png" target="_blank"><img loading="lazy" src="thumbs/ml/overfit_gap.png" alt="overfit_gap"></a>
+        <div class="meta">
+          <div class="title">overfit_gap</div>
+          <div class="file">ml/overfit_gap.png &middot; 1135x726</div>
+          <div class="cap">Capacity sweep deg 1/3/9/18 on noisy sine: underfit (bias) -&gt; good -&gt; chasing noise (variance), with train/val U-shape inset</div>
+        </div>
+      </div>
+      <div class="card">
         <a href="../ml/overfitting.jpg" target="_blank"><img loading="lazy" src="thumbs/ml/overfitting.jpg" alt="overfitting"></a>
         <div class="meta">
           <div class="title">overfitting</div>
@@ -312,6 +336,14 @@
           <div class="title">bias_variance</div>
           <div class="file">math/bias_variance.jpg &middot; 1484x884</div>
           <div class="cap">Bias-variance decomposition: low/high bias x low/high variance quadrants</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../math/broadcasting.png" target="_blank"><img loading="lazy" src="thumbs/math/broadcasting.png" alt="broadcasting"></a>
+        <div class="meta">
+          <div class="title">broadcasting</div>
+          <div class="file">math/broadcasting.png &middot; 1035x588</div>
+          <div class="cap">NumPy broadcasting: (3,1) + (1,4) -&gt; (3,4): size-1 axes stretch (stride repeat, no copy) then elementwise add</div>
         </div>
       </div>
       <div class="card">
@@ -434,6 +466,14 @@
         </div>
       </div>
       <div class="card">
+        <a href="../nlp/tokenization.png" target="_blank"><img loading="lazy" src="thumbs/nlp/tokenization.png" alt="tokenization"></a>
+        <div class="meta">
+          <div class="title">tokenization</div>
+          <div class="file">nlp/tokenization.png &middot; 1167x689</div>
+          <div class="cap">Tokenization: raw text -&gt; BPE/WordPiece tokens -&gt; vocab ids -&gt; embedding-table rows (repeated words share a row; position comes from positional encoding)</div>
+        </div>
+      </div>
+      <div class="card">
         <a href="../nlp/word_embeddings.jpg" target="_blank"><img loading="lazy" src="thumbs/nlp/word_embeddings.jpg" alt="word_embeddings"></a>
         <div class="meta">
           <div class="title">word_embeddings</div>
@@ -446,6 +486,54 @@
     <section>
       <h2>RAG (diagrams/rag/)</h2>
       <div class="grid">
+      <div class="card">
+        <a href="../rag/agentic_rag.png" target="_blank"><img loading="lazy" src="thumbs/rag/agentic_rag.png" alt="agentic_rag"></a>
+        <div class="meta">
+          <div class="title">agentic_rag</div>
+          <div class="file">rag/agentic_rag.png &middot; 1113x754</div>
+          <div class="cap">Agentic RAG: planner routes to retriever / web search / SQL / calculator / graph tools, verifier grounds + cites, loop with stopping conditions</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../rag/graph_vs_vector_rag.png" target="_blank"><img loading="lazy" src="thumbs/rag/graph_vs_vector_rag.png" alt="graph_vs_vector_rag"></a>
+        <div class="meta">
+          <div class="title">graph_vs_vector_rag</div>
+          <div class="file">rag/graph_vs_vector_rag.png &middot; 1167x689</div>
+          <div class="cap">Vector RAG (chunk -&gt; embed -&gt; ANN) vs GraphRAG (entity/relation extraction -&gt; knowledge graph -&gt; community summaries) vs hybrid</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../rag/hybrid_rrf.png" target="_blank"><img loading="lazy" src="thumbs/rag/hybrid_rrf.png" alt="hybrid_rrf"></a>
+        <div class="meta">
+          <div class="title">hybrid_rrf</div>
+          <div class="file">rag/hybrid_rrf.png &middot; 1113x708</div>
+          <div class="cap">Hybrid retrieval with RRF: dense + BM25 rank lists fused by 1/(k+rank), k=60, worked example with fused ranking</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../rag/parent_child.png" target="_blank"><img loading="lazy" src="thumbs/rag/parent_child.png" alt="parent_child"></a>
+        <div class="meta">
+          <div class="title">parent_child</div>
+          <div class="file">rag/parent_child.png &middot; 1320x667</div>
+          <div class="cap">Parent-child (small-to-big) retrieval: precise child chunks embedded, retrieve child, return parent context to the LLM</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../rag/rag_lifecycle.png" target="_blank"><img loading="lazy" src="thumbs/rag/rag_lifecycle.png" alt="rag_lifecycle"></a>
+        <div class="meta">
+          <div class="title">rag_lifecycle</div>
+          <div class="file">rag/rag_lifecycle.png &middot; 1167x842</div>
+          <div class="cap">Complete RAG lifecycle: ingestion column (load/parse/clean/chunk/embed/index) + query column (process/transform/hybrid retrieve/rerank/prompt) meeting at the grounded LLM with citations</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../rag/rag_metrics.png" target="_blank"><img loading="lazy" src="thumbs/rag/rag_metrics.png" alt="rag_metrics"></a>
+        <div class="meta">
+          <div class="title">rag_metrics</div>
+          <div class="file">rag/rag_metrics.png &middot; 1167x681</div>
+          <div class="cap">RAG evaluation split: retrieval metrics (Hit@K, Recall@K, MRR, NDCG) vs generation metrics (faithfulness, relevance, F1/BLEU/ROUGE/BERTScore)</div>
+        </div>
+      </div>
       <div class="card">
         <a href="../rag/rag_pipeline.jpg" target="_blank"><img loading="lazy" src="thumbs/rag/rag_pipeline.jpg" alt="rag_pipeline"></a>
         <div class="meta">
@@ -462,11 +550,43 @@
           <div class="cap">RAG vs fine-tuning comparison: knowledge updates, cost, hallucination</div>
         </div>
       </div>
+      <div class="card">
+        <a href="../rag/rerank_funnel.png" target="_blank"><img loading="lazy" src="thumbs/rag/rerank_funnel.png" alt="rerank_funnel"></a>
+        <div class="meta">
+          <div class="title">rerank_funnel</div>
+          <div class="file">rag/rerank_funnel.png &middot; 1004x646</div>
+          <div class="cap">Two-stage retrieval funnel: bi-encoder ANN top-50 -&gt; cross-encoder reranker -&gt; top-5 context -&gt; LLM (latency annotation)</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../rag/temperature_softmax.png" target="_blank"><img loading="lazy" src="thumbs/rag/temperature_softmax.png" alt="temperature_softmax"></a>
+        <div class="meta">
+          <div class="title">temperature_softmax</div>
+          <div class="file">rag/temperature_softmax.png &middot; 1075x655</div>
+          <div class="cap">P(token) = softmax(logits / T): temperature 0.1/0.5/1.0/2.0 reshaping the output distribution (generation parameter, not retrieval)</div>
+        </div>
+      </div>
       </div>
     </section>
     <section>
       <h2>Transformers (diagrams/transformers/)</h2>
       <div class="grid">
+      <div class="card">
+        <a href="../transformers/attention_mask.png" target="_blank"><img loading="lazy" src="thumbs/transformers/attention_mask.png" alt="attention_mask"></a>
+        <div class="meta">
+          <div class="title">attention_mask</div>
+          <div class="file">transformers/attention_mask.png &middot; 917x704</div>
+          <div class="cap">Causal attention mask: query row i attends only to keys &lt;= i (upper triangle -&gt; -inf -&gt; softmax 0); no future leakage in decoder-only training</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../transformers/mqa_gqa.png" target="_blank"><img loading="lazy" src="thumbs/transformers/mqa_gqa.png" alt="mqa_gqa"></a>
+        <div class="meta">
+          <div class="title">mqa_gqa</div>
+          <div class="file">transformers/mqa_gqa.png &middot; 1167x806</div>
+          <div class="cap">MHA vs MQA vs GQA: per-head vs shared K/V across query-head groups - the KV-cache write factor (x4 vs x1 vs x2 shown with head wiring)</div>
+        </div>
+      </div>
       <div class="card">
         <a href="../transformers/self_attention.jpg" target="_blank"><img loading="lazy" src="thumbs/transformers/self_attention.jpg" alt="self_attention"></a>
         <div class="meta">
@@ -613,6 +733,111 @@
           <div class="title">qlearning_vs_optimal</div>
           <div class="file">rl/qlearning_vs_optimal.png &middot; 775x575</div>
           <div class="cap">Q-learning returns vs optimal: real benchmark numbers</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>LangChain (diagrams/langchain/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../langchain/lcel_runnable.png" target="_blank"><img loading="lazy" src="thumbs/langchain/lcel_runnable.png" alt="lcel_runnable"></a>
+        <div class="meta">
+          <div class="title">lcel_runnable</div>
+          <div class="file">langchain/lcel_runnable.png &middot; 1167x732</div>
+          <div class="cap">LCEL composition: prompt | model | parser — every piece is a Runnable with .invoke/.stream/.batch; swapping the model never changes the chain shape</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../langchain/structured_output.png" target="_blank"><img loading="lazy" src="thumbs/langchain/structured_output.png" alt="structured_output"></a>
+        <div class="meta">
+          <div class="title">structured_output</div>
+          <div class="file">langchain/structured_output.png &middot; 1167x703</div>
+          <div class="cap">Structured output: Pydantic schema -&gt; with_structured_output() -&gt; validated typed instance; small flat schemas stay reliable</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>LangGraph (diagrams/langgraph/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../langgraph/graph_state.png" target="_blank"><img loading="lazy" src="thumbs/langgraph/graph_state.png" alt="graph_state"></a>
+        <div class="meta">
+          <div class="title">graph_state</div>
+          <div class="file">langgraph/graph_state.png &middot; 1167x775</div>
+          <div class="cap">LangGraph state machine: nodes read/write shared State, conditional edges route (grade -&gt; rewrite loop), reducers merge concurrent writes</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../langgraph/human_in_loop.png" target="_blank"><img loading="lazy" src="thumbs/langgraph/human_in_loop.png" alt="human_in_loop"></a>
+        <div class="meta">
+          <div class="title">human_in_loop</div>
+          <div class="file">langgraph/human_in_loop.png &middot; 1167x710</div>
+          <div class="cap">Human-in-the-loop: interrupt() suspends the graph, state persists in the checkpointer, Command(resume=...) continues after approval</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>MLOps (diagrams/mlops/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../mlops/drift_retraining.png" target="_blank"><img loading="lazy" src="thumbs/mlops/drift_retraining.png" alt="drift_retraining"></a>
+        <div class="meta">
+          <div class="title">drift_retraining</div>
+          <div class="file">mlops/drift_retraining.png &middot; 1167x681</div>
+          <div class="cap">MLOps closed loop: serve -&gt; log -&gt; drift checks (PSI/KS) -&gt; retrain -&gt; registry promote/rollback; drift != degradation without labels</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../mlops/experiment_tracking.png" target="_blank"><img loading="lazy" src="thumbs/mlops/experiment_tracking.png" alt="experiment_tracking"></a>
+        <div class="meta">
+          <div class="title">experiment_tracking</div>
+          <div class="file">mlops/experiment_tracking.png &middot; 1167x681</div>
+          <div class="cap">Experiment tracking: every run logs (params, metrics, artifacts); if it can&#x27;t be reproduced from its run record, it never happened</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>AI Security (diagrams/security/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../security/rag_poisoning.png" target="_blank"><img loading="lazy" src="thumbs/security/rag_poisoning.png" alt="rag_poisoning"></a>
+        <div class="meta">
+          <div class="title">rag_poisoning</div>
+          <div class="file">security/rag_poisoning.png &middot; 1167x681</div>
+          <div class="cap">RAG poisoning: attacker-controlled documents ride injected instructions into the prompt; defenses at ingestion + runtime</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../security/threat_model.png" target="_blank"><img loading="lazy" src="thumbs/security/threat_model.png" alt="threat_model"></a>
+        <div class="meta">
+          <div class="title">threat_model</div>
+          <div class="file">security/threat_model.png &middot; 1443x725</div>
+          <div class="cap">LLM app threat model: every input path is an attack path — direct/indirect injection, jailbreaks, tool abuse, with layered defenses</div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section>
+      <h2>PyTorch (diagrams/pytorch/)</h2>
+      <div class="grid">
+      <div class="card">
+        <a href="../pytorch/autograd_graph.png" target="_blank"><img loading="lazy" src="thumbs/pytorch/autograd_graph.png" alt="autograd_graph"></a>
+        <div class="meta">
+          <div class="title">autograd_graph</div>
+          <div class="file">pytorch/autograd_graph.png &middot; 1167x660</div>
+          <div class="cap">Autograd: forward builds a dynamic graph, backward walks it in reverse; activations kept for backward explain OOM behavior</div>
+        </div>
+      </div>
+      <div class="card">
+        <a href="../pytorch/training_loop.png" target="_blank"><img loading="lazy" src="thumbs/pytorch/training_loop.png" alt="training_loop"></a>
+        <div class="meta">
+          <div class="title">training_loop</div>
+          <div class="file">pytorch/training_loop.png &middot; 1240x853</div>
+          <div class="cap">Canonical PyTorch loop: zero_grad (grads accumulate by default!) -&gt; forward -&gt; loss -&gt; backward -&gt; step; eval mode + no_grad for validation</div>
         </div>
       </div>
       </div>

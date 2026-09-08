@@ -566,6 +566,71 @@ agents/GenAI-track); this one is the LLM-internals track:
   extendable by appending new IDs per the documented scheme.
 - COURSE_INDEX.md updated with a root-level QUESTIONS_BANK.txt entry.
 
+22. 2026-09-06 - RAG EXAMPLE.py FULLY PASSING + MEDIA FOLDERS + MASTER PROMPT
+================================================================================
+- AI_ENGINEERING/RAG/EXAMPLE.py verified end-to-end: ALL S1-S15 PASS.
+  Fixes landed this session: (a) content-word (stopword-stripped) abstain
+  rule so out-of-corpus questions refuse instead of fabricating;
+  (b) eval harness now measures the SHIPPED system - RRF hybrid retrieval
+  (dense + BM25) instead of dense alone; (c) groundedness scored against
+  the CITED chunk (first_supported) not the gold chunk - single source of
+  truth shared between the generator stub and the evaluator; (d) S15 split
+  into a two-layer injection defense: pre-generation injection_guard
+  (pattern stand-in for a classifier) OR evidence abstain, with a benign
+  control query. Final numbers: hit@3 10/12, MRR 0.68, abstain 2/2,
+  groundedness 1.00 vs fabricated 0.00, IVF recall 1.00, RRF hybrid 3/3,
+  injection blocked 2/2.
+- NEW 29_RAG/RAG_MASTER_PROMPT.txt: the 76-part / 16-phase RAG master
+  course prompt stored as the spec contract, ending with a coverage map
+  linking every part to repository artifacts (AI_ENGINEERING/RAG/*,
+  rag_complete.txt, QUESTIONS_BANK.txt Domains 20-25).
+- NEW diagrams/generate_rag_media.py (run: python diagrams/generate_rag_media.py):
+  A) 8 RAG diagram panels -> diagrams/rag/ (rag_lifecycle, rerank_funnel,
+     hybrid_rrf, parent_child, agentic_rag, graph_vs_vector_rag,
+     rag_metrics, temperature_softmax) matching the existing Agg/box/arrow
+     style; captions added to generate_gallery.py.
+  B) 6 animated MP4 videos -> Videos/ (ffmpeg FFMpegWriter, 4 s, 12 fps,
+     960x540): topk_retrieval, bm25_parameters (k1/b sweep),
+     rrf_fusion (k sweep 60->20), temperature_sampling (softmax flatten),
+     chunk_size_tradeoff (precision vs context), ann_recall_latency
+     (recall vs probes knee). All 6 ffprobe-validated (4.000 s each,
+     52-196 KB).
+  C) Images/ populated: 72 images copied from diagrams/ organized by
+     category (14 folders) + README.txt.
+- Gallery regenerated: 72 diagrams, 8 new thumbnails, verify_diagrams.py
+  verdict ALL IMAGES OK (no unreadable/blank panels).
+- COURSE_INDEX.md updated: RAG entry now records EXAMPLE.py fully passing;
+  new MEDIA: Images/ + Videos/ entry; 29_RAG entry notes RAG_MASTER_PROMPT.txt.
+
+23. 2026-09-08 - VISUAL_CONTENT_MASTER_PLAN.txt + SECOND-WAVE PANELS
+================================================================================
+- NEW VISUAL_CONTENT_MASTER_PLAN.txt (repo root, ~980 lines): the complete
+  40-course image + video generation blueprint (the "ULTRA-MASSIVE AI/ML
+  COURSE - IMAGE + VIDEO GENERATION MASTER PROMPT" executed as a repo-grounded
+  spec). Contents: current asset inventory incl. explicit GAP list; visual
+  difficulty levels 0-7; the three-level visual system (intuition/technical/
+  implementation) for every difficult concept; master visual roadmap
+  (dependency order PYTHON -> ... -> RESEARCH); shared visual language
+  (symbols, colors, arrows, canonical math, code-accuracy rules); naming
+  scheme matching repo generators; image + video spec formats; full per-course
+  specs for all 40 courses (course 21 RAG and 23 ADVANCED RAG mark which of
+  their panels/videos already exist); project visuals; intro/outro videos;
+  visual quizzes + visual debugging challenge sets; QC checklist; render
+  pipeline tying every asset to its generator script.
+- NEW diagrams/generate_v2_panels.py - first production batch straight from
+  the plan's gap list (run: python diagrams/generate_v2_panels.py):
+  transformers/attention_mask.png (causal mask + KV-cache tie-in),
+  transformers/mqa_gqa.png (MHA vs MQA vs GQA head/KV-sharing + cache math),
+  ml/overfit_gap.png (capacity sweep deg 1/3/9/18, bias-variance regimes),
+  math/broadcasting.png (NumPy (3,1)+(1,4)->(3,4) axis-stretch), and
+  nlp/tokenization.png (text -> BPE tokens -> ids -> embedding rows).
+  Captions added to diagrams/generate_gallery.py for all five.
+- Images/ refreshed to 77 images (generate_rag_media.py populate_images);
+  gallery regenerated to 77 diagrams + 5 thumbnails; verify_diagrams.py
+  verdict ALL IMAGES OK.
+- COURSE_INDEX.md MEDIA entry updated: 77 images, plan file + v2 generator
+  registered with the exact 3-step refresh command.
+
 ================================================================================
 END OF AUDIT
 ================================================================================

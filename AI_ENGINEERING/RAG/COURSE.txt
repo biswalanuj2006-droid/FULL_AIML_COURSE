@@ -809,6 +809,22 @@ CAPSTONE - ENTERPRISE RAG PLATFORM
    rollback of index/model versions. Deliverables: architecture doc,
    the numbers (retrieval + generation eval before/after), failure
    analysis of 3 real failing query classes, security test report.
+TECHNICAL VIDEO ASSETS (OPTIONAL, NOT REQUIRED)
+   This course does NOT ship lecture videos. If you want to add them:
+   - Keep videos SHORT and technical: 1 diagram + 1 derivation + 1
+     code walkthrough per video (8-15 minutes), not long intros.
+   - Record the screen in the diagrams/ gallery (index.html) and narrate
+     ONE RAG stage per video, e.g. 'RAG-02 Chunking' or 'RAG-09
+     Evaluation'.
+   - Add diagrams to diagrams/<topic>/ BEFORE making the video so the
+     visual matches the text.
+   - Add a small HTML chapter index in diagrams/gallery/ pointing to the
+     video files if you want a browsable lecture series.
+   Lectures with this level of technical depth are equivalent to a
+   reference like lecture-note guidance: each video should teach the
+   pipeline stage, the math, the failure modes, and the code - nothing
+   fluffy.
+
 LEARNING GATES (self-check before moving to LANGCHAIN course)
    GATE 1: build retrieval with numpy + explain BM25's formula.
    GATE 2: build hybrid + rerank funnel and justify each stage with

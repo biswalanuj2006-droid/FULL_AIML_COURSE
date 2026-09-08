@@ -244,7 +244,7 @@ WHEN NOT TO USE LAMBDAS:
 
 In Python, functions are FIRST-CLASS OBJECTS:
     - They can be assigned to variables
-    - They can be passed as arguments
+    - They can be passed as arguments=
     - They can be returned from other functions
     - They can be stored in data structures
 

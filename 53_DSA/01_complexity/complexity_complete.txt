@@ -9,7 +9,7 @@ After this module you will be able to:
 - Use Big-O, Big-Omega, Big-Theta notation
 - Solve recurrence relations
 - Apply the Master Theorem
-- Optimize algorithms based on complexity analysis
+- Optimize algorithms based on complexity analysis  `
 
 ================================================================================
 1. WHY COMPLEXITY ANALYSIS?
